@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+{% block title %}Overview | Log Forensics{% endblock %}
+{% block head %}<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>{% endblock %}
+{% block content %}
+<header class="page-header">
+  <div><span class="eyebrow">Intelligence workspace</span><h1>Forensic overview</h1><p>Current operational health and security posture across analyzed logs.</p></div>
+  <a class="primary-button" href="{{ url_for('upload.upload') }}"><i data-lucide="file-up"></i> Analyze logs</a>
+</header>
+<section class="metric-grid">
+  <article class="metric"><span>Logs analyzed</span><strong id="totalLogs">0</strong><small>Normalized evidence</small></article>
+  <article class="metric"><span>Risk events</span><strong id="riskEvents">0</strong><small>Events requiring review</small></article>
+  <article class="metric"><span>Incidents</span><strong id="incidentCount">0</strong><small>Correlated timelines</small></article>
+  <article class="metric accent"><span>Average risk</span><strong id="averageRisk">0</strong><small>Out of 100</small></article>
+</section>
+<section class="dashboard-grid">
+  <article class="panel chart-panel">
+    <div class="panel-heading"><div><span class="eyebrow">Classification</span><h2>Risk distribution</h2></div></div>
+    <div class="chart-wrap"><canvas id="riskChart"></canvas><div class="empty-chart" id="riskEmpty">No risk data yet</div></div>
+  </article>
+  <article class="panel chart-panel">
+    <div class="panel-heading"><div><span class="eyebrow">ATT&CK intelligence</span><h2>Detected tactics</h2></div></div>
+    <div class="chart-wrap"><canvas id="mitreChart"></canvas><div class="empty-chart" id="mitreEmpty">No security mappings yet</div></div>
+  </article>
+  <article class="panel wide">
+    <div class="panel-heading"><div><span class="eyebrow">Seven-day signal</span><h2>Error trend</h2></div></div>
+    <div class="line-chart-wrap"><canvas id="trendChart"></canvas></div>
+  </article>
+  <article class="panel">
+    <div class="panel-heading"><div><span class="eyebrow">Source intelligence</span><h2>Top risky IPs</h2></div></div>
+    <div id="riskyIps" class="rank-list"><p class="empty-copy">No risky sources detected.</p></div>
+  </article>
+</section>
+<section class="table-section">
+  <div class="section-heading"><div><span class="eyebrow">Recent activity</span><h2>Analysis history</h2></div><a href="{{ url_for('upload.history') }}">View all</a></div>
+  {% if uploads %}
+  <div class="table-shell"><table><thead><tr><th>File</th><th>Status</th><th>Records</th><th>Uploaded</th><th></th></tr></thead><tbody>
+  {% for upload in uploads %}<tr><td><strong>{{ upload.file_name }}</strong><small>{{ upload.file_type|upper }} · {{ (upload.file_size / 1024)|round(1) }} KB</small></td><td><span class="status {{ upload.processing_status }}">{{ upload.processing_status|title }}</span></td><td>{{ upload.total_records }}</td><td>{{ upload.upload_time.strftime('%d %b %Y, %H:%M') }}</td><td><a class="icon-button" href="{{ url_for('logs.view', file_id=upload.id) }}" title="Open analysis"><i data-lucide="arrow-up-right"></i></a></td></tr>{% endfor %}
+  </tbody></table></div>
+  {% else %}
+  <div class="empty-state"><i data-lucide="scan-search"></i><h3>No evidence analyzed yet</h3><p>Upload a CSV, JSON, TXT, or LOG file to begin.</p><a class="secondary-button" href="{{ url_for('upload.upload') }}">Choose a log file</a></div>
+  {% endif %}
+</section>
+{% endblock %}
+{% block scripts %}<script src="{{ url_for('static', filename='js/dashboard.js') }}"></script>{% endblock %}
+

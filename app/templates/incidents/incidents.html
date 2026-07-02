@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+{% block title %}Incidents | {{ upload.file_name }}{% endblock %}
+{% block content %}
+<header class="page-header compact"><div><a class="back-link" href="{{ url_for('logs.view', file_id=upload.id) }}"><i data-lucide="arrow-left"></i> Evidence</a><h1>Incident timelines</h1><p>Correlated findings from {{ upload.file_name }}.</p></div><a class="primary-button" href="{{ url_for('reports.preview', file_id=upload.id) }}"><i data-lucide="file-text"></i> Build report</a></header>
+<div class="incident-list">
+{% for incident in incidents %}
+<article class="incident">
+  <div class="incident-summary"><div><span class="severity {{ incident.severity|lower }}">{{ incident.severity }}</span><h2>{{ incident.incident_title }}</h2><p>{{ incident.summary }}</p></div><strong class="risk-number">{{ incident.overall_risk_score|round(0)|int }}<small>risk</small></strong></div>
+  <div class="timeline">
+  {% for event in incident.events %}<div class="timeline-event"><span class="timeline-dot"></span><time>{{ event.event_time.strftime('%H:%M:%S') if event.event_time else 'Unknown time' }}</time><div><strong>{{ event.event_type }}</strong><p>{{ event.description }}</p>{% if event.mitre_tactic %}<span class="mitre-tag">{{ event.mitre_tactic }} · {{ event.mitre_technique }}</span>{% endif %}</div></div>{% endfor %}
+  </div>
+</article>
+{% else %}<div class="empty-state"><i data-lucide="shield-check"></i><h3>No incidents correlated</h3><p>The analyzed evidence did not cross the current risk thresholds.</p></div>{% endfor %}
+</div>
+{% endblock %}
+

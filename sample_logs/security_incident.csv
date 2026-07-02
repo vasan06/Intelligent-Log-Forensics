@@ -1,0 +1,15 @@
+timestamp,source_ip,user,method,endpoint,status_code,response_time,event_type,message
+2026-07-01T10:00:00,203.0.113.42,admin,POST,/auth/login,401,142,authentication,Invalid password
+2026-07-01T10:00:04,203.0.113.42,admin,POST,/auth/login,401,139,authentication,Invalid password
+2026-07-01T10:00:08,203.0.113.42,admin,POST,/auth/login,401,145,authentication,Invalid password
+2026-07-01T10:00:13,203.0.113.42,admin,POST,/auth/login,403,151,authentication,Account temporarily locked
+2026-07-01T10:04:12,198.51.100.17,,GET,/.env,404,92,http,Unknown route
+2026-07-01T10:04:14,198.51.100.17,,GET,/wp-admin,404,87,http,Unknown route
+2026-07-01T10:04:16,198.51.100.17,,GET,/phpmyadmin,404,91,http,Unknown route
+2026-07-01T10:04:18,198.51.100.17,,GET,/server-status,404,88,http,Unknown route
+2026-07-01T10:08:00,10.0.0.25,user-71,GET,/api/orders,500,840,api,Database connection pool exhausted
+2026-07-01T10:08:03,10.0.0.25,user-71,GET,/api/orders,503,1260,api,Dependency unavailable
+2026-07-01T10:10:00,10.0.0.31,user-42,GET,/api/dashboard,200,1870,performance,Slow aggregate query
+2026-07-01T10:12:00,10.0.0.44,user-18,GET,/dashboard,200,80,frontend,Uncaught TypeError in chart renderer
+2026-07-01T10:15:00,10.0.0.12,user-9,GET,/api/profile,200,96,api,Request completed
+

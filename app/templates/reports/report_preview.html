@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+{% block title %}Forensic Report | {{ upload.file_name }}{% endblock %}
+{% block content %}
+<header class="page-header compact"><div><a class="back-link" href="{{ url_for('logs.view', file_id=upload.id) }}"><i data-lucide="arrow-left"></i> Evidence</a><h1>Forensic report</h1><p>Review the report contents before generating the PDF.</p></div><form method="post" action="{{ url_for('reports.generate', file_id=upload.id) }}"><button class="primary-button" type="submit"><i data-lucide="download"></i> Download PDF</button></form></header>
+<article class="report-sheet">
+  <div class="report-title"><span class="brand-mark">LF</span><div><span class="eyebrow">Intelligent Log Forensics</span><h2>Evidence Analysis Report</h2><p>{{ upload.file_name }}</p></div></div>
+  <div class="report-metrics"><div><span>Logs analyzed</span><strong>{{ upload.total_records }}</strong></div><div><span>Quality score</span><strong>{{ upload.quality.quality_score|round(0)|int if upload.quality else 0 }}</strong></div><div><span>Health score</span><strong>{{ upload.quality.health_score|round(0)|int if upload.quality else 0 }}</strong></div><div><span>Incidents</span><strong>{{ upload.incidents|length }}</strong></div></div>
+  <section><h3>Executive summary</h3><p>The analysis identified {{ upload.risks|length }} risk event(s) across {{ upload.total_records }} normalized log records. {{ upload.incidents|length }} incident timeline(s) were reconstructed for investigation.</p></section>
+  <section><h3>Prioritized findings</h3>
+  {% for risk in upload.risks|sort(attribute='risk_score', reverse=true) %}<div class="finding"><span class="severity {{ risk.severity|lower }}">{{ risk.severity }}</span><div><strong>{{ risk.risk_category }} · {{ risk.risk_score|round(0)|int }}/100</strong><p>{{ risk.reason }}</p>{% if risk.mitre_mapping %}<span class="mitre-tag">{{ risk.mitre_mapping.tactic }} · {{ risk.mitre_mapping.technique_id }} {{ risk.mitre_mapping.technique_name }}</span>{% endif %}<p class="recommendation"><b>Suggested action:</b> {{ risk.recommendation }}</p></div></div>
+  {% else %}<p>No prioritized findings were detected.</p>{% endfor %}
+  </section>
+</article>
+{% endblock %}
+

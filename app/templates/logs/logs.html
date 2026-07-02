@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+{% block title %}{{ upload.file_name }} | Log Forensics{% endblock %}
+{% block content %}
+<header class="page-header compact"><div><a class="back-link" href="{{ url_for('dashboard.index') }}"><i data-lucide="arrow-left"></i> Overview</a><h1>{{ upload.file_name }}</h1><p>{{ upload.total_records }} records · analyzed {{ upload.upload_time.strftime('%d %b %Y at %H:%M') }}</p></div><div class="header-actions"><a class="secondary-button" href="{{ url_for('incidents.view', file_id=upload.id) }}"><i data-lucide="git-branch"></i> Incidents</a><a class="primary-button" href="{{ url_for('reports.preview', file_id=upload.id) }}"><i data-lucide="file-text"></i> Report</a></div></header>
+<section class="score-strip">
+  <div><span>Data quality</span><strong>{{ upload.quality.quality_score|round(1) if upload.quality else 0 }}</strong><div class="meter"><i style="width: {{ upload.quality.quality_score if upload.quality else 0 }}%"></i></div></div>
+  <div><span>Application health</span><strong>{{ upload.quality.health_score|round(1) if upload.quality else 0 }}</strong><div class="meter health"><i style="width: {{ upload.quality.health_score if upload.quality else 0 }}%"></i></div></div>
+  <div><span>Risk findings</span><strong>{{ upload.risks|length }}</strong><small>{{ upload.incidents|length }} correlated incidents</small></div>
+</section>
+<form class="filter-bar" method="get"><div class="search-input"><i data-lucide="search"></i><input name="q" value="{{ request.args.get('q', '') }}" placeholder="Search IP, endpoint, or evidence"></div><select name="status"><option value="">All status codes</option>{% for code in [200, 401, 403, 404, 500, 503] %}<option value="{{ code }}" {{ 'selected' if request.args.get('status') == code|string }}>{{ code }}</option>{% endfor %}</select><button class="secondary-button" type="submit">Filter</button></form>
+<div class="table-shell evidence-table"><table><thead><tr><th>Timestamp</th><th>Source</th><th>Request / event</th><th>Status</th><th>Latency</th><th>Assessment</th></tr></thead><tbody>
+{% for log in logs %}{% set risk = risks_by_log.get(log.id) %}<tr><td class="mono">{{ log.timestamp.strftime('%Y-%m-%d %H:%M:%S') if log.timestamp else 'Unknown' }}</td><td class="mono">{{ log.source_ip or '—' }}</td><td><strong>{{ (log.method ~ ' ' if log.method else '') ~ (log.endpoint or log.event_type or 'Log event') }}</strong><small>{{ (log.message or '')[:100] }}</small></td><td><span class="http-code code-{{ (log.status_code or 0) // 100 }}">{{ log.status_code or '—' }}</span></td><td>{{ (log.response_time|round(0)|int ~ ' ms') if log.response_time is not none else '—' }}</td><td>{% if risk %}<span class="severity {{ risk.severity|lower }}">{{ risk.severity }}</span><small>{{ risk.risk_category }}</small>{% else %}<span class="severity safe">Safe</span>{% endif %}</td></tr>
+{% else %}<tr><td colspan="6" class="table-empty">No records match the current filter.</td></tr>{% endfor %}
+</tbody></table></div>
+{% endblock %}
+

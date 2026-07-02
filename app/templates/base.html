@@ -1,0 +1,51 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}Intelligent Log Forensics{% endblock %}</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+  <script src="https://unpkg.com/lucide@0.468.0/dist/umd/lucide.min.js" defer></script>
+  {% block head %}{% endblock %}
+</head>
+<body class="{% if not current_user.is_authenticated %}auth-body{% endif %}">
+  {% if current_user.is_authenticated %}
+  <aside class="sidebar">
+    <a class="brand" href="{{ url_for('dashboard.index') }}">
+      <span class="brand-mark">LF</span>
+      <span><strong>Log Forensics</strong><small>Risk intelligence</small></span>
+    </a>
+    <nav>
+      <a href="{{ url_for('dashboard.index') }}" class="{{ 'active' if request.endpoint == 'dashboard.index' }}"><i data-lucide="layout-dashboard"></i>Overview</a>
+      <a href="{{ url_for('upload.upload') }}" class="{{ 'active' if request.endpoint == 'upload.upload' }}"><i data-lucide="file-up"></i>Analyze logs</a>
+      <a href="{{ url_for('upload.history') }}" class="{{ 'active' if request.endpoint == 'upload.history' }}"><i data-lucide="history"></i>Upload history</a>
+    </nav>
+    <div class="sidebar-footer">
+      <span class="avatar">{{ current_user.name[:1] }}</span>
+      <span class="user-meta"><strong>{{ current_user.name }}</strong><small>{{ current_user.role|title }}</small></span>
+      <a class="icon-button" href="{{ url_for('auth.logout') }}" title="Log out"><i data-lucide="log-out"></i></a>
+    </div>
+  </aside>
+  {% endif %}
+  <main class="{{ 'app-main' if current_user.is_authenticated else 'auth-main' }}">
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+      <div class="flash-stack">
+        {% for category, message in messages %}
+        <div class="flash {{ category }}">{{ message }}</div>
+        {% endfor %}
+      </div>
+      {% endif %}
+    {% endwith %}
+    {% block content %}{% endblock %}
+  </main>
+  <script>
+    document.addEventListener("DOMContentLoaded", () => window.lucide && lucide.createIcons());
+  </script>
+  {% block scripts %}{% endblock %}
+</body>
+</html>
+

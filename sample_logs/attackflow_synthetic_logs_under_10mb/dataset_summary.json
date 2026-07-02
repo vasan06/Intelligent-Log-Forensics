@@ -1,0 +1,67 @@
+{
+  "dataset_name": "AttackFlow-Lite Synthetic Multi-Source Logs",
+  "total_logs": 1351,
+  "formats_included": [
+    "json array",
+    "jsonl",
+    "log",
+    "csv"
+  ],
+  "sources": {
+    "api": 497,
+    "web": 273,
+    "auth": 171,
+    "system": 155,
+    "unknown": 25,
+    "frontend": 85,
+    "database": 80,
+    "network": 65
+  },
+  "risk_labels": {
+    "safe": 586,
+    "security_risk": 225,
+    "api_route_risk": 100,
+    "auth_risk": 107,
+    "performance_risk": 105,
+    "frontend_runtime_risk": 85,
+    "system_risk": 63,
+    "database_risk": 59,
+    "network_risk": 21
+  },
+  "event_types": {
+    "request": 520,
+    "failed_login": 80,
+    "login_success_after_failures": 1,
+    "endpoint_probe": 70,
+    "api_route_failure": 75,
+    "process_execution": 30,
+    "authentication_failure": 90,
+    "malformed_record": 25,
+    "slow_response": 105,
+    "runtime_error": 85,
+    "sudo_attempt": 14,
+    "cpu_spike": 17,
+    "nginx_reload": 18,
+    "disk_warning": 17,
+    "memory_pressure": 11,
+    "ssh_login_failed": 16,
+    "service_restart": 14,
+    "worker_retry": 18,
+    "connection_pool_wait": 18,
+    "slow_query": 17,
+    "index_miss": 11,
+    "deadlock_detected": 13,
+    "query_success": 21,
+    "firewall_event": 65
+  },
+  "mitre_techniques_included": [
+    "T1041",
+    "T1059",
+    "T1078",
+    "T1082",
+    "T1110",
+    "T1595"
+  ],
+  "intended_use": "Academic testing for log parsing, normalization, data quality scoring, ML risk classification, MITRE ATT&CK mapping, dashboard analytics, and forensic report generation.",
+  "note": "Synthetic dataset. Do not treat any IP/user/service as real company evidence."
+}

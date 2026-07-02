@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+{% block title %}Sign in | Log Forensics{% endblock %}
+{% block content %}
+<section class="login-shell">
+  <div class="login-brand">
+    <span class="brand-mark large">LF</span>
+    <div>
+      <h1>Intelligent Log Forensics</h1>
+      <p>Operational and security evidence, distilled.</p>
+    </div>
+  </div>
+  <form class="login-panel" method="post">
+    <div>
+      <span class="eyebrow">Analyst access</span>
+      <h2>Sign in</h2>
+    </div>
+    <label>Email address<input type="email" name="email" value="analyst@example.com" required autocomplete="email"></label>
+    <label>Password<input type="password" name="password" value="analyst123" required autocomplete="current-password"></label>
+    <label class="check-row"><input type="checkbox" name="remember"> Keep me signed in</label>
+    <button class="primary-button" type="submit">Sign in <i data-lucide="arrow-right"></i></button>
+    <p class="demo-note">Demo: analyst@example.com / analyst123</p>
+  </form>
+</section>
+{% endblock %}
+
