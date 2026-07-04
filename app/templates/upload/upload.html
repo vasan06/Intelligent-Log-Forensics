@@ -1,13 +1,13 @@
 {% extends "base.html" %}
 {% block title %}Analyze Logs | Log Forensics{% endblock %}
 {% block content %}
-<header class="page-header"><div><span class="eyebrow">Evidence intake</span><h1>Analyze log file</h1><p>Parse, normalize, score, correlate, and map application evidence.</p></div></header>
+<header class="page-header"><div><span class="eyebrow">Evidence intake</span><h1>Analyze log file</h1><p>Parse, normalize, score, correlate, and map application evidence.</p></div><div class="cyber-model packet-model small-model" data-parallax aria-hidden="true"><span></span><i></i><b><i data-lucide="file-search"></i></b></div></header>
 <form class="upload-workspace" method="post" enctype="multipart/form-data">
   <label class="drop-zone" id="dropZone">
     <input type="file" name="log_file" id="fileInput" accept=".csv,.json,.txt,.log" required>
     <span class="upload-icon"><i data-lucide="file-up"></i></span>
     <strong id="fileName">Drop a log file here</strong>
-    <span id="fileMeta">or click to browse · CSV, JSON, TXT, LOG · 10 MB max</span>
+    <span id="fileMeta">or click to browse · CSV, JSON, TXT, LOG · {{ max_upload_mb }} MB max</span>
   </label>
   <div class="pipeline-strip">
     <span><b>01</b> Parse</span><i data-lucide="chevron-right"></i>
@@ -20,4 +20,3 @@
 </form>
 {% endblock %}
 {% block scripts %}<script src="{{ url_for('static', filename='js/upload.js') }}"></script>{% endblock %}
-

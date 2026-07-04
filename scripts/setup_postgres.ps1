@@ -40,7 +40,7 @@ try {
         "DATABASE_URL=postgresql+psycopg2://${User}:${encodedPassword}@localhost:${Port}/${Database}"
         "UPLOAD_FOLDER=instance/uploads"
         "REPORT_FOLDER=instance/reports"
-        "MAX_CONTENT_LENGTH=10485760"
+        "MAX_CONTENT_LENGTH=104857600"
     )
     Set-Content -LiteralPath $envPath -Value $content -Encoding utf8
     Write-Host "Wrote PostgreSQL configuration to .env."

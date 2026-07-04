@@ -39,6 +39,21 @@ class ForensicsAppTest(unittest.TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertIn(b"Forensic overview", response.data)
 
+    def test_account_registration_and_attack_intelligence(self):
+        response = self.client.post(
+            "/auth/register",
+            data={"name": "New Analyst", "email": "new@example.com", "password": "StrongPass42"},
+            follow_redirects=True,
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertIn(b"Forensic overview", response.data)
+        guide = self.client.get("/attack-intelligence")
+        self.assertIn(b"Detection is a hypothesis", guide.data)
+        detail = self.client.get("/attack-intelligence/sql-injection")
+        self.assertEqual(detail.status_code, 200)
+        self.assertIn(b"How attackers implement it", detail.data)
+        self.assertIn(b"Defense by approach", detail.data)
+
     def test_full_upload_pipeline(self):
         self.login()
         csv_data = (
@@ -59,6 +74,8 @@ class ForensicsAppTest(unittest.TestCase):
         summary = self.client.get("/api/dashboard/summary").get_json()
         self.assertEqual(summary["total_logs"], 4)
         self.assertGreaterEqual(summary["risk_events"], 4)
+        sources = self.client.get("/api/dashboard/log-sources").get_json()
+        self.assertEqual(sources["Web / API"], 4)
         incidents = self.client.get("/api/incidents/1").get_json()
         self.assertGreaterEqual(len(incidents), 2)
 

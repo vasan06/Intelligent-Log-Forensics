@@ -72,6 +72,7 @@ class NormalizedLog(db.Model):
     endpoint = db.Column(db.String(500))
     status_code = db.Column(db.Integer)
     response_time = db.Column(db.Float)
+    log_source_type = db.Column(db.String(40), nullable=False, default="Application")
     event_type = db.Column(db.String(100))
     level = db.Column(db.String(30))
     message = db.Column(db.Text)
@@ -169,4 +170,3 @@ class Report(db.Model):
     report_path = db.Column(db.String(500), nullable=False)
     generated_at = db.Column(db.DateTime, nullable=False, default=utcnow)
     generated_by = db.Column(db.Integer, db.ForeignKey("users.id"), nullable=False)
-

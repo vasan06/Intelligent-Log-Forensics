@@ -34,5 +34,5 @@ class Config:
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     UPLOAD_FOLDER = runtime_path("UPLOAD_FOLDER", "instance/uploads")
     REPORT_FOLDER = runtime_path("REPORT_FOLDER", "instance/reports")
-    MAX_CONTENT_LENGTH = int(os.getenv("MAX_CONTENT_LENGTH", 10 * 1024 * 1024))
+    MAX_CONTENT_LENGTH = int(os.getenv("MAX_CONTENT_LENGTH", 100 * 1024 * 1024))
     ALLOWED_EXTENSIONS = {"csv", "json", "txt", "log"}

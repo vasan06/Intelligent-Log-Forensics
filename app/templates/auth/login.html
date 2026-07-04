@@ -3,13 +3,15 @@
 {% block content %}
 <section class="login-shell">
   <div class="login-brand">
-    <span class="brand-mark large">LF</span>
+    <div class="cyber-model threat-radar login-radar" data-parallax aria-hidden="true"><span class="scan"></span><i class="node n1"></i><i class="node n2"></i><i class="node n3"></i><b><i data-lucide="scan-search"></i></b></div>
     <div>
-      <h1>Intelligent Log Forensics</h1>
-      <p>Operational and security evidence, distilled.</p>
+      <span class="eyebrow">INTELLIGENT LOG FORENSICS</span>
+      <h1>Turn raw signals into decisive intelligence.</h1>
+      <p>Investigate faster. Correlate every trace. Defend with context.</p>
     </div>
   </div>
   <form class="login-panel" method="post">
+    <button class="theme-toggle icon-button login-theme" type="button" title="Toggle color theme" aria-label="Toggle color theme"><i data-lucide="sun"></i></button>
     <div>
       <span class="eyebrow">Analyst access</span>
       <h2>Sign in</h2>
@@ -18,8 +20,8 @@
     <label>Password<input type="password" name="password" value="analyst123" required autocomplete="current-password"></label>
     <label class="check-row"><input type="checkbox" name="remember"> Keep me signed in</label>
     <button class="primary-button" type="submit">Sign in <i data-lucide="arrow-right"></i></button>
+    <p class="auth-switch">New analyst? <a href="{{ url_for('auth.register') }}">Create an account</a></p>
     <p class="demo-note">Demo: analyst@example.com / analyst123</p>
   </form>
 </section>
 {% endblock %}
-

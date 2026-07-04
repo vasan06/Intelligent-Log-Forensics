@@ -44,6 +44,17 @@ def risk_distribution():
     return {category: count for category, count in rows}
 
 
+def log_source_distribution():
+    rows = (
+        db.session.query(NormalizedLog.log_source_type, func.count(NormalizedLog.id))
+        .filter(NormalizedLog.file_id.in_(accessible_file_ids()))
+        .group_by(NormalizedLog.log_source_type)
+        .order_by(func.count(NormalizedLog.id).desc())
+        .all()
+    )
+    return {source or "Unknown": count for source, count in rows}
+
+
 def mitre_stats():
     rows = (
         db.session.query(MitreMapping.tactic, func.count(MitreMapping.id))

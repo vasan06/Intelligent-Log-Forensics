@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+{% block title %}{{ attack.name }} | Intelligent Log Forensics{% endblock %}
+{% block content %}
+<header class="attack-detail-hero"><div><a class="back-link" href="{{ url_for('dashboard.attack_intelligence') }}"><i data-lucide="arrow-left"></i> Attack intelligence</a><span class="eyebrow">{{ attack.tactic }} · MITRE {{ attack.mitre }}</span><h1>{{ attack.name }}</h1><p>{{ attack.summary }}</p><div class="detail-meta"><span><b>Response priority</b>{{ attack.urgency }}</span><a href="{{ attack.reference }}" target="_blank" rel="noopener">Authoritative reference <i data-lucide="external-link"></i></a></div></div><div class="cyber-model packet-model" data-parallax aria-hidden="true"><span></span><i></i><b><i data-lucide="{{ attack.icon }}"></i></b></div></header>
+<div class="detail-layout"><main>
+<section class="detail-card"><span class="section-number">01</span><div><h2>What it is</h2><p>{{ attack.summary }}</p><h3>Evolution and context</h3><p>{{ attack.history }}</p></div></section>
+<section class="detail-card"><span class="section-number">02</span><div><h2>How attackers implement it</h2><ol class="attack-steps">{% for step in attack.workflow %}<li><span>{{ '%02d'|format(loop.index) }}</span><p>{{ step }}</p></li>{% endfor %}</ol></div></section>
+<section class="detail-card"><span class="section-number">03</span><div><h2>What analysts should look for</h2><ul class="signal-list">{% for signal in attack.signals %}<li><i data-lucide="scan-line"></i>{{ signal }}</li>{% endfor %}</ul></div></section>
+<section class="detail-card example-card"><span class="section-number">04</span><div><h2>Simple individual example</h2><p>{{ attack.example }}</p><small>Illustrative defensive scenario; no executable attack payload is provided.</small></div></section>
+<section class="detail-card"><span class="section-number">05</span><div><h2>Defense by approach</h2><div class="solution-grid">{% for approach, solution in attack.solutions.items() %}<article><span>{{ approach }}</span><p>{{ solution }}</p></article>{% endfor %}</div></div></section>
+</main><aside class="analyst-sidebar"><div class="sticky-card"><span class="eyebrow">Analyst decision path</span><h3>Validate before declaring impact</h3><ol><li>Preserve original evidence.</li><li>Confirm the indicator.</li><li>Determine whether execution succeeded.</li><li>Measure affected identities and assets.</li><li>Contain, eradicate, and verify recovery.</li></ol></div></aside></div>
+{% endblock %}

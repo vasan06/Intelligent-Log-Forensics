@@ -1,4 +1,4 @@
-const palette = ["#d85b3f", "#e0a33c", "#2f7f79", "#7b6ca8", "#3e73a8", "#a84e6d"];
+const palette = ["#16d9e7", "#8b6cff", "#ff5d73", "#f0b94b", "#3e8cff", "#49d49d"];
 const chartDefaults = {
   plugins: { legend: { display: false } },
   responsive: true,
@@ -24,9 +24,10 @@ function doughnut(canvas, data, emptyId) {
 }
 
 async function loadDashboard() {
-  const [summary, risks, mitre, trend, ips] = await Promise.all([
+  const [summary, risks, sources, mitre, trend, ips] = await Promise.all([
     getJSON("/api/dashboard/summary"),
     getJSON("/api/dashboard/risk-distribution"),
+    getJSON("/api/dashboard/log-sources"),
     getJSON("/api/dashboard/mitre-stats"),
     getJSON("/api/dashboard/error-trends"),
     getJSON("/api/dashboard/top-risky-ips")
@@ -36,10 +37,11 @@ async function loadDashboard() {
   document.getElementById("incidentCount").textContent = summary.incidents.toLocaleString();
   document.getElementById("averageRisk").textContent = summary.average_risk;
   doughnut(document.getElementById("riskChart"), risks, "riskEmpty");
+  doughnut(document.getElementById("sourceChart"), sources, "sourceEmpty");
   doughnut(document.getElementById("mitreChart"), mitre, "mitreEmpty");
   new Chart(document.getElementById("trendChart"), {
     type: "line",
-    data: { labels: trend.labels.map(value => value.slice(5)), datasets: [{ data: trend.values, borderColor: "#d85b3f", backgroundColor: "rgba(216,91,63,.1)", fill: true, tension: .35, pointRadius: 3 }] },
+    data: { labels: trend.labels.map(value => value.slice(5)), datasets: [{ data: trend.values, borderColor: "#16d9e7", backgroundColor: "rgba(22,217,231,.1)", fill: true, tension: .4, pointRadius: 3, pointBackgroundColor: "#8b6cff" }] },
     options: { ...chartDefaults, scales: { y: { beginAtZero: true, ticks: { precision: 0 } }, x: { grid: { display: false } } } }
   });
   const list = document.getElementById("riskyIps");
@@ -47,4 +49,3 @@ async function loadDashboard() {
 }
 
 loadDashboard().catch(console.error);
-

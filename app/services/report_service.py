@@ -44,16 +44,23 @@ def generate_report(upload, user_id):
             ),
         )
     )
-    story.extend([Spacer(1, 14), Paragraph("Risk Findings", styles["Heading2"])])
-    for risk in sorted(upload.risks, key=lambda item: item.risk_score, reverse=True):
+    prioritized = sorted(
+        (risk for risk in upload.risks if risk.risk_score >= 60),
+        key=lambda item: item.risk_score,
+        reverse=True,
+    )[:25]
+    story.extend([Spacer(1, 14), Paragraph("Immediate & High-Priority Findings", styles["Heading2"])])
+    story.append(Paragraph("This operational report intentionally includes only High and Critical findings (score 60+), limited to the top 25 by risk. Lower-priority evidence remains available in the application.", styles["BodyText"]))
+    story.append(Spacer(1, 8))
+    for risk in prioritized:
         mapping = risk.mitre_mapping
         detail = f"<b>{risk.severity} - {risk.risk_category} ({risk.risk_score:.0f})</b><br/>{risk.reason}"
         if mapping:
             detail += f"<br/>MITRE ATT&CK: {mapping.tactic} / {mapping.technique_id} {mapping.technique_name}"
         detail += f"<br/><i>Suggested action:</i> {risk.recommendation}"
         story.extend([Paragraph(detail, styles["BodyText"]), Spacer(1, 8)])
-    if not upload.risks:
-        story.append(Paragraph("No risk events were detected.", styles["BodyText"]))
+    if not prioritized:
+        story.append(Paragraph("No High or Critical risk events were detected.", styles["BodyText"]))
     doc.build(story)
 
     report = Report(

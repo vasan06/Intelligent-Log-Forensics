@@ -23,6 +23,12 @@ def risk_distribution():
     return jsonify(dashboard_service.risk_distribution())
 
 
+@api_bp.get("/dashboard/log-sources")
+@login_required
+def log_sources():
+    return jsonify(dashboard_service.log_source_distribution())
+
+
 @api_bp.get("/dashboard/mitre-stats")
 @login_required
 def mitre_stats():
@@ -82,6 +88,9 @@ def filter_logs():
     status = request.args.get("status", type=int)
     if status:
         query = query.filter_by(status_code=status)
+    source_type = request.args.get("source_type", "").strip()
+    if source_type:
+        query = query.filter_by(log_source_type=source_type)
     return jsonify(
         [
             {
@@ -91,6 +100,7 @@ def filter_logs():
                 "endpoint": log.endpoint,
                 "status_code": log.status_code,
                 "response_time": log.response_time,
+                "log_source_type": log.log_source_type,
                 "message": log.message,
             }
             for log in query.limit(500).all()

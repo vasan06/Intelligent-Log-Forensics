@@ -31,6 +31,7 @@ def normalize_record(record):
     normalized["raw_log"] = str(
         record.get("raw_log") or json.dumps(record, default=str, ensure_ascii=True)
     )
+    normalized["log_source_type"] = classify_log_source(lowered, normalized)
     normalized["is_valid"] = bool(
         normalized["timestamp"]
         or normalized["message"]
@@ -38,6 +39,25 @@ def normalize_record(record):
         or normalized["event_type"]
     )
     return normalized
+
+
+def classify_log_source(source, normalized):
+    """Classify heterogeneous records conservatively for dashboard pivots."""
+    raw = normalized["raw_log"].lower()
+    provider = " ".join(str(source.get(key, "")) for key in ("provider", "channel", "facility", "source", "program" )).lower()
+    if any(token in raw + provider for token in ("eventid", "event_id", "microsoft-windows", "security-auditing")):
+        return "Windows Security"
+    if normalized.get("method") or normalized.get("endpoint") or any(token in raw for token in ("http/1.", "http/2", "user-agent", "request_uri")):
+        return "Web / API"
+    if any(token in raw + provider for token in ("firewall", "iptables", "ufw", "deny", "srcport", "dstport")):
+        return "Firewall"
+    if any(token in raw + provider for token in ("switch", "router", "interface", "vlan", "snmp", "link down")):
+        return "Network Device"
+    if any(token in raw for token in ("kernel:", "sshd[", "sudo:", "systemd[", "facility=")):
+        return "Syslog"
+    if any(token in raw + provider for token in ("database", "postgres", "mysql", "oracle", "sqlserver")):
+        return "Database"
+    return "Application"
 
 
 def _first(record, aliases):
@@ -88,4 +108,3 @@ def _response_ms(value):
         return number * 1000 if text.endswith("s") and not text.endswith("ms") else number
     except ValueError:
         return None
-
