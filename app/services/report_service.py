@@ -7,8 +7,7 @@ from reportlab.lib.styles import getSampleStyleSheet
 from reportlab.lib.units import mm
 from reportlab.platypus import Paragraph, SimpleDocTemplate, Spacer, Table, TableStyle
 
-from app.extensions import db
-from app.models import Report
+from app.repositories import report_repository
 
 
 def generate_report(upload, user_id):
@@ -63,15 +62,7 @@ def generate_report(upload, user_id):
         story.append(Paragraph("No High or Critical risk events were detected.", styles["BodyText"]))
     doc.build(story)
 
-    report = Report(
-        file_id=upload.id,
-        report_name=report_name,
-        report_path=str(path),
-        generated_by=user_id,
-    )
-    db.session.add(report)
-    db.session.commit()
-    return report
+    return report_repository.create(upload.id, report_name, str(path), user_id)
 
 
 def resolve_report_path(report_path):

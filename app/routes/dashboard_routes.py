@@ -1,8 +1,6 @@
 from flask import Blueprint, abort, redirect, render_template, url_for
 from flask_login import login_required
 
-from app.models import UploadedFile
-from app.services.dashboard_service import accessible_file_ids
 from app.knowledge_base.attack_catalog import ATTACKS
 
 
@@ -17,13 +15,7 @@ def root():
 @dashboard_bp.get("/dashboard")
 @login_required
 def index():
-    uploads = (
-        UploadedFile.query.filter(UploadedFile.id.in_(accessible_file_ids()))
-        .order_by(UploadedFile.upload_time.desc())
-        .limit(6)
-        .all()
-    )
-    return render_template("dashboard/dashboard.html", uploads=uploads)
+    return render_template("dashboard/dashboard.html")
 
 
 @dashboard_bp.get("/attack-intelligence")

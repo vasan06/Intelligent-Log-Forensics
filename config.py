@@ -9,16 +9,11 @@ load_dotenv(BASE_DIR / ".env")
 
 
 def database_url():
-    url = os.getenv(
-        "DATABASE_URL",
-        "postgresql+psycopg2://postgres:postgres@localhost:5432/intelligent_log_forensics",
-    )
+    url = os.environ["DATABASE_URL"]
     # Some hosting providers still expose the deprecated postgres:// scheme.
     if url.startswith("postgres://"):
-        return url.replace("postgres://", "postgresql+psycopg2://", 1)
-    if url.startswith("postgresql://"):
-        return url.replace("postgresql://", "postgresql+psycopg2://", 1)
-    return url
+        return url.replace("postgres://", "postgresql://", 1)
+    return url.replace("postgresql+psycopg2://", "postgresql://", 1)
 
 
 def runtime_path(environment_name, default_relative_path):
@@ -29,10 +24,24 @@ def runtime_path(environment_name, default_relative_path):
 
 
 class Config:
-    SECRET_KEY = os.getenv("SECRET_KEY", "development-secret-change-me")
-    SQLALCHEMY_DATABASE_URI = database_url()
-    SQLALCHEMY_TRACK_MODIFICATIONS = False
+    SECRET_KEY = os.environ["SECRET_KEY"]
+    DATABASE_URL = database_url()
     UPLOAD_FOLDER = runtime_path("UPLOAD_FOLDER", "instance/uploads")
     REPORT_FOLDER = runtime_path("REPORT_FOLDER", "instance/reports")
+    MODEL_FOLDER = runtime_path("MODEL_FOLDER", "instance/models")
+    MODEL_PATH = runtime_path("MODEL_PATH", "instance/models/anomaly_ensemble.joblib")
     MAX_CONTENT_LENGTH = int(os.getenv("MAX_CONTENT_LENGTH", 100 * 1024 * 1024))
+    UPLOAD_RETENTION_HOURS = int(os.getenv("UPLOAD_RETENTION_HOURS", 24))
+    GENERATOR_INTERVAL_SECONDS = float(os.getenv("GENERATOR_INTERVAL_SECONDS", 1.0))
+    GENERATOR_BATCH_SIZE = int(os.getenv("GENERATOR_BATCH_SIZE", 10))
     ALLOWED_EXTENSIONS = {"csv", "json", "txt", "log"}
+    JWT_SECRET_KEY = os.environ.get("JWT_SECRET_KEY", SECRET_KEY)
+    JWT_TOKEN_LOCATION = ["cookies"]
+    JWT_COOKIE_HTTPONLY = True
+    JWT_COOKIE_SECURE = os.getenv("COOKIE_SECURE", "false").lower() == "true"
+    JWT_COOKIE_SAMESITE = "Lax"
+    JWT_COOKIE_CSRF_PROTECT = True
+    JWT_ACCESS_TOKEN_EXPIRES = int(os.getenv("JWT_ACCESS_TOKEN_EXPIRES", 900))
+    JWT_REFRESH_TOKEN_EXPIRES = int(os.getenv("JWT_REFRESH_TOKEN_EXPIRES", 604800))
+    RATELIMIT_STORAGE_URI = os.getenv("RATELIMIT_STORAGE_URI", "memory://")
+    APP_ORIGIN = os.getenv("APP_ORIGIN", "http://localhost:5000")

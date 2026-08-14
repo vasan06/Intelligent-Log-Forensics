@@ -1,12 +1,16 @@
 __pycache__/
 *.py[cod]
 .env
+.env.*
+!.env.example
 .venv/
 venv/
 forensics.db
 instance/uploads/*
 instance/reports/*
+instance/models/*
+instance/generated/*
 !instance/uploads/.gitkeep
 !instance/reports/.gitkeep
+!instance/models/.gitkeep
 .pytest_cache/
-

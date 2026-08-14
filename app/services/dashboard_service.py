@@ -1,101 +1,57 @@
-from collections import Counter
-from datetime import datetime, timedelta, timezone
+from datetime import timedelta
 
 from flask_login import current_user
-from sqlalchemy import func
 
-from app.extensions import db
-from app.models import Incident, MitreMapping, NormalizedLog, RiskEvent, UploadedFile
+from app.repositories.database import fetch_all, fetch_one
 
 
-def accessible_file_ids():
-    query = db.session.query(UploadedFile.id)
-    if current_user.role != "admin":
-        query = query.filter(UploadedFile.user_id == current_user.id)
-    return query
+def _scope(alias=""):
+    prefix = f"{alias}." if alias else ""
+    if current_user.role == "admin":
+        return "", ()
+    return f" WHERE {prefix}file_id IN (SELECT id FROM uploaded_files WHERE user_id=%s)", (current_user.id,)
 
 
 def summary():
-    file_ids = accessible_file_ids()
-    total_logs = NormalizedLog.query.filter(NormalizedLog.file_id.in_(file_ids)).count()
-    risk_count = RiskEvent.query.filter(RiskEvent.file_id.in_(file_ids)).count()
-    incident_count = Incident.query.filter(Incident.file_id.in_(file_ids)).count()
-    avg_risk = (
-        db.session.query(func.avg(RiskEvent.risk_score))
-        .filter(RiskEvent.file_id.in_(file_ids))
-        .scalar()
-        or 0
-    )
-    return {
-        "total_logs": total_logs,
-        "risk_events": risk_count,
-        "incidents": incident_count,
-        "average_risk": round(float(avg_risk), 1),
-    }
+    where, params = _scope()
+    logs = fetch_one(f"SELECT COUNT(*) AS count FROM normalized_logs{where}", params)["count"]
+    risks = fetch_one(f"SELECT COUNT(*) AS count, COALESCE(AVG(risk_score),0) AS average FROM risk_events{where}", params)
+    incidents = fetch_one(f"SELECT COUNT(*) AS count FROM incidents{where}", params)["count"]
+    return {"total_logs": logs, "risk_events": risks["count"], "incidents": incidents, "average_risk": round(float(risks["average"]), 1)}
 
 
-def risk_distribution():
-    rows = (
-        db.session.query(RiskEvent.risk_category, func.count(RiskEvent.id))
-        .filter(RiskEvent.file_id.in_(accessible_file_ids()))
-        .group_by(RiskEvent.risk_category)
-        .all()
-    )
-    return {category: count for category, count in rows}
+def _distribution(table, column):
+    where, params = _scope()
+    rows = fetch_all(f"SELECT {column} AS label, COUNT(*) AS count FROM {table}{where} GROUP BY {column}", params)
+    return {row["label"] or "Unknown": row["count"] for row in rows}
 
 
-def log_source_distribution():
-    rows = (
-        db.session.query(NormalizedLog.log_source_type, func.count(NormalizedLog.id))
-        .filter(NormalizedLog.file_id.in_(accessible_file_ids()))
-        .group_by(NormalizedLog.log_source_type)
-        .order_by(func.count(NormalizedLog.id).desc())
-        .all()
-    )
-    return {source or "Unknown": count for source, count in rows}
+def risk_distribution(): return _distribution("risk_events", "risk_category")
+def log_source_distribution(): return _distribution("normalized_logs", "log_source_type")
 
 
 def mitre_stats():
-    rows = (
-        db.session.query(MitreMapping.tactic, func.count(MitreMapping.id))
-        .join(RiskEvent)
-        .filter(RiskEvent.file_id.in_(accessible_file_ids()))
-        .group_by(MitreMapping.tactic)
-        .all()
-    )
-    return {tactic: count for tactic, count in rows}
+    where, params = _scope("r")
+    rows = fetch_all(f"SELECT m.tactic AS label,COUNT(*) AS count FROM mitre_mappings m JOIN risk_events r ON r.id=m.risk_event_id{where} GROUP BY m.tactic", params)
+    return {row["label"]: row["count"] for row in rows}
 
 
 def top_risky_ips():
-    rows = (
-        db.session.query(
-            NormalizedLog.source_ip,
-            func.count(RiskEvent.id),
-            func.avg(RiskEvent.risk_score),
-        )
-        .join(RiskEvent, RiskEvent.log_id == NormalizedLog.id)
-        .filter(RiskEvent.file_id.in_(accessible_file_ids()))
-        .filter(NormalizedLog.source_ip.isnot(None))
-        .group_by(NormalizedLog.source_ip)
-        .order_by(func.avg(RiskEvent.risk_score).desc())
-        .limit(8)
-        .all()
-    )
-    return [
-        {"ip": ip, "events": count, "score": round(float(score), 1)}
-        for ip, count, score in rows
-    ]
+    where, params = _scope("r")
+    rows = fetch_all(f"""SELECT l.source_ip AS ip,COUNT(r.id) AS events,AVG(r.risk_score) AS score
+        FROM normalized_logs l JOIN risk_events r ON r.log_id=l.id{where}
+        {'AND' if where else 'WHERE'} l.source_ip IS NOT NULL GROUP BY l.source_ip ORDER BY score DESC LIMIT 8""", params)
+    return [{"ip": row["ip"], "events": row["events"], "score": round(float(row["score"]), 1)} for row in rows]
 
 
 def error_trends():
-    now = datetime.now(timezone.utc).replace(tzinfo=None)
-    cutoff = now - timedelta(days=6)
-    rows = (
-        NormalizedLog.query.filter(NormalizedLog.file_id.in_(accessible_file_ids()))
-        .filter(NormalizedLog.timestamp >= cutoff)
-        .filter(NormalizedLog.status_code >= 400)
-        .all()
-    )
-    counts = Counter(log.timestamp.strftime("%Y-%m-%d") for log in rows if log.timestamp)
-    labels = [(now - timedelta(days=offset)).strftime("%Y-%m-%d") for offset in range(6, -1, -1)]
-    return {"labels": labels, "values": [counts[label] for label in labels]}
+    where, params = _scope()
+    latest = fetch_one(f"SELECT MAX(timestamp) AS latest FROM normalized_logs{where}", params)["latest"]
+    if not latest:
+        return {"labels": [], "values": []}
+    start = latest - timedelta(days=6)
+    connector = " AND " if where else " WHERE "
+    rows = fetch_all(f"SELECT DATE(timestamp) AS day,COUNT(*) AS count FROM normalized_logs{where}{connector}timestamp >= %s AND status_code >= 400 GROUP BY DATE(timestamp)", (*params, start))
+    counts = {row["day"].isoformat(): row["count"] for row in rows}
+    labels = [(latest.date() - timedelta(days=offset)).isoformat() for offset in range(6, -1, -1)]
+    return {"labels": labels, "values": [counts.get(label, 0) for label in labels]}

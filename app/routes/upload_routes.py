@@ -1,8 +1,6 @@
 from flask import Blueprint, flash, redirect, render_template, request, url_for
 from flask_login import current_user, login_required
 
-from app.models import UploadedFile
-from app.services.dashboard_service import accessible_file_ids
 from app.services.upload_service import save_and_process
 from app.utils.file_validator import validate_upload
 
@@ -21,7 +19,7 @@ def upload():
         else:
             try:
                 uploaded = save_and_process(file_storage, current_user.id)
-                flash(f"{uploaded.file_name} analyzed successfully.", "success")
+                flash("Log evidence analyzed successfully.", "success")
                 return redirect(url_for("logs.view", file_id=uploaded.id))
             except Exception as exc:
                 flash(f"Analysis failed: {exc}", "danger")
@@ -31,10 +29,4 @@ def upload():
 @upload_bp.get("/history")
 @login_required
 def history():
-    uploads = (
-        UploadedFile.query.filter(UploadedFile.id.in_(accessible_file_ids()))
-        .order_by(UploadedFile.upload_time.desc())
-        .all()
-    )
-    return render_template("upload/history.html", uploads=uploads)
-
+    return render_template("upload/history.html")

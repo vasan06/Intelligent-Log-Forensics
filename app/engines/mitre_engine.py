@@ -1,4 +1,7 @@
 MAPPINGS = {
+    "Authentication Risk - Brute Force / Credential Stuffing": {
+        "tactic": "Credential Access", "technique_id": "T1110", "technique_name": "Brute Force", "confidence_score": 0.88,
+    },
     "Authentication Risk — Brute Force / Credential Stuffing": {
         "tactic": "Credential Access",
         "technique_id": "T1110",

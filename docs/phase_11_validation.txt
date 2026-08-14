@@ -1,0 +1,14 @@
+PHASE 11 - VISUAL DESIGN PASS VALIDATION
+
+Status: PASSED on 2026-08-09.
+
+Features and logic
+- Colors, font families, type scale, spacing, radii, transitions, and shadows live in one token file.
+- Light/dark theme overrides modify semantic tokens rather than component rules.
+- No Python, route, repository, migration, or service behavior changes belong to this phase.
+
+Validation and cross-checking
+- Token file is linked before component CSS and contains semantic color/type/space/radius/shadow sets.
+- Component CSS no longer declares either light or dark global root; theme values have one source.
+- Core components consume the font, radius, shadow, and transition tokens.
+- Two focused static tests and Python compilation passed; no backend file changed in this phase.

@@ -2,45 +2,10 @@
 {% block title %}Overview | Log Forensics{% endblock %}
 {% block head %}<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>{% endblock %}
 {% block content %}
-<header class="page-header cyber-hero">
-  <div><span class="eyebrow">Intelligence workspace</span><h1>Forensic overview</h1><p>Current operational health and security posture across analyzed logs.</p></div>
-  <div class="cyber-model threat-radar" data-parallax aria-hidden="true"><span class="scan"></span><i class="node n1"></i><i class="node n2"></i><i class="node n3"></i><b><i data-lucide="radar"></i></b></div>
-  <a class="primary-button" href="{{ url_for('upload.upload') }}"><i data-lucide="file-up"></i> Analyze logs</a>
-</header>
-<section class="metric-grid">
-  <article class="metric clickable-card" data-card-target="{{ url_for('upload.history') }}"><span>Logs analyzed</span><strong id="totalLogs">0</strong><small>Open investigations ↗</small></article>
-  <article class="metric clickable-card" data-card-target="{{ url_for('dashboard.attack_intelligence') }}"><span>Risk events</span><strong id="riskEvents">0</strong><small>Open attack intelligence ↗</small></article>
-  <article class="metric clickable-card" data-card-target="{{ url_for('upload.history') }}"><span>Incidents</span><strong id="incidentCount">0</strong><small>Open correlated evidence ↗</small></article>
-  <article class="metric accent clickable-card" data-card-target="{{ url_for('dashboard.attack_intelligence') }}"><span>Average risk</span><strong id="averageRisk">0</strong><small>Review response guidance ↗</small></article>
-</section>
-<section class="dashboard-grid">
-  <article class="panel chart-panel clickable-card" data-card-target="{{ url_for('dashboard.attack_intelligence') }}">
-    <div class="panel-heading"><div><span class="eyebrow">Classification</span><h2>Risk distribution</h2></div></div>
-    <div class="chart-wrap"><canvas id="riskChart"></canvas><div class="empty-chart" id="riskEmpty">No risk data yet</div></div>
-  </article>
-  <article class="panel chart-panel clickable-card" data-card-target="{{ url_for('upload.history') }}">
-    <div class="panel-heading"><div><span class="eyebrow">Evidence pivot</span><h2>Log source types</h2></div></div>
-    <div class="chart-wrap"><canvas id="sourceChart"></canvas><div class="empty-chart" id="sourceEmpty">No source data yet</div></div>
-  </article>
-  <article class="panel wide clickable-card" data-card-target="{{ url_for('upload.history') }}">
-    <div class="panel-heading"><div><span class="eyebrow">Seven-day signal</span><h2>Error trend</h2></div></div>
-    <div class="line-chart-wrap"><canvas id="trendChart"></canvas></div>
-  </article>
-  <article class="panel clickable-card" data-card-target="{{ url_for('upload.history') }}">
-    <div class="panel-heading"><div><span class="eyebrow">Source intelligence</span><h2>Top risky IPs</h2></div></div>
-    <div id="riskyIps" class="rank-list"><p class="empty-copy">No risky sources detected.</p></div>
-  </article>
-  <article class="panel wide chart-panel clickable-card" data-card-target="{{ url_for('dashboard.attack_intelligence') }}"><div class="panel-heading"><div><span class="eyebrow">MITRE ATT&CK</span><h2>Tactic coverage</h2></div></div><div class="chart-wrap compact-chart"><canvas id="mitreChart"></canvas><div class="empty-chart" id="mitreEmpty">No mapped tactics yet</div></div></article>
-</section>
-<section class="table-section">
-  <div class="section-heading"><div><span class="eyebrow">Recent activity</span><h2>Analysis history</h2></div><a href="{{ url_for('upload.history') }}">View all</a></div>
-  {% if uploads %}
-  <div class="table-shell"><table><thead><tr><th>File</th><th>Status</th><th>Records</th><th>Uploaded</th><th></th></tr></thead><tbody>
-  {% for upload in uploads %}<tr><td><strong>{{ upload.file_name }}</strong><small>{{ upload.file_type|upper }} · {{ (upload.file_size / 1024)|round(1) }} KB</small></td><td><span class="status {{ upload.processing_status }}">{{ upload.processing_status|title }}</span></td><td>{{ upload.total_records }}</td><td>{{ upload.upload_time.strftime('%d %b %Y, %H:%M') }}</td><td><a class="icon-button" href="{{ url_for('logs.view', file_id=upload.id) }}" title="Open analysis"><i data-lucide="arrow-up-right"></i></a></td></tr>{% endfor %}
-  </tbody></table></div>
-  {% else %}
-  <div class="empty-state"><i data-lucide="scan-search"></i><h3>No evidence analyzed yet</h3><p>Upload a CSV, JSON, TXT, or LOG file to begin.</p><a class="secondary-button" href="{{ url_for('upload.upload') }}">Choose a log file</a></div>
-  {% endif %}
-</section>
+<header class="page-header cyber-hero"><div><span class="eyebrow">Intelligence workspace</span><h1>Forensic overview</h1><p>Current operational health and security posture across analyzed logs.</p></div><div class="cyber-model threat-radar" data-parallax aria-hidden="true"><span class="scan"></span><i class="node n1"></i><i class="node n2"></i><i class="node n3"></i><b><i data-lucide="radar"></i></b></div><a class="primary-button" href="{{ url_for('upload.upload') }}"><i data-lucide="file-up"></i> Analyze logs</a></header>
+<section class="metric-grid"><article class="metric"><span>Logs analyzed</span><strong id="totalLogs">0</strong></article><article class="metric"><span>Risk events</span><strong id="riskEvents">0</strong></article><article class="metric"><span>Incidents</span><strong id="incidentCount">0</strong></article><article class="metric accent"><span>Average risk</span><strong id="averageRisk">0</strong></article></section>
+<section class="dashboard-grid"><article class="panel chart-panel"><div class="panel-heading"><div><span class="eyebrow">Classification</span><h2>Risk distribution</h2></div></div><div class="chart-wrap"><canvas id="riskChart"></canvas><div class="empty-chart" id="riskEmpty">No risk data yet</div></div></article><article class="panel chart-panel"><div class="panel-heading"><div><span class="eyebrow">Evidence pivot</span><h2>Log source types</h2></div></div><div class="chart-wrap"><canvas id="sourceChart"></canvas><div class="empty-chart" id="sourceEmpty">No source data yet</div></div></article><article class="panel wide"><div class="panel-heading"><div><span class="eyebrow">Seven-day signal</span><h2>Error trend</h2></div></div><div class="line-chart-wrap"><canvas id="trendChart"></canvas></div></article><article class="panel"><div class="panel-heading"><div><span class="eyebrow">Source intelligence</span><h2>Top risky IPs</h2></div></div><div id="riskyIps" class="rank-list"><p class="empty-copy">No risky sources detected.</p></div></article><article class="panel wide chart-panel"><div class="panel-heading"><div><span class="eyebrow">MITRE ATT&CK</span><h2>Tactic coverage</h2></div></div><div class="chart-wrap compact-chart"><canvas id="mitreChart"></canvas><div class="empty-chart" id="mitreEmpty">No mapped tactics yet</div></div></article></section>
+<section class="table-section"><div class="section-heading"><div><span class="eyebrow">Recent activity</span><h2>Analysis history</h2></div><a href="{{ url_for('upload.history') }}">View all</a></div><div class="table-shell"><table><thead><tr><th>File</th><th>Status</th><th>Records</th><th>Uploaded</th><th></th></tr></thead><tbody id="recentUploads"><tr><td colspan="5" class="table-empty">Loading evidence...</td></tr></tbody></table></div></section>
+<section class="table-section"><div class="section-heading"><div><span class="eyebrow">Live stream</span><h2>New risk events</h2></div></div><div id="liveIncidentFeed" class="rank-list"><p class="empty-copy">Waiting for committed events...</p></div></section>
 {% endblock %}
 {% block scripts %}<script src="{{ url_for('static', filename='js/dashboard.js') }}"></script>{% endblock %}
