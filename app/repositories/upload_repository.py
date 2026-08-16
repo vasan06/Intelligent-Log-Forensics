@@ -3,10 +3,16 @@ from app.repositories.database import execute, fetch_all, fetch_one
 
 
 def create(user_id, file_name, stored_name, file_type, file_size, content_hash=None):
+    """Insert a new evidence record.
+
+    ``upload_time`` and ``processing_status`` are set explicitly (not left to
+    column defaults) so the insert works even when the database table was
+    created without defaults on those NOT NULL columns.
+    """
     return Entity(execute(
         """INSERT INTO uploaded_files
-           (user_id,file_name,stored_name,file_type,file_size,content_hash)
-           VALUES (%s,%s,%s,%s,%s,%s) RETURNING *""",
+           (user_id,file_name,stored_name,file_type,file_size,content_hash,upload_time,processing_status)
+           VALUES (%s,%s,%s,%s,%s,%s,CURRENT_TIMESTAMP,'uploaded') RETURNING *""",
         (user_id, file_name, stored_name, file_type, file_size, content_hash),
     ))
 

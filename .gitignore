@@ -14,3 +14,22 @@ instance/generated/*
 !instance/reports/.gitkeep
 !instance/models/.gitkeep
 .pytest_cache/
+
+# Development phase documentation (removed from the repo; kept ignored)
+docs/phase_*_validation.txt
+docs/dynamism_audit.md
+docs/final_completion_audit.txt
+docs/artifacts/
+
+# Frontend (React/Vite)
+frontend/node_modules/
+frontend/dist/
+app/static/spa/
+
+# Runtime artifacts
+instance/flask.*.log
+*.tmp
+
+# Local tooling
+.vscode/
+.idea/

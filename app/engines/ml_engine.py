@@ -12,7 +12,7 @@ from app.engines.feature_engine import matrix
 from app.knowledge_base.taxonomy import entry
 
 
-MODEL_VERSION = "ensemble-v1"
+MODEL_VERSION = "ensemble-v2"
 
 
 def _models(contamination=0.25):

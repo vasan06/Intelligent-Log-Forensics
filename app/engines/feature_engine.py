@@ -1,5 +1,7 @@
 from collections import Counter, defaultdict
 
+from app.services.log_generator import SOURCES
+
 
 FEATURE_NAMES = (
     "failed_login_count",
@@ -10,22 +12,60 @@ FEATURE_NAMES = (
     "request_rate",
     "user_id",
     "ip_frequency",
+    "error_level",
+    "attack_payload",
+    "source_type",
 )
+
+_SOURCE_INDEX = {source: index for index, source in enumerate(SOURCES)}
+_DISPLAY_TO_SOURCE = {
+    "web / api": "web",
+    "syslog": "system",
+    "cloudtrail": "cloud",
+    "application": "app",
+    "firewall": "network",
+    "network device": "network",
+    "windows security": "system",
+    "database": "app",
+}
+_ATTACK_TOKENS = ("union select", "script", "../", "or 1=1", "password from users", "path traversal")
+_FAILURE_MARKERS = ("failed", "denied", "invalid password", "bad credentials", "accessdenied", "dropped", "rejected", "unable to")
+
+
+def _source_index(record):
+    source = str(record.get("log_source_type") or "").strip().lower()
+    source = _DISPLAY_TO_SOURCE.get(source, source)
+    if source in _SOURCE_INDEX:
+        return _SOURCE_INDEX[source]
+    return len(_SOURCE_INDEX)
+
+
+def _failure_hint(record):
+    status = record.get("status_code")
+    if status in (401, 403):
+        return True
+    level = str(record.get("level") or "").upper()
+    message = str(record.get("message") or "").lower()
+    return (level in ("WARN", "ERROR", "CRITICAL", "FATAL")
+            and any(marker in message for marker in _FAILURE_MARKERS))
+
+
+def _attack_hint(record):
+    return any(token in str(record.get("endpoint") or "").lower()
+               or token in str(record.get("message") or "").lower()
+               or token in str(record.get("sql_payload") or "").lower()
+               for token in _ATTACK_TOKENS)
 
 
 def extract_feature_rows(records):
     """Return one numeric runtime-compatible feature vector per normalized log."""
     endpoint_counts = Counter(str(row.get("endpoint") or "") for row in records)
     ip_counts = Counter(str(row.get("source_ip") or "") for row in records)
-    failures = Counter(
-        str(row.get("source_ip") or "")
-        for row in records
-        if row.get("status_code") in (401, 403)
-    )
+    failures = Counter(str(row.get("source_ip") or "") for row in records if _failure_hint(row))
     errors = Counter(
         str(row.get("source_ip") or "")
         for row in records
-        if (row.get("status_code") or 0) >= 400
+        if (row.get("status_code") or 0) >= 400 or str(row.get("level") or "").upper() in ("ERROR", "CRITICAL", "FATAL")
     )
     by_second = defaultdict(int)
     for row in records:
@@ -53,6 +93,9 @@ def extract_feature_rows(records):
                 "request_rate": by_second[second],
                 "user_id": user_ids[user],
                 "ip_frequency": ip_counts[ip],
+                "error_level": int(str(row.get("level") or "").upper() in ("ERROR", "CRITICAL", "FATAL")),
+                "attack_payload": int(_attack_hint(row)),
+                "source_type": _source_index(row),
             }
         )
     return vectors
@@ -70,6 +113,7 @@ def rule_baseline_predictions(feature_rows):
         or row["status_code"] >= 500
         or row["response_time"] >= 1000
         or row["request_rate"] >= 100
+        or row["attack_payload"] == 1
     ) for row in feature_rows]
 
 

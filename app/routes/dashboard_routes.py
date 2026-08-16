@@ -1,7 +1,7 @@
-from flask import Blueprint, abort, redirect, render_template, url_for
-from flask_login import login_required
+from flask import Blueprint, abort, redirect, url_for
 
 from app.knowledge_base.attack_catalog import ATTACKS
+from app.utils.spa import render_spa
 
 
 dashboard_bp = Blueprint("dashboard", __name__)
@@ -13,27 +13,38 @@ def root():
 
 
 @dashboard_bp.get("/dashboard")
-@login_required
 def index():
-    return render_template("dashboard/dashboard.html")
+    return render_spa()
 
 
 @dashboard_bp.get("/attack-intelligence")
-@login_required
 def attack_intelligence():
-    return render_template("dashboard/attack_intelligence.html", attacks=ATTACKS)
+    return render_spa()
 
 
 @dashboard_bp.get("/attack-intelligence/<slug>")
-@login_required
 def attack_detail(slug):
     attack = ATTACKS.get(slug)
     if not attack:
         abort(404)
-    return render_template("dashboard/attack_detail.html", attack=attack, slug=slug)
+    return render_spa()
+
+
+@dashboard_bp.get("/login")
+def spa_login():
+    return render_spa()
+
+
+@dashboard_bp.get("/register")
+def spa_register():
+    return render_spa()
+
+
+@dashboard_bp.get("/admin")
+def admin():
+    return render_spa()
 
 
 @dashboard_bp.get("/admin/dashboard")
-@login_required
-def admin():
-    return redirect(url_for("dashboard.index"))
+def legacy_admin_redirect():
+    return redirect(url_for("dashboard.admin"))

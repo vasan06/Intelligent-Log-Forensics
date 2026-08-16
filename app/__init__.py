@@ -1,10 +1,12 @@
 from pathlib import Path
+from urllib.parse import urlparse
 
-from flask import Flask, abort, flash, redirect, request, url_for
-from werkzeug.exceptions import RequestEntityTooLarge
+from flask import Flask, abort, flash, jsonify, redirect, request, url_for
+from werkzeug.exceptions import HTTPException, RequestEntityTooLarge
 
 from config import Config
-from .extensions import jwt, limiter, login_manager
+from .extensions import jwt, limiter
+from .utils.spa import render_spa, serve_spa_asset
 
 
 def create_app(config_object=Config):
@@ -15,11 +17,8 @@ def create_app(config_object=Config):
     Path(app.config["REPORT_FOLDER"]).mkdir(parents=True, exist_ok=True)
     Path(app.config["MODEL_FOLDER"]).mkdir(parents=True, exist_ok=True)
 
-    login_manager.init_app(app)
     jwt.init_app(app)
     limiter.init_app(app)
-    login_manager.login_view = "auth.login"
-    login_manager.login_message_category = "warning"
 
     from .routes.auth_routes import auth_bp
     from .routes.dashboard_routes import dashboard_bp
@@ -45,8 +44,22 @@ def create_app(config_object=Config):
     @app.before_request
     def enforce_same_origin_api():
         origin = request.headers.get("Origin")
-        if request.path.startswith("/api/") and origin and origin != app.config["APP_ORIGIN"]:
+        if not request.path.startswith("/api/") or not origin:
+            return
+        allowed = {app.config["APP_ORIGIN"], app.config.get("FRONTEND_ORIGIN") or ""}
+        allowed.discard("")
+        if origin in allowed:
+            return
+        if origin == "null":
             abort(403)
+        try:
+            origin_host = urlparse(origin).hostname
+        except ValueError:
+            origin_host = None
+        request_host = request.host.split(":")[0]
+        if origin_host and origin_host == request_host:
+            return
+        abort(403)
 
     @app.after_request
     def same_origin_headers(response):
@@ -56,15 +69,42 @@ def create_app(config_object=Config):
             response.headers["Vary"] = "Origin"
         return response
 
-    @login_manager.user_loader
-    def load_user(user_id):
+    @jwt.user_lookup_loader
+    def load_user(_jwt_header, jwt_data):
         from .repositories.user_repository import get
-        return get(int(user_id))
+        return get(int(jwt_data["sub"]))
+
+    def _jwt_error_response(message):
+        """API calls get JSON 401; browser navigation gets redirected to the SPA."""
+        if request.path.startswith(("/api/", "/reports/")):
+            return jsonify({"error": message}), 401
+        next_url = request.path if request.path != "/" else ""
+        return redirect(url_for("auth.login", next=next_url))
+
+    @jwt.unauthorized_loader
+    def missing_token(_reason):
+        return _jwt_error_response("Authentication required.")
+
+    @jwt.invalid_token_loader
+    def invalid_token(_reason):
+        return _jwt_error_response("Invalid session.")
+
+    @jwt.expired_token_loader
+    def expired_token(_jwt_header, _jwt_data):
+        return _jwt_error_response("Session expired.")
+
+    @jwt.revoked_token_loader
+    def revoked_token(_jwt_header, _jwt_data):
+        return _jwt_error_response("Session revoked.")
+
+    @jwt.user_lookup_error_loader
+    def missing_user(_jwt_header, _jwt_data):
+        return _jwt_error_response("Unknown account.")
 
     with app.app_context():
         from .repositories import user_repository
         if not user_repository.find_by_email("analyst@example.com"):
-            user_repository.create("Demo Analyst", "analyst@example.com", "analyst123")
+            user_repository.create("Demo Analyst", "analyst@example.com", "Analyst123!")
 
     from .repositories.database import close_connection
     app.teardown_appcontext(close_connection)
@@ -72,6 +112,17 @@ def create_app(config_object=Config):
     @app.context_processor
     def inject_ui_config():
         return {"max_upload_mb": app.config["MAX_CONTENT_LENGTH"] // (1024 * 1024)}
+
+    @app.route("/static/spa/")
+    @app.route("/static/spa/<path:path>")
+    def spa_static(path=""):
+        return serve_spa_asset(path)
+
+    @app.errorhandler(HTTPException)
+    def handle_http_exception(error):
+        if request.path.startswith("/api/"):
+            return jsonify({"error": error.description}), error.code
+        return error
 
     @app.errorhandler(RequestEntityTooLarge)
     def handle_oversized_upload(_error):

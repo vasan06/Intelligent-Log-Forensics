@@ -27,7 +27,7 @@ def main():
         with psycopg2.connect(**test_dsn) as test_connection:
             with test_connection.cursor() as cursor:
                 cursor.execute("SELECT COUNT(*) FROM schema_migrations")
-                assert cursor.fetchone()[0] == 4
+                assert cursor.fetchone()[0] == 7
                 cursor.execute("INSERT INTO uploaded_files (user_id, file_name, stored_name, file_type, file_size) SELECT id, 'proof.log', 'proof.log', 'log', 1 FROM users ORDER BY id LIMIT 1 RETURNING id")
                 inserted = cursor.fetchone()
                 if inserted is None:

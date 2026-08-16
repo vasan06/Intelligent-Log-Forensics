@@ -1,30 +1,29 @@
-from flask import Blueprint, abort, render_template, send_file
-from flask_login import current_user, login_required
+from flask import Blueprint, abort, send_file
+from flask_jwt_extended import get_current_user, jwt_required
 
 from app.repositories import report_repository, upload_repository
 from app.services.report_service import generate_report, resolve_report_path
 from app.utils.security_helper import require_owner
+from app.utils.spa import render_spa
 
 
 reports_bp = Blueprint("reports", __name__, url_prefix="/reports")
 
 
 @reports_bp.get("/<int:file_id>")
-@login_required
 def preview(file_id):
     upload = upload_repository.get(file_id)
     if not upload: abort(404)
-    require_owner(upload)
-    return render_template("reports/report_preview.html", file_id=file_id)
+    return render_spa()
 
 
 @reports_bp.post("/generate/<int:file_id>")
-@login_required
+@jwt_required()
 def generate(file_id):
     upload = upload_repository.get(file_id)
     if not upload: abort(404)
     require_owner(upload)
-    report = generate_report(upload, current_user.id)
+    report = generate_report(upload, get_current_user().id)
     return send_file(
         resolve_report_path(report.report_path),
         as_attachment=True,
@@ -33,7 +32,7 @@ def generate(file_id):
 
 
 @reports_bp.get("/download/<int:report_id>")
-@login_required
+@jwt_required()
 def download(report_id):
     report = report_repository.get(report_id)
     if not report: abort(404)
