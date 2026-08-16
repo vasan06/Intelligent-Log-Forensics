@@ -4,13 +4,14 @@ from datetime import datetime
 
 ALIASES = {
     "timestamp": ("timestamp", "time", "datetime", "date", "@timestamp", "created_at"),
-    "source_ip": ("source_ip", "ip", "ip_address", "client_ip", "remote_addr", "host"),
+    "source_ip": ("source_ip", "ip", "ip_address", "client_ip", "remote_addr", "host", "sourceipaddress", "srcip", "src"),
+    "destination_ip": ("destination_ip", "destinationipaddress", "dstip", "dst"),
     "user_identifier": ("user_identifier", "user", "user_id", "username", "email"),
     "method": ("method", "http_method", "verb"),
     "endpoint": ("endpoint", "path", "url", "route", "request_uri"),
     "status_code": ("status_code", "status", "http_status", "response_code"),
     "response_time": ("response_time", "latency", "duration", "elapsed", "response_ms"),
-    "event_type": ("event_type", "event", "type", "action"),
+    "event_type": ("event_type", "event", "type", "action", "eventname", "eventid", "eventtype"),
     "level": ("level", "severity", "log_level"),
     "message": ("message", "msg", "error", "description", "detail"),
 }
@@ -45,11 +46,13 @@ def classify_log_source(source, normalized):
     """Classify heterogeneous records conservatively for dashboard pivots."""
     raw = normalized["raw_log"].lower()
     provider = " ".join(str(source.get(key, "")) for key in ("provider", "channel", "facility", "source", "program" )).lower()
+    if any(token in raw + provider for token in ("cloudtrail", "aws_region", "event_source", "awsregion", "useridentity")):
+        return "CloudTrail"
     if any(token in raw + provider for token in ("eventid", "event_id", "microsoft-windows", "security-auditing")):
         return "Windows Security"
     if normalized.get("method") or normalized.get("endpoint") or any(token in raw for token in ("http/1.", "http/2", "user-agent", "request_uri")):
         return "Web / API"
-    if any(token in raw + provider for token in ("firewall", "iptables", "ufw", "deny", "srcport", "dstport")):
+    if any(token in raw + provider for token in ("firewall", "iptables", "ufw", "deny", "srcport", "dstport", "dropped", "len=")):
         return "Firewall"
     if any(token in raw + provider for token in ("switch", "router", "interface", "vlan", "snmp", "link down")):
         return "Network Device"

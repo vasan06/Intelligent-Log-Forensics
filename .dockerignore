@@ -12,6 +12,9 @@ instance/uploads/*
 instance/models/*
 instance/reports/*
 complete_workflow.png
-sample_logs
 docs
 tests
+frontend/node_modules
+frontend/dist
+frontend/.vite
+app/static/spa

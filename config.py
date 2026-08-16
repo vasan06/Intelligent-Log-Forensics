@@ -45,3 +45,7 @@ class Config:
     JWT_REFRESH_TOKEN_EXPIRES = int(os.getenv("JWT_REFRESH_TOKEN_EXPIRES", 604800))
     RATELIMIT_STORAGE_URI = os.getenv("RATELIMIT_STORAGE_URI", "memory://")
     APP_ORIGIN = os.getenv("APP_ORIGIN", "http://localhost:5000")
+    FRONTEND_ORIGIN = os.getenv("FRONTEND_ORIGIN", "http://localhost:5173")
+    # Page routes redirect to the Vite dev server when the entrypoint starts it
+    # (set by run.py/app.py at boot). Production builds render the SPA directly.
+    SPA_DEV_REDIRECT = os.getenv("SPA_DEV_REDIRECT", "false").lower() == "true"

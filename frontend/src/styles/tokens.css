@@ -1,0 +1,101 @@
+/* ─────────────────────────────────────────────────────────────
+   FORENSICS CONSOLE — Design Tokens
+   Dark slate command interface for security analysts
+   ───────────────────────────────────────────────────────────── */
+
+:root {
+  color-scheme: dark;
+
+  /* Canvas layers */
+  --bg-base:    #0d1117;   /* deepest background */
+  --bg-surface: #161b22;   /* panels, cards */
+  --bg-raised:  #1c2230;   /* elevated elements */
+  --bg-overlay: #21293a;   /* modals, dropdowns */
+  --bg-input:   #0d1117;   /* input fields */
+
+  /* Borders */
+  --border-subtle:  rgba(99, 120, 150, 0.14);
+  --border-default: rgba(99, 120, 150, 0.22);
+  --border-strong:  rgba(99, 120, 150, 0.38);
+  --border-focus:   #388bfd;
+
+  /* Text hierarchy */
+  --text-primary:   #e6edf3;
+  --text-secondary: #8b949e;
+  --text-muted:     #4b5563;
+  --text-disabled:  #30363d;
+
+  /* Accent — electric blue for primary actions */
+  --accent:         #388bfd;
+  --accent-hover:   #4d9bfd;
+  --accent-subtle:  rgba(56, 139, 253, 0.12);
+  --accent-border:  rgba(56, 139, 253, 0.30);
+
+  /* Status palette */
+  --critical: #f85149;
+  --high:     #ff7b72;
+  --medium:   #e3b341;
+  --low:      #58a6ff;
+  --ok:       #3fb950;
+  --info:     #79c0ff;
+
+  --critical-subtle: rgba(248, 81, 73, 0.12);
+  --high-subtle:     rgba(255, 123, 114, 0.10);
+  --medium-subtle:   rgba(227, 179, 65, 0.10);
+  --low-subtle:      rgba(88, 166, 255, 0.10);
+  --ok-subtle:       rgba(63, 185, 80, 0.10);
+
+  /* MITRE purple */
+  --mitre:        #bc8cff;
+  --mitre-subtle: rgba(188, 140, 255, 0.10);
+
+  /* Typography */
+  --font-sans:  'Manrope', system-ui, -apple-system, sans-serif;
+  --font-mono:  'JetBrains Mono', 'Fira Code', 'Cascadia Code', monospace;
+
+  /* Type scale */
+  --text-xs:   11px;
+  --text-sm:   12.5px;
+  --text-base: 13.5px;
+  --text-md:   15px;
+  --text-lg:   17px;
+  --text-xl:   20px;
+  --text-2xl:  24px;
+  --text-3xl:  30px;
+  --text-4xl:  38px;
+
+  /* Spacing (4px base) */
+  --sp-1: 4px;
+  --sp-2: 8px;
+  --sp-3: 12px;
+  --sp-4: 16px;
+  --sp-5: 20px;
+  --sp-6: 24px;
+  --sp-7: 28px;
+  --sp-8: 32px;
+  --sp-10: 40px;
+  --sp-12: 48px;
+
+  /* Radius */
+  --r-sm:   4px;
+  --r-md:   6px;
+  --r-lg:   8px;
+  --r-xl:   12px;
+  --r-full: 9999px;
+
+  /* Shadows */
+  --shadow-sm:  0 1px 3px rgba(0,0,0,0.4), 0 1px 2px rgba(0,0,0,0.3);
+  --shadow-md:  0 4px 12px rgba(0,0,0,0.5), 0 2px 4px rgba(0,0,0,0.3);
+  --shadow-lg:  0 8px 24px rgba(0,0,0,0.6), 0 4px 8px rgba(0,0,0,0.3);
+  --shadow-accent: 0 0 0 3px rgba(56,139,253,0.25);
+
+  /* Transitions */
+  --t-fast:   80ms ease;
+  --t-base:   150ms ease;
+  --t-slow:   250ms ease;
+
+  /* Layout */
+  --sidebar-w: 220px;
+  --topbar-h:  52px;
+  --content-max: 1280px;
+}

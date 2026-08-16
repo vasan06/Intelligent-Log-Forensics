@@ -12,6 +12,10 @@ services:
       retries: 12
     volumes:
       - postgres_data:/var/lib/postgresql/data
+    ports:
+      # Postgres is also exposed on host port 5433 so local tooling can connect
+      # to the same database the containerized app uses (5432 is left free).
+      - "${POSTGRES_HOST_PORT:-5433}:5432"
 
   app:
     build: .

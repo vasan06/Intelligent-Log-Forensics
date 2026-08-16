@@ -1,8 +1,9 @@
 from flask import abort
-from flask_login import current_user
+from flask_jwt_extended import get_current_user
 
 
 def require_owner(upload):
-    if current_user.role != "admin" and upload.user_id != current_user.id:
+    user = get_current_user()
+    if user.role != "admin" and upload.user_id != user.id:
         abort(403)
     return upload
