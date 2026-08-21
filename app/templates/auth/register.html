@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+{% block title %}Create account | Intelligent Log Forensics{% endblock %}
+{% block content %}
+<section class="login-shell register-shell">
+  <div class="login-brand"><div class="cyber-model threat-radar login-radar" data-parallax aria-hidden="true"><span class="scan"></span><i class="node n1"></i><i class="node n2"></i><i class="node n3"></i><b><i data-lucide="user-round-check"></i></b></div><div><span class="eyebrow">INTELLIGENT LOG FORENSICS</span><h1>Build your investigation workspace.</h1><p>Every new account starts with analyst-only permissions. Administrative access is never self-assigned.</p></div></div>
+  <form class="login-panel" method="post">
+    <button class="theme-toggle icon-button login-theme" type="button" aria-label="Toggle color theme"><i data-lucide="sun"></i></button>
+    <div><span class="eyebrow">Analyst registration</span><h2>Create account</h2></div>
+    <label>Full name<input type="text" name="name" minlength="2" required autocomplete="name"></label>
+    <label>Work email<input type="email" name="email" required autocomplete="email"></label>
+    <label>Password<input type="password" name="password" minlength="10" required autocomplete="new-password"><small>10+ characters with an uppercase letter and number.</small></label>
+    <button class="primary-button" type="submit">Create secure account <i data-lucide="arrow-right"></i></button>
+    <p class="auth-switch">Already registered? <a href="{{ url_for('auth.login') }}">Sign in</a></p>
+  </form>
+</section>
+{% endblock %}

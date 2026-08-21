@@ -1,0 +1,21 @@
+PHASE 5 - LIVE GENERATOR DEMO MODE VALIDATION
+
+Status: PASSED on 2026-08-09.
+
+Features and logic
+- Generator core remains the one Phase 1 implementation; continuous orchestration wraps it.
+- A background thread creates in-memory batches and calls the same process_records transaction as uploads.
+- Start/stop endpoints use Flask-Login at this phase and validate the four allowed modes.
+- Generated risk rows use source_status=auto_generated; no generator payload is written to disk.
+
+Concept notes
+- Event-driven means each new batch triggers processing as it arrives instead of waiting for a file.
+- The worker thread performs repeated generation outside request handling. Blocking the request thread would
+  prevent Flask from answering other users and make the interface appear frozen.
+
+Validation and cross-checking
+- Focused public-API tests started bruteforce mode, observed auto_generated risk rows within five
+  seconds, stopped the worker, and confirmed its thread was no longer alive.
+- Upload directory contents were identical before and after the live run (zero generator files).
+- Invalid mode returned HTTP 400; start returned 202 and did not block the request.
+- The live worker calls process_records, the exact transaction used after upload parsing.

@@ -1,0 +1,45 @@
+INTELLIGENT LOG FORENSICS - FINAL COMPLETION AUDIT
+
+Status: PASSED on 2026-08-10.
+
+Scope controls
+- All work uses free/open-source, self-hostable dependencies.
+- PostgreSQL access is psycopg2 plus repository-owned parameterized raw SQL; no ORM dependency/import.
+- CICIDS2017 is not used; training/evaluation rows come from the runtime-shaped generator.
+- Secrets remain environment-only and .env is ignored by Git and excluded from Docker context.
+- User-owned complete_workflow.png was not modified or removed.
+
+Phase acceptance map
+- Phase 1: four-mode deterministic Faker-based labeled generator; shared eight-feature space; three PyOD algorithms;
+  pyod.average ensemble; held-out rule/model metrics and ignored artifact.
+- Phase 2: four ordered raw-SQL migrations and repositories; fresh, idempotent, populated DB validation.
+- Phase 3: validated 16-entry taxonomy; non-null constrained attack_type and source_status persistence.
+- Phase 4: CSV/JSON/TXT/LOG shared pipeline; SHA-256 temporary naming; success cleanup and retention cleanup;
+  dashboard historical error trend fixed; host raw evidence folder clean.
+- Phase 5: nonblocking in-memory generator manager and shared processing path; start/stop API.
+- Phase 6: analyst labels, versioned retraining, history API, honest non-monotonic analysis limitation.
+- Phase 7: Flask-Login retained; HttpOnly cookie JWT/refresh; rate limiting and same-origin CORS.
+- Phase 8: real values cross JSON API boundaries; static labels remain template text; dynamism audit complete.
+- Phase 9: post-commit SSE/EventSource updates and 20-percent chart-segment dimming.
+- Phase 10: evidence SHA-256 and documented 40/30/30 forensic trust-score formula.
+- Phase 11: extracted design tokens linked across templates; no backend logic added.
+- Phase 12: final Compose build passed; healthy PostgreSQL; Gunicorn gthread; login/dashboard/generator
+  workflow passed; 90 auto-generated risk rows; zero container upload files.
+- Phase 13: System Flow, DFD 0/1/2, ER, database design, confusion matrix, ROC curve, metrics CSV,
+  evaluation summary, and final Word report generated and validated.
+
+Final fresh evidence
+- python -m unittest discover -s tests -q: 31 passed, 0 failed.
+- python -m compileall -q app tests scripts run.py config.py: passed.
+- python scripts/validate_migrations.py: fresh/idempotent/populated validation OK.
+- python scripts/evaluate_models.py: deterministic quality metrics; combined F1 0.976, FPR 0.144;
+  combination pyod.average. Runtime durations vary normally.
+- Report evaluation: 1,200 rows; 360 held out; ROC AUC 0.994650.
+- Final DOCX: 468,119 bytes; seven figures and eight tables verified by python-docx.
+- Docker Compose final rebuild: passed; in-container PyOD combination and python-docx imports passed.
+- Validation containers were stopped after the smoke test; named volumes were preserved.
+
+Cleanup note
+- Six expired legacy raw artifacts dated July 2-3 were removed from instance/uploads according to the
+  configured 24-hour retention policy. Only .gitkeep remains. Removal from that folder is not reversible
+  unless the original evidence exists elsewhere.

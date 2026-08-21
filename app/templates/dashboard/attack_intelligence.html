@@ -1,0 +1,7 @@
+{% extends "base.html" %}
+{% block title %}Attack Intelligence | Intelligent Log Forensics{% endblock %}
+{% block content %}
+<header class="page-header intelligence-hero"><div><span class="eyebrow">Analyst field guide</span><h1>Attack intelligence</h1><p>Open any threat card for attacker workflow, history, live example, evidence, layered defenses, and authoritative references.</p></div><div class="cyber-model threat-radar" data-parallax aria-hidden="true"><span class="scan"></span><i class="node n1"></i><i class="node n2"></i><i class="node n3"></i><b><i data-lucide="radar"></i></b></div></header>
+<section class="attack-grid">{% for slug, attack in attacks.items() %}<a class="attack-card" href="{{ url_for('dashboard.attack_detail', slug=slug) }}" target="_blank" rel="noopener"><div class="attack-card-head"><span class="attack-icon"><i data-lucide="{{ attack.icon }}"></i></span><div><span class="eyebrow">{{ attack.tactic }} · {{ attack.mitre }}</span><h2>{{ attack.name }}</h2></div><span class="urgency">{{ attack.urgency }}</span></div><p class="attack-summary">{{ attack.summary }}</p><span class="open-detail">Open complete analysis <i data-lucide="arrow-up-right"></i></span></a>{% endfor %}</section>
+<aside class="confidence-note"><i data-lucide="info"></i><div><strong>Detection is a hypothesis, not a verdict.</strong><p>Intelligent Log Forensics names attacks only when observable indicators match. Confirm execution and impact using endpoint, identity, application, and network evidence.</p></div></aside>
+{% endblock %}

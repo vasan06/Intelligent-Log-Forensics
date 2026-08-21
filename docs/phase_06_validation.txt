@@ -1,0 +1,21 @@
+PHASE 6 - ANALYST FEEDBACK LOOP VALIDATION
+
+Status: PASSED on 2026-08-09.
+
+Features and logic
+- Confirmed/false_positive labels persist with reviewer ID and UTC review time.
+- Retraining re-extracts the shared runtime features, creates a versioned artifact, compares old and
+  new F1 on a fixed generated holdout, and records label count/F1/metrics in PostgreSQL.
+- F1 history API returns measured runs; it does not assert monotonic improvement.
+
+Limitation
+- Generator mode ground truth is a stand-in for real analyst adjudication. It is controlled synthetic
+  evidence and cannot represent the ambiguity or drift of production analyst labels.
+
+Validation and cross-checking
+- Public label endpoint accepted confirmed/false_positive and rejected unsupported labels.
+- Two retraining cycles persisted label_count 1 then 2, each with F1 in [0,1], a unique version,
+  old-vs-new metrics, and a versioned joblib artifact.
+- GET labels-vs-f1 returned both measured runs in database order.
+- python -m unittest discover -s tests -v -> 14 tests passed.
+- python -m compileall -q app tests scripts run.py config.py -> passed.

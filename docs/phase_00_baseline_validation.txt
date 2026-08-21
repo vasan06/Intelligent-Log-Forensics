@@ -1,0 +1,19 @@
+PHASE 0 - UNTOUCHED BASELINE VALIDATION
+
+Date: 2026-08-09
+Status: PASSED before implementation began.
+
+Repository state
+- One pre-existing untracked user file: complete_workflow.png. It is preserved and untouched.
+- Existing persistence was Flask-SQLAlchemy with SQLite-only automated tests, conflicting with v2.
+- Existing ML/anomaly engines were deterministic placeholders.
+
+Commands and evidence
+- python -m unittest discover -s tests -v -> 3 tests passed.
+- python -m compileall -q app tests run.py config.py -> exit 0.
+- python -m pytest -q -> unavailable because pytest was not installed; repository README identifies
+  unittest as the canonical suite, so unittest is the baseline gate.
+
+Cross-check
+- Read app/engines, app/routes, app/services, app/repositories, models, configuration, and tests
+  before edits. This established the actual upload-to-dashboard behavior to preserve.

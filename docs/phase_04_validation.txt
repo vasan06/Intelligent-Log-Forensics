@@ -1,0 +1,23 @@
+PHASE 4 - UPLOAD PIPELINE HARDENING VALIDATION
+
+Status: PASSED on 2026-08-09.
+
+Features and logic
+- CSV, JSON, TXT, and LOG inputs traverse the same parse/normalize/rule/ML/MITRE/correlation/DB path.
+- Temporary audit filename follows {upload_id}_{sha256_prefix}.ext.
+- Successful processing removes the temporary raw file; failed processing retains one named copy for
+  the configured retention window and cleanup occurs on subsequent uploads.
+- Dashboard error trends anchor to the newest evidence date rather than wall-clock time, preventing
+  historical uploads from rendering as an incorrectly flat chart.
+
+Validation and cross-checking
+- python -m unittest discover -s tests -v -> 10 tests passed.
+- CSV/JSON/TXT/LOG each produced one normalized DB row through the public upload route.
+- PostgreSQL rows contained 64-character SHA-256 hashes and audit names beginning with upload ID.
+- instance upload test directory was empty after every successful format.
+- A test-trained PyOD artifact produced persisted source='ml' rows; rule rows remained explainable.
+- Error trend labels included the uploaded evidence date, proving historical data is no longer flat.
+- python -m compileall -q app tests scripts run.py config.py -> passed.
+- Final workspace audit found six legacy July raw artifacts older than the 24-hour retention window;
+  the scoped cleanup routine removed exactly those six and preserved instance/uploads/.gitkeep.
+- Final host upload-folder audit: no raw evidence files remain after cleanup.

@@ -1,0 +1,19 @@
+PHASE 7 - JWT AND REST API VALIDATION
+
+Status: PASSED on 2026-08-09.
+
+Features and logic
+- Existing Flask-Login form/session authentication remains functional.
+- REST login and refresh use JWTs stored only in Secure-configurable HttpOnly SameSite cookies.
+- API payloads never return access/refresh tokens or server secrets.
+- Authentication and generator-control routes are rate limited.
+- API paths use the /api/v1 namespace and same-origin CORS is enforced explicitly.
+
+Validation and cross-checking
+- JWT JSON login set access/refresh cookies with HttpOnly and returned only public user fields.
+- Refresh required the double-submit CSRF value and issued a new access cookie.
+- Bad credentials returned 401 and response bytes did not contain JWT_SECRET_KEY.
+- Foreign Origin returned 403; configured same origin received a single allow-origin header.
+- Auth and generator routes have Flask-Limiter policies; all data routes use /api/v1.
+- python -m unittest discover -s tests -v -> 16 tests passed.
+- Search found no legacy /api paths in frontend/templates/tests.

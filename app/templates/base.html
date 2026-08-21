@@ -1,0 +1,88 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}Intelligent Log Forensics{% endblock %}</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <script>document.documentElement.dataset.theme=localStorage.getItem('lf-theme')||'dark';</script>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/design-tokens.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+  <script src="https://unpkg.com/lucide@0.468.0/dist/umd/lucide.min.js" defer></script>
+  {% block head %}{% endblock %}
+</head>
+<body class="{% if not current_user.is_authenticated %}auth-body{% endif %}">
+  {% if current_user.is_authenticated %}
+  <aside class="sidebar">
+    <a class="brand" href="{{ url_for('dashboard.index') }}">
+      <span class="brand-mark"><i data-lucide="shield-check"></i></span>
+      <span><strong>INTELLIGENT LOG FORENSICS</strong><small>Security analytics</small></span>
+    </a>
+    <nav>
+      <a href="{{ url_for('dashboard.index') }}" class="{{ 'active' if request.endpoint == 'dashboard.index' }}"><i data-lucide="layout-dashboard"></i>Overview</a>
+      <a href="{{ url_for('upload.upload') }}" class="{{ 'active' if request.endpoint == 'upload.upload' }}"><i data-lucide="file-up"></i>Analyze logs</a>
+      <a href="{{ url_for('upload.history') }}" class="{{ 'active' if request.endpoint == 'upload.history' }}"><i data-lucide="history"></i>Upload history</a>
+    </nav>
+    <div class="sidebar-footer">
+      <span class="avatar user-initial">?</span>
+      <span class="user-meta"><strong class="user-name">Loading...</strong><small class="user-role"></small></span>
+      <a class="icon-button" href="{{ url_for('auth.logout') }}" title="Log out"><i data-lucide="log-out"></i></a>
+    </div>
+  </aside>
+  {% endif %}
+  <main class="{{ 'app-main' if current_user.is_authenticated else 'auth-main' }}">
+    <div class="ambient-grid" aria-hidden="true"></div>
+    {% if current_user.is_authenticated %}
+    <header class="top-nav">
+      <a class="top-brand" href="{{ url_for('dashboard.index') }}"><span class="brand-mark"><i data-lucide="scan-search"></i></span><strong>INTELLIGENT LOG FORENSICS</strong></a>
+      <nav><a class="{{ 'active' if request.endpoint == 'dashboard.index' }}" href="{{ url_for('dashboard.index') }}">Command center</a><a class="{{ 'active' if request.endpoint == 'dashboard.attack_intelligence' }}" href="{{ url_for('dashboard.attack_intelligence') }}">Attack intelligence</a><a class="{{ 'active' if request.endpoint == 'upload.upload' }}" href="{{ url_for('upload.upload') }}">Analyze evidence</a><a href="{{ url_for('upload.history') }}">Investigations</a></nav>
+      <div class="top-actions"><button class="theme-toggle icon-button" type="button" title="Toggle color theme" aria-label="Toggle color theme"><i data-lucide="sun"></i></button><span class="avatar user-initial">?</span><a class="icon-button" href="{{ url_for('auth.logout') }}" title="Log out"><i data-lucide="log-out"></i></a></div>
+    </header>
+    {% endif %}
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+      <div class="flash-stack">
+        {% for category, message in messages %}
+        <div class="flash {{ category }}">{{ message }}</div>
+        {% endfor %}
+      </div>
+      {% endif %}
+    {% endwith %}
+    {% block content %}{% endblock %}
+  </main>
+  <script>
+    document.addEventListener("DOMContentLoaded", () => {
+      {% if current_user.is_authenticated %}
+      fetch('/api/v1/auth/me').then(response => response.json()).then(user => {
+        document.querySelectorAll('.user-initial').forEach(node => { node.textContent = user.name.slice(0, 1); });
+        document.querySelectorAll('.user-name').forEach(node => { node.textContent = user.name; });
+        document.querySelectorAll('.user-role').forEach(node => { node.textContent = user.role; });
+      }).catch(console.error);
+      {% endif %}
+      document.querySelectorAll('[data-parallax]').forEach(model => document.addEventListener('pointermove', event => {
+        const x = (event.clientX / innerWidth - .5) * 12;
+        const y = (event.clientY / innerHeight - .5) * 12;
+        model.style.setProperty('--mouse-x', `${x}px`);
+        model.style.setProperty('--mouse-y', `${y}px`);
+      }, { passive: true }));
+      document.querySelectorAll('[data-card-target]').forEach(card => card.addEventListener('click', event => {
+        if (!event.target.closest('a,button,canvas')) window.open(card.dataset.cardTarget, '_blank', 'noopener');
+      }));
+      document.querySelectorAll('.theme-toggle').forEach(button => {
+        button.innerHTML = `<i data-lucide="${document.documentElement.dataset.theme === 'dark' ? 'sun' : 'moon'}"></i>`;
+      });
+      window.lucide && lucide.createIcons();
+      document.querySelectorAll('.theme-toggle').forEach(button => button.addEventListener('click', () => {
+        const next = document.documentElement.dataset.theme === 'dark' ? 'light' : 'dark';
+        document.documentElement.dataset.theme = next;
+        localStorage.setItem('lf-theme', next);
+        button.innerHTML = `<i data-lucide="${next === 'dark' ? 'sun' : 'moon'}"></i>`;
+        window.lucide && lucide.createIcons();
+      }));
+    });
+  </script>
+  {% block scripts %}{% endblock %}
+</body>
+</html>
