@@ -1,0 +1,17 @@
+{
+  "Authentication Risk": {
+    "tactic": "Credential Access",
+    "technique_id": "T1110",
+    "technique_name": "Brute Force"
+  },
+  "API Route Risk": {
+    "tactic": "Discovery",
+    "technique_id": "T1595",
+    "technique_name": "Active Scanning"
+  },
+  "Security Risk": {
+    "tactic": "Initial Access",
+    "technique_id": "T1190",
+    "technique_name": "Exploit Public-Facing Application"
+  }
+}

@@ -1,0 +1,35 @@
+__pycache__/
+*.py[cod]
+.env
+.env.*
+!.env.example
+.venv/
+venv/
+forensics.db
+instance/uploads/*
+instance/reports/*
+instance/models/*
+instance/generated/*
+!instance/uploads/.gitkeep
+!instance/reports/.gitkeep
+!instance/models/.gitkeep
+.pytest_cache/
+
+# Development phase documentation (removed from the repo; kept ignored)
+docs/phase_*_validation.txt
+docs/dynamism_audit.md
+docs/final_completion_audit.txt
+docs/artifacts/
+
+# Frontend (React/Vite)
+frontend/node_modules/
+frontend/dist/
+app/static/spa/
+
+# Runtime artifacts
+instance/flask.*.log
+*.tmp
+
+# Local tooling
+.vscode/
+.idea/
