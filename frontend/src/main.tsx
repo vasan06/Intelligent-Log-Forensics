@@ -12,15 +12,14 @@ import "@fontsource/jetbrains-mono/500.css";
 import "./styles/tokens.css";
 import "./styles/base.css";
 import "./styles/ui.css";
+import "./styles/animations.css";
 
 import { ToastProvider } from "./components/ui/Toast";
 import { App } from "./App";
 
-const basename = window.location.pathname.startsWith("/static/spa/") ? "/static/spa/" : "/";
-
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
-    <BrowserRouter basename={basename}>
+    <BrowserRouter>
       <ToastProvider>
         <App />
       </ToastProvider>

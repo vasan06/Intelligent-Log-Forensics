@@ -113,10 +113,9 @@ def create_app(config_object=Config):
     def inject_ui_config():
         return {"max_upload_mb": app.config["MAX_CONTENT_LENGTH"] // (1024 * 1024)}
 
-    @app.route("/static/spa/")
-    @app.route("/static/spa/<path:path>")
-    def spa_static(path=""):
-        return serve_spa_asset(path)
+    @app.route("/assets/<path:path>")
+    def spa_assets(path):
+        return serve_spa_asset("assets/" + path)
 
     @app.errorhandler(HTTPException)
     def handle_http_exception(error):

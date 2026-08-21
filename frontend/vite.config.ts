@@ -9,8 +9,8 @@ const stripOrigin = (proxy: any) => {
   });
 };
 
-export default defineConfig(({ mode }) => ({
-  base: mode === "production" ? "/static/spa/" : "/",
+export default defineConfig(() => ({
+  base: "/",
   plugins: [react()],
   build: {
     outDir: "dist",

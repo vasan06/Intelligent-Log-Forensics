@@ -179,11 +179,22 @@ export const api = {
     );
   },
 
-  generateReport: (fileId: number) =>
-    request<Blob>(`/reports/generate/${fileId}`, {
+  generateReport: async (fileId: number): Promise<Blob> => {
+    const csrf = getCookie("csrf_access_token");
+    const res = await fetch(`/reports/generate/${fileId}`, {
       method: "POST",
-      headers: { Accept: "application/pdf" },
-    }),
+      headers: { Accept: "application/pdf", "X-CSRF-TOKEN": csrf ?? "" },
+    });
+    if (!res.ok) {
+      let message = `Report generation failed (${res.status})`;
+      try {
+        const body = await res.json() as { error?: string };
+        if (body?.error) message = body.error;
+      } catch { /* keep fallback */ }
+      throw new ApiError(message, res.status);
+    }
+    return res.blob();
+  },
 };
 
 export function severityTone(severity: string | null | undefined): "ok" | "amber" | "danger" | "info" | "violet" {

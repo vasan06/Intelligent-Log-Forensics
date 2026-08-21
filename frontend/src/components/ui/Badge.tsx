@@ -1,15 +1,16 @@
+import React from "react";
 export type BadgeTone = "critical" | "high" | "medium" | "low" | "ok" | "info" | "mitre" | "default" | "accent";
 
-interface BadgeProps {
+interface BadgeProps extends React.HTMLAttributes<HTMLSpanElement> {
   tone?: BadgeTone;
   dot?: boolean;
   children: React.ReactNode;
   className?: string;
 }
 
-export function Badge({ tone = "default", dot = true, children, className = "" }: BadgeProps) {
+export function Badge({ tone = "default", dot = true, children, className = "", ...rest }: BadgeProps) {
   return (
-    <span className={`badge badge-${tone} ${className}`}>
+    <span className={`badge badge-${tone} ${className}`} {...rest}>
       {dot && <span className="badge-dot" />}
       {children}
     </span>

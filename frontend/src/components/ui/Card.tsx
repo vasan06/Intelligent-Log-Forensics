@@ -6,12 +6,18 @@ interface CardProps extends Omit<HTMLAttributes<HTMLDivElement>, "title"> {
   flush?: boolean;
   pad?: "sm" | "md" | "none";
   children?: ReactNode;
+  animate?: boolean;
+  delay?: number;
 }
 
-export function Card({ title, actions, flush, pad = "md", className = "", children, ...rest }: CardProps) {
+export function Card({ title, actions, flush, pad = "md", className = "", children, animate = false, delay = 0, style, ...rest }: CardProps) {
   const bodyClass = pad === "none" ? "card-body-flush" : pad === "sm" ? "card-body-sm" : "card-body";
   return (
-    <div className={`card ${className}`} {...rest}>
+    <div
+      className={`card${animate ? " anim-fade-up" : ""} ${className}`}
+      style={{ animationDelay: `${delay}ms`, ...style }}
+      {...rest}
+    >
       {title !== undefined && (
         <div className="card-header">
           <div className="card-title">{title}</div>
