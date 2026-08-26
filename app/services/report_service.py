@@ -10,7 +10,9 @@ from reportlab.platypus import (
     HRFlowable, Paragraph, SimpleDocTemplate, Spacer, Table, TableStyle,
 )
 
+from app.models import Entity
 from app.repositories import report_repository
+from app.services.trust_score import for_file as trust_score_for_file
 
 # Colour constants
 DARK = colors.HexColor("#0d1117")
@@ -97,7 +99,8 @@ def generate_report(upload, user_id):
     # ── Evidence summary table ────────────────────────────────
     story.append(Paragraph("Evidence Overview", st["h2"]))
     quality = upload.quality
-    trust = upload.forensic_trust
+    trust_raw = getattr(upload, "forensic_trust", None) or trust_score_for_file(upload.id)
+    trust = Entity(trust_raw) if isinstance(trust_raw, dict) else trust_raw
 
     summary_data = [
         ["Field", "Value"],

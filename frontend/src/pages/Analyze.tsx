@@ -16,10 +16,10 @@ import { useToast } from "../components/ui/Toast";
 const PIPELINE = ["Validate", "Parse", "Normalize", "Features", "Rules + ML", "MITRE Map", "Incidents"];
 
 const MODES = [
-  { id: "normal", name: "Normal traffic",  desc: "Background web activity" },
-  { id: "scan",   name: "Reconnaissance",  desc: "Route probing & discovery" },
-  { id: "brute",  name: "Brute force",     desc: "Credential stuffing bursts" },
-  { id: "breach", name: "Breach scenario", desc: "Full attack simulation" },
+  { id: "normal",     name: "Normal traffic",  desc: "Background web activity" },
+  { id: "scan",       name: "Reconnaissance",  desc: "Route probing & discovery" },
+  { id: "bruteforce", name: "Brute force",     desc: "Credential stuffing bursts" },
+  { id: "breach",     name: "Breach scenario", desc: "Full attack simulation" },
 ];
 
 export function Analyze() {

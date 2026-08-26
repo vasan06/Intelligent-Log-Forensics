@@ -9,7 +9,7 @@ load_dotenv(BASE_DIR / ".env")
 
 
 def database_url():
-    url = os.environ["DATABASE_URL"]
+    url = os.getenv("DATABASE_URL", "postgresql+psycopg2://postgres:123456@localhost:5432/intelligent_log_forensics")
     # Some hosting providers still expose the deprecated postgres:// scheme.
     if url.startswith("postgres://"):
         return url.replace("postgres://", "postgresql://", 1)
@@ -24,7 +24,7 @@ def runtime_path(environment_name, default_relative_path):
 
 
 class Config:
-    SECRET_KEY = os.environ["SECRET_KEY"]
+    SECRET_KEY = os.getenv("SECRET_KEY", "f72fade85af38f700d98de913f4e447f32c388060011abcfc8871b4d4115fa7b")
     DATABASE_URL = database_url()
     UPLOAD_FOLDER = runtime_path("UPLOAD_FOLDER", "instance/uploads")
     REPORT_FOLDER = runtime_path("REPORT_FOLDER", "instance/reports")

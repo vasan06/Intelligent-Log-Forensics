@@ -11,19 +11,16 @@ from flask import current_app, redirect, request, send_from_directory
 
 
 def _spa_root() -> Path:
-    return Path(current_app.root_path).parent / "frontend" / "dist"
+    return (Path(current_app.root_path) / "static" / "spa").resolve()
 
 
 def render_spa():
-    if current_app.config.get("SPA_DEV_REDIRECT"):
-        origin = current_app.config.get("FRONTEND_ORIGIN") or ""
-        if origin:
-            return redirect(f"{origin.rstrip('/')}{request.full_path}")
     return send_from_directory(_spa_root(), "index.html")
 
 
 def serve_spa_asset(path: str):
     root = _spa_root()
-    if path and (root / path).is_file():
+    target = (root / path).resolve()
+    if target.is_file() and str(target).startswith(str(root)):
         return send_from_directory(root, path)
     return send_from_directory(root, "index.html")

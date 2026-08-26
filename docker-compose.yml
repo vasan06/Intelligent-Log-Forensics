@@ -1,9 +1,15 @@
+# Intelligent Log Forensics — Docker Compose
+# Single command: docker compose up --build
+# Access: http://localhost
+
 services:
+
   db:
     image: postgres:16-alpine
+    restart: unless-stopped
     environment:
-      POSTGRES_DB: ${POSTGRES_DB}
-      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_DB:       ${POSTGRES_DB}
+      POSTGRES_USER:     ${POSTGRES_USER}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
@@ -13,32 +19,56 @@ services:
     volumes:
       - postgres_data:/var/lib/postgresql/data
     ports:
-      # Postgres is also exposed on host port 5433 so local tooling can connect
-      # to the same database the containerized app uses (5432 is left free).
       - "${POSTGRES_HOST_PORT:-5433}:5432"
 
   app:
-    build: .
+    build:
+      context: .
+      dockerfile: Dockerfile
+    restart: unless-stopped
     depends_on:
       db:
         condition: service_healthy
     environment:
-      DATABASE_URL: postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB}
-      SECRET_KEY: ${SECRET_KEY}
-      JWT_SECRET_KEY: ${JWT_SECRET_KEY}
-      COOKIE_SECURE: ${COOKIE_SECURE:-false}
-      APP_ORIGIN: ${APP_ORIGIN:-http://localhost:5000}
-      UPLOAD_FOLDER: /app/instance/uploads
-      MODEL_FOLDER: /app/instance/models
-      MODEL_PATH: /app/instance/models/anomaly_ensemble.joblib
-      REPORT_FOLDER: /app/instance/reports
-      UPLOAD_RETENTION_HOURS: ${UPLOAD_RETENTION_HOURS:-24}
-    ports:
-      - "5000:5000"
+      DATABASE_URL:               postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB}
+      SECRET_KEY:                 ${SECRET_KEY}
+      JWT_SECRET_KEY:             ${JWT_SECRET_KEY}
+      COOKIE_SECURE:              ${COOKIE_SECURE:-false}
+      APP_ORIGIN:                 ${APP_ORIGIN:-http://localhost}
+      FRONTEND_ORIGIN:            ${FRONTEND_ORIGIN:-http://localhost}
+      UPLOAD_FOLDER:              /app/instance/uploads
+      MODEL_FOLDER:               /app/instance/models
+      MODEL_PATH:                 /app/instance/models/anomaly_ensemble.joblib
+      REPORT_FOLDER:              /app/instance/reports
+      UPLOAD_RETENTION_HOURS:     ${UPLOAD_RETENTION_HOURS:-24}
+      GENERATOR_INTERVAL_SECONDS: ${GENERATOR_INTERVAL_SECONDS:-2}
+      GENERATOR_BATCH_SIZE:       ${GENERATOR_BATCH_SIZE:-10}
     volumes:
       - uploads_data:/app/instance/uploads
       - models_data:/app/instance/models
       - reports_data:/app/instance/reports
+    expose:
+      - "5000"
+    healthcheck:
+      test: ["CMD-SHELL", "python -c \"import urllib.request; urllib.request.urlopen('http://localhost:5000/api/v1/config')\""]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+
+  nginx:
+    image: nginx:1.27-alpine
+    restart: unless-stopped
+    depends_on:
+      app:
+        condition: service_healthy
+    ports:
+      - "${HTTP_PORT:-80}:80"
+    volumes:
+      - ./nginx/default.conf:/etc/nginx/conf.d/default.conf:ro
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+    volumes_from:
+      - app:ro
 
 volumes:
   postgres_data:
