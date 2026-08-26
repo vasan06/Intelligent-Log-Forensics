@@ -127,6 +127,6 @@ def create_app(config_object=Config):
     def handle_oversized_upload(_error):
         limit = app.config["MAX_CONTENT_LENGTH"] // (1024 * 1024)
         flash(f"That file exceeds the {limit} MB upload limit.", "danger")
-        return redirect(url_for("upload.upload"))
+        return redirect(url_for("upload.upload_page"))
 
     return app

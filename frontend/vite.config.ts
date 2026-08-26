@@ -13,22 +13,35 @@ export default defineConfig(() => ({
   base: "/",
   plugins: [react()],
   build: {
-    outDir: "dist",
+    outDir: "../app/static/spa",
     emptyOutDir: true,
     sourcemap: false,
-    chunkSizeWarningLimit: 1200,
+    chunkSizeWarningLimit: 1400,
+    rollupOptions: {
+      output: {
+        manualChunks(id: string) {
+          if (id.includes("node_modules")) {
+            if (id.includes("recharts")) {
+              return "charts";
+            }
+            if (id.includes("react") || id.includes("react-dom") || id.includes("react-router-dom")) {
+              return "vendor";
+            }
+          }
+        },
+      },
+    },
   },
   server: {
     port: 5173,
     strictPort: false,
-    forwardConsole: false,
     proxy: {
       "/api": {
         target: API_TARGET,
         changeOrigin: true,
         configure: stripOrigin,
       },
-      "/reports/generate": {
+      "/reports": {
         target: API_TARGET,
         changeOrigin: true,
         configure: stripOrigin,

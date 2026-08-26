@@ -336,7 +336,7 @@ def admin_overview():
     generator = current_app.extensions["live_generator"]
     return jsonify({
         **admin_repository.overview(),
-        "generator": {"running": generator.running, "mode": generator.mode, "last_error": generator.last_error},
+        "generator": {"running": generator.running, "mode": generator.mode, "last_error": generator.last_error, "upload_id": generator.current_upload_id},
         "model_version": load_model_version(),
     })
 

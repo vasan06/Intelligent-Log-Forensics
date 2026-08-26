@@ -1,35 +1,43 @@
+# Environment & Secrets (Keep .env.example tracked)
+.env
+.env.local
+.env.*.local
+!.env.example
+
+# Python cache & artifacts
 __pycache__/
 *.py[cod]
-.env
-.env.*
-!.env.example
-.venv/
-venv/
-forensics.db
-instance/uploads/*
-instance/reports/*
-instance/models/*
-instance/generated/*
-!instance/uploads/.gitkeep
-!instance/reports/.gitkeep
-!instance/models/.gitkeep
+*$py.class
+*.so
 .pytest_cache/
+.coverage
+htmlcov/
+dist/
+build/
+*.egg-info/
 
-# Development phase documentation (removed from the repo; kept ignored)
-docs/phase_*_validation.txt
-docs/dynamism_audit.md
-docs/final_completion_audit.txt
-docs/artifacts/
-
-# Frontend (React/Vite)
+# Frontend dependencies & build output
+node_modules/
 frontend/node_modules/
 frontend/dist/
-app/static/spa/
+*.tsbuildinfo
+frontend/*.tsbuildinfo
+.npm/
 
-# Runtime artifacts
-instance/flask.*.log
-*.tmp
+# Runtime evidence, generated reports, logs & trained models
+instance/uploads/*
+!instance/uploads/.gitkeep
+instance/reports/*
+!instance/reports/.gitkeep
+instance/models/*
+!instance/models/.gitkeep
+instance/*.log
+*.log
 
-# Local tooling
+# OS & Editor files
+.DS_Store
+Thumbs.db
 .vscode/
 .idea/
+*.swp
+*.swo

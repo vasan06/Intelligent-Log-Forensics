@@ -5,21 +5,20 @@ import type { User } from "../../api/types";
 
 interface TopbarProps { user: User; onLogout: () => void; }
 
-const NAV_LINKS = [
-  { to: "/", label: "Home", end: true },
-  { to: "/dashboard", label: "Dashboard" },
-  { to: "/upload", label: "Upload Logs" },
-  { to: "/incidents", label: "Incidents" },
+const BASE_LINKS = [
+  { to: "/dashboard",           label: "Dashboard" },
+  { to: "/upload",              label: "Upload Logs" },
+  { to: "/incidents",           label: "Incidents" },
   { to: "/attack-intelligence", label: "MITRE ATT&CK" },
 ];
 
 export function Topbar({ user, onLogout }: TopbarProps) {
-  const [now, setNow] = useState(() => new Date());
+  const [now, setNow]         = useState(() => new Date());
   const [menuOpen, setMenuOpen] = useState(false);
-  const navigate = useNavigate();
-  const isAdmin = user.role === "admin";
-  const initial = (user.name || "A").charAt(0).toUpperCase();
-  const links = isAdmin ? [...NAV_LINKS, { to: "/admin", label: "Settings" }] : NAV_LINKS;
+  const navigate  = useNavigate();
+  const isAdmin   = user.role === "admin";
+  const initial   = (user.name || "A").charAt(0).toUpperCase();
+  const links     = isAdmin ? [...BASE_LINKS, { to: "/admin", label: "Admin" }] : BASE_LINKS;
 
   useEffect(() => {
     const t = setInterval(() => setNow(new Date()), 1000);
@@ -29,9 +28,7 @@ export function Topbar({ user, onLogout }: TopbarProps) {
   return (
     <header className="app-topbar anim-fade-down">
       <Link to="/" className="topbar-brand">
-        <div className="topbar-brand-icon">
-          <ShieldAlert size={16} />
-        </div>
+        <div className="topbar-brand-icon"><ShieldAlert size={16} /></div>
         <span className="topbar-brand-name">Intelligent Log Forensics</span>
       </Link>
 
@@ -40,8 +37,9 @@ export function Topbar({ user, onLogout }: TopbarProps) {
           <NavLink
             key={link.to}
             to={link.to}
-            end={link.end}
-            className={({ isActive }) => `topbar-nav-link stagger-${i + 1}${isActive ? " active" : ""}`}
+            className={({ isActive }) =>
+              `topbar-nav-link stagger-${i + 1}${isActive ? " active" : ""}`
+            }
           >
             {link.label}
           </NavLink>
@@ -51,10 +49,10 @@ export function Topbar({ user, onLogout }: TopbarProps) {
       <div className="topbar-right">
         <div className="topbar-clock">
           <span className="topbar-clock-time">
-            {now.toLocaleTimeString(undefined, { hour: "2-digit", minute: "2-digit", second: "2-digit" })}
+            {now.toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit", second: "2-digit" })}
           </span>
           <span className="topbar-clock-date">
-            {now.toLocaleDateString(undefined, { month: "short", day: "2-digit", year: "numeric" })}
+            {now.toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric" })}
           </span>
         </div>
 
@@ -68,7 +66,11 @@ export function Topbar({ user, onLogout }: TopbarProps) {
             <span>{user.name}</span>
             <ChevronDown
               size={13}
-              style={{ color: "var(--text-muted)", transition: "transform 200ms ease", transform: menuOpen ? "rotate(180deg)" : "none" }}
+              style={{
+                color: "var(--text-muted)",
+                transition: "transform 200ms ease",
+                transform: menuOpen ? "rotate(180deg)" : "none",
+              }}
             />
           </button>
 
@@ -79,24 +81,20 @@ export function Topbar({ user, onLogout }: TopbarProps) {
                 position: "absolute", right: 0, top: "calc(100% + 6px)",
                 background: "var(--bg-surface)", border: "1px solid var(--border-default)",
                 borderRadius: "var(--r-xl)", boxShadow: "var(--shadow-lg)",
-                minWidth: 186, zIndex: 50, overflow: "hidden", padding: "var(--sp-1)",
+                minWidth: 190, zIndex: 50, overflow: "hidden", padding: "var(--sp-1)",
               }}>
                 <div style={{ padding: "8px 12px 10px", borderBottom: "1px solid var(--border-subtle)", marginBottom: 4 }}>
                   <div style={{ fontSize: "var(--text-sm)", fontWeight: 600 }}>{user.name}</div>
-                  <div style={{ fontSize: "var(--text-xs)", color: "var(--text-muted)", textTransform: "uppercase", letterSpacing: ".05em" }}>{user.role}</div>
+                  <div style={{ fontSize: "var(--text-xs)", color: "var(--text-muted)", textTransform: "uppercase", letterSpacing: ".05em" }}>
+                    {user.role}
+                  </div>
                 </div>
                 {isAdmin && (
-                  <button
-                    onClick={() => { setMenuOpen(false); navigate("/admin"); }}
-                    className="dropdown-item"
-                  >
+                  <button className="dropdown-item" onClick={() => { setMenuOpen(false); navigate("/admin"); }}>
                     <Settings size={13} /> Administration
                   </button>
                 )}
-                <button
-                  onClick={() => { setMenuOpen(false); onLogout(); }}
-                  className="dropdown-item danger"
-                >
+                <button className="dropdown-item danger" onClick={() => { setMenuOpen(false); onLogout(); }}>
                   Sign out
                 </button>
               </div>

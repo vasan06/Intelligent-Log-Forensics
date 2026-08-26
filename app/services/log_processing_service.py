@@ -41,7 +41,16 @@ def process_records(upload, records, source_status="uploaded"):
                 cursor.execute(
                     """INSERT INTO data_quality_results
                     (file_id,total_logs,valid_logs,invalid_logs,duplicate_logs,missing_timestamp_count,
-                     missing_ip_count,quality_score,health_score) VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s)""",
+                     missing_ip_count,quality_score,health_score) VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s)
+                    ON CONFLICT (file_id) DO UPDATE SET
+                      total_logs = EXCLUDED.total_logs,
+                      valid_logs = EXCLUDED.valid_logs,
+                      invalid_logs = EXCLUDED.invalid_logs,
+                      duplicate_logs = EXCLUDED.duplicate_logs,
+                      missing_timestamp_count = EXCLUDED.missing_timestamp_count,
+                      missing_ip_count = EXCLUDED.missing_ip_count,
+                      quality_score = EXCLUDED.quality_score,
+                      health_score = EXCLUDED.health_score""",
                     (upload.id, quality["total_logs"], quality["valid_logs"], quality["invalid_logs"],
                      quality["duplicate_logs"], quality["missing_timestamp_count"], quality["missing_ip_count"],
                      quality["quality_score"], quality["health_score"]),
