@@ -1,4 +1,0 @@
-dataset_rows=1200
-held_out_rows=360
-combination=pyod.average
-roc_auc=0.994650
