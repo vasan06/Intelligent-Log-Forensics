@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
-import { ArrowLeft, ArrowRight, FileText, ShieldAlert, Target } from "lucide-react";
+import { ArrowLeft, ArrowRight, FileText, ShieldAlert, Target, ShieldCheck, Zap, AlertTriangle } from "lucide-react";
 import { api, formatTime, formatTimeShort } from "../api/client";
 import type { IncidentDetail } from "../api/types";
 import { useApi } from "../hooks/useApi";
@@ -25,11 +25,18 @@ function AllIncidents() {
     <div className="page">
       <div className="page-header">
         <div className="page-title">
-          <h1 className="anim-fade-right">Incidents</h1>
-          <p className="anim-fade-right stagger-1">Correlated attack chains detected across your evidence.</p>
+          <h1 className="anim-fade-right flex items-center gap-2">
+            <ShieldAlert size={22} className="text-critical" />
+            <span>Correlated Attack Incidents</span>
+          </h1>
+          <p className="anim-fade-right stagger-1">
+            Multi-stage attack chains and anomalous behavior sequences correlated across evidence.
+          </p>
         </div>
         {withIncidents.length > 0 && (
-          <Badge tone="critical" dot={false} className="anim-fade-left">{withIncidents.length} files with incidents</Badge>
+          <Badge tone="critical" dot={false} className="anim-fade-left">
+            {withIncidents.length} Evidence Files with Threat Chains
+          </Badge>
         )}
       </div>
 
@@ -38,33 +45,35 @@ function AllIncidents() {
       ) : withIncidents.length === 0 ? (
         <Card>
           <EmptyState
-            title="No incidents detected"
-            hint="Upload and analyze log evidence to detect correlated attack chains."
+            title="No Correlated Incidents Detected"
+            hint="Upload and analyze security evidence or start the live SOC simulator to generate detections."
             icon={<ShieldAlert size={36} strokeWidth={1.4} />}
-            action={<Link className="btn btn-primary" to="/upload"><ShieldAlert size={14} /> Upload Evidence</Link>}
+            action={<Link className="btn btn-primary" to="/upload"><Zap size={14} /> Ingest Evidence</Link>}
           />
         </Card>
       ) : (
-        <div className="flex-col gap-3">
+        <div className="flex flex-col gap-4">
           {withIncidents.map((upload) => (
             <div
               key={upload.id}
-              className="card hover-lift"
-              style={{ padding: "var(--sp-5)", cursor: "pointer" }}
+              className="glass-card hover-lift p-5 cursor-pointer flex justify-between items-center"
               onClick={() => navigate(`/incidents/${upload.id}`)}
             >
-              <div className="flex justify-between items-center">
-                <div>
-                  <div className="flex items-center gap-2" style={{ marginBottom: 4 }}>
-                    <ShieldAlert size={15} style={{ color: "var(--critical)" }} />
-                    <span style={{ fontWeight: 600 }}>{upload.file_name}</span>
-                    <Badge tone="critical" dot={false}>{upload.incident_count} incident{(upload.incident_count ?? 0) > 1 ? "s" : ""}</Badge>
-                  </div>
-                  <div style={{ fontSize: "var(--text-xs)", color: "var(--text-muted)", fontFamily: "var(--font-mono)" }}>
-                    {upload.total_records.toLocaleString()} records · Uploaded {formatTime(upload.upload_time)}
-                  </div>
+              <div>
+                <div className="flex items-center gap-3 mb-1.5">
+                  <ShieldAlert size={16} className="text-critical" />
+                  <span className="font-bold text-base text-primary">{upload.file_name}</span>
+                  <Badge tone="critical" dot={false}>
+                    {upload.incident_count} Incident{(upload.incident_count ?? 0) > 1 ? "s" : ""}
+                  </Badge>
                 </div>
-                <ArrowRight size={15} style={{ color: "var(--text-muted)" }} className="animate-bounce-x" />
+                <div className="text-xs text-muted font-mono">
+                  {upload.total_records.toLocaleString()} Normalized Records · Ingested {formatTime(upload.upload_time)}
+                </div>
+              </div>
+              <div className="flex items-center gap-2 text-accent font-semibold text-xs">
+                <span>Investigate</span>
+                <ArrowRight size={15} className="animate-bounce-x" />
               </div>
             </div>
           ))}
@@ -90,17 +99,17 @@ function FileIncidents({ fileId }: { fileId: number }) {
   if (!data || data.incidents.length === 0) return (
     <div className="page">
       <Button variant="ghost" size="sm" icon={<ArrowLeft size={13} />} onClick={() => navigate("/incidents")} style={{ marginBottom: 8 }}>All Incidents</Button>
-      <Card><EmptyState title="No incidents" icon={<ShieldAlert size={36} strokeWidth={1.4} />} /></Card>
+      <Card><EmptyState title="No attack chains detected for this file" icon={<ShieldAlert size={36} strokeWidth={1.4} />} /></Card>
     </div>
   );
 
   const TABS: { id: ITab; label: string; count?: number }[] = [
-    { id: "overview", label: "Overview" },
-    { id: "timeline", label: "Timeline" },
-    { id: "events", label: "Events", count: inc?.events?.length },
-    { id: "mitre", label: "MITRE ATT&CK", count: inc?.events?.filter((e) => e.mitre_tactic).length },
-    { id: "evidence", label: "Evidence" },
-    { id: "recommendations", label: "Recommendations" },
+    { id: "overview", label: "Overview & Score" },
+    { id: "timeline", label: "Attack Timeline" },
+    { id: "events", label: "Correlated Events", count: inc?.events?.length },
+    { id: "mitre", label: "MITRE ATT&CK Mapping", count: inc?.events?.filter((e) => e.mitre_tactic).length },
+    { id: "evidence", label: "Evidence Scope" },
+    { id: "recommendations", label: "Playbook Actions" },
   ];
 
   return (
@@ -108,26 +117,30 @@ function FileIncidents({ fileId }: { fileId: number }) {
       <div className="page-breadcrumb anim-fade-down">
         <Link to="/incidents">Incidents</Link>
         <span>›</span>
-        <span className="page-breadcrumb-current">{inc?.title ?? `File #${fileId}`}</span>
+        <span className="page-breadcrumb-current">{inc?.title ?? `Evidence #${fileId}`}</span>
       </div>
 
       <div className="page-header">
-        <h1 className="anim-fade-right">Incident Details</h1>
+        <div>
+          <h1 className="anim-fade-right text-2xl font-bold text-primary">Incident Investigation Workspace</h1>
+          <p className="text-xs text-secondary mt-1">Multi-stage attack chain correlation and evidence timeline.</p>
+        </div>
         {inc && (
           <Link className="btn btn-primary btn-sm hover-glow anim-fade-left" to={`/reports/${fileId}`}>
-            <FileText size={13} /> Export Report
+            <FileText size={14} /> Export Forensic Report
           </Link>
         )}
       </div>
 
       {data.incidents.length > 1 && (
         <Card animate>
-          <div className="flex gap-2 flex-wrap">
+          <div className="flex gap-2 flex-wrap items-center">
+            <span className="text-xs font-mono text-muted uppercase tracking-wider mr-2">Attack Chains:</span>
             {data.incidents.map((i, idx) => (
               <button
                 key={idx}
                 onClick={() => { setSelected(i); setTab("overview"); }}
-                className={`btn btn-sm${selected === i || (selected === null && idx === 0) ? " btn-primary" : " btn-secondary"}`}
+                className={`btn btn-sm ${selected === i || (selected === null && idx === 0) ? "btn-primary" : "btn-secondary"}`}
               >
                 {i.title}
               </button>
@@ -138,36 +151,38 @@ function FileIncidents({ fileId }: { fileId: number }) {
 
       {inc && (
         <Card pad="none" flush animate delay={60}>
-          {/* Metadata row */}
-          <div style={{ padding: "var(--sp-5)", borderBottom: "1px solid var(--border-subtle)" }}>
+          {/* Metadata Row */}
+          <div className="p-5 border-b border-subtle bg-surface/50">
             <div className="grid-4">
               {[
-                { label: "Incident ID", value: `INC-${new Date().getFullYear()}-${String(fileId).padStart(5,"0")}` },
-                { label: "Severity", value: severityBadge(inc.severity) },
-                { label: "Status", value: <Badge tone="ok">Open</Badge> },
-                { label: "Created Time", value: <span className="mono" style={{ fontSize: 12 }}>{formatTime(inc.events?.[0]?.event_time)}</span> },
+                { label: "Incident Ref", value: <span className="font-mono text-accent font-bold">INC-{new Date().getFullYear()}-{String(fileId).padStart(5,"0")}</span> },
+                { label: "Threat Severity", value: severityBadge(inc.severity) },
+                { label: "Investigation Status", value: <Badge tone="ok">OPEN / ACTIVE</Badge> },
+                { label: "Initial Detection", value: <span className="mono text-xs text-secondary">{formatTime(inc.events?.[0]?.event_time)}</span> },
               ].map((f, i) => (
                 <div key={f.label} className={`anim-fade-up stagger-${i+1}`}>
-                  <div style={{ fontSize: "var(--text-xs)", fontWeight: 600, color: "var(--text-muted)", textTransform: "uppercase", letterSpacing: ".05em", marginBottom: 6 }}>{f.label}</div>
-                  <div style={{ fontSize: "var(--text-sm)", fontWeight: 500 }}>{f.value}</div>
+                  <div className="text-[11px] font-mono font-bold text-muted uppercase tracking-wider mb-1">{f.label}</div>
+                  <div>{f.value}</div>
                 </div>
               ))}
             </div>
           </div>
 
-          {/* Tabs */}
+          {/* Navigation Tabs */}
           <div className="tab-list">
             {TABS.map((t) => (
               <button key={t.id} className={`tab-trigger${tab === t.id ? " active" : ""}`} onClick={() => setTab(t.id)}>
                 {t.label}
                 {t.count != null && t.count > 0 && (
-                  <span style={{ background: tab === t.id ? "var(--accent)" : "var(--bg-raised)", color: tab === t.id ? "#fff" : "var(--text-muted)", borderRadius: "var(--r-full)", fontSize: 9, fontWeight: 700, padding: "1px 6px", marginLeft: 4 }}>{t.count}</span>
+                  <span className={`ml-1.5 px-1.5 py-0.5 rounded-full text-[10px] font-bold ${tab === t.id ? "bg-accent text-white" : "bg-raised text-muted"}`}>
+                    {t.count}
+                  </span>
                 )}
               </button>
             ))}
           </div>
 
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "var(--sp-6)", padding: "var(--sp-5)", animation: "fadeIn 200ms ease both" }}>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 p-6">
             <IncidentTabContent inc={inc} tab={tab} fileId={fileId} />
             <IncidentSidePanel inc={inc} tab={tab} />
           </div>
@@ -179,83 +194,112 @@ function FileIncidents({ fileId }: { fileId: number }) {
 
 function IncidentTabContent({ inc, tab, fileId }: { inc: IncidentDetail; tab: ITab; fileId: number }) {
   const sectionLabel = (t: string) => (
-    <div style={{ fontSize: "var(--text-xs)", fontWeight: 700, color: "var(--text-muted)", textTransform: "uppercase", letterSpacing: ".06em", marginBottom: 12 }}>{t}</div>
+    <div className="text-[11px] font-mono font-bold text-muted uppercase tracking-widest mb-2.5">{t}</div>
   );
+
   if (tab === "overview") return (
-    <div className="flex-col gap-5 anim-fade-up">
-      <div>{sectionLabel("Description")}<p style={{ fontSize: "var(--text-sm)", lineHeight: 1.7 }}>{inc.summary}</p></div>
+    <div className="flex flex-col gap-6 anim-fade-up">
       <div>
-        {sectionLabel("Risk Score")}
-        <div style={{ fontSize: 40, fontWeight: 800, letterSpacing: "-.03em", color: inc.score >= 70 ? "var(--critical)" : inc.score >= 50 ? "var(--high)" : "var(--medium)", lineHeight: 1 }}>
-          {inc.score.toFixed(0)}<span style={{ fontSize: 16, color: "var(--text-muted)", fontWeight: 400 }}> / 100</span>
+        {sectionLabel("Attack Chain Narrative")}
+        <p className="text-sm text-secondary leading-relaxed font-medium">{inc.summary}</p>
+      </div>
+      <div>
+        {sectionLabel("Overall Risk Score")}
+        <div className="flex items-baseline gap-2">
+          <span className={`text-4xl font-extrabold tracking-tight ${inc.score >= 70 ? "text-critical" : inc.score >= 50 ? "text-high" : "text-medium"}`}>
+            {inc.score.toFixed(0)}
+          </span>
+          <span className="text-sm text-muted font-mono font-medium">/ 100 Risk Index</span>
         </div>
-        <div className="progress-track" style={{ marginTop: 10, height: 8 }}>
+        <div className="progress-track mt-3 h-2.5">
           <div className={`progress-fill ${inc.score >= 70 ? "danger" : inc.score >= 50 ? "warning" : ""}`} style={{ width: `${inc.score}%` }} />
         </div>
       </div>
     </div>
   );
+
   if (tab === "timeline") return (
     <div className="anim-fade-up">
-      {sectionLabel("Incident Timeline")}
+      {sectionLabel("Sequential Attack Timeline")}
       <IncidentTimeline inc={inc} />
     </div>
   );
+
   if (tab === "events") return (
-    <div className="flex-col gap-2 anim-fade-up">
+    <div className="flex flex-col gap-2.5 anim-fade-up">
+      {sectionLabel("Attributed Telemetry Events")}
       {(inc.events ?? []).map((ev, i) => (
-        <div key={i} className={`anim-fade-up stagger-${Math.min(i+1,8)}`} style={{ padding: "var(--sp-3)", background: "var(--bg-raised)", borderRadius: "var(--r-lg)", border: "1px solid var(--border-subtle)" }}>
-          <div className="mono dim" style={{ fontSize: 11 }}>{formatTimeShort(ev.event_time)}</div>
-          <div style={{ fontSize: "var(--text-sm)", fontWeight: 500, marginTop: 3 }}>{ev.description}</div>
+        <div key={i} className={`p-3 bg-raised rounded-xl border border-subtle anim-fade-up stagger-${Math.min(i+1,8)}`}>
+          <div className="mono dim text-[11px]">{formatTimeShort(ev.event_time)}</div>
+          <div className="text-sm font-semibold text-primary mt-1">{ev.description}</div>
         </div>
       ))}
     </div>
   );
+
   if (tab === "mitre") return (
-    <div className="flex-col gap-3 anim-fade-up">
-      {(inc.events ?? []).filter((e) => e.mitre_tactic).length === 0
-        ? <EmptyState title="No MITRE data" />
-        : (inc.events ?? []).filter((e) => e.mitre_tactic).map((ev, i) => (
-            <div key={i} className={`flex gap-3 items-start anim-fade-right stagger-${Math.min(i+1,8)}`}>
-              <Badge tone="mitre" dot={false}><Target size={9} /> {ev.mitre_tactic}</Badge>
-              <span style={{ fontSize: "var(--text-xs)", color: "var(--text-secondary)", lineHeight: 1.5 }}>{ev.description}</span>
-            </div>
-          ))}
+    <div className="flex flex-col gap-3 anim-fade-up">
+      {sectionLabel("Observed MITRE ATT&CK Techniques")}
+      {(inc.events ?? []).filter((e) => e.mitre_tactic).length === 0 ? (
+        <EmptyState title="No MITRE tactics mapped" />
+      ) : (
+        (inc.events ?? []).filter((e) => e.mitre_tactic).map((ev, i) => (
+          <div key={i} className={`flex gap-3 items-start p-2.5 rounded-lg bg-raised border border-subtle anim-fade-right stagger-${Math.min(i+1,8)}`}>
+            <Badge tone="mitre" dot={false}><Target size={10} /> {ev.mitre_tactic}</Badge>
+            <span className="text-xs text-secondary leading-relaxed">{ev.description}</span>
+          </div>
+        ))
+      )}
     </div>
   );
+
   if (tab === "evidence") return (
     <div className="kv-list anim-fade-up">
-      <div className="kv-item"><span className="kv-key">File</span><span className="kv-value mono" style={{ fontSize: 11 }}>#{fileId}</span></div>
-      <div className="kv-item"><span className="kv-key">Events</span><span className="kv-value">{inc.events?.length ?? 0}</span></div>
-      <div className="kv-item"><span className="kv-key">Severity</span>{severityBadge(inc.severity)}</div>
-      <div className="kv-item"><span className="kv-key">Score</span><span className="kv-value">{inc.score.toFixed(1)}</span></div>
+      {sectionLabel("Evidence Reference")}
+      <div className="kv-item"><span className="kv-key">Evidence File Ref</span><span className="kv-value font-mono font-bold text-accent">#{fileId}</span></div>
+      <div className="kv-item"><span className="kv-key">Correlated Events</span><span className="kv-value font-mono font-bold">{inc.events?.length ?? 0}</span></div>
+      <div className="kv-item"><span className="kv-key">Severity Level</span>{severityBadge(inc.severity)}</div>
+      <div className="kv-item"><span className="kv-key">Calculated Score</span><span className="kv-value font-mono font-bold">{inc.score.toFixed(1)}</span></div>
     </div>
   );
+
   if (tab === "recommendations") return (
-    <div className="flex-col gap-3 anim-fade-up">
-      <div className="alert alert-warning"><span style={{ fontSize: 13 }}>Review affected systems and reset compromised credentials immediately.</span></div>
-      {["Isolate the affected host from the network.", "Reset all credentials for impacted accounts.", "Review and rotate API keys and secrets.", "Enable enhanced logging on affected systems.", "Perform a full forensic review before restoring service."].map((r, i) => (
-        <div key={i} className={`flex gap-3 anim-fade-right stagger-${Math.min(i+1,8)}`} style={{ fontSize: "var(--text-sm)" }}>
-          <span className="mono" style={{ fontSize: 10, color: "var(--accent)", fontWeight: 700, flexShrink: 0, paddingTop: 2 }}>{String(i+1).padStart(2,"0")}.</span>
-          <span style={{ lineHeight: 1.6 }}>{r}</span>
+    <div className="flex flex-col gap-3 anim-fade-up">
+      {sectionLabel("Playbook Response Steps")}
+      <div className="alert alert-warning text-xs leading-relaxed">
+        Immediate containment actions recommended based on incident tactics and severity.
+      </div>
+      {[
+        "Isolate affected source IP addresses at perimeter firewall.",
+        "Force credential rotation for any compromised user accounts.",
+        "Revoke active session tokens and API keys across impacted endpoints.",
+        "Enable elevated verbose telemetry logging on affected hosts.",
+        "Run full forensic audit prior to restoring production connectivity."
+      ].map((r, i) => (
+        <div key={i} className={`flex gap-3 p-2.5 rounded-lg bg-raised border border-subtle anim-fade-right stagger-${Math.min(i+1,8)}`}>
+          <span className="mono text-xs font-bold text-accent shrink-0 pt-0.5">{String(i+1).padStart(2,"0")}.</span>
+          <span className="text-xs text-primary leading-relaxed">{r}</span>
         </div>
       ))}
     </div>
   );
+
   return null;
 }
 
 function IncidentSidePanel({ inc, tab }: { inc: IncidentDetail; tab: ITab }) {
-  const label = tab === "timeline" ? "AI Explanation" : "Incident Timeline";
+  const label = tab === "timeline" ? "Detection Rationale" : "Attack Sequence Timeline";
   return (
-    <div style={{ borderLeft: "1px solid var(--border-subtle)", paddingLeft: "var(--sp-6)" }}>
-      <div style={{ fontSize: "var(--text-xs)", fontWeight: 700, color: "var(--text-muted)", textTransform: "uppercase", letterSpacing: ".06em", marginBottom: 14 }}>{label}</div>
+    <div className="border-t md:border-t-0 md:border-l border-subtle md:pl-6 pt-4 md:pt-0">
+      <div className="text-[11px] font-mono font-bold text-muted uppercase tracking-widest mb-3">{label}</div>
       {tab === "timeline" ? (
-        <div className="anim-fade-up">
-          <p style={{ fontSize: "var(--text-sm)", lineHeight: 1.7, marginBottom: 12 }}>
-            The system detected suspicious patterns across multiple log entries. Indicators of compromise were correlated and attributed to a single attack chain.
+        <div className="anim-fade-up flex flex-col gap-3">
+          <p className="text-xs text-secondary leading-relaxed">
+            The detection engine correlated multiple suspicious anomalies across timestamps and origin IPs into a single cohesive attack chain.
           </p>
-          <p style={{ fontSize: "var(--text-sm)", lineHeight: 1.7, color: "var(--text-muted)" }}>{inc.summary}</p>
+          <div className="p-3 rounded-lg bg-raised border border-subtle text-xs text-primary font-mono leading-relaxed">
+            {inc.summary}
+          </div>
         </div>
       ) : (
         <IncidentTimeline inc={inc} compact />
@@ -272,17 +316,17 @@ function IncidentTimeline({ inc, compact = false }: { inc: IncidentDetail; compa
         <div key={i} className={`timeline-event anim-fade-up stagger-${Math.min(i+1,8)}`}>
           <div className={`timeline-event-dot ${(inc.severity ?? "").toLowerCase()}`} />
           <div className="timeline-event-content">
-            {!compact && <div className="timeline-event-type">{ev.event_type ?? "Event"}</div>}
-            <div className="timeline-event-desc" style={{ fontSize: compact ? "var(--text-xs)" : undefined }}>{ev.description}</div>
+            {!compact && <div className="timeline-event-type">{ev.event_type ?? "Telemetry Event"}</div>}
+            <div className="timeline-event-desc">{ev.description}</div>
             <div className="timeline-event-time">{formatTimeShort(ev.event_time)}</div>
             {ev.mitre_tactic && !compact && (
-              <div style={{ marginTop: 4 }}><Badge tone="mitre" dot={false}><Target size={9} /> {ev.mitre_tactic}</Badge></div>
+              <div className="mt-1"><Badge tone="mitre" dot={false}><Target size={9} /> {ev.mitre_tactic}</Badge></div>
             )}
           </div>
         </div>
       ))}
       {compact && (inc.events?.length ?? 0) > 6 && (
-        <div style={{ paddingLeft: 28, fontSize: "var(--text-xs)", color: "var(--accent)", cursor: "pointer", marginTop: 8 }}>View Full Timeline →</div>
+        <div className="pl-7 text-xs text-accent font-mono cursor-pointer mt-2">View Full Attack Timeline →</div>
       )}
     </div>
   );
