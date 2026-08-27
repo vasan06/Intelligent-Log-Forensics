@@ -52,37 +52,53 @@
     {% endwith %}
     {% block content %}{% endblock %}
   </main>
-  <script>
-    document.addEventListener("DOMContentLoaded", () => {
-      {% if current_user.is_authenticated %}
-      fetch('/api/v1/auth/me').then(response => response.json()).then(user => {
-        document.querySelectorAll('.user-initial').forEach(node => { node.textContent = user.name.slice(0, 1); });
-        document.querySelectorAll('.user-name').forEach(node => { node.textContent = user.name; });
-        document.querySelectorAll('.user-role').forEach(node => { node.textContent = user.role; });
-      }).catch(console.error);
-      {% endif %}
-      document.querySelectorAll('[data-parallax]').forEach(model => document.addEventListener('pointermove', event => {
-        const x = (event.clientX / innerWidth - .5) * 12;
-        const y = (event.clientY / innerHeight - .5) * 12;
-        model.style.setProperty('--mouse-x', `${x}px`);
-        model.style.setProperty('--mouse-y', `${y}px`);
-      }, { passive: true }));
-      document.querySelectorAll('[data-card-target]').forEach(card => card.addEventListener('click', event => {
-        if (!event.target.closest('a,button,canvas')) window.open(card.dataset.cardTarget, '_blank', 'noopener');
-      }));
-      document.querySelectorAll('.theme-toggle').forEach(button => {
-        button.innerHTML = `<i data-lucide="${document.documentElement.dataset.theme === 'dark' ? 'sun' : 'moon'}"></i>`;
-      });
-      window.lucide && lucide.createIcons();
-      document.querySelectorAll('.theme-toggle').forEach(button => button.addEventListener('click', () => {
-        const next = document.documentElement.dataset.theme === 'dark' ? 'light' : 'dark';
-        document.documentElement.dataset.theme = next;
-        localStorage.setItem('lf-theme', next);
-        button.innerHTML = `<i data-lucide="${next === 'dark' ? 'sun' : 'moon'}"></i>`;
-        window.lucide && lucide.createIcons();
-      }));
-    });
-  </script>
+
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+    fetch('/api/v1/auth/me')
+        .then(response => {
+            if (!response.ok) {
+                throw new Error("Not authenticated");
+            }
+            return response.json();
+        })
+        .then(user => {
+            document.querySelectorAll('.user-initial').forEach(node => {
+                node.textContent = user.name.slice(0, 1);
+            });
+
+            document.querySelectorAll('.user-name').forEach(node => {
+                node.textContent = user.name;
+            });
+
+            document.querySelectorAll('.user-role').forEach(node => {
+                node.textContent = user.role;
+            });
+        })
+        .catch(console.error);
+});
+
+    if (isAuthenticated) {
+        fetch('/api/v1/auth/me')
+            .then(response => response.json())
+            .then(user => {
+                document.querySelectorAll('.user-initial').forEach(node => {
+                    node.textContent = user.name.slice(0, 1);
+                });
+
+                document.querySelectorAll('.user-name').forEach(node => {
+                    node.textContent = user.name;
+                });
+
+                document.querySelectorAll('.user-role').forEach(node => {
+                    node.textContent = user.role;
+                });
+            })
+            .catch(console.error);
+    }
+
+</script>
+
   {% block scripts %}{% endblock %}
 </body>
 </html>

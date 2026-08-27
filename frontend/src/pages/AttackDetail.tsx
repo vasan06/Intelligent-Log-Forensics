@@ -1,5 +1,5 @@
-import { Link, useParams } from "react-router-dom";
-import { AlertTriangle, ArrowLeft, CheckCircle, ExternalLink, Target, Zap } from "lucide-react";
+﻿import { Link, useParams } from "react-router-dom";
+import { AlertTriangle, ArrowLeft, CheckCircle, ExternalLink, Target, Zap, ShieldAlert, BookOpen } from "lucide-react";
 import { api } from "../api/client";
 import { useApi } from "../hooks/useApi";
 import { Badge } from "../components/ui/Badge";
@@ -33,9 +33,11 @@ export function AttackDetail() {
   if (!attack) return (
     <div className="page">
       <Card>
-        <EmptyState title="Technique not found" hint={`"${slug}" is not in the attack library.`}
+        <EmptyState
+          title="ATT&CK Technique Not Found"
+          hint={`"${slug}" is not indexed in the threat intelligence catalog.`}
           icon={<AlertTriangle size={36} strokeWidth={1.4} />}
-          action={<Link className="btn btn-secondary" to="/attack-intelligence"><ArrowLeft size={14} /> Back to library</Link>}
+          action={<Link className="btn btn-secondary" to="/attack-intelligence"><ArrowLeft size={14} /> Back to Catalog</Link>}
         />
       </Card>
     </div>
@@ -46,76 +48,87 @@ export function AttackDetail() {
   return (
     <div className="page">
       <div className="page-breadcrumb anim-fade-down">
-        <Link to="/attack-intelligence">Attack Library</Link>
+        <Link to="/attack-intelligence">ATT&amp;CK Catalog</Link>
         <span>›</span>
         <span className="page-breadcrumb-current">{attack.name}</span>
       </div>
 
       <div className="page-header">
         <div>
-          <h1 className="anim-fade-right" style={{ marginTop: 8 }}>{attack.name}</h1>
-          <div className="flex gap-2 flex-wrap anim-fade-right stagger-1" style={{ marginTop: 8 }}>
+          <h1 className="anim-fade-right text-2xl font-bold text-primary mt-1">{attack.name}</h1>
+          <div className="flex gap-2 flex-wrap items-center mt-2.5 anim-fade-right stagger-1">
             <Badge tone={urgencyTone(attack.urgency ?? "")} dot={false}>{attack.urgency}</Badge>
             <Badge tone="mitre" dot={false}><Target size={10} /> {attack.mitre}</Badge>
             <Badge tone="info" dot={false}>{attack.tactic}</Badge>
           </div>
         </div>
         {attack.reference && (
-          <a href={attack.reference} target="_blank" rel="noopener noreferrer" className="btn btn-secondary btn-sm anim-fade-left">
-            <ExternalLink size={12} /> View on MITRE
+          <a
+            href={attack.reference}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="btn btn-secondary btn-sm anim-fade-left flex items-center gap-1.5"
+          >
+            <ExternalLink size={13} /> View on MITRE.org
           </a>
         )}
       </div>
 
       <div className="grid-2">
-        <Card title={<><AlertTriangle size={14} /> Overview</>} animate delay={0}>
-          <p style={{ fontSize: "var(--text-sm)", lineHeight: 1.7, marginBottom: attack.history ? 14 : 0 }}>{attack.summary}</p>
-          {attack.history && <p style={{ fontSize: "var(--text-sm)", lineHeight: 1.7, color: "var(--text-muted)" }}>{attack.history}</p>}
+        <Card title={<><AlertTriangle size={15} /> Threat Summary &amp; Context</>} animate delay={0}>
+          <p className="text-sm text-secondary leading-relaxed mb-3">{attack.summary}</p>
+          {attack.history && (
+            <div className="p-3.5 rounded-xl bg-raised border border-subtle text-xs text-muted leading-relaxed font-mono">
+              {attack.history}
+            </div>
+          )}
         </Card>
 
-        <Card title={<><Zap size={14} /> Detection Signals</>} animate delay={60}>
+        <Card title={<><Zap size={15} /> Forensic Detection Signals</>} animate delay={60}>
           {attack.signals?.length ? (
-            <ul className="flex-col gap-3">
+            <ul className="flex flex-col gap-3">
               {(attack.signals as string[]).map((s, i) => (
-                <li key={i} className={`flex gap-2 anim-fade-right stagger-${Math.min(i + 1, 8)}`} style={{ fontSize: "var(--text-sm)" }}>
-                  <span style={{ color: "var(--medium)", fontWeight: 700, flexShrink: 0 }}>·</span>
-                  <span style={{ lineHeight: 1.5 }}>{s}</span>
+                <li key={i} className={`flex gap-3 items-start p-2.5 rounded-lg bg-raised border border-subtle anim-fade-right stagger-${Math.min(i + 1, 8)} text-xs`}>
+                  <span className="text-medium font-bold text-sm shrink-0">⚡</span>
+                  <span className="text-primary leading-relaxed">{s}</span>
                 </li>
               ))}
             </ul>
-          ) : <EmptyState title="No signals listed" />}
+          ) : <EmptyState title="No detection signals specified" />}
         </Card>
 
-        <Card title={<><CheckCircle size={14} /> Response Playbook</>} animate delay={80}>
+        <Card title={<><CheckCircle size={15} /> Step-by-Step Response Playbook</>} animate delay={80}>
           {attack.workflow?.length ? (
-            <ol className="flex-col gap-4">
+            <ol className="flex flex-col gap-3">
               {(attack.workflow as string[]).map((step, i) => (
-                <li key={i} className={`flex gap-3 anim-fade-up stagger-${Math.min(i + 1, 8)}`} style={{ fontSize: "var(--text-sm)" }}>
-                  <span className="mono" style={{ fontSize: 10, color: "var(--accent)", width: 22, flexShrink: 0, paddingTop: 2, fontWeight: 700 }}>{String(i + 1).padStart(2, "0")}.</span>
-                  <span style={{ lineHeight: 1.6 }}>{step}</span>
+                <li key={i} className={`flex gap-3 items-start p-2.5 rounded-lg bg-raised border border-subtle anim-fade-up stagger-${Math.min(i + 1, 8)} text-xs`}>
+                  <span className="mono text-xs font-bold text-accent shrink-0 pt-0.5">{String(i + 1).padStart(2, "0")}.</span>
+                  <span className="text-primary leading-relaxed font-medium">{step}</span>
                 </li>
               ))}
             </ol>
-          ) : <EmptyState title="No playbook available" />}
+          ) : <EmptyState title="No response playbook available" />}
         </Card>
 
-        <Card title="Remediation" animate delay={120}>
+        <Card title={<><ShieldAlert size={15} /> Hardening &amp; Remediation</>} animate delay={120}>
           {solutions.length ? (
-            <ul className="flex-col gap-3">
+            <ul className="flex flex-col gap-3">
               {solutions.map((s, i) => (
-                <li key={i} className={`flex gap-2 anim-fade-right stagger-${Math.min(i + 1, 8)}`} style={{ fontSize: "var(--text-sm)" }}>
-                  <CheckCircle size={13} style={{ color: "var(--ok)", flexShrink: 0, marginTop: 2 }} />
-                  <span style={{ lineHeight: 1.6 }}>{s}</span>
+                <li key={i} className={`flex gap-3 items-start p-2.5 rounded-lg bg-raised border border-subtle anim-fade-right stagger-${Math.min(i + 1, 8)} text-xs`}>
+                  <CheckCircle size={14} className="text-ok shrink-0 mt-0.5" />
+                  <span className="text-primary leading-relaxed">{s}</span>
                 </li>
               ))}
             </ul>
-          ) : <EmptyState title="No remediation listed" />}
+          ) : <EmptyState title="No remediation steps specified" />}
         </Card>
       </div>
 
       {attack.example && (
-        <Card title="Real-world Example" animate delay={0}>
-          <p style={{ fontSize: "var(--text-sm)", lineHeight: 1.7 }}>{attack.example}</p>
+        <Card title={<><BookOpen size={15} /> Real-World Cyber Incident Case Study</>} animate delay={140}>
+          <div className="p-4 rounded-xl bg-raised border border-subtle text-xs text-secondary leading-relaxed font-mono">
+            {attack.example}
+          </div>
         </Card>
       )}
     </div>
