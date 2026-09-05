@@ -65,8 +65,32 @@ def create_app(config_object=Config):
     def same_origin_headers(response):
         if request.headers.get("Origin") == app.config["APP_ORIGIN"]:
             response.headers["Access-Control-Allow-Origin"] = app.config["APP_ORIGIN"]
+    def security_and_cors_headers(response):
+        origin = request.headers.get("Origin")
+        allowed = {app.config["APP_ORIGIN"], app.config.get("FRONTEND_ORIGIN") or ""}
+        allowed.discard("")
+        if origin and origin in allowed:
+            response.headers["Access-Control-Allow-Origin"] = origin
             response.headers["Access-Control-Allow-Credentials"] = "true"
+            response.headers["Access-Control-Allow-Headers"] = "Content-Type, X-CSRF-TOKEN, Authorization"
+            response.headers["Access-Control-Allow-Methods"] = "GET, POST, PUT, PATCH, DELETE, OPTIONS"
             response.headers["Vary"] = "Origin"
+
+        # Strict Security Headers
+        response.headers["X-Content-Type-Options"] = "nosniff"
+        response.headers["X-Frame-Options"] = "DENY"
+        response.headers["X-XSS-Protection"] = "1; mode=block"
+        response.headers["Referrer-Policy"] = "strict-origin-when-cross-origin"
+        response.headers["Permissions-Policy"] = "camera=(), microphone=(), geolocation=()"
+        response.headers["Content-Security-Policy"] = (
+            "default-src 'self'; "
+            "script-src 'self' 'unsafe-inline'; "
+            "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; "
+            "font-src 'self' https://fonts.gstatic.com data:; "
+            "img-src 'self' data: blob:; "
+            "connect-src 'self' ws: wss: http://localhost:5000 http://127.0.0.1:5000 http://localhost:5173; "
+            "frame-ancestors 'none';"
+        )
         return response
 
     @jwt.user_lookup_loader

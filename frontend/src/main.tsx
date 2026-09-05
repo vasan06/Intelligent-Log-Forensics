@@ -15,6 +15,7 @@ import "./styles/ui.css";
 import "./styles/animations.css";
 
 import { ToastProvider } from "./components/ui/Toast";
+import { ThemeProvider } from "./context/ThemeContext";
 import { App } from "./App";
 
 createRoot(document.getElementById("root")!).render(
@@ -23,6 +24,11 @@ createRoot(document.getElementById("root")!).render(
       <ToastProvider>
         <App />
       </ToastProvider>
+      <ThemeProvider>
+        <ToastProvider>
+          <App />
+        </ToastProvider>
+      </ThemeProvider>
     </BrowserRouter>
   </StrictMode>,
 );

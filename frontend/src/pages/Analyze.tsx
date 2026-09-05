@@ -3,6 +3,7 @@ import { Link, useNavigate } from "react-router-dom";
 import {
   AlertTriangle, ArrowRight, CheckCircle2, Cpu,
   FileUp, Loader2, Play, Radio, Square, UploadCloud, Zap, ShieldAlert, Layers, ShieldCheck
+  FileUp, Loader2, Play, Radio, Square, UploadCloud, Zap, Layers
 } from "lucide-react";
 import { api, formatTime } from "../api/client";
 import type { GeneratorStatus } from "../api/types";
