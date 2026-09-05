@@ -2,6 +2,8 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { ArrowRight, FolderOpen, Upload, Search, Hash, ShieldAlert } from "lucide-react";
 import { api, formatTime, shortHash } from "../api/client";
+import { ArrowRight, FolderOpen, Upload, Search } from "lucide-react";
+import { api, formatTime } from "../api/client";
 import { useApi } from "../hooks/useApi";
 import { Badge, statusBadge } from "../components/ui/Badge";
 import { Button } from "../components/ui/Button";

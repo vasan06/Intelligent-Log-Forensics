@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import { ArrowRight, Activity, Cpu, Database, FileText, Search, ShieldAlert, CheckCircle, Lock, Zap, Moon, Sun } from "lucide-react";
+import { ArrowRight, Activity, Cpu, Database, FileText, Search, ShieldAlert, Zap, Moon, Sun } from "lucide-react";
 import { useInView } from "../hooks/useInView";
 import { useTheme } from "../context/ThemeContext";
 
@@ -124,6 +125,7 @@ export function Landing() {
 
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4 p-6 bg-surface/50">
             {STATS.map((s, i) => (
+            {STATS.map((s) => (
               <div key={s.label} className="p-4 rounded-xl bg-raised/70 border border-subtle text-left">
                 <div className="text-[11px] font-mono font-bold text-muted uppercase tracking-wider mb-1">{s.label}</div>
                 <div className="text-2xl font-extrabold text-primary" style={{ color: s.color }}>

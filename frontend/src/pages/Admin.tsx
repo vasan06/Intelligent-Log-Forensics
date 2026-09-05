@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { Activity, CheckCircle, Cpu, Database, Play, Server, Shield, Square, Trash2, UserCog, Users, Zap, ShieldAlert, Layers } from "lucide-react";
+import { Activity, CheckCircle, Cpu, Database, Play, Server, Shield, Square, Trash2, UserCog, Users } from "lucide-react";
 import { api, formatTime } from "../api/client";
 import { useApi } from "../hooks/useApi";
 import { Badge, statusBadge } from "../components/ui/Badge";
