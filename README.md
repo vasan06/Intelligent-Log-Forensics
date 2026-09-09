@@ -43,6 +43,16 @@ docker compose up --build
 
 App available at http://localhost:5000 by default.
 
+## DB Execution comments:
+docker compose exec db psql -U postgres -d intelligent_log_forensics
+
+eg:
+
+SELECT id, name, email, created_at
+FROM users
+WHERE id = 6;
+
+
 ## Environment variables
 
 | Variable | Required | Description |

@@ -1,6 +1,5 @@
 import { useMemo, useState } from "react";
 import { Link } from "react-router-dom";
-import { ArrowRight, Search, Target, ShieldAlert, Zap, Filter } from "lucide-react";
 import { ArrowRight, Search, Target } from "lucide-react";
 import { api } from "../api/client";
 import { useApi } from "../hooks/useApi";

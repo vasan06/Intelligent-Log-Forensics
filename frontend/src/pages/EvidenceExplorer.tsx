@@ -1,9 +1,8 @@
 import { useMemo, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import {
-  AlertTriangle, ArrowLeft, FileText, Hash,
-  Search, ShieldAlert, Target, ThumbsDown, ThumbsUp, Activity, CheckCircle, ShieldCheck
-  Search, ShieldAlert, Target, ThumbsDown, ThumbsUp, Activity
+  Activity, AlertTriangle, ArrowLeft, FileText, Hash,
+  Search, ShieldAlert, Target, ThumbsDown, ThumbsUp
 } from "lucide-react";
 import { api, formatTime, formatTimeShort, shortHash } from "../api/client";
 import type { IncidentDetail, RiskEvent } from "../api/types";

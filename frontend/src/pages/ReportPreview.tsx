@@ -1,7 +1,6 @@
 import { useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { ArrowLeft, Download, FileText, Activity, ShieldAlert, CheckCircle, Hash } from "lucide-react";
-import { ArrowLeft, Download, FileText, Activity, ShieldAlert } from "lucide-react";
+import { Activity, ArrowLeft, Download, FileText, ShieldAlert } from "lucide-react";
 import { api, formatTime, shortHash } from "../api/client";
 import { useApi } from "../hooks/useApi";
 import { Badge, severityBadge, statusBadge } from "../components/ui/Badge";
