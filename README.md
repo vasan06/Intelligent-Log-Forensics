@@ -25,6 +25,15 @@ PostgreSQL  +  PyOD ML models  +  SSE event stream
 | PDF       | ReportLab |
 | Container | Docker Compose |
 
+## Code maintainability
+
+git switch -c <branch-name>
+git pull origin master/branch
+git add .
+git commit -m "message"
+git pull origin main
+docker compose up -d --build
+
 ## Quick start
 
 ```bash
@@ -33,6 +42,16 @@ docker compose up --build
 ```
 
 App available at http://localhost:5000 by default.
+
+## DB Execution comments:
+docker compose exec db psql -U postgres -d intelligent_log_forensics
+
+eg:
+
+SELECT id, name, email, created_at
+FROM users
+WHERE id = 6;
+
 
 ## Environment variables
 

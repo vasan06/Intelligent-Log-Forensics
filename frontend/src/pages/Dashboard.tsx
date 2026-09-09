@@ -1,7 +1,6 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { Activity, AlertTriangle, ArrowRight, Calendar, HardDrive, ShieldAlert, Target, TrendingUp, Radio, RefreshCw, Zap } from "lucide-react";
-import { Activity, AlertTriangle, ArrowRight, Calendar, HardDrive, ShieldAlert, Target, TrendingUp, Radio, Zap } from "lucide-react";
+import { Activity, AlertTriangle, ArrowRight, Calendar, HardDrive, Radio, ShieldAlert, Target, TrendingUp, Zap } from "lucide-react";
 import { api, formatTime } from "../api/client";
 import { useApi } from "../hooks/useApi";
 import { useLiveStream } from "../hooks/useLiveStream";

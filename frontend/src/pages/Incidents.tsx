@@ -1,6 +1,5 @@
 import { useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
-import { ArrowLeft, ArrowRight, FileText, ShieldAlert, Target, ShieldCheck, Zap, AlertTriangle } from "lucide-react";
 import { ArrowLeft, ArrowRight, FileText, ShieldAlert, Target, Zap } from "lucide-react";
 import { api, formatTime, formatTimeShort } from "../api/client";
 import type { IncidentDetail } from "../api/types";
