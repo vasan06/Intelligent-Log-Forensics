@@ -1,4 +1,4 @@
-﻿import { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { ShieldAlert, AlertCircle, Eye, EyeOff, Lock, Mail, ArrowRight, Sun, Moon } from "lucide-react";
 import { api } from "../api/client";
@@ -46,17 +46,9 @@ export function Login() {
         </button>
       </div>
 
-      {/* Cyber Atmospheric Blobs */}
-      <div className="fixed inset-0 overflow-hidden pointer-events-none z-0">
-        <div className="absolute top-1/4 left-1/4 w-96 h-96 rounded-full bg-blue-500/10 blur-[100px] animate-pulse" />
-        <div className="absolute bottom-1/4 right-1/4 w-80 h-80 rounded-full bg-indigo-500/10 blur-[90px] animate-pulse" style={{ animationDelay: "2s" }} />
-      </div>
-
-      <div className="auth-card anim-scale-in glass-card relative z-10 shadow-2xl">
-        <div className="scan-line" />
-
+      <div className="auth-card anim-scale-in glass-card relative z-10 shadow-2xl p-6 rounded-2xl border border-subtle">
         <div className="flex items-center gap-3 mb-6">
-          <div className="auth-logo-mark anim-fade-down" style={{ background: "linear-gradient(135deg, var(--accent), var(--accent-hover))" }}>
+          <div className="w-10 h-10 rounded-lg flex items-center justify-center text-white font-bold" style={{ background: "linear-gradient(135deg, var(--accent), var(--accent-hover))" }}>
             <ShieldAlert size={22} color="#fff" />
           </div>
           <div>
@@ -68,7 +60,7 @@ export function Login() {
         <h1 className="text-xl font-bold text-primary mb-1">Analyst Authentication</h1>
         <p className="text-xs text-secondary mb-6">Sign in to access the forensics command workstation</p>
 
-        <form className="auth-form" onSubmit={submit}>
+        <form className="auth-form flex flex-col gap-4" onSubmit={submit}>
           <div className="field anim-fade-up stagger-1">
             <label className="field-label" htmlFor="email">Analyst Email</label>
             <div className="input-group">
@@ -77,7 +69,7 @@ export function Login() {
                 id="email"
                 type="email"
                 className="input"
-                placeholder="analyst@example.com"
+                placeholder="analyst@domain.com"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 autoComplete="email"
@@ -126,10 +118,6 @@ export function Login() {
         <p className="text-xs text-secondary text-center mt-6 anim-fade-up stagger-4">
           Need an account? <Link to="/register" className="font-bold text-accent hover:underline">Register analyst</Link>
         </p>
-
-        <div className="anim-fade-up stagger-5 mt-5 p-3 rounded-xl bg-raised border border-subtle text-[11px] font-mono text-muted text-center">
-          Default Account: <span className="text-primary font-bold">analyst@example.com</span> · <span className="text-primary font-bold">Analyst123!</span>
-        </div>
       </div>
     </div>
   );

@@ -30,12 +30,12 @@ function AllIncidents() {
             <span>Correlated Attack Incidents</span>
           </h1>
           <p className="anim-fade-right stagger-1">
-            Multi-stage attack chains and anomalous behavior sequences correlated across evidence.
+            Multi-stage attack chains correlated across ingested log telemetry.
           </p>
         </div>
         {withIncidents.length > 0 && (
           <Badge tone="critical" dot={false} className="anim-fade-left">
-            {withIncidents.length} Evidence Files with Threat Chains
+            {withIncidents.length} Evidence Files with Threats
           </Badge>
         )}
       </div>
@@ -46,9 +46,9 @@ function AllIncidents() {
         <Card>
           <EmptyState
             title="No Correlated Incidents Detected"
-            hint="Upload and analyze security evidence or start the live SOC simulator to generate detections."
+            hint="Upload security log evidence to correlate threat events into incident attack chains."
             icon={<ShieldAlert size={36} strokeWidth={1.4} />}
-            action={<Link className="btn btn-primary" to="/upload"><Zap size={14} /> Ingest Evidence</Link>}
+            action={<Link className="btn btn-primary" to="/upload"><Zap size={14} /> Ingest Log File</Link>}
           />
         </Card>
       ) : (
@@ -56,7 +56,7 @@ function AllIncidents() {
           {withIncidents.map((upload) => (
             <div
               key={upload.id}
-              className="glass-card hover-lift p-5 cursor-pointer flex justify-between items-center"
+              className="card hover-lift p-5 cursor-pointer flex justify-between items-center"
               onClick={() => navigate(`/incidents/${upload.id}`)}
             >
               <div>
@@ -68,12 +68,12 @@ function AllIncidents() {
                   </Badge>
                 </div>
                 <div className="text-xs text-muted font-mono">
-                  {upload.total_records.toLocaleString()} Normalized Records · Ingested {formatTime(upload.upload_time)}
+                  {upload.total_records.toLocaleString()} Records · Ingested {formatTime(upload.upload_time)}
                 </div>
               </div>
               <div className="flex items-center gap-2 text-accent font-semibold text-xs">
-                <span>Investigate</span>
-                <ArrowRight size={15} className="animate-bounce-x" />
+                <span>Inspect Attack Chains</span>
+                <ArrowRight size={15} />
               </div>
             </div>
           ))}
@@ -83,7 +83,7 @@ function AllIncidents() {
   );
 }
 
-type ITab = "overview" | "timeline" | "events" | "mitre" | "evidence" | "recommendations";
+type ITab = "overview" | "timeline" | "events" | "mitre" | "evidence";
 
 function FileIncidents({ fileId }: { fileId: number }) {
   const navigate = useNavigate();
@@ -98,7 +98,9 @@ function FileIncidents({ fileId }: { fileId: number }) {
 
   if (!data || data.incidents.length === 0) return (
     <div className="page">
-      <Button variant="ghost" size="sm" icon={<ArrowLeft size={13} />} onClick={() => navigate("/incidents")} style={{ marginBottom: 8 }}>All Incidents</Button>
+      <Button variant="ghost" size="sm" icon={<ArrowLeft size={13} />} onClick={() => navigate("/incidents")} style={{ marginBottom: 8 }}>
+        All Incidents
+      </Button>
       <Card><EmptyState title="No attack chains detected for this file" icon={<ShieldAlert size={36} strokeWidth={1.4} />} /></Card>
     </div>
   );
@@ -108,8 +110,7 @@ function FileIncidents({ fileId }: { fileId: number }) {
     { id: "timeline", label: "Attack Timeline" },
     { id: "events", label: "Correlated Events", count: inc?.events?.length },
     { id: "mitre", label: "MITRE ATT&CK Mapping", count: inc?.events?.filter((e) => e.mitre_tactic).length },
-    { id: "evidence", label: "Evidence Scope" },
-    { id: "recommendations", label: "Playbook Actions" },
+    { id: "evidence", label: "Evidence Metadata" },
   ];
 
   return (
@@ -123,7 +124,7 @@ function FileIncidents({ fileId }: { fileId: number }) {
       <div className="page-header">
         <div>
           <h1 className="anim-fade-right text-2xl font-bold text-primary">Incident Investigation Workspace</h1>
-          <p className="text-xs text-secondary mt-1">Multi-stage attack chain correlation and evidence timeline.</p>
+          <p className="text-xs text-secondary mt-1">Multi-stage attack chain correlation and timeline reconstruction.</p>
         </div>
         {inc && (
           <Link className="btn btn-primary btn-sm hover-glow anim-fade-left" to={`/reports/${fileId}`}>
@@ -153,14 +154,13 @@ function FileIncidents({ fileId }: { fileId: number }) {
         <Card pad="none" flush animate delay={60}>
           {/* Metadata Row */}
           <div className="p-5 border-b border-subtle bg-surface/50">
-            <div className="grid-4">
+            <div className="grid-3">
               {[
-                { label: "Incident Ref", value: <span className="font-mono text-accent font-bold">INC-{new Date().getFullYear()}-{String(fileId).padStart(5,"0")}</span> },
                 { label: "Threat Severity", value: severityBadge(inc.severity) },
-                { label: "Investigation Status", value: <Badge tone="ok">OPEN / ACTIVE</Badge> },
+                { label: "Risk Index", value: <span className="font-mono text-sm font-bold text-accent">{inc.score.toFixed(1)} / 100</span> },
                 { label: "Initial Detection", value: <span className="mono text-xs text-secondary">{formatTime(inc.events?.[0]?.event_time)}</span> },
-              ].map((f, i) => (
-                <div key={f.label} className={`anim-fade-up stagger-${i+1}`}>
+              ].map((f) => (
+                <div key={f.label}>
                   <div className="text-[11px] font-mono font-bold text-muted uppercase tracking-wider mb-1">{f.label}</div>
                   <div>{f.value}</div>
                 </div>
@@ -241,7 +241,7 @@ function IncidentTabContent({ inc, tab, fileId }: { inc: IncidentDetail; tab: IT
     <div className="flex flex-col gap-3 anim-fade-up">
       {sectionLabel("Observed MITRE ATT&CK Techniques")}
       {(inc.events ?? []).filter((e) => e.mitre_tactic).length === 0 ? (
-        <EmptyState title="No MITRE tactics mapped" />
+        <EmptyState title="No MITRE tactics mapped to this incident" />
       ) : (
         (inc.events ?? []).filter((e) => e.mitre_tactic).map((ev, i) => (
           <div key={i} className={`flex gap-3 items-start p-2.5 rounded-lg bg-raised border border-subtle anim-fade-right stagger-${Math.min(i+1,8)}`}>
@@ -255,32 +255,11 @@ function IncidentTabContent({ inc, tab, fileId }: { inc: IncidentDetail; tab: IT
 
   if (tab === "evidence") return (
     <div className="kv-list anim-fade-up">
-      {sectionLabel("Evidence Reference")}
-      <div className="kv-item"><span className="kv-key">Evidence File Ref</span><span className="kv-value font-mono font-bold text-accent">#{fileId}</span></div>
+      {sectionLabel("Evidence Metadata")}
+      <div className="kv-item"><span className="kv-key">Evidence File ID</span><span className="kv-value font-mono font-bold text-accent">#{fileId}</span></div>
       <div className="kv-item"><span className="kv-key">Correlated Events</span><span className="kv-value font-mono font-bold">{inc.events?.length ?? 0}</span></div>
       <div className="kv-item"><span className="kv-key">Severity Level</span>{severityBadge(inc.severity)}</div>
-      <div className="kv-item"><span className="kv-key">Calculated Score</span><span className="kv-value font-mono font-bold">{inc.score.toFixed(1)}</span></div>
-    </div>
-  );
-
-  if (tab === "recommendations") return (
-    <div className="flex flex-col gap-3 anim-fade-up">
-      {sectionLabel("Playbook Response Steps")}
-      <div className="alert alert-warning text-xs leading-relaxed">
-        Immediate containment actions recommended based on incident tactics and severity.
-      </div>
-      {[
-        "Isolate affected source IP addresses at perimeter firewall.",
-        "Force credential rotation for any compromised user accounts.",
-        "Revoke active session tokens and API keys across impacted endpoints.",
-        "Enable elevated verbose telemetry logging on affected hosts.",
-        "Run full forensic audit prior to restoring production connectivity."
-      ].map((r, i) => (
-        <div key={i} className={`flex gap-3 p-2.5 rounded-lg bg-raised border border-subtle anim-fade-right stagger-${Math.min(i+1,8)}`}>
-          <span className="mono text-xs font-bold text-accent shrink-0 pt-0.5">{String(i+1).padStart(2,"0")}.</span>
-          <span className="text-xs text-primary leading-relaxed">{r}</span>
-        </div>
-      ))}
+      <div className="kv-item"><span className="kv-key">Risk Score</span><span className="kv-value font-mono font-bold">{inc.score.toFixed(1)}</span></div>
     </div>
   );
 
@@ -288,14 +267,14 @@ function IncidentTabContent({ inc, tab, fileId }: { inc: IncidentDetail; tab: IT
 }
 
 function IncidentSidePanel({ inc, tab }: { inc: IncidentDetail; tab: ITab }) {
-  const label = tab === "timeline" ? "Detection Rationale" : "Attack Sequence Timeline";
+  const label = tab === "timeline" ? "Correlation Rationale" : "Attack Sequence Timeline";
   return (
     <div className="border-t md:border-t-0 md:border-l border-subtle md:pl-6 pt-4 md:pt-0">
       <div className="text-[11px] font-mono font-bold text-muted uppercase tracking-widest mb-3">{label}</div>
       {tab === "timeline" ? (
         <div className="anim-fade-up flex flex-col gap-3">
           <p className="text-xs text-secondary leading-relaxed">
-            The detection engine correlated multiple suspicious anomalies across timestamps and origin IPs into a single cohesive attack chain.
+            The correlation engine grouped multiple suspicious anomalies across timestamps and origin IPs into a single cohesive attack chain.
           </p>
           <div className="p-3 rounded-lg bg-raised border border-subtle text-xs text-primary font-mono leading-relaxed">
             {inc.summary}
@@ -325,9 +304,6 @@ function IncidentTimeline({ inc, compact = false }: { inc: IncidentDetail; compa
           </div>
         </div>
       ))}
-      {compact && (inc.events?.length ?? 0) > 6 && (
-        <div className="pl-7 text-xs text-accent font-mono cursor-pointer mt-2">View Full Attack Timeline →</div>
-      )}
     </div>
   );
 }

@@ -21,9 +21,6 @@ import { App } from "./App";
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
     <BrowserRouter>
-      <ToastProvider>
-        <App />
-      </ToastProvider>
       <ThemeProvider>
         <ToastProvider>
           <App />
