@@ -1,13 +1,4 @@
-# Stage 1: Build React SPA
-FROM node:22-alpine AS frontend
-
-WORKDIR /build
-COPY frontend/package.json frontend/package-lock.json ./
-RUN npm ci --legacy-peer-deps
-COPY frontend/ ./
-RUN npm run build
-
-# Stage 2: Python runtime
+# Python runtime single-stage (pre-built frontend from host app/static/spa)
 FROM python:3.12-slim
 
 ENV PYTHONDONTWRITEBYTECODE=1 \
@@ -24,9 +15,6 @@ COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
 COPY . .
-
-# Copy built SPA from Stage 1 into Flask static folder
-COPY --from=frontend /app/static/spa /app/app/static/spa
 
 RUN rm -rf frontend
 

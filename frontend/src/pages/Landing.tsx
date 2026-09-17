@@ -1,4 +1,3 @@
-import { useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import { Activity, ArrowRight, Cpu, Database, FileText, Moon, Search, ShieldAlert, Sun, Zap } from "lucide-react";
 import { useInView } from "../hooks/useInView";
@@ -13,13 +12,6 @@ const FEATURES = [
   { icon: <Database size={22} />, title: "Incident Attack Chains", desc: "Correlate isolated alerts into end-to-end multi-stage attack narratives with timeline reconstruction." },
 ];
 
-const STATS = [
-  { label: "Logs Processed", value: 1258420, color: "var(--accent)", foot: "+24% this week" },
-  { label: "Risky Signals",   value: 8431,    color: "var(--high)",   foot: "12 critical open" },
-  { label: "Attack Chains",  value: 37,      color: "var(--critical)", foot: "Correlated incidents" },
-  { label: "Forensic Trust", value: 98,      color: "var(--ok)",     foot: "Weighted metric", isPct: true },
-];
-
 const PIPELINE_STAGES = [
   { step: "01", title: "Evidence Ingestion", desc: "SHA-256 integrity hash & format validation" },
   { step: "02", title: "Normalization", desc: "Canonical event schema & data quality scoring" },
@@ -28,24 +20,6 @@ const PIPELINE_STAGES = [
   { step: "05", title: "Incident Correlation", desc: "Multi-stage attack chain grouping" },
   { step: "06", title: "Forensic PDF Export", desc: "Verifiable reports with chain-of-custody" },
 ];
-
-function AnimNum({ target, isPct = false }: { target: number; isPct?: boolean }) {
-  const { ref, visible } = useInView();
-  const [val, setVal] = useState(0);
-  const frame = useRef<number>(0);
-  useEffect(() => {
-    if (!visible) return;
-    const start = performance.now();
-    const tick = (now: number) => {
-      const p = Math.min((now - start) / 1400, 1);
-      setVal(Math.round(target * (1 - Math.pow(1 - p, 3))));
-      if (p < 1) frame.current = requestAnimationFrame(tick);
-    };
-    frame.current = requestAnimationFrame(tick);
-    return () => cancelAnimationFrame(frame.current);
-  }, [visible, target]);
-  return <span ref={ref}>{val.toLocaleString()}{isPct ? "%" : ""}</span>;
-}
 
 export function Landing() {
   const featRef = useInView();
@@ -56,15 +30,15 @@ export function Landing() {
   return (
     <div style={{ minHeight: "100vh", background: "var(--bg-base)" }}>
       {/* Topbar Navigation */}
-      <header className="app-topbar anim-fade-down">
-        <Link to="/" className="topbar-brand">
-          <div className="topbar-brand-icon"><ShieldAlert size={17} /></div>
+      <header className="app-topbar anim-fade-down flex items-center justify-between px-6 py-3 border-b border-subtle bg-surface">
+        <Link to="/" className="topbar-brand flex items-center gap-3 text-decoration-none">
+          <div className="topbar-brand-icon w-8 h-8 rounded-lg bg-accent text-white flex items-center justify-center"><ShieldAlert size={17} /></div>
           <div className="flex flex-col">
-            <span className="topbar-brand-name">INTELLIGENT LOG FORENSICS</span>
-            <span className="text-[10px] font-mono text-muted tracking-widest uppercase -mt-0.5">CYBER SOC PLATFORM</span>
+            <span className="topbar-brand-name font-bold text-primary">INTELLIGENT LOG FORENSICS</span>
+            <span className="text-[10px] font-mono text-muted tracking-widest uppercase">CYBER SOC PLATFORM</span>
           </div>
         </Link>
-        <div className="topbar-right">
+        <div className="topbar-right flex items-center gap-3">
           <button
             className="icon-btn hover-glow"
             onClick={toggleTheme}
@@ -78,11 +52,8 @@ export function Landing() {
         </div>
       </header>
 
-      {/* Hero Section with Cyber Atmospheric Glow */}
+      {/* Hero Section */}
       <section className="relative overflow-hidden pt-16 pb-20 px-6 text-center border-b border-subtle">
-        {/* Glow blobs */}
-        <div className="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[350px] bg-blue-500/10 rounded-full blur-[100px] pointer-events-none -z-10" />
-
         <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-accent-subtle border border-accent-border text-xs font-mono font-semibold text-accent mb-6 anim-fade-down">
           <Zap size={12} /> ENTERPRISE SIEM &amp; FORENSIC WORKSTATION
         </div>
@@ -99,40 +70,13 @@ export function Landing() {
           MITRE ATT&amp;CK narrative correlation, and chain-of-custody PDF reporting.
         </p>
 
-        <div className="flex gap-4 justify-center flex-wrap mb-16 anim-fade-up stagger-3">
+        <div className="flex gap-4 justify-center flex-wrap mb-12 anim-fade-up stagger-3">
           <Link to="/register" className="btn btn-primary btn-lg hover-glow text-base px-8 py-3.5 shadow-lg">
             Launch Forensics Console <ArrowRight size={16} className="animate-bounce-x" />
           </Link>
           <Link to="/login" className="btn btn-secondary btn-lg text-base px-7 py-3.5">
             Analyst Sign In
           </Link>
-        </div>
-
-        {/* Live Command Center Preview */}
-        <div className="max-w-5xl mx-auto glass-card overflow-hidden shadow-2xl anim-scale-in stagger-4">
-          <div className="bg-raised border-b border-subtle px-4 py-3 flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <div className="w-3 h-3 rounded-full bg-rose-500/80" />
-              <div className="w-3 h-3 rounded-full bg-amber-500/80" />
-              <div className="w-3 h-3 rounded-full bg-emerald-500/80" />
-              <span className="ml-2 text-xs font-mono text-muted">ilf-soc-node-01.local · Status: Online (PostgreSQL)</span>
-            </div>
-            <div className="flex items-center gap-2 text-xs font-mono text-emerald-500">
-              <span className="live-dot-wrap"><span className="live-dot" /></span> LIVE STREAMING
-            </div>
-          </div>
-
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 p-6 bg-surface/50">
-            {STATS.map((s) => (
-              <div key={s.label} className="p-4 rounded-xl bg-raised/70 border border-subtle text-left">
-                <div className="text-[11px] font-mono font-bold text-muted uppercase tracking-wider mb-1">{s.label}</div>
-                <div className="text-2xl font-extrabold text-primary" style={{ color: s.color }}>
-                  <AnimNum target={s.value} isPct={s.isPct} />
-                </div>
-                <div className="text-xs text-muted mt-1 font-mono">{s.foot}</div>
-              </div>
-            ))}
-          </div>
         </div>
       </section>
 

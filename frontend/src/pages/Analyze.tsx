@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import {
-  AlertTriangle, ArrowRight, CheckCircle2, Cpu,
+  AlertTriangle, ArrowRight, CheckCircle2,
   FileUp, Layers, Loader2, Play, Radio, Square, UploadCloud, Zap
 } from "lucide-react";
 import { api, formatTime } from "../api/client";
@@ -13,20 +13,20 @@ import { Card } from "../components/ui/Card";
 import { EmptyState } from "../components/ui/EmptyState";
 import { useToast } from "../components/ui/Toast";
 
-const PIPELINE = [
-  { name: "Validate", desc: "Format & SHA-256" },
-  { name: "Parse", desc: "Syntax tokenization" },
-  { name: "Normalize", desc: "Canonical schema" },
-  { name: "Features", desc: "Vector extraction" },
-  { name: "Rules + PyOD", desc: "Ensemble scoring" },
-  { name: "MITRE Map", desc: "ATT&CK tagging" },
-  { name: "Incidents", desc: "Attack chains" },
+const PIPELINE_STAGES = [
+  "Validation & Hash Digest",
+  "Syntax Tokenization",
+  "Canonical Normalization",
+  "Feature Extraction",
+  "Rule & ML Scoring",
+  "MITRE ATT&CK Mapping",
+  "Attack Chain Correlation",
 ];
 
 const MODES = [
-  { id: "normal",     name: "Normal Traffic",     desc: "Standard background HTTP & API requests" },
+  { id: "normal",     name: "Normal Traffic",     desc: "Standard background HTTP & API telemetry" },
   { id: "scan",       name: "Reconnaissance",     desc: "Automated route & endpoint probing bursts" },
-  { id: "bruteforce", name: "Brute Force Attack", desc: "Credential stuffing & rapid 401 bursts" },
+  { id: "bruteforce", name: "Brute Force Attack", desc: "Credential stuffing & 401 error bursts" },
   { id: "breach",     name: "Breach Simulation",  desc: "Multi-stage attack chain with exfiltration" },
 ];
 
@@ -38,27 +38,18 @@ export function Analyze() {
   const [status, setStatus] = useGenerator();
   const [drag, setDrag] = useState(false);
   const [file, setFile] = useState<File | null>(null);
-  const [phase, setPhase] = useState(-1);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [mode, setMode] = useState("scan");
 
-  useEffect(() => {
-    if (!busy || phase >= PIPELINE.length) return;
-    const delay = phase === 4 ? 320 : 380;
-    const t = setTimeout(() => setPhase((p) => p + 1), delay);
-    return () => clearTimeout(t);
-  }, [busy, phase]);
-
   async function upload(f: File) {
-    setBusy(true); setPhase(0); setError(null);
+    setBusy(true); setError(null);
     try {
       const result = await api.uploadFile(f);
-      setPhase(PIPELINE.length);
       toast(`Forensic analysis complete · ${result.file_name}`, "success");
-      setTimeout(() => navigate(`/logs/${result.id}`), 600);
+      setTimeout(() => navigate(`/logs/${result.id}`), 400);
     } catch (err) {
-      setBusy(false); setPhase(-1);
+      setBusy(false);
       const msg = err instanceof Error ? err.message : "Upload failed";
       setError(msg);
       toast(msg, "error");
@@ -81,10 +72,10 @@ export function Analyze() {
         <div className="page-title">
           <h1 className="anim-fade-right flex items-center gap-2">
             <Zap size={22} className="text-accent" />
-            <span>Forensic Evidence Intake &amp; Live SOC</span>
+            <span>Forensic Evidence Intake</span>
           </h1>
           <p className="anim-fade-right stagger-1">
-            Ingest multi-format security logs or stream real-time synthetic threat telemetry.
+            Ingest multi-format security log evidence or trigger live synthetic threat telemetry.
           </p>
         </div>
         <Badge tone="info" dot={false} className="anim-fade-left">
@@ -92,35 +83,31 @@ export function Analyze() {
         </Badge>
       </div>
 
-      {/* Automated Pipeline Progress Stepper */}
+      {/* Automated Pipeline Architecture Display */}
       <div className="pipeline-steps anim-fade-up">
-        {PIPELINE.map((st, i) => (
-          <div key={st.name} className="flex items-center gap-1">
-            <div className={`pipeline-step ${phase === i ? "active" : phase > i ? "done" : ""}`}>
-              {phase > i ? (
-                <CheckCircle2 size={13} className="text-ok" />
-              ) : phase === i ? (
+        {PIPELINE_STAGES.map((st, i) => (
+          <div key={st} className="flex items-center gap-1">
+            <div className={`pipeline-step ${busy ? "active" : ""}`}>
+              {busy ? (
                 <Loader2 size={13} className="animate-spin text-accent" />
               ) : (
-                <Cpu size={13} />
+                <CheckCircle2 size={13} className="text-muted" />
               )}
-              <div className="flex flex-col">
-                <span className="leading-tight">{st.name}</span>
-              </div>
+              <span className="leading-tight">{st}</span>
             </div>
-            {i < PIPELINE.length - 1 && <span className="pipeline-arrow">›</span>}
+            {i < PIPELINE_STAGES.length - 1 && <span className="pipeline-arrow">›</span>}
           </div>
         ))}
       </div>
 
-      {/* Main Grid: Upload Dropzone + Live SOC Simulator */}
+      {/* Main Grid: Upload Dropzone + Threat Generator */}
       <div className="grid-2">
         {/* Upload Station */}
-        <Card title={<><FileUp size={15} /> Evidence Dropzone</>} animate delay={0}>
+        <Card title={<><FileUp size={15} /> Evidence File Intake</>} animate delay={0}>
           <input
             ref={inputRef}
             type="file"
-            accept=".log,.txt,.csv,.json,.jsonl,.evtx"
+            accept=".log,.txt,.csv,.json,.jsonl"
             hidden
             onChange={(e) => {
               const f = e.target.files?.[0];
@@ -138,8 +125,8 @@ export function Analyze() {
             onKeyDown={(e) => e.key === "Enter" && inputRef.current?.click()}
             aria-label="Upload log file"
           >
-            <div className="w-14 h-14 rounded-2xl bg-accent-subtle text-accent flex items-center justify-center mb-1 shadow-sm">
-              <UploadCloud size={28} />
+            <div className="w-12 h-12 rounded-2xl bg-accent-subtle text-accent flex items-center justify-center mb-1 shadow-sm">
+              <UploadCloud size={26} />
             </div>
 
             {file ? (
@@ -148,8 +135,8 @@ export function Analyze() {
               </div>
             ) : null}
 
-            <div className="dropzone-title text-base sm:text-lg">
-              {busy ? "Running Forensic Pipeline…" : "Drag & Drop Log Evidence Here"}
+            <div className="dropzone-title text-base">
+              {busy ? "Running Analysis Pipeline..." : "Drag & Drop Log Evidence File"}
             </div>
 
             <p className="dropzone-hint text-xs">or click anywhere to select from file browser</p>
@@ -164,7 +151,7 @@ export function Analyze() {
             )}
 
             <div className="text-[11px] font-mono text-muted mt-2">
-              Supported: CSV · JSON · JSONL · LOG · TXT · EVTX
+              Supported formats: CSV · JSON · JSONL · LOG · TXT (max {maxMb}MB)
             </div>
           </div>
 
@@ -176,12 +163,12 @@ export function Analyze() {
           )}
         </Card>
 
-        {/* Live SOC Feed Generator */}
+        {/* Threat Telemetry Generator */}
         <Card
           title={
             <div className="flex items-center gap-2">
               <Radio size={15} className="text-accent" />
-              <span>Live SOC Threat Generator</span>
+              <span>Synthetic Threat Generator</span>
             </div>
           }
           actions={
@@ -191,9 +178,9 @@ export function Analyze() {
           }
           animate delay={60}
         >
-          <div className="flex-col gap-4">
+          <div className="flex flex-col gap-4">
             <p className="text-xs text-secondary leading-relaxed">
-              Generate real-time synthetic security telemetry directly into PostgreSQL and trigger live ML ensemble scoring.
+              Stream synthetic threat telemetry directly into PostgreSQL to evaluate ML ensemble scoring and alert routing.
             </p>
 
             <div className="mode-grid">
@@ -213,11 +200,11 @@ export function Analyze() {
             <div className="flex gap-3 items-center pt-2">
               {status?.running ? (
                 <Button variant="danger" icon={<Square size={13} />} onClick={() => stopFeed(setStatus, toast)}>
-                  Halt Feed Stream
+                  Halt Telemetry Stream
                 </Button>
               ) : (
                 <Button icon={<Play size={13} />} onClick={() => startFeed(mode, setStatus, toast)}>
-                  Start Streaming Signals
+                  Start Telemetry Stream
                 </Button>
               )}
 
@@ -230,9 +217,9 @@ export function Analyze() {
 
             {status && (
               <div className="kv-list pt-3 border-t border-subtle">
-                <div className="kv-item"><span className="kv-key">Active Mode</span><span className="kv-value font-mono font-bold text-accent">{status.mode || "Idle"}</span></div>
+                <div className="kv-item"><span className="kv-key">Active Scenario</span><span className="kv-value font-mono font-bold text-accent">{status.mode || "Idle"}</span></div>
                 <div className="kv-item"><span className="kv-key">Activity Status</span><span className="kv-value">{status.activity}</span></div>
-                <div className="kv-item"><span className="kv-key">Telemetry Source</span><span className="kv-value font-mono text-xs">{status.source?.name ?? "Web / Auth"}</span></div>
+                <div className="kv-item"><span className="kv-key">Telemetry Target</span><span className="kv-value font-mono text-xs">{status.source?.name ?? "Web / Auth Telemetry"}</span></div>
               </div>
             )}
           </div>
@@ -241,7 +228,7 @@ export function Analyze() {
 
       {/* Uploaded Evidence Files Summary */}
       <Card
-        title={<><Layers size={15} /> Active Evidence Ingestion Log</>}
+        title={<><Layers size={15} /> Recent Ingested Evidence</>}
         actions={<Link className="btn btn-ghost btn-sm" to="/upload/history">Evidence Archive <ArrowRight size={12} /></Link>}
         animate delay={100}
       >
@@ -266,8 +253,8 @@ function UploadSummaryPanel() {
   if (!uploads.data || uploads.data.length === 0) {
     return (
       <EmptyState
-        title="No evidence files uploaded yet"
-        hint="Use the dropzone above to ingest your first security log."
+        title="No evidence ingested yet"
+        hint="Use the intake panel above to upload log evidence."
         icon={<FileUp size={32} strokeWidth={1.4} />}
       />
     );
@@ -282,7 +269,7 @@ function UploadSummaryPanel() {
             <th>Size</th>
             <th>Type</th>
             <th>Records</th>
-            <th>Upload Date</th>
+            <th>Ingestion Date</th>
             <th>Status</th>
             <th>Actions</th>
           </tr>
@@ -303,7 +290,7 @@ function UploadSummaryPanel() {
                   icon={<ArrowRight size={13} />}
                   onClick={() => navigate(`/logs/${row.id}`)}
                 >
-                  Analyze
+                  Inspect
                 </Button>
               </td>
             </tr>
@@ -339,9 +326,9 @@ async function startFeed(
   try {
     const r = await api.generatorStart(mode);
     set((p) => p ? { ...p, running: true, mode: r.mode, last_error: null } : null);
-    toast(`Live SOC stream started · ${r.mode} mode`, "success");
+    toast(`Telemetry stream started · ${r.mode} mode`, "success");
   } catch (err) {
-    toast(err instanceof Error ? err.message : "Failed to start feed", "error");
+    toast(err instanceof Error ? err.message : "Failed to start stream", "error");
   }
 }
 
@@ -352,9 +339,9 @@ async function stopFeed(
   try {
     await api.generatorStop();
     set((p) => p ? { ...p, running: false } : null);
-    toast("Live SOC stream halted", "info");
+    toast("Telemetry stream halted", "info");
   } catch (err) {
-    toast(err instanceof Error ? err.message : "Failed to stop feed", "error");
+    toast(err instanceof Error ? err.message : "Failed to stop stream", "error");
   }
 }
 

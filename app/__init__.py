@@ -65,6 +65,7 @@ def create_app(config_object=Config):
     def same_origin_headers(response):
         if request.headers.get("Origin") == app.config["APP_ORIGIN"]:
             response.headers["Access-Control-Allow-Origin"] = app.config["APP_ORIGIN"]
+        return response
     def security_and_cors_headers(response):
         origin = request.headers.get("Origin")
         allowed = {app.config["APP_ORIGIN"], app.config.get("FRONTEND_ORIGIN") or ""}

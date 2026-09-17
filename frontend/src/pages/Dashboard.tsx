@@ -1,6 +1,5 @@
-import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { Activity, AlertTriangle, ArrowRight, Calendar, HardDrive, Radio, ShieldAlert, Target, TrendingUp, Zap } from "lucide-react";
+import { Activity, AlertTriangle, ArrowRight, HardDrive, ShieldAlert, Target, TrendingUp, Zap } from "lucide-react";
 import { api, formatTime } from "../api/client";
 import { useApi } from "../hooks/useApi";
 import { useLiveStream } from "../hooks/useLiveStream";
@@ -45,7 +44,6 @@ export function Dashboard() {
   const uploads  = useApi(() => api.uploads(6));
   const { events } = useLiveStream();
   const chartsRef = useInView();
-  const [timeRange, setTimeRange] = useState("Last 24 Hours");
 
   const ov = overview.data;
   const mitreData = slices(mitre.data ?? {}).slice(0, 8);
@@ -56,10 +54,10 @@ export function Dashboard() {
     : (ov?.recent_events ?? []).slice(0, 6).map((ev) => ({ id: ev.id, time: ev.created_at, reason: ev.reason, severity: ev.severity, category: ev.risk_category }));
 
   const STAT_CONFIGS = [
-    { label: "Total Logs Analyzed", value: ov?.total_logs ?? 0, icon: <HardDrive size={20} />, iconBg: "var(--accent-subtle)", iconColor: "var(--accent)", trend: "18.6%", delay: 0 },
-    { label: "Risky Signals Flagged", value: ov?.risk_events ?? 0, icon: <AlertTriangle size={20} />, iconBg: "var(--high-bg)", iconColor: "var(--high)", trend: "12.3%", delay: 60 },
-    { label: "Correlated Incidents", value: ov?.incidents ?? 0, icon: <ShieldAlert size={20} />, iconBg: "var(--critical-bg)", iconColor: "var(--critical)", trend: "7.7%", delay: 120 },
-    { label: "PyOD ML Detections", value: (ov?.risk_events ?? 0) + (ov?.incidents ?? 0), icon: <Activity size={20} />, iconBg: "var(--ok-bg)", iconColor: "var(--ok)", trend: "9.1%", delay: 180 },
+    { label: "Total Logs Ingested", value: ov?.total_logs ?? 0, icon: <HardDrive size={18} />, iconBg: "var(--accent-subtle)", iconColor: "var(--accent)", delay: 0 },
+    { label: "Risk Signals Flagged", value: ov?.risk_events ?? 0, icon: <AlertTriangle size={18} />, iconBg: "var(--high-bg)", iconColor: "var(--high)", delay: 60 },
+    { label: "Correlated Incidents", value: ov?.incidents ?? 0, icon: <ShieldAlert size={18} />, iconBg: "var(--critical-bg)", iconColor: "var(--critical)", delay: 120 },
+    { label: "Average Risk Score", value: (ov?.average_risk ?? 0).toFixed(1), icon: <Activity size={18} />, iconBg: "var(--medium-bg)", iconColor: "var(--medium)", delay: 180 },
   ];
 
   return (
@@ -68,37 +66,20 @@ export function Dashboard() {
       <div className="page-header">
         <div className="page-title">
           <h1 className="anim-fade-right flex items-center gap-3">
-            <span>Cyber SOC Command Center</span>
-            <span className="text-xs font-mono font-bold px-2.5 py-0.5 rounded-full bg-accent-subtle text-accent border border-accent-border">
-              v2.0 PRO
-            </span>
+            <span>Operational Forensic Overview</span>
           </h1>
           <p className="anim-fade-right stagger-1">
-            Continuous threat detection, PyOD ML anomaly telemetry, and incident correlation.
+            Real-time threat detection, anomaly telemetry, and correlated incident analysis.
           </p>
         </div>
         <div className="flex items-center gap-3 anim-fade-left">
-          <div className="flex items-center gap-1 bg-raised border border-default px-3 py-1.5 rounded-lg text-xs font-medium text-secondary">
-            <Calendar size={13} className="text-accent" />
-            <select
-              className="bg-transparent text-primary text-xs font-medium outline-none cursor-pointer"
-              value={timeRange}
-              onChange={(e) => setTimeRange(e.target.value)}
-            >
-              <option value="Last 1 Hour">Last 1 Hour</option>
-              <option value="Last 24 Hours">Last 24 Hours</option>
-              <option value="Last 7 Days">Last 7 Days</option>
-              <option value="All Time">All Time</option>
-            </select>
-          </div>
-
           <Link className="btn btn-primary hover-glow" to="/upload">
-            <Zap size={14} /> Ingest &amp; Live SOC
+            <Zap size={14} /> Ingest Log Evidence
           </Link>
         </div>
       </div>
 
-      {/* Primary KPI Metric Cards */}
+      {/* Primary Real KPI Metric Cards */}
       <div className="grid-4">
         {overview.loading
           ? Array.from({ length: 4 }).map((_, i) => (
@@ -115,7 +96,6 @@ export function Dashboard() {
                 icon={s.icon}
                 iconBg={s.iconBg}
                 iconColor={s.iconColor}
-                trend={s.trend}
                 delay={s.delay}
               />
             ))}
@@ -123,15 +103,15 @@ export function Dashboard() {
 
       {/* Visual Analytics Grid: Risk Distribution + Event Velocity */}
       <div ref={chartsRef.ref} className="grid-2">
-        <Card title={<><AlertTriangle size={15} /> Severity &amp; Threat Risk Breakdown</>} animate delay={0}>
+        <Card title={<><AlertTriangle size={15} /> Risk Category Distribution</>} animate delay={0}>
           <RiskDistPanel visible={chartsRef.visible} />
         </Card>
 
-        <Card title={<><TrendingUp size={15} /> Normalized Log Velocity Over Time</>} animate delay={80}>
+        <Card title={<><TrendingUp size={15} /> 7-Day Error &amp; Anomaly Trends</>} animate delay={80}>
           {trends.loading ? (
             <Skeleton />
-          ) : !trends.data ? (
-            <EmptyState title="No trend data available" hint="Analyze log files to generate velocity series." />
+          ) : !trends.data || trends.data.labels.length === 0 ? (
+            <EmptyState title="No trend data available" hint="Upload and analyze log files to generate time series trends." />
           ) : (
             <TrendArea labels={trends.data.labels} values={trends.data.values} height={230} />
           )}
@@ -141,16 +121,16 @@ export function Dashboard() {
       {/* MITRE ATT&CK Alignment + Real-time Threat Stream */}
       <div className="grid-2">
         <Card
-          title={<><Target size={15} /> Top MITRE ATT&amp;CK Techniques Detected</>}
-          actions={<Link to="/attack-intelligence" className="btn btn-ghost btn-sm">Technique Catalog <ArrowRight size={12} /></Link>}
+          title={<><Target size={15} /> Observed MITRE ATT&amp;CK Tactics</>}
+          actions={<Link to="/attack-intelligence" className="btn btn-ghost btn-sm">Technique Library <ArrowRight size={12} /></Link>}
           animate delay={0}
         >
           {mitre.loading ? (
             <Skeleton />
           ) : mitreData.length === 0 ? (
-            <EmptyState title="No MITRE indicators observed" hint="Upload evidence to correlate attack techniques." />
+            <EmptyState title="No MITRE tactics observed" hint="Ingest evidence to correlate adversary tactics." />
           ) : (
-            <div className="flex-col gap-3 py-1">
+            <div className="flex flex-col gap-3 py-1">
               {mitreData.map((row, i) => (
                 <div key={row.name} className={`flex items-center gap-3 anim-fade-right stagger-${Math.min(i + 1, 8)}`}>
                   <span className="text-xs font-mono font-semibold text-accent w-44 truncate flex-shrink-0">
@@ -171,8 +151,8 @@ export function Dashboard() {
         <Card
           title={
             <div className="flex items-center gap-2">
-              <Radio size={15} className="text-accent" />
-              <span>Real-Time Alert Feed</span>
+              <Activity size={15} className="text-accent" />
+              <span>Telemetry Alert Stream</span>
               {events.length > 0 && <span className="live-dot-wrap ml-1"><span className="live-dot" /></span>}
             </div>
           }
@@ -181,15 +161,15 @@ export function Dashboard() {
         >
           {feedItems.length === 0 ? (
             <EmptyState
-              title="No alerts active"
-              hint="Start the Live SOC generator or upload evidence to stream detections."
+              title="No live stream alerts"
+              hint="Upload evidence or start the threat generator to stream detections."
               icon={<ShieldAlert size={32} strokeWidth={1.4} />}
             />
           ) : (
             <div className="live-feed">
               {feedItems.map((ev, i) => (
                 <div key={ev.id} className={`live-feed-item anim-fade-up stagger-${Math.min(i + 1, 8)}`}>
-                  <div className="live-feed-dot animate-pulse" style={{ background: dotColor(ev.severity) }} />
+                  <div className="live-feed-dot" style={{ background: dotColor(ev.severity) }} />
                   <div className="live-feed-content">
                     <div className="live-feed-reason">{ev.reason}</div>
                     <div className="live-feed-meta">
@@ -209,7 +189,7 @@ export function Dashboard() {
 
       {/* Forensic Evidence Files Table */}
       <Card
-        title={<><HardDrive size={15} /> Recent Forensic Evidence Files</>}
+        title={<><HardDrive size={15} /> Recent Ingested Evidence</>}
         actions={<Link className="btn btn-ghost btn-sm" to="/upload/history">Evidence Archive <ArrowRight size={12} /></Link>}
         animate delay={0}
       >
@@ -217,9 +197,9 @@ export function Dashboard() {
           <Skeleton />
         ) : (uploads.data ?? []).length === 0 ? (
           <EmptyState
-            title="No evidence files uploaded yet"
-            hint="Upload log files to start automated forensics."
-            action={<Link className="btn btn-primary" to="/upload"><HardDrive size={14} /> Upload Evidence</Link>}
+            title="No evidence ingested yet"
+            hint="Upload log files to begin forensic correlation."
+            action={<Link className="btn btn-primary" to="/upload"><HardDrive size={14} /> Ingest Log File</Link>}
           />
         ) : (
           <div className="table-wrap">
@@ -277,7 +257,7 @@ function RiskDistPanel({ visible }: { visible: boolean }) {
   if (dist.loading) return <Skeleton />;
   const data = Object.entries(dist.data ?? {}).map(([name, value]) => ({ name, value }));
   const total = data.reduce((s, d) => s + d.value, 0);
-  if (total === 0) return <EmptyState title="No risk data" hint="Upload evidence to populate severity distribution." />;
+  if (total === 0) return <EmptyState title="No risk data recorded" hint="Upload evidence to populate risk category breakdown." />;
 
   const COLORS: Record<string, string> = {
     High: "var(--high)",
@@ -299,18 +279,18 @@ function RiskDistPanel({ visible }: { visible: boolean }) {
     <div className="flex gap-8 items-center flex-wrap py-2">
       <div
         style={{
-          width: 140,
-          height: 140,
+          width: 130,
+          height: 130,
           borderRadius: "50%",
           background: gradient,
           flexShrink: 0,
-          boxShadow: "inset 0 0 0 34px var(--bg-surface), 0 0 20px rgba(0,0,0,0.15)",
+          boxShadow: "inset 0 0 0 30px var(--bg-surface), 0 0 20px rgba(0,0,0,0.15)",
           opacity: visible ? 1 : 0,
           transform: visible ? "scale(1) rotate(-90deg)" : "scale(.8) rotate(-90deg)",
           transition: "transform 0.7s cubic-bezier(.22,1,.36,1), opacity 0.5s ease",
         }}
       />
-      <div className="flex-col gap-2 flex-1 min-w-[160px]">
+      <div className="flex flex-col gap-2 flex-1 min-w-[160px]">
         {data.map((d, i) => (
           <div key={d.name} className={`flex items-center gap-3 anim-fade-left stagger-${i + 1}`}>
             <span style={{ width: 10, height: 10, borderRadius: 2, background: COLORS[d.name] ?? "var(--info)", flexShrink: 0 }} />
