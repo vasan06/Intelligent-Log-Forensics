@@ -1,12 +1,11 @@
 from pathlib import Path
 from urllib.parse import urlparse
 
-from flask import Flask, abort, flash, jsonify, redirect, request, url_for
+from flask import Flask, abort, flash, jsonify, make_response, redirect, request, url_for
 from werkzeug.exceptions import HTTPException, RequestEntityTooLarge
 
 from config import Config
 from .extensions import jwt, limiter
-from .utils.spa import render_spa, serve_spa_asset
 
 
 def create_app(config_object=Config):
@@ -62,10 +61,6 @@ def create_app(config_object=Config):
         abort(403)
 
     @app.after_request
-    def same_origin_headers(response):
-        if request.headers.get("Origin") == app.config["APP_ORIGIN"]:
-            response.headers["Access-Control-Allow-Origin"] = app.config["APP_ORIGIN"]
-        return response
     def security_and_cors_headers(response):
         origin = request.headers.get("Origin")
         allowed = {app.config["APP_ORIGIN"], app.config.get("FRONTEND_ORIGIN") or ""}
@@ -77,22 +72,24 @@ def create_app(config_object=Config):
             response.headers["Access-Control-Allow-Methods"] = "GET, POST, PUT, PATCH, DELETE, OPTIONS"
             response.headers["Vary"] = "Origin"
 
-        # Strict Security Headers
+        # Security Headers
         response.headers["X-Content-Type-Options"] = "nosniff"
         response.headers["X-Frame-Options"] = "DENY"
         response.headers["X-XSS-Protection"] = "1; mode=block"
         response.headers["Referrer-Policy"] = "strict-origin-when-cross-origin"
         response.headers["Permissions-Policy"] = "camera=(), microphone=(), geolocation=()"
         response.headers["Content-Security-Policy"] = (
-            "default-src 'self'; "
-            "script-src 'self' 'unsafe-inline'; "
+            "default-src 'self' unpkg.com https://unpkg.com; "
+            "script-src 'self' 'unsafe-inline' unpkg.com https://unpkg.com; "
             "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; "
             "font-src 'self' https://fonts.gstatic.com data:; "
             "img-src 'self' data: blob:; "
-            "connect-src 'self' ws: wss: http://localhost:5000 http://127.0.0.1:5000 http://localhost:5173; "
+            "connect-src 'self' ws: wss: http://localhost:5000 http://127.0.0.1:5000; "
             "frame-ancestors 'none';"
         )
         return response
+
+
 
     @jwt.user_lookup_loader
     def load_user(_jwt_header, jwt_data):
@@ -100,9 +97,9 @@ def create_app(config_object=Config):
         return get(int(jwt_data["sub"]))
 
     def _jwt_error_response(message):
-        """API calls get JSON 401; browser navigation gets redirected to the SPA."""
+        """API calls get JSON 401; browser navigation gets redirected to login."""
         if request.path.startswith(("/api/", "/reports/")):
-            return jsonify({"error": message}), 401
+            return make_response(jsonify({"error": message}), 401)
         next_url = request.path if request.path != "/" else ""
         return redirect(url_for("auth.login", next=next_url))
 
@@ -138,9 +135,6 @@ def create_app(config_object=Config):
     def inject_ui_config():
         return {"max_upload_mb": app.config["MAX_CONTENT_LENGTH"] // (1024 * 1024)}
 
-    @app.route("/assets/<path:path>")
-    def spa_assets(path):
-        return serve_spa_asset("assets/" + path)
 
     @app.errorhandler(HTTPException)
     def handle_http_exception(error):

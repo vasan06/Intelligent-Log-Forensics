@@ -1,1 +1,84 @@
-{% extends "base.html" %}{% block title %}Incidents | Intelligent Log Forensics{% endblock %}{% block content %}<main id="incidentPage" data-file-id="{{ file_id }}"><header class="page-header compact"><div><a class="back-link" href="{{ url_for('logs.view', file_id=file_id) }}"><i data-lucide="arrow-left"></i> Evidence</a><h1>Incident timelines</h1><p>Correlated findings from <span id="incidentFile">this evidence</span>.</p></div><a class="primary-button" href="{{ url_for('reports.preview', file_id=file_id) }}"><i data-lucide="file-text"></i> Build report</a></header><div class="incident-list" id="incidentList"><div class="empty-state">Loading incidents...</div></div></main>{% endblock %}{% block scripts %}<script src="{{ url_for('static', filename='js/incidents.js') }}"></script>{% endblock %}
+{% extends "base.html" %}
+
+{% block title %}Incident Workspace & Root Cause Reasoning — Log Forensics{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div class="page-title">
+    <div class="page-breadcrumb">
+      <span>PLATFORM</span> / <span>INVESTIGATION</span> / <span class="page-breadcrumb-current">INCIDENT WORKSTATION</span>
+    </div>
+    <h1>Incident Workspace & Root Cause Reasoning</h1>
+    <p>Sequential attack timeline, causal graph lineage, evidence logs, and MITRE mapping</p>
+  </div>
+
+  <div style="display:flex; gap:8px;">
+    <button onclick="downloadReport()" class="btn btn-secondary btn-sm"><i data-lucide="download" style="width:13px;"></i> Export PDF Report</button>
+    <a href="{{ url_for('dashboard.remediation') }}" class="btn btn-primary btn-sm"><i data-lucide="shield-alert" style="width:13px;"></i> Remediation Plan</a>
+  </div>
+</div>
+
+<!-- Main Layout: Incidents Sidebar + Investigation Workspace -->
+<div class="grid-3" style="grid-template-columns: 1fr 3fr;">
+  <!-- Left Col: Incidents Selector -->
+  <div class="card">
+    <div class="card-header">
+      <div class="card-title"><i data-lucide="shield-alert" style="color:var(--accent);"></i> Active Incidents</div>
+    </div>
+    <div class="card-body" id="incidents-sidebar-list" style="display:flex; flex-direction:column; gap:8px;">
+      <div style="text-align:center; padding:16px; color:var(--text-muted); font-size:12px;">Loading incidents...</div>
+    </div>
+  </div>
+
+  <!-- Right Col: Main Investigation Workspace -->
+  <div style="display:flex; flex-direction:column; gap:20px;">
+    <!-- Incident Banner -->
+    <div class="card card-body" style="background: linear-gradient(to right, var(--bg-surface), rgba(37,99,235,0.06));">
+      <div style="display:flex; justify-content:space-between; align-items:flex-start;">
+        <div>
+          <div style="display:flex; align-items:center; gap:8px;">
+            <span id="inc-badge-severity" class="badge badge-critical">CRITICAL INCIDENT</span>
+            <span id="inc-id-tag" style="font-size:11px; font-family:var(--font-mono); color:var(--text-muted);">INCIDENT #01</span>
+          </div>
+          <h2 id="inc-title" style="margin-top:6px; font-size:18px;">Select an incident to investigate</h2>
+          <p id="inc-summary" style="font-size:12px; margin-top:4px; max-width:700px; color:var(--text-secondary);">Select an incident from the left sidebar to view root cause analysis and evidence timelines.</p>
+        </div>
+        <div style="font-family:var(--font-mono); text-align:right;">
+          <span style="font-size:10px; color:var(--text-muted); text-transform:uppercase;">Overall Threat Score</span>
+          <div id="inc-score" style="font-size:24px; font-weight:800; color:var(--critical);">--</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- RCA Causal Graph Component -->
+    <div class="card card-body" style="display:flex; flex-direction:column; gap:16px;">
+      <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid var(--border-subtle); padding-bottom:12px;">
+        <h3 style="display:flex; align-items:center; gap:8px;"><i data-lucide="git-commit" style="color:var(--accent); width:16px;"></i> Root Cause Analysis (RCA) Causal Graph</h3>
+        <span style="font-size:11px; font-family:var(--font-mono); color:var(--accent); font-weight:700;">BACKEND EVIDENCE ONLY</span>
+      </div>
+
+      <!-- Causal Lineage Nodes -->
+      <div class="rca-chain" id="rca-nodes-container">
+        <!-- JS rendered nodes -->
+      </div>
+    </div>
+
+    <!-- Sequential Timeline -->
+    <div class="card">
+      <div class="card-header">
+        <div class="card-title"><i data-lucide="terminal" style="color:var(--accent);"></i> Chronological Attack Event Timeline</div>
+      </div>
+      <div class="card-body" id="inc-events-timeline" style="display:flex; flex-direction:column; gap:12px;">
+        <div style="text-align:center; padding:16px; color:var(--text-muted); font-size:12px;">Loading attack steps...</div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+  window.FILE_ID = parseInt("{{ file_id or 1 }}", 10);
+</script>
+<script src="{{ url_for('static', filename='js/incidents.js') }}"></script>
+{% endblock %}

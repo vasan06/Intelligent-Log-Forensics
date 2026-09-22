@@ -1,7 +1,61 @@
 {% extends "base.html" %}
-{% block title %}Attack Intelligence | Intelligent Log Forensics{% endblock %}
+
+{% block title %}MITRE ATT&CK Matrix — Log Forensics{% endblock %}
+
 {% block content %}
-<header class="page-header intelligence-hero"><div><span class="eyebrow">Analyst field guide</span><h1>Attack intelligence</h1><p>Open any threat card for attacker workflow, history, live example, evidence, layered defenses, and authoritative references.</p></div><div class="cyber-model threat-radar" data-parallax aria-hidden="true"><span class="scan"></span><i class="node n1"></i><i class="node n2"></i><i class="node n3"></i><b><i data-lucide="radar"></i></b></div></header>
-<section class="attack-grid">{% for slug, attack in attacks.items() %}<a class="attack-card" href="{{ url_for('dashboard.attack_detail', slug=slug) }}" target="_blank" rel="noopener"><div class="attack-card-head"><span class="attack-icon"><i data-lucide="{{ attack.icon }}"></i></span><div><span class="eyebrow">{{ attack.tactic }} · {{ attack.mitre }}</span><h2>{{ attack.name }}</h2></div><span class="urgency">{{ attack.urgency }}</span></div><p class="attack-summary">{{ attack.summary }}</p><span class="open-detail">Open complete analysis <i data-lucide="arrow-up-right"></i></span></a>{% endfor %}</section>
-<aside class="confidence-note"><i data-lucide="info"></i><div><strong>Detection is a hypothesis, not a verdict.</strong><p>Intelligent Log Forensics names attacks only when observable indicators match. Confirm execution and impact using endpoint, identity, application, and network evidence.</p></div></aside>
+<div class="page-header">
+  <div class="page-title">
+    <div class="page-breadcrumb">
+      <span>PLATFORM</span> / <span>MITRE FRAMEWORK</span> / <span class="page-breadcrumb-current">ATT&CK MATRIX</span>
+    </div>
+    <h1>MITRE ATT&CK Intelligence & Technique Matrix</h1>
+    <p>Map observed log indicators to known adversary tactics, techniques, and remediation rules</p>
+  </div>
+</div>
+
+<!-- Filter Bar -->
+<div class="card card-body" style="background:var(--bg-raised);">
+  <div style="display:flex; gap:12px;">
+    <input type="text" id="attack-query" placeholder="Search techniques by ID (e.g. T1059) or name..." class="input" style="font-family:var(--font-mono); font-size:12px;" oninput="filterAttacks()">
+  </div>
+</div>
+
+<!-- Matrix Grid -->
+<div class="grid-3" id="attacks-grid" style="margin-top:16px;">
+  {% for key, attack in attacks.items() %}
+  {% set slug = attack.name.lower().replace(" ", "-").replace("/", "-") %}
+  <a href="{{ url_for('dashboard.attack_detail', slug=slug) }}" class="card card-body attack-card-item" data-name="{{ attack.name.lower() }}" data-mitre="{{ attack.mitre.lower() }}" style="display:flex; flex-direction:column; justify-space-between; gap:10px; text-decoration:none;">
+    <div>
+      <div style="display:flex; justify-content:space-between; align-items:center;">
+        <span class="badge badge-mitre">{{ attack.mitre }}</span>
+        <span class="badge badge-high">{{ attack.urgency or "MEDIUM" }}</span>
+      </div>
+      <h3 style="font-size:14px; font-weight:700; color:var(--text-primary); margin-top:8px;">{{ attack.name }}</h3>
+      <div style="font-size:11px; font-family:var(--font-mono); color:var(--accent); font-weight:700; text-transform:uppercase; margin-top:2px;">TACTIC: {{ attack.tactic }}</div>
+      <p style="font-size:11.5px; color:var(--text-muted); margin-top:6px; display:-webkit-box; -webkit-line-clamp:3; -webkit-box-orient:vertical; overflow:hidden;">{{ attack.summary }}</p>
+    </div>
+    <div style="border-top:1px solid var(--border-subtle); padding-top:8px; display:flex; justify-content:space-between; align-items:center; font-family:var(--font-mono); font-size:11px; color:var(--accent); font-weight:600;">
+      <span>Inspect Details</span>
+      <span>→</span>
+    </div>
+  </a>
+  {% endfor %}
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+function filterAttacks() {
+  const q = document.getElementById('attack-query').value.toLowerCase();
+  document.querySelectorAll('.attack-card-item').forEach((card) => {
+    const name = card.dataset.name;
+    const mitre = card.dataset.mitre;
+    if (name.includes(q) || mitre.includes(q)) {
+      card.style.display = 'flex';
+    } else {
+      card.style.display = 'none';
+    }
+  });
+}
+</script>
 {% endblock %}

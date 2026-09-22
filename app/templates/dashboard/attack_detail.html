@@ -1,12 +1,65 @@
 {% extends "base.html" %}
-{% block title %}{{ attack.name }} | Intelligent Log Forensics{% endblock %}
+
+{% block title %}{{ attack.name }} ({{ attack.mitre }}) — Log Forensics{% endblock %}
+
 {% block content %}
-<header class="attack-detail-hero"><div><a class="back-link" href="{{ url_for('dashboard.attack_intelligence') }}"><i data-lucide="arrow-left"></i> Attack intelligence</a><span class="eyebrow">{{ attack.tactic }} · MITRE {{ attack.mitre }}</span><h1>{{ attack.name }}</h1><p>{{ attack.summary }}</p><div class="detail-meta"><span><b>Response priority</b>{{ attack.urgency }}</span><a href="{{ attack.reference }}" target="_blank" rel="noopener">Authoritative reference <i data-lucide="external-link"></i></a></div></div><div class="cyber-model packet-model" data-parallax aria-hidden="true"><span></span><i></i><b><i data-lucide="{{ attack.icon }}"></i></b></div></header>
-<div class="detail-layout"><main>
-<section class="detail-card"><span class="section-number">01</span><div><h2>What it is</h2><p>{{ attack.summary }}</p><h3>Evolution and context</h3><p>{{ attack.history }}</p></div></section>
-<section class="detail-card"><span class="section-number">02</span><div><h2>How attackers implement it</h2><ol class="attack-steps">{% for step in attack.workflow %}<li><span>{{ '%02d'|format(loop.index) }}</span><p>{{ step }}</p></li>{% endfor %}</ol></div></section>
-<section class="detail-card"><span class="section-number">03</span><div><h2>What analysts should look for</h2><ul class="signal-list">{% for signal in attack.signals %}<li><i data-lucide="scan-line"></i>{{ signal }}</li>{% endfor %}</ul></div></section>
-<section class="detail-card example-card"><span class="section-number">04</span><div><h2>Simple individual example</h2><p>{{ attack.example }}</p><small>Illustrative defensive scenario; no executable attack payload is provided.</small></div></section>
-<section class="detail-card"><span class="section-number">05</span><div><h2>Defense by approach</h2><div class="solution-grid">{% for approach, solution in attack.solutions.items() %}<article><span>{{ approach }}</span><p>{{ solution }}</p></article>{% endfor %}</div></div></section>
-</main><aside class="analyst-sidebar"><div class="sticky-card"><span class="eyebrow">Analyst decision path</span><h3>Validate before declaring impact</h3><ol><li>Preserve original evidence.</li><li>Confirm the indicator.</li><li>Determine whether execution succeeded.</li><li>Measure affected identities and assets.</li><li>Contain, eradicate, and verify recovery.</li></ol></div></aside></div>
+<div class="page-header">
+  <div class="page-title">
+    <div class="page-breadcrumb">
+      <span>PLATFORM</span> / <span>MITRE FRAMEWORK</span> / <span class="page-breadcrumb-current">{{ attack.mitre }}</span>
+    </div>
+    <h1>{{ attack.name }}</h1>
+    <p>Technique ID: {{ attack.mitre }} · Tactic: {{ attack.tactic }}</p>
+  </div>
+
+  <a href="{{ url_for('dashboard.attack_intelligence') }}" class="btn btn-secondary btn-sm">← Back to ATT&CK Matrix</a>
+</div>
+
+<!-- Hero Card -->
+<div class="card card-body" style="background: linear-gradient(to right, rgba(124,58,237,0.06), var(--bg-surface)); border-color: var(--mitre-border);">
+  <div style="display:flex; justify-content:space-between; align-items:flex-start;">
+    <div>
+      <div style="display:flex; gap:8px; align-items:center;">
+        <span class="badge badge-mitre">{{ attack.mitre }}</span>
+        <span style="font-size:11px; font-family:var(--font-mono); color:var(--text-muted); uppercase;">TACTIC: {{ attack.tactic }}</span>
+      </div>
+      <h2 style="margin-top:6px;">{{ attack.name }}</h2>
+      <p style="font-size:12.5px; margin-top:4px; max-width:800px; color:var(--text-secondary);">{{ attack.summary }}</p>
+    </div>
+
+    {% if attack.reference %}
+    <a href="{{ attack.reference }}" target="_blank" class="btn btn-secondary btn-sm" style="font-family:var(--font-mono); font-size:11px;">MITRE Docs ↗</a>
+    {% endif %}
+  </div>
+</div>
+
+<div class="grid-2" style="margin-top:16px;">
+  <!-- Signals -->
+  <div class="card">
+    <div class="card-header">
+      <div class="card-title"><i data-lucide="terminal" style="color:var(--accent);"></i> Detection Signals & Telemetry Rules</div>
+    </div>
+    <div class="card-body" style="display:flex; flex-direction:column; gap:8px;">
+      {% for sig in attack.signals %}
+      <div style="padding:10px; background:var(--bg-raised); border-radius:var(--r-md); font-family:var(--font-mono); font-size:11.5px; color:var(--text-secondary); border:1px solid var(--border-subtle);">
+        <strong style="color:var(--accent);">0{{ loop.index }}.</strong> {{ sig }}
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+
+  <!-- Solutions -->
+  <div class="card">
+    <div class="card-header">
+      <div class="card-title"><i data-lucide="shield-check" style="color:var(--ok);"></i> Mitigation & Security Controls</div>
+    </div>
+    <div class="card-body" style="display:flex; flex-direction:column; gap:8px;">
+      {% for sol in attack.solutions %}
+      <div style="padding:10px; background:var(--bg-raised); border-radius:var(--r-md); font-size:12px; color:var(--text-secondary); border:1px solid var(--border-subtle); display:flex; gap:8px;">
+        <span style="color:var(--ok); font-weight:700;">✓</span> {{ sol }}
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+</div>
 {% endblock %}

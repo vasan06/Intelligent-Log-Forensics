@@ -1,104 +1,76 @@
 <!doctype html>
-<html lang="en">
+<html lang="en" data-theme="light">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>{% block title %}Intelligent Log Forensics{% endblock %}</title>
+  <title>{% block title %}Intelligent Log Forensics — MITRE RCA Workstation{% endblock %}</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-  <script>document.documentElement.dataset.theme=localStorage.getItem('lf-theme')||'dark';</script>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600;700&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <script>
+    (function(){
+      const t = localStorage.getItem('lf-theme') || 'light';
+      document.documentElement.dataset.theme = t;
+    })();
+  </script>
   <link rel="stylesheet" href="{{ url_for('static', filename='css/design-tokens.css') }}">
   <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
   <script src="https://unpkg.com/lucide@0.468.0/dist/umd/lucide.min.js" defer></script>
   {% block head %}{% endblock %}
 </head>
-<body class="{% if not current_user.is_authenticated %}auth-body{% endif %}">
-  {% if current_user.is_authenticated %}
-  <aside class="sidebar">
-    <a class="brand" href="{{ url_for('dashboard.index') }}">
-      <span class="brand-mark"><i data-lucide="shield-check"></i></span>
-      <span><strong>INTELLIGENT LOG FORENSICS</strong><small>Security analytics</small></span>
-    </a>
-    <nav>
-      <a href="{{ url_for('dashboard.index') }}" class="{{ 'active' if request.endpoint == 'dashboard.index' }}"><i data-lucide="layout-dashboard"></i>Overview</a>
-      <a href="{{ url_for('upload.upload') }}" class="{{ 'active' if request.endpoint == 'upload.upload' }}"><i data-lucide="file-up"></i>Analyze logs</a>
-      <a href="{{ url_for('upload.history') }}" class="{{ 'active' if request.endpoint == 'upload.history' }}"><i data-lucide="history"></i>Upload history</a>
-    </nav>
-    <div class="sidebar-footer">
-      <span class="avatar user-initial">?</span>
-      <span class="user-meta"><strong class="user-name">Loading...</strong><small class="user-role"></small></span>
-      <a class="icon-button" href="{{ url_for('auth.logout') }}" title="Log out"><i data-lucide="log-out"></i></a>
-    </div>
-  </aside>
-  {% endif %}
-  <main class="{{ 'app-main' if current_user.is_authenticated else 'auth-main' }}">
-    <div class="ambient-grid" aria-hidden="true"></div>
-    {% if current_user.is_authenticated %}
-    <header class="top-nav">
-      <a class="top-brand" href="{{ url_for('dashboard.index') }}"><span class="brand-mark"><i data-lucide="scan-search"></i></span><strong>INTELLIGENT LOG FORENSICS</strong></a>
-      <nav><a class="{{ 'active' if request.endpoint == 'dashboard.index' }}" href="{{ url_for('dashboard.index') }}">Command center</a><a class="{{ 'active' if request.endpoint == 'dashboard.attack_intelligence' }}" href="{{ url_for('dashboard.attack_intelligence') }}">Attack intelligence</a><a class="{{ 'active' if request.endpoint == 'upload.upload' }}" href="{{ url_for('upload.upload') }}">Analyze evidence</a><a href="{{ url_for('upload.history') }}">Investigations</a></nav>
-      <div class="top-actions"><button class="theme-toggle icon-button" type="button" title="Toggle color theme" aria-label="Toggle color theme"><i data-lucide="sun"></i></button><span class="avatar user-initial">?</span><a class="icon-button" href="{{ url_for('auth.logout') }}" title="Log out"><i data-lucide="log-out"></i></a></div>
-    </header>
-    {% endif %}
-    {% with messages = get_flashed_messages(with_categories=true) %}
-      {% if messages %}
-      <div class="flash-stack">
-        {% for category, message in messages %}
-        <div class="flash {{ category }}">{{ message }}</div>
-        {% endfor %}
+<body>
+  <!-- Header-Based Workstation Architecture -->
+  <header class="app-header">
+    <a href="{{ url_for('dashboard.index') }}" class="topbar-brand">
+      <div class="topbar-brand-icon"><i data-lucide="shield-alert"></i></div>
+      <div style="display:flex; flex-direction:column;">
+        <span>LOG FORENSICS</span>
+        <span style="font-size:9.5px; font-family:var(--font-mono); color:var(--text-muted); letter-spacing:0.08em; text-transform:uppercase;">MITRE RCA WORKSTATION</span>
       </div>
-      {% endif %}
-    {% endwith %}
+    </a>
+
+    <nav class="topbar-nav">
+      <a href="{{ url_for('dashboard.index') }}" class="topbar-nav-link {{ 'active' if request.endpoint == 'dashboard.index' }}"><i data-lucide="activity" style="width:14px;"></i> Overview</a>
+      <a href="{{ url_for('upload.upload_page') }}" class="topbar-nav-link {{ 'active' if request.endpoint == 'upload.upload_page' }}"><i data-lucide="terminal" style="width:14px;"></i> Log Stream</a>
+      <a href="{{ url_for('incidents.tracker') }}" class="topbar-nav-link {{ 'active' if 'incidents' in request.endpoint }}"><i data-lucide="shield-alert" style="width:14px;"></i> Incidents & RCA</a>
+      <a href="{{ url_for('dashboard.attack_intelligence') }}" class="topbar-nav-link {{ 'active' if 'attack' in request.endpoint }}"><i data-lucide="cpu" style="width:14px;"></i> MITRE ATT&CK</a>
+      <a href="{{ url_for('dashboard.remediation') }}" class="topbar-nav-link {{ 'active' if request.endpoint == 'dashboard.remediation' }}"><i data-lucide="shield-check" style="width:14px;"></i> Remediation & Arch</a>
+      <a href="{{ url_for('upload.history') }}" class="topbar-nav-link {{ 'active' if request.endpoint == 'upload.history' }}"><i data-lucide="search" style="width:14px;"></i> Evidence Archive</a>
+    </nav>
+
+    <div class="topbar-right">
+      <div style="display:flex; align-items:center; gap:6px; padding:4px 10px; border-radius:99px; background:var(--bg-raised); border:1px solid var(--border-subtle); font-size:11px; font-family:var(--font-mono);">
+        <span style="width:6px; height:6px; border-radius:50%; background:#10b981; display:inline-block;"></span>
+        <span style="font-weight:600; color:var(--text-secondary);">LIVE MONITORING</span>
+      </div>
+
+      <div class="topbar-clock">
+        <span id="clock-time" class="topbar-clock-time">00:00:00</span>
+        <span id="clock-date" class="topbar-clock-date">-- --- ----</span>
+      </div>
+
+      <button class="btn btn-secondary btn-icon" onclick="toggleTheme()" title="Toggle Light/Dark Theme">
+        <i data-lucide="sun" style="width:15px;"></i>
+      </button>
+
+      <div style="display:flex; align-items:center; gap:8px;">
+        <span class="user-initial" style="width:28px; height:28px; border-radius:50%; background:var(--accent); color:#fff; display:flex; align-items:center; justify-content:center; font-weight:700; font-size:12px;">A</span>
+        <span class="user-name" style="font-size:12.5px; font-weight:600; color:var(--text-primary);">Analyst</span>
+      </div>
+    </div>
+  </header>
+
+  <!-- Workstation Body -->
+  <main class="app-content">
     {% block content %}{% endblock %}
   </main>
 
-<script>
-document.addEventListener("DOMContentLoaded", () => {
-    fetch('/api/v1/auth/me')
-        .then(response => {
-            if (!response.ok) {
-                throw new Error("Not authenticated");
-            }
-            return response.json();
-        })
-        .then(user => {
-            document.querySelectorAll('.user-initial').forEach(node => {
-                node.textContent = user.name.slice(0, 1);
-            });
-
-            document.querySelectorAll('.user-name').forEach(node => {
-                node.textContent = user.name;
-            });
-
-            document.querySelectorAll('.user-role').forEach(node => {
-                node.textContent = user.role;
-            });
-        })
-        .catch(console.error);
-});
-
-    if (isAuthenticated) {
-        fetch('/api/v1/auth/me')
-            .then(response => response.json())
-            .then(user => {
-                document.querySelectorAll('.user-initial').forEach(node => {
-                    node.textContent = user.name.slice(0, 1);
-                });
-
-                document.querySelectorAll('.user-name').forEach(node => {
-                    node.textContent = user.name;
-                });
-
-                document.querySelectorAll('.user-role').forEach(node => {
-                    node.textContent = user.role;
-                });
-            })
-            .catch(console.error);
-    }
-
-</script>
-
+  <script src="{{ url_for('static', filename='js/app.js') }}"></script>
+  <script>
+    document.addEventListener("DOMContentLoaded", () => {
+      if (window.lucide) lucide.createIcons();
+    });
+  </script>
   {% block scripts %}{% endblock %}
 </body>
 </html>

@@ -1,22 +1,77 @@
 {% extends "base.html" %}
-{% block title %}Analyze Logs | Log Forensics{% endblock %}
+
+{% block title %}Log Ingestion & SOC Simulation — Log Forensics{% endblock %}
+
 {% block content %}
-<header class="page-header"><div><span class="eyebrow">Evidence intake</span><h1>Analyze log file</h1><p>Parse, normalize, score, correlate, and map application evidence.</p></div><div class="cyber-model packet-model small-model" data-parallax aria-hidden="true"><span></span><i></i><b><i data-lucide="file-search"></i></b></div></header>
-<form class="upload-workspace" method="post" enctype="multipart/form-data">
-  <label class="drop-zone" id="dropZone">
-    <input type="file" name="log_file" id="fileInput" accept=".csv,.json,.txt,.log" required>
-    <span class="upload-icon"><i data-lucide="file-up"></i></span>
-    <strong id="fileName">Drop a log file here</strong>
-    <span id="fileMeta">or click to browse · CSV, JSON, TXT, LOG · {{ max_upload_mb }} MB max</span>
-  </label>
-  <div class="pipeline-strip">
-    <span><b>01</b> Parse</span><i data-lucide="chevron-right"></i>
-    <span><b>02</b> Normalize</span><i data-lucide="chevron-right"></i>
-    <span><b>03</b> Detect</span><i data-lucide="chevron-right"></i>
-    <span><b>04</b> Correlate</span><i data-lucide="chevron-right"></i>
-    <span><b>05</b> Report</span>
+<div class="page-header">
+  <div class="page-title">
+    <div class="page-breadcrumb">
+      <span>PLATFORM</span> / <span>LOG LAB</span> / <span class="page-breadcrumb-current">UPLOAD & SIMULATION</span>
+    </div>
+    <h1>Log Ingestion & SOC Simulation Workstation</h1>
+    <p>Upload raw log archives or stream simulated attack vectors to test forensic correlation</p>
   </div>
-  <button class="primary-button submit-analysis" type="submit"><i data-lucide="scan-search"></i> Start analysis</button>
-</form>
+
+  <a href="{{ url_for('upload.history') }}" class="btn btn-secondary btn-sm"><i data-lucide="file-text" style="width:13px;"></i> Evidence Archive History</a>
+</div>
+
+<div class="grid-2">
+  <!-- Upload Dropzone Card -->
+  <div class="card card-body" style="display:flex; flex-direction:column; gap:16px;">
+    <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid var(--border-subtle); padding-bottom:10px;">
+      <h3 style="display:flex; align-items:center; gap:8px;"><i data-lucide="upload-cloud" style="color:var(--accent); width:18px;"></i> Raw Log Archive Upload</h3>
+      <span style="font-size:11px; font-family:var(--font-mono); color:var(--text-muted);">CSV, JSON, TXT, LOG</span>
+    </div>
+
+    <form action="{{ url_for('upload.upload_form') }}" method="post" enctype="multipart/form-data" id="upload-form">
+      <div class="dropzone evidence-dropzone" id="dropzone-box" onclick="document.getElementById('file-input').click()">
+        <i data-lucide="upload-cloud" style="width:36px; height:36px; color:var(--text-muted);"></i>
+        <div>
+          <strong style="font-size:14px; color:var(--text-primary); display:block;">Drag & drop raw log files here</strong>
+          <span style="font-size:11.5px; color:var(--text-muted);">Supports Syslog, Nginx access logs, Auth logs, and JSON records</span>
+        </div>
+        <input type="file" name="log_file" id="file-input" style="display:none;" onchange="document.getElementById('upload-form').submit()">
+        <button type="button" class="btn btn-primary btn-sm" style="margin-top:8px;">Select Log File</button>
+      </div>
+    </form>
+  </div>
+
+  <!-- Synthetic SOC Log Simulator -->
+  <div class="card card-body" style="display:flex; flex-direction:column; gap:14px;">
+    <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid var(--border-subtle); padding-bottom:10px;">
+      <h3 style="display:flex; align-items:center; gap:8px;"><i data-lucide="activity" style="color:var(--accent); width:18px;"></i> Synthetic SOC Attack Simulator</h3>
+      <span id="gen-status-badge" class="badge badge-default">READY</span>
+    </div>
+
+    <p style="font-size:12px; color:var(--text-secondary);">Trigger live synthetic attack scenarios to evaluate real-time log ingestion, event correlation, and MITRE mapping rules.</p>
+
+    <div class="grid-2" style="gap:10px;">
+      <button onclick="startGenerator('normal')" class="btn btn-secondary" style="display:flex; flex-direction:column; align-items:flex-start; padding:10px 12px; text-align:left;">
+        <strong style="font-size:12px;">Normal Traffic</strong>
+        <span style="font-size:10.5px; color:var(--text-muted);">Baseline HTTP/SSH events</span>
+      </button>
+
+      <button onclick="startGenerator('brute_force')" class="btn btn-secondary" style="display:flex; flex-direction:column; align-items:flex-start; padding:10px 12px; text-align:left;">
+        <strong style="font-size:12px; color:var(--high);">SSH Brute-Force</strong>
+        <span style="font-size:10.5px; color:var(--text-muted);">Login failure spike (T1110)</span>
+      </button>
+
+      <button onclick="startGenerator('sqli')" class="btn btn-secondary" style="display:flex; flex-direction:column; align-items:flex-start; padding:10px 12px; text-align:left;">
+        <strong style="font-size:12px; color:var(--critical);">SQL Injection</strong>
+        <span style="font-size:10.5px; color:var(--text-muted);">Web payload attack (T1190)</span>
+      </button>
+
+      <button onclick="startGenerator('exfil')" class="btn btn-secondary" style="display:flex; flex-direction:column; align-items:flex-start; padding:10px 12px; text-align:left;">
+        <strong style="font-size:12px; color:var(--mitre);">Data Exfiltration</strong>
+        <span style="font-size:10.5px; color:var(--text-muted);">Large outbound transfer (T1048)</span>
+      </button>
+    </div>
+
+    <button id="btn-stop-gen" onclick="stopGenerator()" class="btn btn-danger btn-sm" style="display:none; width:100%; font-family:var(--font-mono);">Stop Synthetic Stream Generator</button>
+  </div>
+</div>
 {% endblock %}
-{% block scripts %}<script src="{{ url_for('static', filename='js/upload.js') }}"></script>{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/upload.js') }}"></script>
+{% endblock %}

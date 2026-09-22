@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+
+{% block title %}Actionable Remediation & Solution Architecture - Log Forensics{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div class="page-title">
+    <div class="page-breadcrumb">
+      <span>PLATFORM</span> / <span>INVESTIGATION</span> / <span class="page-breadcrumb-current">REMEDIATION & ARCHITECTURE</span>
+    </div>
+    <h1>Actionable Remediation & Architecture Guidance</h1>
+    <p>Containment, correction, hardening, and verification guidance grounded in uploaded evidence.</p>
+  </div>
+
+  <button onclick="window.print()" class="btn btn-secondary btn-sm"><i data-lucide="download" style="width:13px;"></i> Print Action Plan</button>
+</div>
+
+<div class="card card-body" style="background: linear-gradient(to right, rgba(37,99,235,0.06), var(--bg-surface)); border-color: var(--accent-border);">
+  <div>
+    <span class="eyebrow" style="color:var(--accent);">Recommended Action Flow</span>
+    <h2 style="font-size:18px; margin-top:4px;">Problem -> Action -> Expected Result -> Verification</h2>
+    <p style="font-size:12px; margin-top:4px; max-width:780px; color:var(--text-secondary);">This page avoids fabricated infrastructure commands. Specific recommendations appear from risk events and forensic reports when the backend returns them.</p>
+  </div>
+  <div class="solution-flow" id="remediation-phases" style="margin-top:16px;"></div>
+</div>
+
+<div class="card card-body" style="display:flex; flex-direction:column; gap:14px;">
+  <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid var(--border-subtle); padding-bottom:12px;">
+    <h3 style="display:flex; align-items:center; gap:8px;"><i data-lucide="server" style="color:var(--accent); width:16px;"></i> Solution Architecture & System Topology</h3>
+    <span style="font-family:var(--font-mono); font-size:11px; color:var(--text-muted); font-weight:700;">REAL DATA ONLY</span>
+  </div>
+
+  <div class="grid-4" id="arch-nodes-grid"></div>
+
+  <div class="evidence-note">
+    Architecture visualization will appear here when the backend exposes real endpoint, identity, network, application, database, gateway, control, or policy relationships.
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/remediation.js') }}"></script>
+{% endblock %}
