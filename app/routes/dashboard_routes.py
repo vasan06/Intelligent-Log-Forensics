@@ -1,50 +1,36 @@
-from flask import Blueprint
-from app.utils.spa import render_spa
+from flask import Blueprint, render_template, abort
+from app.knowledge_base.attack_catalog import ATTACKS
 
 dashboard_bp = Blueprint("dashboard", __name__)
 
-_SPA_ROUTES = [
-    "/",
-    "/dashboard",
-    "/login",
-    "/register",
-    "/upload",
-    "/upload/history",
-    "/incidents",
-    "/attack-intelligence",
-    "/admin",
-]
+@dashboard_bp.get("/")
+@dashboard_bp.get("/dashboard")
+def index():
+    return render_template("dashboard/dashboard.html")
 
-for _path in _SPA_ROUTES:
-    dashboard_bp.add_url_rule(
-        _path,
-        endpoint=f"spa_{_path.strip('/') or 'root'}",
-        view_func=render_spa,
-    )
+@dashboard_bp.get("/remediation")
+def remediation():
+    return render_template("dashboard/remediation.html")
 
-dashboard_bp.add_url_rule("/dashboard", endpoint="index", view_func=render_spa)
-
-
-@dashboard_bp.get("/logs/<int:file_id>")
-def logs_view(file_id):
-    return render_spa()
-
-
-@dashboard_bp.get("/incidents/<int:file_id>")
-def incidents_view(file_id):
-    return render_spa()
-
-
-@dashboard_bp.get("/reports/<int:file_id>")
-def reports_view(file_id):
-    return render_spa()
-
+@dashboard_bp.get("/attack-intelligence")
+def attack_intelligence():
+    return render_template("dashboard/attack_intelligence.html", attacks=ATTACKS)
 
 @dashboard_bp.get("/attack-intelligence/<slug>")
 def attack_detail(slug):
-    return render_spa()
+    attack = next((a for a in ATTACKS.values() if a["name"].lower().replace(" ", "-").replace("/", "-") == slug), None)
+    if not attack:
+        attack = list(ATTACKS.values())[0]
+    return render_template("dashboard/attack_detail.html", attack=attack)
 
+@dashboard_bp.get("/admin")
+def admin():
+    return render_template("admin/admin.html")
 
-@dashboard_bp.get("/<path:path>")
-def spa_fallback(path):
-    return render_spa()
+@dashboard_bp.get("/login")
+def login():
+    return render_template("auth/login.html")
+
+@dashboard_bp.get("/register")
+def register():
+    return render_template("auth/register.html")

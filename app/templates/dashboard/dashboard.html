@@ -1,11 +1,116 @@
 {% extends "base.html" %}
-{% block title %}Overview | Log Forensics{% endblock %}
-{% block head %}<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>{% endblock %}
+
+{% block title %}Investigation Overview — Log Forensics{% endblock %}
+
 {% block content %}
-<header class="page-header cyber-hero"><div><span class="eyebrow">Intelligence workspace</span><h1>Forensic overview</h1><p>Current operational health and security posture across analyzed logs.</p></div><div class="cyber-model threat-radar" data-parallax aria-hidden="true"><span class="scan"></span><i class="node n1"></i><i class="node n2"></i><i class="node n3"></i><b><i data-lucide="radar"></i></b></div><a class="primary-button" href="{{ url_for('upload.upload') }}"><i data-lucide="file-up"></i> Analyze logs</a></header>
-<section class="metric-grid"><article class="metric"><span>Logs analyzed</span><strong id="totalLogs">0</strong></article><article class="metric"><span>Risk events</span><strong id="riskEvents">0</strong></article><article class="metric"><span>Incidents</span><strong id="incidentCount">0</strong></article><article class="metric accent"><span>Average risk</span><strong id="averageRisk">0</strong></article></section>
-<section class="dashboard-grid"><article class="panel chart-panel"><div class="panel-heading"><div><span class="eyebrow">Classification</span><h2>Risk distribution</h2></div></div><div class="chart-wrap"><canvas id="riskChart"></canvas><div class="empty-chart" id="riskEmpty">No risk data yet</div></div></article><article class="panel chart-panel"><div class="panel-heading"><div><span class="eyebrow">Evidence pivot</span><h2>Log source types</h2></div></div><div class="chart-wrap"><canvas id="sourceChart"></canvas><div class="empty-chart" id="sourceEmpty">No source data yet</div></div></article><article class="panel wide"><div class="panel-heading"><div><span class="eyebrow">Seven-day signal</span><h2>Error trend</h2></div></div><div class="line-chart-wrap"><canvas id="trendChart"></canvas></div></article><article class="panel"><div class="panel-heading"><div><span class="eyebrow">Source intelligence</span><h2>Top risky IPs</h2></div></div><div id="riskyIps" class="rank-list"><p class="empty-copy">No risky sources detected.</p></div></article><article class="panel wide chart-panel"><div class="panel-heading"><div><span class="eyebrow">MITRE ATT&CK</span><h2>Tactic coverage</h2></div></div><div class="chart-wrap compact-chart"><canvas id="mitreChart"></canvas><div class="empty-chart" id="mitreEmpty">No mapped tactics yet</div></div></article></section>
-<section class="table-section"><div class="section-heading"><div><span class="eyebrow">Recent activity</span><h2>Analysis history</h2></div><a href="{{ url_for('upload.history') }}">View all</a></div><div class="table-shell"><table><thead><tr><th>File</th><th>Status</th><th>Records</th><th>Uploaded</th><th></th></tr></thead><tbody id="recentUploads"><tr><td colspan="5" class="table-empty">Loading evidence...</td></tr></tbody></table></div></section>
-<section class="table-section"><div class="section-heading"><div><span class="eyebrow">Live stream</span><h2>New risk events</h2></div></div><div id="liveIncidentFeed" class="rank-list"><p class="empty-copy">Waiting for committed events...</p></div></section>
+<section class="landing-hero" aria-labelledby="landing-title">
+  <div class="landing-copy">
+    <span class="eyebrow">Security Intelligence Workstation</span>
+    <h1 id="landing-title">Intelligent Log Forensics</h1>
+    <p>Turn uploaded security logs into correlated incidents, evidence-backed RCA, MITRE ATT&CK context, remediation guidance, and verification steps.</p>
+    <div class="landing-actions">
+      <a href="{{ url_for('upload.upload_page') }}" class="btn btn-primary"><i data-lucide="upload-cloud"></i> Analyze Evidence</a>
+      <a href="{{ url_for('incidents.tracker') }}" class="btn btn-secondary"><i data-lucide="git-branch"></i> Open Investigations</a>
+    </div>
+  </div>
+  <div class="reasoning-model" aria-label="Product reasoning model">
+    <div class="reasoning-lane"><span>Raw logs</span><strong>Normalize</strong></div>
+    <div class="reasoning-lane"><span>Signals</span><strong>Correlate</strong></div>
+    <div class="reasoning-lane"><span>Incident</span><strong>Explain</strong></div>
+    <div class="reasoning-lane"><span>MITRE</span><strong>Map</strong></div>
+    <div class="reasoning-lane"><span>Response</span><strong>Verify</strong></div>
+  </div>
+</section>
+
+<div class="page-header">
+  <div class="page-title">
+    <div class="page-breadcrumb">
+      <span>PLATFORM</span> / <span class="page-breadcrumb-current">SYSTEM OVERVIEW & REASONING</span>
+    </div>
+    <h1>Investigation Overview</h1>
+    <p>Real-time security telemetry, active threat priorities, and automated forensic conclusions</p>
+  </div>
+
+  <div style="display:flex; gap:8px;">
+    <button onclick="fetchOverview()" class="btn btn-secondary btn-sm"><i data-lucide="refresh-cw" style="width:13px;"></i> Refresh</button>
+    <a href="{{ url_for('upload.upload_page') }}" class="btn btn-primary btn-sm"><i data-lucide="terminal" style="width:13px;"></i> Analyze New Logs</a>
+  </div>
+</div>
+
+<!-- Dominant Hero Story Card -->
+<div class="card card-body" style="background: linear-gradient(to right, rgba(37,99,235,0.06), var(--bg-surface)); border-color: var(--accent-border);">
+  <div style="display:flex; justify-content:space-between; align-items:flex-start; flex-wrap:wrap; gap:16px;">
+    <div>
+      <span style="font-size:11px; font-family:var(--font-mono); font-weight:700; color:var(--accent); text-transform:uppercase; letter-spacing:0.08em;">SYSTEM HEALTH & TRUST REASONING</span>
+      <h2 id="hero-title" style="margin-top:4px;">Loading system status telemetry...</h2>
+      <p id="hero-desc" style="font-size:12.5px; margin-top:4px; max-width:750px;">Fetching logs, risks, and health metrics from backend service...</p>
+    </div>
+
+    <div style="display:flex; gap:20px; font-family:var(--font-mono); border-left:1px solid var(--border-subtle); padding-left:16px;">
+      <div>
+        <div style="font-size:10px; color:var(--text-muted); text-transform:uppercase;">Health Index</div>
+        <div id="stat-health" style="font-size:24px; font-weight:800; color:var(--accent);">--</div>
+      </div>
+      <div>
+        <div style="font-size:10px; color:var(--text-muted); text-transform:uppercase;">Avg Risk Score</div>
+        <div id="stat-avg-risk" style="font-size:24px; font-weight:800; color:var(--high);">--</div>
+      </div>
+    </div>
+  </div>
+
+  <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px; margin-top:16px; pt:12px; border-top:1px solid var(--border-subtle); font-size:12px; font-family:var(--font-mono);">
+    <div style="display:flex; gap:16px; color:var(--text-muted);">
+      <span>Total Logs: <strong id="stat-total-logs" style="color:var(--text-primary);">--</strong></span>
+      <span>Risk Events: <strong id="stat-risks" style="color:var(--high);">--</strong></span>
+      <span>Quality Score: <strong id="stat-quality" style="color:var(--ok);">--</strong></span>
+    </div>
+    <div style="display:flex; gap:12px;">
+      <a href="{{ url_for('incidents.tracker') }}" class="btn btn-ghost btn-sm" style="color:var(--accent);">View Incidents →</a>
+      <a href="{{ url_for('dashboard.remediation') }}" class="btn btn-ghost btn-sm" style="color:var(--accent);">Remediation Plan →</a>
+    </div>
+  </div>
+</div>
+
+<!-- Grid 2 Cols: Priorities & Log Spatial Map -->
+<div class="grid-3" style="grid-template-columns: 2fr 1fr;">
+  <div style="display:flex; flex-direction:column; gap:20px;">
+    <!-- Active Incidents Card -->
+    <div class="card">
+      <div class="card-header">
+        <div class="card-title"><i data-lucide="shield-alert" style="color:var(--accent);"></i> Investigation Priorities & Active Incidents</div>
+        <a href="{{ url_for('incidents.tracker') }}" style="font-size:11.5px; font-family:var(--font-mono);">View All Incidents</a>
+      </div>
+      <div class="card-body" id="incidents-list" style="display:flex; flex-direction:column; gap:10px;">
+        <div style="text-align:center; padding:20px; color:var(--text-muted); font-size:12px;">Loading active incidents...</div>
+      </div>
+    </div>
+
+    <!-- Spatial Canvas Telemetry Map -->
+    <div class="card card-body" style="display:flex; flex-direction:column; gap:12px;">
+      <div style="display:flex; justify-content:space-between; align-items:center;">
+        <h4 style="display:flex; align-items:center; gap:6px;"><i data-lucide="activity" style="color:var(--accent); width:16px;"></i> Log Event Telemetry Spatial Cluster Map</h4>
+        <span style="font-size:11px; font-family:var(--font-mono); color:var(--text-muted);">REALTIME CANVAS</span>
+      </div>
+      <div style="position:relative; background:#070b14; border-radius:var(--r-md); overflow:hidden; border:1px solid var(--border-subtle);">
+        <canvas id="telemetry-canvas" style="width:100%; height:220px; display:block;"></canvas>
+      </div>
+    </div>
+  </div>
+
+  <!-- Right Sidebar: Suspicious IPs -->
+  <div style="display:flex; flex-direction:column; gap:20px;">
+    <div class="card">
+      <div class="card-header">
+        <div class="card-title"><i data-lucide="terminal" style="color:var(--accent);"></i> Top Suspicious IP Actors</div>
+      </div>
+      <div class="card-body" id="top-ips-list" style="display:flex; flex-direction:column; gap:8px;">
+        <div style="text-align:center; padding:12px; color:var(--text-muted); font-size:12px;">Loading IP actors...</div>
+      </div>
+    </div>
+  </div>
+</div>
 {% endblock %}
-{% block scripts %}<script src="{{ url_for('static', filename='js/dashboard.js') }}"></script>{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/dashboard.js') }}"></script>
+{% endblock %}

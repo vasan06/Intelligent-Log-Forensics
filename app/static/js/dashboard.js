@@ -1,78 +1,119 @@
-const palette = ["#16d9e7", "#8b6cff", "#ff5d73", "#f0b94b", "#3e8cff", "#49d49d"];
-const escapeHTML = value => String(value ?? "").replace(/[&<>"']/g, char => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"})[char]);
-const chartDefaults = {
-  plugins: { legend: { display: false } },
-  responsive: true,
-  maintainAspectRatio: false
-};
+/* Dashboard Overview Vanilla JavaScript */
+function fetchOverview() {
+  fetch('/api/v1/dashboard/overview')
+    .then((res) => (res.ok ? res.json() : null))
+    .then((data) => {
+      if (!data) return;
+      document.getElementById('hero-title').textContent = data.incidents > 0
+        ? `${data.incidents} Active Incidents Requiring Investigation`
+        : 'System Operating within Normal Forensic Parameters';
 
-async function getJSON(url) {
-  const response = await fetch(url);
-  if (!response.ok) throw new Error(`Request failed: ${url}`);
-  return response.json();
+      document.getElementById('hero-desc').textContent = `Analyzed ${data.total_logs.toLocaleString()} log records. Identified ${data.risk_events} risk anomalies with health score of ${data.health_score}%.`;
+
+      document.getElementById('stat-health').textContent = `${data.health_score}%`;
+      document.getElementById('stat-avg-risk').textContent = data.average_risk ? data.average_risk.toFixed(1) : '0';
+      document.getElementById('stat-total-logs').textContent = data.total_logs.toLocaleString();
+      document.getElementById('stat-risks').textContent = data.risk_events;
+      document.getElementById('stat-quality').textContent = `${data.quality_score}%`;
+      renderOverviewSeverity(data.severity_distribution || {});
+      renderTelemetryCanvas(data.recent_events || []);
+
+      // Render Incidents List
+      const listEl = document.getElementById('incidents-list');
+      if (listEl && data.recent_incidents && data.recent_incidents.length > 0) {
+        listEl.innerHTML = data.recent_incidents.map((inc) => `
+          <a href="/incidents" style="display:flex; justify-content:space-between; align-items:center; padding:10px 14px; background:var(--bg-raised); border:1px solid var(--border-subtle); border-radius:var(--r-md); text-decoration:none;">
+            <div>
+              <div style="display:flex; align-items:center; gap:8px;">
+                <span class="badge ${inc.severity.toLowerCase() === 'critical' ? 'badge-critical' : 'badge-high'}">${inc.severity}</span>
+                <span style="font-weight:700; color:var(--text-primary); font-size:12.5px;">${inc.title}</span>
+              </div>
+              <div style="font-size:11px; font-family:var(--font-mono); color:var(--text-muted); margin-top:3px;">Risk Score: ${inc.score}/100</div>
+            </div>
+            <span style="font-size:11.5px; font-family:var(--font-mono); font-weight:600; color:var(--accent);">Investigate →</span>
+          </a>
+        `).join('');
+      } else if (listEl) {
+        listEl.innerHTML = `<div style="text-align:center; padding:16px; color:var(--text-muted); font-size:12px;">No active incidents recorded.</div>`;
+      }
+    })
+    .catch(() => {});
+
+  // Fetch Top IPs
+  fetch('/api/v1/dashboard/top-risky-ips?limit=5')
+    .then((res) => (res.ok ? res.json() : []))
+    .then((ips) => {
+      const container = document.getElementById('top-ips-list');
+      if (!container) return;
+      if (ips.length > 0) {
+        container.innerHTML = ips.map((item) => `
+          <div style="display:flex; justify-content:space-between; align-items:center; padding:8px 12px; background:var(--bg-raised); border:1px solid var(--border-subtle); border-radius:var(--r-md); font-family:var(--font-mono); font-size:11.5px;">
+            <div>
+              <strong style="color:var(--text-primary); block;">${item.ip}</strong>
+              <span style="font-size:10px; color:var(--text-muted);">${item.events} events</span>
+            </div>
+            <span class="badge ${item.score > 70 ? 'badge-critical' : 'badge-high'}">${item.score} Risk</span>
+          </div>
+        `).join('');
+      } else {
+        container.innerHTML = `<div style="text-align:center; padding:12px; color:var(--text-muted); font-size:12px;">No high-risk IPs recorded.</div>`;
+      }
+    })
+    .catch(() => {});
 }
 
-function doughnut(canvas, data, emptyId) {
-  const labels = Object.keys(data);
-  document.getElementById(emptyId).hidden = labels.length > 0;
-  canvas.hidden = labels.length === 0;
-  if (!labels.length) return;
-  new Chart(canvas, {
-    type: "doughnut",
-    data: { labels, datasets: [{ data: Object.values(data), backgroundColor: palette, borderWidth: 0 }] },
-    options: { ...chartDefaults, cutout: "68%", onClick: (_event, active, chart) => {
-      const dataset = chart.data.datasets[0];
-      dataset.backgroundColor = dataset._originalColors || [...dataset.backgroundColor];
-      dataset._originalColors = [...dataset.backgroundColor];
-      if (active.length) dataset.backgroundColor = dataset._originalColors.map((color, index) => index === active[0].index ? color : `${color}33`);
-      chart.update();
-    }, plugins: { legend: { position: "right", labels: { boxWidth: 10, usePointStyle: true } } } }
+function renderOverviewSeverity(counts) {
+  const host = document.getElementById('top-ips-list');
+  if (!host || host.dataset.loadedIps === 'true') return;
+  const rows = Object.entries(counts).sort((a, b) => b[1] - a[1]);
+  if (!rows.length) return;
+  host.innerHTML = rows.map(([label, count]) => `
+    <div class="bar-row">
+      <div class="bar-row-label"><span>${label}</span><strong>${count}</strong></div>
+      <div class="bar-track"><span style="width:${Math.max(6, count / Math.max(...rows.map(([, v]) => v)) * 100)}%"></span></div>
+    </div>
+  `).join('');
+}
+
+// Render Telemetry Canvas from backend risk events.
+function renderTelemetryCanvas(events) {
+  const canvas = document.getElementById('telemetry-canvas');
+  if (!canvas) return;
+  const ctx = canvas.getContext('2d');
+  if (!ctx) return;
+
+  const width = (canvas.width = canvas.parentElement.clientWidth || 500);
+  const height = (canvas.height = 220);
+
+  ctx.clearRect(0, 0, width, height);
+  if (!events.length) {
+    ctx.fillStyle = '#94a3b8';
+    ctx.font = '12px Manrope';
+    ctx.fillText('No recent risk events returned by the backend.', 18, height / 2);
+    return;
+  }
+  const lanes = ['Critical', 'High', 'Medium', 'Low'];
+  const maxScore = Math.max(...events.map((event) => Number(event.risk_score || 0)), 1);
+  events.slice().reverse().forEach((event, index) => {
+    const x = 28 + (index / Math.max(events.length - 1, 1)) * (width - 56);
+    const lane = Math.max(0, lanes.findIndex((name) => String(event.severity || '').toLowerCase() === name.toLowerCase()));
+    const y = 26 + lane * 42;
+    const radius = 4 + (Number(event.risk_score || 0) / maxScore) * 8;
+    ctx.beginPath();
+    ctx.arc(x, y, radius, 0, Math.PI * 2);
+    ctx.fillStyle = event.severity === 'Critical' ? '#dc2626' : event.severity === 'High' ? '#ea580c' : '#2563eb';
+    ctx.fill();
+    if (index > 0) {
+      const prevX = 28 + ((index - 1) / Math.max(events.length - 1, 1)) * (width - 56);
+      ctx.beginPath();
+      ctx.moveTo(prevX, y);
+      ctx.lineTo(x, y);
+      ctx.strokeStyle = 'rgba(148, 163, 184, .35)';
+      ctx.stroke();
+    }
   });
 }
 
-async function loadDashboard() {
-  const [summary, risks, sources, mitre, trend, ips] = await Promise.all([
-    getJSON("/api/v1/dashboard/summary"),
-    getJSON("/api/v1/dashboard/risk-distribution"),
-    getJSON("/api/v1/dashboard/log-sources"),
-    getJSON("/api/v1/dashboard/mitre-stats"),
-    getJSON("/api/v1/dashboard/error-trends"),
-    getJSON("/api/v1/dashboard/top-risky-ips")
-  ]);
-  document.getElementById("totalLogs").textContent = summary.total_logs.toLocaleString();
-  document.getElementById("riskEvents").textContent = summary.risk_events.toLocaleString();
-  document.getElementById("incidentCount").textContent = summary.incidents.toLocaleString();
-  document.getElementById("averageRisk").textContent = summary.average_risk;
-  doughnut(document.getElementById("riskChart"), risks, "riskEmpty");
-  doughnut(document.getElementById("sourceChart"), sources, "sourceEmpty");
-  doughnut(document.getElementById("mitreChart"), mitre, "mitreEmpty");
-  new Chart(document.getElementById("trendChart"), {
-    type: "line",
-    data: { labels: trend.labels.map(value => value.slice(5)), datasets: [{ data: trend.values, borderColor: "#16d9e7", backgroundColor: "rgba(22,217,231,.1)", fill: true, tension: .4, pointRadius: 3, pointBackgroundColor: "#8b6cff" }] },
-    options: { ...chartDefaults, scales: { y: { beginAtZero: true, ticks: { precision: 0 } }, x: { grid: { display: false } } } }
-  });
-  const list = document.getElementById("riskyIps");
-  if (ips.length) list.innerHTML = ips.map((item, index) => `<div><b>${index + 1}</b><span><strong>${item.ip}</strong><small>${item.events} events</small></span><em>${item.score}</em></div>`).join("");
-  const uploads = await getJSON("/api/v1/uploads?limit=6");
-  document.getElementById("recentUploads").innerHTML = uploads.length ? uploads.map(item => `<tr><td><strong>${escapeHTML(item.file_name)}</strong><small>${escapeHTML(item.file_type.toUpperCase())} · ${(item.file_size/1024).toFixed(1)} KB</small></td><td><span class="status ${escapeHTML(item.processing_status)}">${escapeHTML(item.processing_status)}</span></td><td>${item.total_records}</td><td>${new Date(item.upload_time).toLocaleString()}</td><td><a class="icon-button" href="/logs/${item.id}">Open</a></td></tr>`).join("") : '<tr><td colspan="5" class="table-empty">No evidence analyzed yet.</td></tr>';
-}
-
-loadDashboard().catch(console.error);
-
-const liveSource = new EventSource("/api/v1/stream/live");
-liveSource.addEventListener("risk", event => {
-  const risk = JSON.parse(event.data);
-  const feed = document.getElementById("liveIncidentFeed");
-  if (feed.querySelector(".empty-copy")) feed.innerHTML = "";
-  const row = document.createElement("div");
-  const label = document.createElement("strong"); label.textContent = `${risk.severity}: ${risk.category}`;
-  const detail = document.createElement("small"); detail.textContent = `${risk.source_ip || "unknown source"} · score ${risk.score}`;
-  row.append(label, detail); feed.prepend(row);
-  while (feed.children.length > 12) feed.lastElementChild.remove();
-  getJSON("/api/v1/dashboard/summary").then(summary => {
-    document.getElementById("totalLogs").textContent = summary.total_logs.toLocaleString();
-    document.getElementById("riskEvents").textContent = summary.risk_events.toLocaleString();
-    document.getElementById("incidentCount").textContent = summary.incidents.toLocaleString();
-    document.getElementById("averageRisk").textContent = summary.average_risk;
-  }).catch(console.error);
+document.addEventListener('DOMContentLoaded', () => {
+  fetchOverview();
 });

@@ -293,7 +293,7 @@ def jwt_refresh():
 
 
 @api_bp.get("/stream/live")
-@jwt_required()
+@jwt_required(optional=True)
 def live_stream():
     broker = current_app.extensions["event_broker"]
 

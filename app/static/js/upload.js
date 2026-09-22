@@ -1,25 +1,46 @@
-const input = document.getElementById("fileInput");
-const zone = document.getElementById("dropZone");
-const nameLabel = document.getElementById("fileName");
-const metaLabel = document.getElementById("fileMeta");
+/* Upload & SOC Generator Vanilla JavaScript */
+function fetchGeneratorStatus() {
+  fetch('/api/v1/generator/status')
+    .then((res) => (res.ok ? res.json() : null))
+    .then((data) => {
+      if (!data) return;
+      const badge = document.getElementById('gen-status-badge');
+      const stopBtn = document.getElementById('btn-stop-gen');
 
-function showFile(file) {
-  if (!file) return;
-  nameLabel.textContent = file.name;
-  metaLabel.textContent = `${(file.size / 1024).toFixed(1)} KB · ready for analysis`;
-  zone.classList.add("has-file");
+      if (badge) {
+        badge.textContent = data.running ? `ACTIVE (${data.mode.toUpperCase()})` : 'READY';
+        badge.className = data.running ? 'badge badge-ok' : 'badge badge-default';
+      }
+
+      if (stopBtn) {
+        stopBtn.style.display = data.running ? 'block' : 'none';
+      }
+    })
+    .catch(() => {});
 }
 
-input.addEventListener("change", () => showFile(input.files[0]));
-["dragenter", "dragover"].forEach(type => zone.addEventListener(type, event => {
-  event.preventDefault();
-  zone.classList.add("dragging");
-}));
-["dragleave", "drop"].forEach(type => zone.addEventListener(type, event => {
-  event.preventDefault();
-  zone.classList.remove("dragging");
-}));
-zone.addEventListener("drop", event => {
-  input.files = event.dataTransfer.files;
-  showFile(input.files[0]);
+function startGenerator(mode) {
+  fetch('/api/v1/generator/start', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ mode }),
+  })
+    .then((res) => (res.ok ? res.json() : null))
+    .then((data) => {
+      if (data && window.showToast) window.showToast(`Started simulator in ${mode} mode`, 'ok');
+      fetchGeneratorStatus();
+    });
+}
+
+function stopGenerator() {
+  fetch('/api/v1/generator/stop', { method: 'POST' })
+    .then((res) => (res.ok ? res.json() : null))
+    .then(() => {
+      if (window.showToast) window.showToast('Stopped SOC simulator', 'info');
+      fetchGeneratorStatus();
+    });
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+  fetchGeneratorStatus();
 });

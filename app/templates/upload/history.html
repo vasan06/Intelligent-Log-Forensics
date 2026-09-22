@@ -1,1 +1,78 @@
-{% extends "base.html" %}{% block title %}Upload History | Log Forensics{% endblock %}{% block content %}<header class="page-header"><div><span class="eyebrow">Evidence archive</span><h1>Upload history</h1><p>Review every processed file and its analysis status.</p></div><a class="primary-button" href="{{ url_for('upload.upload') }}"><i data-lucide="plus"></i> New analysis</a></header><div class="table-shell"><table><thead><tr><th>File</th><th>Status</th><th>Quality</th><th>Valid / total</th><th>Uploaded</th><th></th></tr></thead><tbody id="uploadHistory"><tr><td colspan="6" class="table-empty">Loading evidence...</td></tr></tbody></table></div>{% endblock %}{% block scripts %}<script src="{{ url_for('static', filename='js/history.js') }}"></script>{% endblock %}
+{% extends "base.html" %}
+
+{% block title %}Evidence Archive History - Log Forensics{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div class="page-title">
+    <div class="page-breadcrumb">
+      <span>PLATFORM</span> / <span>LOG LAB</span> / <span class="page-breadcrumb-current">EVIDENCE ARCHIVE</span>
+    </div>
+    <h1>Evidence Archive & Historic Log Files</h1>
+    <p>Uploaded datasets, processing state, forensic trust, and the fastest route back into evidence review.</p>
+  </div>
+
+  <a href="{{ url_for('upload.upload_page') }}" class="btn btn-primary btn-sm"><i data-lucide="upload-cloud" style="width:13px;"></i> Upload Dataset</a>
+</div>
+
+<div class="card overflow-hidden">
+  <div class="card-header" style="background:var(--bg-raised); font-family:var(--font-mono); font-size:11.5px;">
+    <span>HISTORIC EVIDENCE FILES</span>
+    <span style="color:var(--text-muted);">CLICK TO EXPLORE LOG STREAM</span>
+  </div>
+
+  <div class="table-wrap">
+    <table class="table">
+      <thead>
+        <tr>
+          <th>Archive ID</th>
+          <th>File Name</th>
+          <th>Total Records</th>
+          <th>Status</th>
+          <th>Risks</th>
+          <th>Incidents</th>
+          <th>Trust Score</th>
+          <th>Action</th>
+        </tr>
+      </thead>
+      <tbody id="history-tbody">
+        <tr><td colspan="8" class="empty-row">Loading evidence archives...</td></tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+  fetch('/api/v1/uploads?limit=100')
+    .then((res) => (res.ok ? res.json() : []))
+    .then((uploads) => {
+      const tbody = document.getElementById('history-tbody');
+      if (!tbody) return;
+      if (uploads.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="8" class="empty-row">No evidence archives yet. Upload a dataset to start an investigation trail.</td></tr>`;
+        return;
+      }
+
+      tbody.innerHTML = uploads.map((u) => `
+        <tr onclick="window.location.href='/logs/${u.id}'">
+          <td style="font-family:var(--font-mono); color:var(--text-muted);">#${u.id}</td>
+          <td style="font-family:var(--font-mono); font-weight:700; color:var(--text-primary);">${u.file_name}</td>
+          <td style="font-family:var(--font-mono);">${Number(u.total_records || 0).toLocaleString()}</td>
+          <td><span class="badge badge-ok">${u.processing_status || 'unknown'}</span></td>
+          <td style="font-family:var(--font-mono); font-weight:700; color:var(--high);">${u.risk_count || 0}</td>
+          <td style="font-family:var(--font-mono); font-weight:700; color:var(--mitre);">${u.incident_count || 0}</td>
+          <td style="font-family:var(--font-mono); font-weight:700; color:var(--accent);">${u.forensic_trust?.score ?? '--'}${u.forensic_trust?.score != null ? '%' : ''}</td>
+          <td><a href="/logs/${u.id}" class="btn btn-ghost btn-sm" style="font-family:var(--font-mono);">Explore -></a></td>
+        </tr>
+      `).join('');
+    })
+    .catch(() => {
+      const tbody = document.getElementById('history-tbody');
+      if (tbody) tbody.innerHTML = `<tr><td colspan="8" class="empty-row">Evidence archive unavailable. Check authentication and backend connectivity, then retry.</td></tr>`;
+    });
+});
+</script>
+{% endblock %}

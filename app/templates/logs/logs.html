@@ -1,1 +1,138 @@
-{% extends "base.html" %}{% block title %}Evidence | Intelligent Log Forensics{% endblock %}{% block content %}<main id="evidencePage" data-file-id="{{ file_id }}"><header class="page-header compact"><div><a class="back-link" href="{{ url_for('dashboard.index') }}"><i data-lucide="arrow-left"></i> Command center</a><span class="eyebrow">Evidence explorer</span><h1 id="evidenceName">Loading evidence...</h1><p id="evidenceMeta"></p></div><div class="header-actions"><a class="secondary-button" href="{{ url_for('incidents.view', file_id=file_id) }}"><i data-lucide="git-branch"></i> Incidents</a><a class="primary-button" href="{{ url_for('reports.preview', file_id=file_id) }}"><i data-lucide="file-text"></i> Priority report</a></div></header><section class="score-strip"><div><span>Data quality</span><strong id="qualityScore">0</strong><div class="meter"><i id="qualityMeter"></i></div></div><div><span>Application health</span><strong id="healthScore">0</strong><div class="meter health"><i id="healthMeter"></i></div></div><div><span>Risk findings</span><strong id="riskCount">0</strong><small id="incidentCount">0 correlated incidents</small></div><div><span>Forensic trust</span><strong id="trustScore">0</strong><small>Evidence actionability</small></div></section><div class="source-pivot" id="sourcePivot"></div><form class="filter-bar" id="logFilters"><div class="search-input"><i data-lucide="search"></i><input name="q" placeholder="Search IP, endpoint, or evidence"></div><select name="source_type" id="sourceSelect"><option value="">All log types</option></select><select name="status"><option value="">All status codes</option>{% for code in [200,401,403,404,429,500,503] %}<option value="{{ code }}">{{ code }}</option>{% endfor %}</select><button class="secondary-button" type="submit">Apply pivot</button></form><div class="table-shell evidence-table"><table><thead><tr><th>Timestamp</th><th>Log type</th><th>Source</th><th>Request / event</th><th>Status</th><th>Latency</th><th>Assessment</th></tr></thead><tbody id="logRows"><tr><td colspan="7" class="table-empty">Loading records...</td></tr></tbody></table></div></main>{% endblock %}{% block scripts %}<script src="{{ url_for('static', filename='js/logs.js') }}"></script>{% endblock %}
+{% extends "base.html" %}
+
+{% block title %}Log Stream & Evidence Explorer — Log Forensics{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div class="page-title">
+    <div class="page-breadcrumb">
+      <span>PLATFORM</span> / <span>LOG STREAM</span> / <span class="page-breadcrumb-current">EVIDENCE EXPLORER</span>
+    </div>
+    <h1>Log Stream & Contextual Evidence Workstation</h1>
+    <p>Filter log records, inspect raw vs normalized JSON payloads, and manage analyst risk labels</p>
+  </div>
+
+  <div style="display:flex; gap:8px;">
+    <a href="{{ url_for('upload.upload_page') }}" class="btn btn-secondary btn-sm">← Uploads</a>
+    <button onclick="fetchLogs()" class="btn btn-primary btn-sm"><i data-lucide="refresh-cw" style="width:13px;"></i> Refresh Stream</button>
+  </div>
+</div>
+
+<section class="investigation-flow" aria-label="Investigation flow">
+  <span>Observe</span><i data-lucide="arrow-right"></i>
+  <span>Investigate</span><i data-lucide="arrow-right"></i>
+  <span>Correlate</span><i data-lucide="arrow-right"></i>
+  <span>Respond</span><i data-lucide="arrow-right"></i>
+  <span>Verify</span>
+</section>
+
+<!-- Search & Source Filter Bar -->
+<div class="card card-body" style="background:var(--bg-raised); display:flex; flex-direction:column; gap:12px;">
+  <div style="display:flex; gap:12px; flex-wrap:wrap;">
+    <input type="text" id="log-query" placeholder="Search by IP, endpoint, status code, or query..." class="input" style="flex:2; font-family:var(--font-mono); font-size:12px;" oninput="fetchLogs()">
+    <select id="log-source" class="select-input" style="flex:1; font-family:var(--font-mono); font-size:12px;" onchange="fetchLogs()">
+      <option value="">All Log Sources</option>
+    </select>
+  </div>
+</div>
+
+<section class="analytics-grid" aria-label="Log analytics">
+  <div class="analysis-panel">
+    <div class="analysis-panel-head">
+      <div>
+        <span class="eyebrow">Question</span>
+        <h3>When did activity change?</h3>
+      </div>
+      <span class="chart-meta" id="volume-meta">Awaiting events</span>
+    </div>
+    <canvas id="event-volume-chart" class="chart-canvas" height="150" aria-label="Event volume over time"></canvas>
+  </div>
+  <div class="analysis-panel">
+    <div class="analysis-panel-head">
+      <div>
+        <span class="eyebrow">Question</span>
+        <h3>Which sources dominate the evidence?</h3>
+      </div>
+    </div>
+    <div id="source-distribution" class="bar-list" aria-live="polite"></div>
+  </div>
+  <div class="analysis-panel">
+    <div class="analysis-panel-head">
+      <div>
+        <span class="eyebrow">Question</span>
+        <h3>Where are risk signals concentrated?</h3>
+      </div>
+    </div>
+    <div id="severity-distribution" class="bar-list" aria-live="polite"></div>
+  </div>
+</section>
+
+<!-- Workspace Layout: Stream Table + Evidence Panel Drawer -->
+<div class="grid-3" style="grid-template-columns: 2fr 1fr;">
+  <!-- Log Stream Table -->
+  <div class="card overflow-hidden">
+    <div class="card-header" style="background:var(--bg-raised); font-family:var(--font-mono); font-size:11.5px;">
+      <span id="log-count-badge">Loading log stream...</span>
+      <span style="color:var(--text-muted);">Select any event to view evidence</span>
+    </div>
+
+    <div class="table-wrap" style="max-height:600px; overflow-y:auto;">
+      <table class="table">
+        <thead>
+          <tr>
+            <th>Timestamp</th>
+            <th>Source</th>
+            <th>Event / Method</th>
+            <th>Endpoint / IP</th>
+            <th>Status</th>
+            <th>Risk Signal</th>
+          </tr>
+        </thead>
+        <tbody id="logs-tbody">
+          <tr><td colspan="6" style="text-align:center; padding:30px; color:var(--text-muted);">Loading logs for File #<span class="file-id-val">{{ file_id }}</span>...</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Selected Log Evidence Inspection Drawer -->
+  <div class="card card-body" id="evidence-panel" style="display:none; flex-direction:column; gap:14px; border-color:var(--accent-border);">
+    <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid var(--border-subtle); padding-bottom:10px;">
+      <div>
+        <span style="font-size:10px; font-family:var(--font-mono); color:var(--accent); font-weight:700; text-transform:uppercase;">EVIDENCE PANEL</span>
+        <h3 id="panel-event-type" style="font-size:14px; font-weight:700;">Log Event</h3>
+      </div>
+      <button onclick="closeEvidencePanel()" style="background:none; border:none; color:var(--text-muted); cursor:pointer; font-size:16px;">✕</button>
+    </div>
+
+    <!-- Toggle View Mode -->
+    <div style="display:flex; background:var(--bg-raised); padding:3px; border-radius:var(--r-md); border:1px solid var(--border-subtle); font-family:var(--font-mono); font-size:11px;">
+      <button id="btn-mode-normalized" onclick="setPayloadView('normalized')" style="flex:1; padding:4px; border:none; background:var(--bg-surface); border-radius:4px; font-weight:600; cursor:pointer;">Normalized JSON</button>
+      <button id="btn-mode-raw" onclick="setPayloadView('raw')" style="flex:1; padding:4px; border:none; background:transparent; color:var(--text-muted); font-weight:600; cursor:pointer;">Raw Payload</button>
+    </div>
+
+    <!-- Payload Display -->
+    <pre id="panel-payload" style="padding:12px; background:#070b14; color:#93c5fd; font-family:var(--font-mono); font-size:11px; border-radius:var(--r-md); max-height:220px; overflow:auto; border:1px solid rgba(255,255,255,0.1);"></pre>
+
+    <!-- Correlated Risk Event & Labeling Buttons -->
+    <div id="panel-risk-box" style="padding:12px; background:var(--bg-raised); border-radius:var(--r-md); border:1px solid var(--border-subtle); display:flex; flex-direction:column; gap:8px;">
+      <div style="display:flex; justify-content:space-between; align-items:center;">
+        <span style="font-size:10.5px; font-family:var(--font-mono); font-weight:700; color:var(--text-muted);">CORRELATED ANOMALY</span>
+        <span id="panel-risk-severity" class="badge badge-critical">CRITICAL</span>
+      </div>
+      <div id="panel-risk-cat" style="font-size:12.5px; font-weight:700; color:var(--text-primary);">Risk Category</div>
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-top:4px;">
+        <button id="btn-label-confirm" class="btn btn-primary btn-sm">Confirm Threat</button>
+        <button id="btn-label-fp" class="btn btn-secondary btn-sm">False Positive</button>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+  window.FILE_ID = parseInt("{{ file_id or 1 }}", 10);
+</script>
+<script src="{{ url_for('static', filename='js/logs.js') }}"></script>
+{% endblock %}

@@ -1,27 +1,57 @@
-{% extends "base.html" %}
-{% block title %}Sign in | Log Forensics{% endblock %}
-{% block content %}
-<section class="login-shell">
-  <div class="login-brand">
-    <div class="cyber-model threat-radar login-radar" data-parallax aria-hidden="true"><span class="scan"></span><i class="node n1"></i><i class="node n2"></i><i class="node n3"></i><b><i data-lucide="scan-search"></i></b></div>
-    <div>
-      <span class="eyebrow">INTELLIGENT LOG FORENSICS</span>
-      <h1>Turn raw signals into decisive intelligence.</h1>
-      <p>Investigate faster. Correlate every trace. Defend with context.</p>
+<!doctype html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Sign In — Intelligent Log Forensics</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/design-tokens.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+  <script src="https://unpkg.com/lucide@0.468.0/dist/umd/lucide.min.js" defer></script>
+</head>
+<body style="display:flex; align-items:center; justify-content:center; min-height:100vh; background:var(--bg-base); padding:20px;">
+  <div class="card card-body" style="width:100%; max-width:400px; padding:32px; display:flex; flex-direction:column; gap:20px; box-shadow:var(--shadow-lg);">
+    <div style="display:flex; align-items:center; gap:10px;">
+      <div style="width:36px; height:36px; border-radius:var(--r-md); background:var(--accent); color:#fff; display:flex; align-items:center; justify-content:center;">
+        <i data-lucide="shield-alert" style="width:20px;"></i>
+      </div>
+      <div>
+        <h2 style="font-size:18px; font-weight:800; color:var(--text-primary);">Log Forensics</h2>
+        <span style="font-size:10px; font-family:var(--font-mono); color:var(--text-muted); uppercase; tracking-widest;">ANALYST WORKSTATION</span>
+      </div>
+    </div>
+
+    {% if error %}
+    <div style="padding:10px 14px; border-radius:var(--r-md); background:var(--critical-bg); border:1px solid var(--critical-border); color:var(--critical); font-size:12px;">
+      {{ error }}
+    </div>
+    {% endif %}
+
+    <form action="{{ url_for('auth.login') }}" method="post" style="display:flex; flex-direction:column; gap:14px;">
+      <div style="display:flex; flex-direction:column; gap:6px;">
+        <label style="font-size:11px; font-weight:700; font-family:var(--font-mono); color:var(--text-secondary); text-transform:uppercase;">EMAIL ADDRESS</label>
+        <input type="email" name="email" required placeholder="analyst@soc.internal" class="input">
+      </div>
+
+      <div style="display:flex; flex-direction:column; gap:6px;">
+        <label style="font-size:11px; font-weight:700; font-family:var(--font-mono); color:var(--text-secondary); text-transform:uppercase;">PASSWORD</label>
+        <input type="password" name="password" required placeholder="••••••••••••" class="input">
+      </div>
+
+      <button type="submit" class="btn btn-primary" style="margin-top:6px; padding:10px;">Sign In to Workstation →</button>
+    </form>
+
+    <div style="text-align:center; font-size:12px; color:var(--text-muted);">
+      Don't have an account? <a href="{{ url_for('dashboard.register') }}" style="color:var(--accent); font-weight:600;">Create Account</a>
     </div>
   </div>
-  <form class="login-panel" method="post">
-    <button class="theme-toggle icon-button login-theme" type="button" title="Toggle color theme" aria-label="Toggle color theme"><i data-lucide="sun"></i></button>
-    <div>
-      <span class="eyebrow">Analyst access</span>
-      <h2>Sign in</h2>
-    </div>
-    <label>Email address<input type="email" name="email" value="analyst@example.com" required autocomplete="email"></label>
-    <label>Password<input type="password" name="password" value="analyst123" required autocomplete="current-password"></label>
-    <label class="check-row"><input type="checkbox" name="remember"> Keep me signed in</label>
-    <button class="primary-button" type="submit">Sign in <i data-lucide="arrow-right"></i></button>
-    <p class="auth-switch">New analyst? <a href="{{ url_for('auth.register') }}">Create an account</a></p>
-    <p class="demo-note">Demo: analyst@example.com / analyst123</p>
-  </form>
-</section>
-{% endblock %}
+
+  <script>
+    document.addEventListener("DOMContentLoaded", () => {
+      if (window.lucide) lucide.createIcons();
+    });
+  </script>
+</body>
+</html>
