@@ -3,74 +3,460 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <meta
+    name="description"
+    content="Intelligent Log Forensics — security investigation, root-cause analysis, MITRE ATT&CK intelligence and remediation workstation."
+  >
+
   <title>{% block title %}Intelligent Log Forensics — MITRE RCA Workstation{% endblock %}</title>
+
+  <!-- =========================================================
+       TYPOGRAPHY
+       ========================================================= -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600;700&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+  <link
+    href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600;700&family=Manrope:wght@400;500;600;700;800&display=swap"
+    rel="stylesheet"
+  >
+
+  <!-- =========================================================
+       THEME
+       Apply saved theme before rendering to avoid flash.
+       ========================================================= -->
   <script>
-    (function(){
-      const t = localStorage.getItem('lf-theme') || 'light';
-      document.documentElement.dataset.theme = t;
+    (function () {
+      try {
+        const savedTheme = localStorage.getItem("lf-theme");
+        const systemDark = window.matchMedia &&
+          window.matchMedia("(prefers-color-scheme: dark)").matches;
+
+        document.documentElement.dataset.theme =
+          savedTheme || (systemDark ? "dark" : "light");
+      } catch (error) {
+        document.documentElement.dataset.theme = "light";
+      }
     })();
   </script>
-  <link rel="stylesheet" href="{{ url_for('static', filename='css/design-tokens.css') }}">
-  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
-  <script src="https://unpkg.com/lucide@0.468.0/dist/umd/lucide.min.js" defer></script>
+
+  <!-- =========================================================
+       APPLICATION STYLES
+       ========================================================= -->
+  <link
+    rel="stylesheet"
+    href="{{ url_for('static', filename='css/design-tokens.css', v='20260923') }}"
+  >
+
+  <link
+    rel="stylesheet"
+    href="{{ url_for('static', filename='css/style.css', v='20260923') }}"
+  >
+
+  <!-- =========================================================
+       ICON SYSTEM
+       ========================================================= -->
+  <script
+    src="https://unpkg.com/lucide@0.468.0/dist/umd/lucide.min.js"
+    defer
+  ></script>
+
   {% block head %}{% endblock %}
 </head>
+
 <body>
-  <!-- Header-Based Workstation Architecture -->
-  <header class="app-header">
-    <a href="{{ url_for('dashboard.index') }}" class="topbar-brand">
-      <div class="topbar-brand-icon"><i data-lucide="shield-alert"></i></div>
-      <div style="display:flex; flex-direction:column;">
-        <span>LOG FORENSICS</span>
-        <span style="font-size:9.5px; font-family:var(--font-mono); color:var(--text-muted); letter-spacing:0.08em; text-transform:uppercase;">MITRE RCA WORKSTATION</span>
+
+  <!-- =========================================================
+       APPLICATION SHELL
+       ========================================================= -->
+
+  <div class="app-shell">
+
+    <!-- =======================================================
+         TOP NAVIGATION
+         ======================================================= -->
+
+    <header class="app-header">
+
+      <!-- Brand -->
+      <a
+        href="{{ url_for('dashboard.index') }}"
+        class="topbar-brand"
+        aria-label="Intelligent Log Forensics dashboard"
+      >
+
+        <span class="topbar-brand-icon" aria-hidden="true">
+          <i data-lucide="shield-alert"></i>
+        </span>
+
+        <span class="topbar-brand-copy">
+          <span class="topbar-brand-name">
+            LOG FORENSICS
+          </span>
+
+          <span class="topbar-brand-subtitle">
+            MITRE RCA WORKSTATION
+          </span>
+        </span>
+
+      </a>
+
+
+      <!-- Primary Navigation -->
+      <nav
+        class="topbar-nav"
+        aria-label="Primary navigation"
+      >
+
+        <a
+          href="{{ url_for('dashboard.index') }}"
+          class="topbar-nav-link {{ 'active' if request.endpoint == 'dashboard.index' }}"
+          {% if request.endpoint == 'dashboard.index' %}aria-current="page"{% endif %}
+        >
+          <i data-lucide="layout-dashboard" aria-hidden="true"></i>
+          <span>Overview</span>
+        </a>
+
+
+        <a
+          href="{{ url_for('upload.upload_page') }}"
+          class="topbar-nav-link {{ 'active' if request.endpoint == 'upload.upload_page' }}"
+          {% if request.endpoint == 'upload.upload_page' %}aria-current="page"{% endif %}
+        >
+          <i data-lucide="radio-tower" aria-hidden="true"></i>
+          <span>Log Stream</span>
+        </a>
+
+
+        <a
+          href="{{ url_for('incidents.tracker') }}"
+          class="topbar-nav-link {{ 'active' if 'incidents' in (request.endpoint or '') }}"
+          {% if 'incidents' in (request.endpoint or '') %}aria-current="page"{% endif %}
+        >
+          <i data-lucide="shield-alert" aria-hidden="true"></i>
+          <span>Incidents &amp; RCA</span>
+        </a>
+
+
+        <a
+          href="{{ url_for('dashboard.attack_intelligence') }}"
+          class="topbar-nav-link {{ 'active' if 'attack' in (request.endpoint or '') }}"
+          {% if 'attack' in (request.endpoint or '') %}aria-current="page"{% endif %}
+        >
+          <i data-lucide="crosshair" aria-hidden="true"></i>
+          <span>MITRE ATT&amp;CK</span>
+        </a>
+
+
+        <a
+          href="{{ url_for('dashboard.remediation') }}"
+          class="topbar-nav-link {{ 'active' if request.endpoint == 'dashboard.remediation' }}"
+          {% if request.endpoint == 'dashboard.remediation' %}aria-current="page"{% endif %}
+        >
+          <i data-lucide="shield-check" aria-hidden="true"></i>
+          <span>Remediation</span>
+        </a>
+
+
+        <a
+          href="{{ url_for('upload.history') }}"
+          class="topbar-nav-link {{ 'active' if request.endpoint == 'upload.history' }}"
+          {% if request.endpoint == 'upload.history' %}aria-current="page"{% endif %}
+        >
+          <i data-lucide="archive" aria-hidden="true"></i>
+          <span>Evidence Archive</span>
+        </a>
+
+      </nav>
+
+
+      <!-- =====================================================
+           SYSTEM STATUS + USER CONTROLS
+           ===================================================== -->
+
+      <div class="topbar-right">
+
+        <!-- Monitoring Status -->
+        <div
+          class="system-status"
+          aria-label="System status: live monitoring"
+        >
+          <span
+            class="system-status-indicator"
+            aria-hidden="true"
+          ></span>
+
+          <span class="system-status-label">
+            LIVE MONITORING
+          </span>
+        </div>
+
+
+        <!-- Clock -->
+        <div
+          class="topbar-clock"
+          aria-label="Current system time"
+        >
+          <span
+            id="clock-time"
+            class="topbar-clock-time"
+          >
+            00:00:00
+          </span>
+
+          <span
+            id="clock-date"
+            class="topbar-clock-date"
+          >
+            -- --- ----
+          </span>
+        </div>
+
+
+        <!-- Theme -->
+        <button
+          type="button"
+          class="btn btn-secondary btn-icon theme-toggle"
+          onclick="toggleTheme()"
+          title="Toggle light and dark theme"
+          aria-label="Toggle light and dark theme"
+        >
+          <i
+            data-lucide="sun"
+            class="theme-icon-light"
+            aria-hidden="true"
+          ></i>
+
+          <i
+            data-lucide="moon"
+            class="theme-icon-dark"
+            aria-hidden="true"
+          ></i>
+        </button>
+
+
+        <!-- User -->
+        <div class="topbar-user">
+
+          <span
+            class="user-initial"
+            aria-hidden="true"
+          >
+            U
+          </span>
+
+          <span class="user-name">
+            User
+          </span>
+
+        </div>
+
       </div>
-    </a>
 
-    <nav class="topbar-nav">
-      <a href="{{ url_for('dashboard.index') }}" class="topbar-nav-link {{ 'active' if request.endpoint == 'dashboard.index' }}"><i data-lucide="activity" style="width:14px;"></i> Overview</a>
-      <a href="{{ url_for('upload.upload_page') }}" class="topbar-nav-link {{ 'active' if request.endpoint == 'upload.upload_page' }}"><i data-lucide="terminal" style="width:14px;"></i> Log Stream</a>
-      <a href="{{ url_for('incidents.tracker') }}" class="topbar-nav-link {{ 'active' if 'incidents' in request.endpoint }}"><i data-lucide="shield-alert" style="width:14px;"></i> Incidents & RCA</a>
-      <a href="{{ url_for('dashboard.attack_intelligence') }}" class="topbar-nav-link {{ 'active' if 'attack' in request.endpoint }}"><i data-lucide="cpu" style="width:14px;"></i> MITRE ATT&CK</a>
-      <a href="{{ url_for('dashboard.remediation') }}" class="topbar-nav-link {{ 'active' if request.endpoint == 'dashboard.remediation' }}"><i data-lucide="shield-check" style="width:14px;"></i> Remediation & Arch</a>
-      <a href="{{ url_for('upload.history') }}" class="topbar-nav-link {{ 'active' if request.endpoint == 'upload.history' }}"><i data-lucide="search" style="width:14px;"></i> Evidence Archive</a>
-    </nav>
+    </header>
 
-    <div class="topbar-right">
-      <div style="display:flex; align-items:center; gap:6px; padding:4px 10px; border-radius:99px; background:var(--bg-raised); border:1px solid var(--border-subtle); font-size:11px; font-family:var(--font-mono);">
-        <span style="width:6px; height:6px; border-radius:50%; background:#10b981; display:inline-block;"></span>
-        <span style="font-weight:600; color:var(--text-secondary);">LIVE MONITORING</span>
-      </div>
 
-      <div class="topbar-clock">
-        <span id="clock-time" class="topbar-clock-time">00:00:00</span>
-        <span id="clock-date" class="topbar-clock-date">-- --- ----</span>
-      </div>
+    <!-- =======================================================
+         MOBILE NAVIGATION
+         ======================================================= -->
 
-      <button class="btn btn-secondary btn-icon" onclick="toggleTheme()" title="Toggle Light/Dark Theme">
-        <i data-lucide="sun" style="width:15px;"></i>
+    <div class="mobile-nav-bar">
+
+      <button
+        type="button"
+        class="mobile-nav-toggle"
+        id="mobile-nav-toggle"
+        aria-label="Open navigation"
+        aria-expanded="false"
+        aria-controls="mobile-navigation"
+      >
+        <i data-lucide="menu" aria-hidden="true"></i>
       </button>
 
-      <div style="display:flex; align-items:center; gap:8px;">
-        <span class="user-initial" style="width:28px; height:28px; border-radius:50%; background:var(--accent); color:#fff; display:flex; align-items:center; justify-content:center; font-weight:700; font-size:12px;">A</span>
-        <span class="user-name" style="font-size:12.5px; font-weight:600; color:var(--text-primary);">Analyst</span>
-      </div>
+      <span class="mobile-nav-title">
+        LOG FORENSICS
+      </span>
+
+      <span class="mobile-nav-status">
+        <span class="system-status-indicator"></span>
+      </span>
+
     </div>
-  </header>
 
-  <!-- Workstation Body -->
-  <main class="app-content">
-    {% block content %}{% endblock %}
-  </main>
 
-  <script src="{{ url_for('static', filename='js/app.js') }}"></script>
+    <nav
+      id="mobile-navigation"
+      class="mobile-navigation"
+      aria-label="Mobile navigation"
+    >
+
+      <a href="{{ url_for('dashboard.index') }}">
+        <i data-lucide="layout-dashboard" aria-hidden="true"></i>
+        Overview
+      </a>
+
+      <a href="{{ url_for('upload.upload_page') }}">
+        <i data-lucide="radio-tower" aria-hidden="true"></i>
+        Log Stream
+      </a>
+
+      <a href="{{ url_for('incidents.tracker') }}">
+        <i data-lucide="shield-alert" aria-hidden="true"></i>
+        Incidents &amp; RCA
+      </a>
+
+      <a href="{{ url_for('dashboard.attack_intelligence') }}">
+        <i data-lucide="crosshair" aria-hidden="true"></i>
+        MITRE ATT&amp;CK
+      </a>
+
+      <a href="{{ url_for('dashboard.remediation') }}">
+        <i data-lucide="shield-check" aria-hidden="true"></i>
+        Remediation
+      </a>
+
+      <a href="{{ url_for('upload.history') }}">
+        <i data-lucide="archive" aria-hidden="true"></i>
+        Evidence Archive
+      </a>
+
+    </nav>
+
+
+    <!-- =======================================================
+         MAIN APPLICATION CONTENT
+         ======================================================= -->
+
+    <main
+      class="app-content"
+      id="main-content"
+    >
+      {% block content %}{% endblock %}
+    </main>
+
+
+    <!-- =======================================================
+         FOOTER
+         ======================================================= -->
+
+    <footer class="app-footer">
+
+      <div class="app-footer-left">
+        <span class="footer-pulse"></span>
+
+        <span>
+          FORENSIC ENGINE
+        </span>
+
+        <span class="footer-separator">/</span>
+
+        <span>
+          MITRE RCA
+        </span>
+      </div>
+
+      <div class="app-footer-right">
+        <span>
+          INTELLIGENT LOG FORENSICS
+        </span>
+
+        <span class="footer-version">
+          SECURE WORKSTATION
+        </span>
+      </div>
+
+    </footer>
+
+  </div>
+
+
+  <!-- =========================================================
+       GLOBAL APPLICATION JAVASCRIPT
+       ========================================================= -->
+
+  <script src="{{ url_for('static', filename='js/app.js', v='20260923') }}"></script>
+
+
+  <!-- =========================================================
+       ICON INITIALIZATION
+       ========================================================= -->
+
   <script>
-    document.addEventListener("DOMContentLoaded", () => {
-      if (window.lucide) lucide.createIcons();
+    document.addEventListener("DOMContentLoaded", function () {
+
+      if (window.lucide) {
+        window.lucide.createIcons();
+      }
+
+      const mobileToggle = document.getElementById("mobile-nav-toggle");
+      const mobileNavigation = document.getElementById("mobile-navigation");
+
+      if (mobileToggle && mobileNavigation) {
+
+        mobileToggle.addEventListener("click", function () {
+
+          const isOpen =
+            mobileNavigation.classList.toggle("is-open");
+
+          mobileToggle.setAttribute(
+            "aria-expanded",
+            String(isOpen)
+          );
+
+          mobileToggle.setAttribute(
+            "aria-label",
+            isOpen
+              ? "Close navigation"
+              : "Open navigation"
+          );
+
+          mobileToggle.innerHTML = isOpen
+            ? '<i data-lucide="x" aria-hidden="true"></i>'
+            : '<i data-lucide="menu" aria-hidden="true"></i>';
+
+          if (window.lucide) {
+            window.lucide.createIcons();
+          }
+
+        });
+
+
+        // Close mobile navigation after selecting a page.
+        mobileNavigation
+          .querySelectorAll("a")
+          .forEach(function (link) {
+
+            link.addEventListener("click", function () {
+              mobileNavigation.classList.remove("is-open");
+
+              mobileToggle.setAttribute(
+                "aria-expanded",
+                "false"
+              );
+
+              mobileToggle.setAttribute(
+                "aria-label",
+                "Open navigation"
+              );
+
+              mobileToggle.innerHTML =
+                '<i data-lucide="menu" aria-hidden="true"></i>';
+
+              if (window.lucide) {
+                window.lucide.createIcons();
+              }
+            });
+
+          });
+
+      }
+
     });
   </script>
+
+
   {% block scripts %}{% endblock %}
+
 </body>
 </html>

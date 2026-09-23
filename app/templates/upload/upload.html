@@ -1,77 +1,868 @@
 {% extends "base.html" %}
 
-{% block title %}Log Ingestion & SOC Simulation — Log Forensics{% endblock %}
+{% block title %}Evidence Ingestion — Log Forensics{% endblock %}
 
 {% block content %}
-<div class="page-header">
-  <div class="page-title">
-    <div class="page-breadcrumb">
-      <span>PLATFORM</span> / <span>LOG LAB</span> / <span class="page-breadcrumb-current">UPLOAD & SIMULATION</span>
-    </div>
-    <h1>Log Ingestion & SOC Simulation Workstation</h1>
-    <p>Upload raw log archives or stream simulated attack vectors to test forensic correlation</p>
+
+<div class="ingestion-page">
+
+  <!-- =========================================================
+       PAGE HEADER
+       ========================================================= -->
+
+  <section class="page-header ingestion-header">
+
+
+<div class="page-title">
+
+  <div class="page-breadcrumb">
+    <span>PLATFORM</span>
+    <span class="breadcrumb-separator">/</span>
+    <span>LOG LAB</span>
+    <span class="breadcrumb-separator">/</span>
+    <span class="page-breadcrumb-current">INGESTION CENTER</span>
   </div>
 
-  <a href="{{ url_for('upload.history') }}" class="btn btn-secondary btn-sm"><i data-lucide="file-text" style="width:13px;"></i> Evidence Archive History</a>
+  <div class="ingestion-kicker">
+    <span class="status-dot"></span>
+    EVIDENCE INGESTION CENTER
+  </div>
+
+  <h1>Log Ingestion Workstation</h1>
+
+  <p>
+    Introduce raw security evidence through the forensic analysis pipeline.
+  </p>
+
 </div>
 
-<div class="grid-2">
-  <!-- Upload Dropzone Card -->
-  <div class="card card-body" style="display:flex; flex-direction:column; gap:16px;">
-    <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid var(--border-subtle); padding-bottom:10px;">
-      <h3 style="display:flex; align-items:center; gap:8px;"><i data-lucide="upload-cloud" style="color:var(--accent); width:18px;"></i> Raw Log Archive Upload</h3>
-      <span style="font-size:11px; font-family:var(--font-mono); color:var(--text-muted);">CSV, JSON, TXT, LOG</span>
-    </div>
+<div class="ingestion-header-actions">
 
-    <form action="{{ url_for('upload.upload_form') }}" method="post" enctype="multipart/form-data" id="upload-form">
-      <div class="dropzone evidence-dropzone" id="dropzone-box" onclick="document.getElementById('file-input').click()">
-        <i data-lucide="upload-cloud" style="width:36px; height:36px; color:var(--text-muted);"></i>
-        <div>
-          <strong style="font-size:14px; color:var(--text-primary); display:block;">Drag & drop raw log files here</strong>
-          <span style="font-size:11.5px; color:var(--text-muted);">Supports Syslog, Nginx access logs, Auth logs, and JSON records</span>
-        </div>
-        <input type="file" name="log_file" id="file-input" style="display:none;" onchange="document.getElementById('upload-form').submit()">
-        <button type="button" class="btn btn-primary btn-sm" style="margin-top:8px;">Select Log File</button>
+  <div class="ingestion-status">
+    <span class="status-dot"></span>
+    PIPELINE READY
+  </div>
+
+  <a
+    href="{{ url_for('upload.history') }}"
+    class="btn btn-secondary btn-sm"
+  >
+    <i data-lucide="archive"></i>
+    Evidence Archive
+  </a>
+
+</div>
+
+
+  </section>
+
+  <!-- =========================================================
+       PIPELINE VISUAL
+       ========================================================= -->
+
+  <section class="ingestion-pipeline">
+
+
+<div class="pipeline-step active">
+  <span class="pipeline-number">01</span>
+  <div>
+    <strong>Ingest</strong>
+    <small>Raw evidence</small>
+  </div>
+</div>
+
+<div class="pipeline-connector"></div>
+
+<div class="pipeline-step">
+  <span class="pipeline-number">02</span>
+  <div>
+    <strong>Normalize</strong>
+    <small>Structure events</small>
+  </div>
+</div>
+
+<div class="pipeline-connector"></div>
+
+<div class="pipeline-step">
+  <span class="pipeline-number">03</span>
+  <div>
+    <strong>Correlate</strong>
+    <small>Find relationships</small>
+  </div>
+</div>
+
+<div class="pipeline-connector"></div>
+
+<div class="pipeline-step">
+  <span class="pipeline-number">04</span>
+  <div>
+    <strong>Analyze</strong>
+    <small>Risk & MITRE</small>
+  </div>
+</div>
+
+<div class="pipeline-connector"></div>
+
+<div class="pipeline-step">
+  <span class="pipeline-number">05</span>
+  <div>
+    <strong>Respond</strong>
+    <small>RCA & remediation</small>
+  </div>
+</div>
+
+
+  </section>
+
+  <!-- =========================================================
+       PRIMARY WORKSPACE
+       ========================================================= -->
+
+  <section class="ingestion-workspace">
+
+
+<!-- =======================================================
+     UPLOAD PANEL
+     ======================================================= -->
+<article class="ingestion-panel upload-panel">
+
+  <div class="ingestion-panel-header">
+
+    <div class="panel-heading">
+
+      <div class="panel-icon upload-icon">
+        <i data-lucide="file-up"></i>
       </div>
-    </form>
-  </div>
 
-  <!-- Synthetic SOC Log Simulator -->
-  <div class="card card-body" style="display:flex; flex-direction:column; gap:14px;">
-    <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid var(--border-subtle); padding-bottom:10px;">
-      <h3 style="display:flex; align-items:center; gap:8px;"><i data-lucide="activity" style="color:var(--accent); width:18px;"></i> Synthetic SOC Attack Simulator</h3>
-      <span id="gen-status-badge" class="badge badge-default">READY</span>
+      <div>
+        <span class="panel-eyebrow">SOURCE A</span>
+        <h2>Evidence Upload</h2>
+        <p>Analyze an existing security log dataset.</p>
+      </div>
+
     </div>
 
-    <p style="font-size:12px; color:var(--text-secondary);">Trigger live synthetic attack scenarios to evaluate real-time log ingestion, event correlation, and MITRE mapping rules.</p>
+    <span class="format-chip">
+      CSV / JSON / TXT / LOG
+    </span>
 
-    <div class="grid-2" style="gap:10px;">
-      <button onclick="startGenerator('normal')" class="btn btn-secondary" style="display:flex; flex-direction:column; align-items:flex-start; padding:10px 12px; text-align:left;">
-        <strong style="font-size:12px;">Normal Traffic</strong>
-        <span style="font-size:10.5px; color:var(--text-muted);">Baseline HTTP/SSH events</span>
-      </button>
+  </div>
 
-      <button onclick="startGenerator('brute_force')" class="btn btn-secondary" style="display:flex; flex-direction:column; align-items:flex-start; padding:10px 12px; text-align:left;">
-        <strong style="font-size:12px; color:var(--high);">SSH Brute-Force</strong>
-        <span style="font-size:10.5px; color:var(--text-muted);">Login failure spike (T1110)</span>
-      </button>
 
-      <button onclick="startGenerator('sqli')" class="btn btn-secondary" style="display:flex; flex-direction:column; align-items:flex-start; padding:10px 12px; text-align:left;">
-        <strong style="font-size:12px; color:var(--critical);">SQL Injection</strong>
-        <span style="font-size:10.5px; color:var(--text-muted);">Web payload attack (T1190)</span>
-      </button>
+  <form
+    action="{{ url_for('upload.upload_form') }}"
+    method="post"
+    enctype="multipart/form-data"
+    id="upload-form"
+  >
 
-      <button onclick="startGenerator('exfil')" class="btn btn-secondary" style="display:flex; flex-direction:column; align-items:flex-start; padding:10px 12px; text-align:left;">
-        <strong style="font-size:12px; color:var(--mitre);">Data Exfiltration</strong>
-        <span style="font-size:10.5px; color:var(--text-muted);">Large outbound transfer (T1048)</span>
-      </button>
+    <div
+      class="evidence-dropzone"
+      id="dropzone-box"
+      role="button"
+      tabindex="0"
+      aria-label="Upload log evidence"
+    >
+
+      <div class="dropzone-grid"></div>
+
+      <div class="dropzone-content">
+
+        <div class="dropzone-icon">
+          <i data-lucide="upload-cloud"></i>
+        </div>
+
+        <div class="dropzone-copy">
+
+          <h3>
+            Drop your evidence package here
+          </h3>
+
+          <p>
+            Drag a log file into this area or select one
+            from your workstation.
+          </p>
+
+          <div class="dropzone-supported">
+
+            <span>
+              <i data-lucide="file-text"></i>
+              Syslog
+            </span>
+
+            <span>
+              <i data-lucide="server"></i>
+              Nginx
+            </span>
+
+            <span>
+              <i data-lucide="shield"></i>
+              Auth logs
+            </span>
+
+            <span>
+              <i data-lucide="braces"></i>
+              JSON
+            </span>
+
+          </div>
+
+        </div>
+
+        <button
+          type="button"
+          class="btn btn-primary upload-select-button"
+          id="select-file-button"
+        >
+          <i data-lucide="folder-open"></i>
+          Select Evidence File
+        </button>
+
+      </div>
+
+      <div class="dropzone-footer">
+
+        <span>
+          <i data-lucide="lock"></i>
+          Evidence remains within the configured analysis pipeline
+        </span>
+
+        <span>
+          READY FOR INGESTION
+        </span>
+
+      </div>
+
+      <input
+        type="file"
+        name="log_file"
+        id="file-input"
+        hidden
+      >
+
     </div>
 
-    <button id="btn-stop-gen" onclick="stopGenerator()" class="btn btn-danger btn-sm" style="display:none; width:100%; font-family:var(--font-mono);">Stop Synthetic Stream Generator</button>
+  </form>
+
+
+  <!-- Selected file preview -->
+  <div
+    id="selected-file-preview"
+    class="selected-file-preview"
+    hidden
+  >
+
+    <div class="selected-file-icon">
+      <i data-lucide="file-check-2"></i>
+    </div>
+
+    <div class="selected-file-info">
+      <span>SELECTED EVIDENCE</span>
+      <strong id="selected-file-name">No file selected</strong>
+      <small id="selected-file-size">--</small>
+    </div>
+
+    <button
+      type="button"
+      id="clear-selected-file"
+      class="selected-file-remove"
+      title="Remove selected file"
+    >
+      <i data-lucide="x"></i>
+    </button>
+
   </div>
+
+
+  <div class="ingestion-panel-footer">
+
+    <div class="ingestion-info-item">
+      <i data-lucide="scan-search"></i>
+      <span>
+        Automatic normalization and forensic correlation
+      </span>
+    </div>
+
+    <div class="ingestion-info-item">
+      <i data-lucide="route"></i>
+      <span>
+        Evidence can be reopened from the archive
+      </span>
+    </div>
+
+  </div>
+
+</article>
+
+
+<!-- =======================================================
+     SIMULATOR PANEL
+     ======================================================= -->
+<article class="ingestion-panel simulator-panel">
+
+  <div class="ingestion-panel-header">
+
+    <div class="panel-heading">
+
+      <div class="panel-icon simulator-icon">
+        <i data-lucide="radio-tower"></i>
+      </div>
+
+      <div>
+        <span class="panel-eyebrow">SOURCE B</span>
+        <h2>SIEM Live Monitor</h2>
+        <p>Observe pipeline-ready security event scenarios.</p>
+      </div>
+
+    </div>
+
+    <span
+      id="gen-status-badge"
+      class="simulator-status ready"
+    >
+      <span></span>
+      READY
+    </span>
+
+  </div>
+
+
+  <div class="simulator-intro">
+
+    <div class="simulator-live-marker">
+      <span></span>
+      SIEM EVENT STREAM
+    </div>
+
+    <p>
+      Select a SIEM event stream to exercise ingestion, correlation,
+      incident detection, and MITRE mapping.
+    </p>
+
+  </div>
+
+
+  <!-- Scenario cards -->
+  <div class="scenario-grid">
+
+    <button
+      type="button"
+      class="scenario-card scenario-normal"
+      onclick="startGenerator('normal')"
+    >
+
+      <div class="scenario-top">
+
+        <div class="scenario-icon">
+          <i data-lucide="activity"></i>
+        </div>
+
+        <span class="scenario-code">
+          BASELINE
+        </span>
+
+      </div>
+
+      <div class="scenario-body">
+
+        <strong>Normal Traffic</strong>
+
+        <p>
+          Baseline HTTP and SSH activity for
+          clean environment comparison.
+        </p>
+
+      </div>
+
+      <div class="scenario-footer">
+        <span>LOW SIGNAL</span>
+        <i data-lucide="arrow-up-right"></i>
+      </div>
+
+    </button>
+
+
+    <button
+      type="button"
+      class="scenario-card scenario-bruteforce"
+      onclick="startGenerator('brute_force')"
+    >
+
+      <div class="scenario-top">
+
+        <div class="scenario-icon">
+          <i data-lucide="key-round"></i>
+        </div>
+
+        <span class="scenario-code">
+          T1110
+        </span>
+
+      </div>
+
+      <div class="scenario-body">
+
+        <strong>SSH Brute-Force</strong>
+
+        <p>
+          Repeated authentication failures
+          creating a login anomaly spike.
+        </p>
+
+      </div>
+
+      <div class="scenario-footer">
+        <span>AUTH ATTACK</span>
+        <i data-lucide="arrow-up-right"></i>
+      </div>
+
+    </button>
+
+
+    <button
+      type="button"
+      class="scenario-card scenario-sqli"
+      onclick="startGenerator('sqli')"
+    >
+
+      <div class="scenario-top">
+
+        <div class="scenario-icon">
+          <i data-lucide="database-zap"></i>
+        </div>
+
+        <span class="scenario-code">
+          T1190
+        </span>
+
+      </div>
+
+      <div class="scenario-body">
+
+        <strong>SQL Injection</strong>
+
+        <p>
+          Web payload activity targeting
+          an application data layer.
+        </p>
+
+      </div>
+
+      <div class="scenario-footer">
+        <span>WEB EXPOSURE</span>
+        <i data-lucide="arrow-up-right"></i>
+      </div>
+
+    </button>
+
+
+    <button
+      type="button"
+      class="scenario-card scenario-exfil"
+      onclick="startGenerator('exfil')"
+    >
+
+      <div class="scenario-top">
+
+        <div class="scenario-icon">
+          <i data-lucide="send"></i>
+        </div>
+
+        <span class="scenario-code">
+          T1048
+        </span>
+
+      </div>
+
+      <div class="scenario-body">
+
+        <strong>Data Exfiltration</strong>
+
+        <p>
+          Large outbound transfer telemetry for
+          exfiltration detection testing.
+        </p>
+
+      </div>
+
+      <div class="scenario-footer">
+        <span>DATA MOVEMENT</span>
+        <i data-lucide="arrow-up-right"></i>
+      </div>
+
+    </button>
+
+  </div>
+
+
+  <!-- Generator runtime -->
+  <div
+    class="generator-runtime"
+    id="generator-runtime"
+  >
+
+    <div class="runtime-status">
+
+      <div class="runtime-pulse">
+        <span></span>
+      </div>
+
+      <div>
+        <span class="runtime-label">
+          GENERATOR STATUS
+        </span>
+
+        <strong id="generator-runtime-text">
+          Standing by for scenario selection
+        </strong>
+      </div>
+
+    </div>
+
+    <button
+      id="btn-stop-gen"
+      type="button"
+      onclick="stopGenerator()"
+      class="btn btn-danger btn-sm"
+      style="display:none;"
+    >
+      <i data-lucide="square"></i>
+      Stop SIEM Stream
+    </button>
+
+  </div>
+
+
+  <div class="simulator-note">
+
+    <i data-lucide="info"></i>
+
+    <span>
+      SIEM streams validate the forensic pipeline and detection logic
+      using controlled event patterns.
+    </span>
+
+  </div>
+
+</article>
+
+
+  </section>
+
+  <!-- =========================================================
+       LOWER INFORMATION STRIP
+       ========================================================= -->
+
+  <section class="ingestion-capabilities">
+
+
+<div class="capability">
+
+  <div class="capability-icon">
+    <i data-lucide="file-search-2"></i>
+  </div>
+
+  <div>
+    <strong>Evidence-first analysis</strong>
+    <span>
+      Raw events remain traceable through normalized evidence.
+    </span>
+  </div>
+
 </div>
+
+
+<div class="capability">
+
+  <div class="capability-icon">
+    <i data-lucide="network"></i>
+  </div>
+
+  <div>
+    <strong>Correlation pipeline</strong>
+    <span>
+      Related events can be connected into investigation context.
+    </span>
+  </div>
+
+</div>
+
+
+<div class="capability">
+
+  <div class="capability-icon">
+    <i data-lucide="crosshair"></i>
+  </div>
+
+  <div>
+    <strong>MITRE context</strong>
+    <span>
+      Detected patterns can be mapped to ATT&CK techniques.
+    </span>
+  </div>
+
+</div>
+
+
+<div class="capability">
+
+  <div class="capability-icon">
+    <i data-lucide="history"></i>
+  </div>
+
+  <div>
+    <strong>Investigation continuity</strong>
+    <span>
+      Processed datasets remain available through Evidence Archive.
+    </span>
+  </div>
+
+</div>
+
+
+  </section>
+
+</div>
+
 {% endblock %}
 
 {% block scripts %}
-<script src="{{ url_for('static', filename='js/upload.js') }}"></script>
+
+<script src="{{ url_for('static', filename='js/upload.js', v='20260923') }}"></script>
+
+<script>
+(function () {
+  "use strict";
+
+  const fileInput = document.getElementById("file-input");
+  const dropzone = document.getElementById("dropzone-box");
+  const selectButton = document.getElementById("select-file-button");
+  const uploadForm = document.getElementById("upload-form");
+
+  const preview = document.getElementById("selected-file-preview");
+  const fileName = document.getElementById("selected-file-name");
+  const fileSize = document.getElementById("selected-file-size");
+  const clearButton = document.getElementById("clear-selected-file");
+
+  const runtimeText =
+    document.getElementById("generator-runtime-text");
+
+  function formatFileSize(bytes) {
+
+    if (!bytes) {
+      return "0 B";
+    }
+
+    const units = ["B", "KB", "MB", "GB"];
+
+    const index = Math.min(
+      Math.floor(Math.log(bytes) / Math.log(1024)),
+      units.length - 1
+    );
+
+    const value =
+      bytes / Math.pow(1024, index);
+
+    return `${value.toFixed(index === 0 ? 0 : 1)} ${units[index]}`;
+  }
+
+  function showSelectedFile(file) {
+
+    if (!file) {
+      return;
+    }
+
+    fileName.textContent = file.name;
+    fileSize.textContent =
+      `${formatFileSize(file.size)} · ${file.type || "Unknown type"}`;
+
+    preview.hidden = false;
+
+    dropzone.classList.add("has-file");
+
+    if (runtimeText) {
+      runtimeText.textContent =
+        "Evidence package selected — ready for ingestion";
+    }
+
+    if (window.lucide) {
+      lucide.createIcons();
+    }
+  }
+
+  function clearSelectedFile() {
+
+    fileInput.value = "";
+
+    preview.hidden = true;
+
+    dropzone.classList.remove("has-file");
+
+    if (runtimeText) {
+      runtimeText.textContent =
+        "Standing by for evidence selection";
+    }
+  }
+
+  selectButton?.addEventListener(
+    "click",
+    function (event) {
+      event.stopPropagation();
+      fileInput?.click();
+    }
+  );
+
+  dropzone?.addEventListener(
+    "click",
+    function (event) {
+
+      if (
+        event.target.closest("#select-file-button")
+      ) {
+        return;
+      }
+
+      fileInput?.click();
+    }
+  );
+
+  dropzone?.addEventListener(
+    "keydown",
+    function (event) {
+
+      if (
+        event.key === "Enter" ||
+        event.key === " "
+      ) {
+        event.preventDefault();
+        fileInput?.click();
+      }
+    }
+  );
+
+  fileInput?.addEventListener(
+    "change",
+    function () {
+
+      const file =
+        this.files && this.files[0];
+
+      if (!file) {
+        return;
+      }
+
+      showSelectedFile(file);
+
+      /*
+       * Preserve the original application behavior:
+       * once a file is selected, submit the existing
+       * backend upload form.
+       *
+       * Small delay allows the selected-file state to
+       * render before navigation/submission.
+       */
+      window.setTimeout(
+        function () {
+          uploadForm?.submit();
+        },
+        120
+      );
+    }
+  );
+
+  clearButton?.addEventListener(
+    "click",
+    function () {
+      clearSelectedFile();
+    }
+  );
+
+
+  /* ---------------------------------------------------------
+     Drag & Drop
+     --------------------------------------------------------- */
+
+  [
+    "dragenter",
+    "dragover"
+  ].forEach(function (eventName) {
+
+    dropzone?.addEventListener(
+      eventName,
+      function (event) {
+
+        event.preventDefault();
+        event.stopPropagation();
+
+        dropzone.classList.add("drag-active");
+      }
+    );
+
+  });
+
+
+  [
+    "dragleave",
+    "drop"
+  ].forEach(function (eventName) {
+
+    dropzone?.addEventListener(
+      eventName,
+      function (event) {
+
+        event.preventDefault();
+        event.stopPropagation();
+
+        dropzone.classList.remove("drag-active");
+      }
+    );
+
+  });
+
+
+  dropzone?.addEventListener(
+    "drop",
+    function (event) {
+
+      const files =
+        event.dataTransfer?.files;
+
+      if (!files || !files.length) {
+        return;
+      }
+
+      fileInput.files = files;
+
+      const file = files[0];
+
+      showSelectedFile(file);
+
+      window.setTimeout(
+        function () {
+          uploadForm?.submit();
+        },
+        120
+      );
+    }
+  );
+
+
+  /* ---------------------------------------------------------
+     Initial icon hydration
+     --------------------------------------------------------- */
+
+  document.addEventListener(
+    "DOMContentLoaded",
+    function () {
+
+      if (window.lucide) {
+        lucide.createIcons();
+      }
+
+    }
+  );
+
+})();
+</script>
+
 {% endblock %}

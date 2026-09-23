@@ -1,1 +1,573 @@
-{% extends "base.html" %}{% block title %}Forensic Report | Intelligent Log Forensics{% endblock %}{% block content %}<main id="reportPage" data-file-id="{{ file_id }}"><header class="page-header compact"><div><a class="back-link" href="{{ url_for('logs.view', file_id=file_id) }}"><i data-lucide="arrow-left"></i> Evidence</a><h1>Forensic report</h1><p>Review the report contents before generating the PDF.</p></div><form method="post" action="{{ url_for('reports.generate', file_id=file_id) }}"><button class="primary-button" type="submit"><i data-lucide="download"></i> Download PDF</button></form></header><article class="report-sheet"><div class="report-title"><span class="brand-mark">LF</span><div><span class="eyebrow">Intelligent Log Forensics</span><h2>Evidence Analysis Report</h2><p id="reportFile">Loading evidence...</p></div></div><div class="report-metrics"><div><span>Logs analyzed</span><strong id="reportLogs">0</strong></div><div><span>Quality score</span><strong id="reportQuality">0</strong></div><div><span>Health score</span><strong id="reportHealth">0</strong></div><div><span>Incidents</span><strong id="reportIncidents">0</strong></div></div><section><h3>Executive summary</h3><p id="executiveSummary">Loading analysis...</p></section><section><h3>Prioritized findings</h3><div id="reportFindings"></div></section></article></main>{% endblock %}{% block scripts %}<script src="{{ url_for('static', filename='js/report-preview.js') }}"></script>{% endblock %}
+{% extends "base.html" %}
+
+{% block title %}Forensic Report | Intelligent Log Forensics{% endblock %}
+
+{% block content %}
+
+<main
+  id="reportPage"
+  class="report-page"
+  data-file-id="{{ file_id }}"
+>
+
+  <!-- =========================================================
+       REPORT HEADER
+       ========================================================= -->
+
+  <header class="page-header report-header">
+
+
+<div class="report-header-copy">
+
+  <a
+    class="back-link"
+    href="{{ url_for('logs.view', file_id=file_id) }}"
+  >
+    <i data-lucide="arrow-left"></i>
+    Back to Evidence
+  </a>
+
+  <div class="page-breadcrumb">
+    <span>PLATFORM</span>
+    <span class="breadcrumb-separator">/</span>
+    <span>REPORTING</span>
+    <span class="breadcrumb-separator">/</span>
+    <span class="page-breadcrumb-current">FORENSIC REPORT</span>
+  </div>
+
+  <div class="report-heading-row">
+
+    <div>
+      <span class="eyebrow">Evidence Intelligence</span>
+
+      <h1>Forensic Analysis Report</h1>
+
+      <p>
+        Review the evidence-backed investigation summary,
+        prioritized findings, and system health indicators
+        before generating the final report.
+      </p>
+    </div>
+
+    <div class="report-state">
+      <span class="state-dot"></span>
+
+      <div>
+        <strong>REPORT READY</strong>
+        <small>Evidence-backed preview</small>
+      </div>
+    </div>
+
+  </div>
+
+</div>
+
+
+<form
+  method="post"
+  action="{{ url_for('reports.generate', file_id=file_id) }}"
+  class="report-download-form"
+>
+
+  <button
+    class="btn btn-primary"
+    type="submit"
+  >
+    <i data-lucide="file-down"></i>
+    Generate PDF
+  </button>
+
+</form>
+
+
+  </header>
+
+  <!-- =========================================================
+       REPORT WORKSPACE
+       ========================================================= -->
+
+  <div class="report-workspace">
+
+
+<!-- =======================================================
+     REPORT SHEET
+     ======================================================= -->
+<article class="report-sheet card">
+
+
+  <!-- REPORT COVER -->
+  <section class="report-cover">
+
+    <div class="report-brand">
+
+      <div class="brand-mark">
+        <span>LF</span>
+        <i data-lucide="scan-search"></i>
+      </div>
+
+      <div>
+        <span class="eyebrow">
+          INTELLIGENT LOG FORENSICS
+        </span>
+
+        <h2>
+          Evidence Analysis Report
+        </h2>
+
+        <p id="reportFile">
+          Loading evidence...
+        </p>
+      </div>
+
+    </div>
+
+
+    <div class="report-classification">
+
+      <span class="classification-label">
+        REPORT CLASSIFICATION
+      </span>
+
+      <strong>
+        FORENSIC / INTERNAL
+      </strong>
+
+      <span class="classification-line"></span>
+
+      <span class="classification-id">
+        FILE #{{ file_id }}
+      </span>
+
+    </div>
+
+  </section>
+
+
+  <!-- =====================================================
+       REPORT METRICS
+       ===================================================== -->
+  <section class="report-metrics">
+
+    <div class="report-metric">
+
+      <div class="metric-symbol">
+        <i data-lucide="database"></i>
+      </div>
+
+      <div class="metric-copy">
+        <span>Logs analyzed</span>
+
+        <strong id="reportLogs">
+          0
+        </strong>
+
+        <small>
+          Evidence records
+        </small>
+      </div>
+
+    </div>
+
+
+    <div class="report-metric">
+
+      <div class="metric-symbol">
+        <i data-lucide="badge-check"></i>
+      </div>
+
+      <div class="metric-copy">
+        <span>Quality score</span>
+
+        <strong id="reportQuality">
+          0
+        </strong>
+
+        <small>
+          Data confidence
+        </small>
+      </div>
+
+    </div>
+
+
+    <div class="report-metric">
+
+      <div class="metric-symbol">
+        <i data-lucide="activity"></i>
+      </div>
+
+      <div class="metric-copy">
+        <span>Health score</span>
+
+        <strong id="reportHealth">
+          0
+        </strong>
+
+        <small>
+          System health
+        </small>
+      </div>
+
+    </div>
+
+
+    <div class="report-metric">
+
+      <div class="metric-symbol">
+        <i data-lucide="shield-alert"></i>
+      </div>
+
+      <div class="metric-copy">
+        <span>Incidents</span>
+
+        <strong id="reportIncidents">
+          0
+        </strong>
+
+        <small>
+          Correlated findings
+        </small>
+      </div>
+
+    </div>
+
+  </section>
+
+
+  <!-- =====================================================
+       EXECUTIVE SUMMARY
+       ===================================================== -->
+  <section class="report-section executive-section">
+
+    <div class="section-marker">
+      <span>01</span>
+      <i data-lucide="file-text"></i>
+    </div>
+
+    <div class="report-section-content">
+
+      <div class="section-heading">
+
+        <div>
+          <span class="eyebrow">
+            Investigation Overview
+          </span>
+
+          <h3>
+            Executive Summary
+          </h3>
+        </div>
+
+        <span class="section-status">
+          EVIDENCE DERIVED
+        </span>
+
+      </div>
+
+      <div class="summary-frame">
+
+        <div class="summary-accent"></div>
+
+        <p id="executiveSummary">
+          Loading analysis...
+        </p>
+
+      </div>
+
+    </div>
+
+  </section>
+
+
+  <!-- =====================================================
+       PRIORITIZED FINDINGS
+       ===================================================== -->
+  <section class="report-section findings-section">
+
+    <div class="section-marker">
+      <span>02</span>
+      <i data-lucide="triangle-alert"></i>
+    </div>
+
+    <div class="report-section-content">
+
+      <div class="section-heading">
+
+        <div>
+          <span class="eyebrow">
+            Risk Intelligence
+          </span>
+
+          <h3>
+            Prioritized Findings
+          </h3>
+        </div>
+
+        <span class="section-status">
+          CORRELATED EVIDENCE
+        </span>
+
+      </div>
+
+
+      <div
+        id="reportFindings"
+        class="report-findings"
+      >
+
+        <div class="finding-loading">
+
+          <span class="loading-pulse"></span>
+
+          <div>
+            <strong>
+              Building investigation findings
+            </strong>
+
+            <small>
+              Correlating evidence from the selected log file...
+            </small>
+          </div>
+
+        </div>
+
+      </div>
+
+    </div>
+
+  </section>
+
+
+  <!-- =====================================================
+       REPORT FOOTER
+       ===================================================== -->
+  <footer class="report-footer">
+
+    <div class="footer-identity">
+
+      <span class="footer-mark">
+        LF
+      </span>
+
+      <div>
+        <strong>
+          Intelligent Log Forensics
+        </strong>
+
+        <small>
+          Evidence-backed security investigation platform
+        </small>
+      </div>
+
+    </div>
+
+
+    <div class="footer-meta">
+
+      <span>
+        FILE #{{ file_id }}
+      </span>
+
+      <span>
+        FORENSIC REPORT
+      </span>
+
+    </div>
+
+  </footer>
+
+
+</article>
+
+
+<!-- =======================================================
+     REPORT SIDEBAR
+     ======================================================= -->
+<aside class="report-side-panel">
+
+  <div class="side-card card">
+
+    <div class="side-card-header">
+
+      <div>
+        <span class="eyebrow">
+          Report Workflow
+        </span>
+
+        <h3>
+          Investigation State
+        </h3>
+      </div>
+
+      <i data-lucide="workflow"></i>
+
+    </div>
+
+
+    <div class="workflow-status">
+
+      <div class="workflow-item completed">
+
+        <span class="workflow-node">
+          <i data-lucide="check"></i>
+        </span>
+
+        <div>
+          <strong>Evidence collected</strong>
+          <small>Log source loaded</small>
+        </div>
+
+      </div>
+
+
+      <div class="workflow-connector"></div>
+
+
+      <div class="workflow-item completed">
+
+        <span class="workflow-node">
+          <i data-lucide="check"></i>
+        </span>
+
+        <div>
+          <strong>Telemetry analyzed</strong>
+          <small>Records processed</small>
+        </div>
+
+      </div>
+
+
+      <div class="workflow-connector"></div>
+
+
+      <div class="workflow-item active">
+
+        <span class="workflow-node">
+          <i data-lucide="file-search"></i>
+        </span>
+
+        <div>
+          <strong>Report reviewed</strong>
+          <small>Current workspace</small>
+        </div>
+
+      </div>
+
+
+      <div class="workflow-connector"></div>
+
+
+      <div class="workflow-item">
+
+        <span class="workflow-node">
+          <i data-lucide="file-down"></i>
+        </span>
+
+        <div>
+          <strong>PDF generated</strong>
+          <small>Final export</small>
+        </div>
+
+      </div>
+
+    </div>
+
+  </div>
+
+
+  <div class="side-card card report-integrity">
+
+    <div class="side-card-header">
+
+      <div>
+        <span class="eyebrow">
+          Report Integrity
+        </span>
+
+        <h3>
+          Evidence Policy
+        </h3>
+      </div>
+
+      <i data-lucide="shield-check"></i>
+
+    </div>
+
+
+    <div class="integrity-content">
+
+      <div class="integrity-icon">
+        <i data-lucide="lock-keyhole"></i>
+      </div>
+
+      <p>
+        Findings displayed in this report are populated from
+        the investigation backend associated with the selected
+        evidence file.
+      </p>
+
+    </div>
+
+  </div>
+
+
+  <div class="side-card card">
+
+    <div class="side-card-header">
+
+      <div>
+        <span class="eyebrow">
+          Next Action
+        </span>
+
+        <h3>
+          Finalize Report
+        </h3>
+      </div>
+
+      <i data-lucide="arrow-up-right"></i>
+
+    </div>
+
+    <p class="side-description">
+      Review the summary and prioritized findings. When the
+      preview is satisfactory, generate the final PDF report.
+    </p>
+
+    <form
+      method="post"
+      action="{{ url_for('reports.generate', file_id=file_id) }}"
+    >
+      <button
+        type="submit"
+        class="btn btn-primary report-side-download"
+      >
+        <i data-lucide="download"></i>
+        Generate PDF Report
+      </button>
+    </form>
+
+  </div>
+
+</aside>
+
+
+  </div>
+
+</main>
+
+{% endblock %}
+
+{% block scripts %}
+
+<script src="{{ url_for('static', filename='js/report-preview.js', v='20260923') }}"></script>
+
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+    if (window.lucide) {
+      lucide.createIcons();
+    }
+  });
+</script>
+
+{% endblock %}

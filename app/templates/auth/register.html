@@ -3,60 +3,936 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
+
   <title>Create Account — Intelligent Log Forensics</title>
+
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="{{ url_for('static', filename='css/design-tokens.css') }}">
-  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+  <link
+    href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600;700&family=Manrope:wght@400;500;600;700;800&display=swap"
+    rel="stylesheet"
+  >
+
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/design-tokens.css', v='20260923') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css', v='20260923') }}">
+
   <script src="https://unpkg.com/lucide@0.468.0/dist/umd/lucide.min.js" defer></script>
+
+  <style>
+    /* =========================================================
+       REGISTER PAGE
+       Page-specific styles only.
+       Global design system remains in style.css.
+       ========================================================= */
+
+    .auth-shell {
+      min-height: 100vh;
+      display: grid;
+      grid-template-columns: minmax(420px, 0.9fr) minmax(460px, 1.1fr);
+      background:
+        radial-gradient(circle at 15% 15%, rgba(37, 99, 235, 0.08), transparent 34%),
+        radial-gradient(circle at 85% 80%, rgba(124, 58, 237, 0.07), transparent 30%),
+        var(--bg-base);
+    }
+
+    .auth-showcase {
+      position: relative;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      padding: 48px;
+      border-right: 1px solid var(--border-subtle);
+      background:
+        linear-gradient(145deg, rgba(37, 99, 235, 0.07), transparent 42%),
+        var(--bg-surface);
+    }
+
+    .auth-showcase::before,
+    .auth-showcase::after {
+      content: "";
+      position: absolute;
+      border: 1px solid var(--border-subtle);
+      border-radius: 50%;
+      pointer-events: none;
+    }
+
+    .auth-showcase::before {
+      width: 420px;
+      height: 420px;
+      right: -220px;
+      top: 90px;
+    }
+
+    .auth-showcase::after {
+      width: 620px;
+      height: 620px;
+      right: -330px;
+      top: 0;
+      opacity: 0.45;
+    }
+
+    .auth-brand {
+      position: relative;
+      z-index: 2;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .auth-brand-mark {
+      width: 42px;
+      height: 42px;
+      display: grid;
+      place-items: center;
+      border-radius: 12px;
+      color: #fff;
+      background: linear-gradient(135deg, var(--accent), #4f46e5);
+      box-shadow: 0 10px 30px rgba(37, 99, 235, 0.22);
+    }
+
+    .auth-brand-name {
+      font-size: 15px;
+      font-weight: 800;
+      letter-spacing: -0.02em;
+      color: var(--text-primary);
+    }
+
+    .auth-brand-subtitle {
+      margin-top: 2px;
+      font-family: var(--font-mono);
+      font-size: 9px;
+      font-weight: 600;
+      letter-spacing: 0.12em;
+      color: var(--text-muted);
+    }
+
+    .auth-intro {
+      position: relative;
+      z-index: 2;
+      max-width: 520px;
+      margin-top: auto;
+      margin-bottom: auto;
+      padding: 72px 0;
+    }
+
+    .auth-kicker {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 18px;
+      font-family: var(--font-mono);
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--accent);
+    }
+
+    .auth-kicker::before {
+      content: "";
+      width: 22px;
+      height: 1px;
+      background: var(--accent);
+    }
+
+    .auth-intro h1 {
+      max-width: 500px;
+      margin: 0;
+      font-size: clamp(34px, 4vw, 54px);
+      line-height: 1.02;
+      letter-spacing: -0.045em;
+      color: var(--text-primary);
+    }
+
+    .auth-intro > p {
+      max-width: 500px;
+      margin-top: 20px;
+      font-size: 14px;
+      line-height: 1.75;
+      color: var(--text-secondary);
+    }
+
+    .auth-capabilities {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 10px;
+      margin-top: 34px;
+    }
+
+    .capability {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 12px;
+      border: 1px solid var(--border-subtle);
+      border-radius: 10px;
+      background: rgba(255, 255, 255, 0.32);
+      color: var(--text-secondary);
+      font-size: 11px;
+    }
+
+    [data-theme="dark"] .capability {
+      background: rgba(255, 255, 255, 0.02);
+    }
+
+    .capability-icon {
+      width: 28px;
+      height: 28px;
+      flex: 0 0 28px;
+      display: grid;
+      place-items: center;
+      border-radius: 8px;
+      background: var(--bg-raised);
+      color: var(--accent);
+    }
+
+    .auth-footer {
+      position: relative;
+      z-index: 2;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 20px;
+      font-family: var(--font-mono);
+      font-size: 9px;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--text-muted);
+    }
+
+    .auth-status {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+    }
+
+    .auth-status-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: #10b981;
+      box-shadow: 0 0 0 4px rgba(16, 185, 129, 0.08);
+    }
+
+    .auth-panel {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 42px;
+    }
+
+    .auth-card {
+      width: 100%;
+      max-width: 500px;
+      padding: 38px;
+      border: 1px solid var(--border-subtle);
+      border-radius: 18px;
+      background: var(--bg-surface);
+      box-shadow: var(--shadow-lg);
+    }
+
+    .auth-card-header {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 20px;
+      margin-bottom: 28px;
+    }
+
+    .auth-card-title {
+      margin: 0;
+      font-size: 24px;
+      font-weight: 800;
+      letter-spacing: -0.03em;
+      color: var(--text-primary);
+    }
+
+    .auth-card-description {
+      margin-top: 7px;
+      font-size: 12px;
+      line-height: 1.6;
+      color: var(--text-muted);
+    }
+
+    .auth-card-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 7px 9px;
+      border: 1px solid var(--border-subtle);
+      border-radius: 8px;
+      white-space: nowrap;
+      font-family: var(--font-mono);
+      font-size: 9px;
+      font-weight: 700;
+      color: var(--text-muted);
+      background: var(--bg-raised);
+    }
+
+    .auth-error {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      margin-bottom: 18px;
+      padding: 12px 14px;
+      border: 1px solid var(--critical-border);
+      border-radius: 10px;
+      background: var(--critical-bg);
+      color: var(--critical);
+      font-size: 12px;
+      line-height: 1.5;
+    }
+
+    .auth-form {
+      display: flex;
+      flex-direction: column;
+      gap: 18px;
+    }
+
+    .field {
+      display: flex;
+      flex-direction: column;
+      gap: 7px;
+    }
+
+    .field-label {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      font-family: var(--font-mono);
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--text-secondary);
+    }
+
+    .field-hint {
+      font-size: 9px;
+      font-weight: 500;
+      letter-spacing: 0;
+      text-transform: none;
+      color: var(--text-muted);
+    }
+
+    .field-control {
+      position: relative;
+    }
+
+    .field-control .field-icon {
+      position: absolute;
+      left: 13px;
+      top: 50%;
+      width: 16px;
+      height: 16px;
+      transform: translateY(-50%);
+      color: var(--text-muted);
+      pointer-events: none;
+    }
+
+    .auth-input {
+      width: 100%;
+      min-height: 46px;
+      padding: 11px 13px 11px 42px;
+      border: 1px solid var(--border-subtle);
+      border-radius: 10px;
+      outline: none;
+      background: var(--bg-raised);
+      color: var(--text-primary);
+      font-family: var(--font-body, Manrope, sans-serif);
+      font-size: 13px;
+      transition:
+        border-color 160ms ease,
+        box-shadow 160ms ease,
+        background 160ms ease;
+    }
+
+    .auth-input::placeholder {
+      color: var(--text-muted);
+    }
+
+    .auth-input:hover {
+      border-color: var(--border-default, var(--border-subtle));
+    }
+
+    .auth-input:focus {
+      border-color: var(--accent);
+      background: var(--bg-surface);
+      box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.10);
+    }
+
+    .password-wrap {
+      position: relative;
+    }
+
+    .password-wrap .auth-input {
+      padding-right: 44px;
+    }
+
+    .password-toggle {
+      position: absolute;
+      right: 9px;
+      top: 50%;
+      width: 30px;
+      height: 30px;
+      transform: translateY(-50%);
+      display: grid;
+      place-items: center;
+      border: 0;
+      border-radius: 7px;
+      background: transparent;
+      color: var(--text-muted);
+      cursor: pointer;
+    }
+
+    .password-toggle:hover {
+      background: var(--bg-base);
+      color: var(--text-primary);
+    }
+
+    .password-strength {
+      display: flex;
+      flex-direction: column;
+      gap: 7px;
+      margin-top: -4px;
+    }
+
+    .strength-track {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 4px;
+    }
+
+    .strength-segment {
+      height: 3px;
+      border-radius: 99px;
+      background: var(--border-subtle);
+      transition: background 160ms ease;
+    }
+
+    .strength-label {
+      font-family: var(--font-mono);
+      font-size: 9px;
+      color: var(--text-muted);
+    }
+
+    .auth-submit {
+      width: 100%;
+      min-height: 46px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 9px;
+      margin-top: 2px;
+      border: 0;
+      border-radius: 10px;
+      background: linear-gradient(135deg, var(--accent), #4f46e5);
+      color: #fff;
+      font-size: 12px;
+      font-weight: 800;
+      letter-spacing: 0.01em;
+      cursor: pointer;
+      box-shadow: 0 10px 24px rgba(37, 99, 235, 0.18);
+      transition:
+        transform 160ms ease,
+        box-shadow 160ms ease,
+        opacity 160ms ease;
+    }
+
+    .auth-submit:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 14px 30px rgba(37, 99, 235, 0.23);
+    }
+
+    .auth-submit:active {
+      transform: translateY(0);
+    }
+
+    .auth-submit:disabled {
+      opacity: 0.65;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    .auth-divider {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin: 24px 0;
+      color: var(--text-muted);
+      font-family: var(--font-mono);
+      font-size: 9px;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    .auth-divider::before,
+    .auth-divider::after {
+      content: "";
+      height: 1px;
+      flex: 1;
+      background: var(--border-subtle);
+    }
+
+    .auth-login {
+      text-align: center;
+      font-size: 12px;
+      color: var(--text-muted);
+    }
+
+    .auth-login a {
+      color: var(--accent);
+      font-weight: 700;
+      text-decoration: none;
+    }
+
+    .auth-login a:hover {
+      text-decoration: underline;
+    }
+
+    .security-note {
+      display: flex;
+      gap: 9px;
+      margin-top: 20px;
+      padding: 11px 12px;
+      border: 1px solid var(--border-subtle);
+      border-radius: 9px;
+      background: var(--bg-raised);
+      color: var(--text-muted);
+      font-size: 10px;
+      line-height: 1.55;
+    }
+
+    .security-note svg {
+      flex: 0 0 auto;
+      margin-top: 1px;
+      color: var(--ok);
+    }
+
+    @media (max-width: 980px) {
+      .auth-shell {
+        grid-template-columns: 1fr;
+      }
+
+      .auth-showcase {
+        display: none;
+      }
+
+      .auth-panel {
+        min-height: 100vh;
+        padding: 24px;
+      }
+    }
+
+    @media (max-width: 520px) {
+      .auth-panel {
+        padding: 14px;
+      }
+
+      .auth-card {
+        padding: 25px 20px;
+        border-radius: 14px;
+      }
+
+      .auth-card-header {
+        margin-bottom: 23px;
+      }
+
+      .auth-card-title {
+        font-size: 21px;
+      }
+
+      .auth-card-badge {
+        display: none;
+      }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .auth-input,
+      .auth-submit,
+      .password-toggle,
+      .strength-segment {
+        transition: none;
+      }
+    }
+  </style>
 </head>
-<body style="display:flex; align-items:center; justify-content:center; min-height:100vh; background:var(--bg-base); padding:20px;">
-  <div class="card card-body" style="width:100%; max-width:400px; padding:32px; display:flex; flex-direction:column; gap:20px; box-shadow:var(--shadow-lg);">
-    <div style="display:flex; align-items:center; gap:10px;">
-      <div style="width:36px; height:36px; border-radius:var(--r-md); background:var(--accent); color:#fff; display:flex; align-items:center; justify-content:center;">
-        <i data-lucide="shield-check" style="width:20px;"></i>
-      </div>
-      <div>
-        <h2 style="font-size:18px; font-weight:800; color:var(--text-primary);">Create Account</h2>
-        <span style="font-size:10px; font-family:var(--font-mono); color:var(--text-muted); uppercase; tracking-widest;">LOG FORENSICS PLATFORM</span>
-      </div>
-    </div>
 
-    {% if error %}
-    <div style="padding:10px 14px; border-radius:var(--r-md); background:var(--critical-bg); border:1px solid var(--critical-border); color:var(--critical); font-size:12px;">
-      {{ error }}
-    </div>
-    {% endif %}
+<body>
 
-    <form action="{{ url_for('auth.register') }}" method="post" style="display:flex; flex-direction:column; gap:14px;">
-      <div style="display:flex; flex-direction:column; gap:6px;">
-        <label style="font-size:11px; font-weight:700; font-family:var(--font-mono); color:var(--text-secondary); text-transform:uppercase;">FULL NAME</label>
-        <input type="text" name="name" required placeholder="Security Analyst" class="input">
+  <div class="auth-shell">
+
+    <!-- =====================================================
+         LEFT PRODUCT PANEL
+         ===================================================== -->
+    <aside class="auth-showcase">
+
+      <div class="auth-brand">
+        <div class="auth-brand-mark">
+          <i data-lucide="shield-check" aria-hidden="true"></i>
+        </div>
+
+        <div>
+          <div class="auth-brand-name">Intelligent Log Forensics</div>
+          <div class="auth-brand-subtitle">MITRE RCA WORKSTATION</div>
+        </div>
       </div>
 
-      <div style="display:flex; flex-direction:column; gap:6px;">
-        <label style="font-size:11px; font-weight:700; font-family:var(--font-mono); color:var(--text-secondary); text-transform:uppercase;">EMAIL ADDRESS</label>
-        <input type="email" name="email" required placeholder="analyst@soc.internal" class="input">
+      <div class="auth-intro">
+
+        <div class="auth-kicker">
+          User Workspace
+        </div>
+
+        <h1>
+          Build your forensic workspace.
+        </h1>
+
+        <p>
+          Create a user account to investigate security telemetry,
+          correlate incidents, trace root causes, map activity to
+          MITRE ATT&amp;CK, and document remediation.
+        </p>
+
+        <div class="auth-capabilities">
+
+          <div class="capability">
+            <span class="capability-icon">
+              <i data-lucide="scan-search" width="14" height="14"></i>
+            </span>
+            <span>Evidence Analysis</span>
+          </div>
+
+          <div class="capability">
+            <span class="capability-icon">
+              <i data-lucide="git-branch" width="14" height="14"></i>
+            </span>
+            <span>Incident Correlation</span>
+          </div>
+
+          <div class="capability">
+            <span class="capability-icon">
+              <i data-lucide="crosshair" width="14" height="14"></i>
+            </span>
+            <span>MITRE ATT&amp;CK Mapping</span>
+          </div>
+
+          <div class="capability">
+            <span class="capability-icon">
+              <i data-lucide="shield-check" width="14" height="14"></i>
+            </span>
+            <span>Remediation Guidance</span>
+          </div>
+
+        </div>
       </div>
 
-      <div style="display:flex; flex-direction:column; gap:6px;">
-        <label style="font-size:11px; font-weight:700; font-family:var(--font-mono); color:var(--text-secondary); text-transform:uppercase;">PASSWORD (10+ CHARS, UPPER & NUMBER)</label>
-        <input type="password" name="password" required placeholder="••••••••••••" class="input">
+      <div class="auth-footer">
+        <span>ILF PLATFORM</span>
+
+        <span class="auth-status">
+          <span class="auth-status-dot"></span>
+          System Ready
+        </span>
       </div>
 
-      <button type="submit" class="btn btn-primary" style="margin-top:6px; padding:10px;">Register & Create Workstation Account →</button>
-    </form>
+    </aside>
 
-    <div style="text-align:center; font-size:12px; color:var(--text-muted);">
-      Already registered? <a href="{{ url_for('dashboard.login') }}" style="color:var(--accent); font-weight:600;">Sign In</a>
-    </div>
+
+    <!-- =====================================================
+         REGISTRATION PANEL
+         ===================================================== -->
+    <main class="auth-panel">
+
+      <section class="auth-card" aria-labelledby="register-title">
+
+        <header class="auth-card-header">
+
+          <div>
+            <h2 id="register-title" class="auth-card-title">
+              Create account
+            </h2>
+
+            <p class="auth-card-description">
+              Set up your credentials for the forensic workstation.
+            </p>
+          </div>
+
+          <div class="auth-card-badge">
+            <i data-lucide="user-plus" width="12" height="12"></i>
+            NEW USER
+          </div>
+
+        </header>
+
+
+        {% if error %}
+        <div class="auth-error" role="alert">
+          <i data-lucide="circle-alert" width="16" height="16"></i>
+          <span>{{ error }}</span>
+        </div>
+        {% endif %}
+
+
+        <form
+          action="{{ url_for('auth.register') }}"
+          method="post"
+          class="auth-form"
+          id="register-form"
+        >
+
+          <!-- Full Name -->
+          <div class="field">
+
+            <label for="register-name" class="field-label">
+              <span>Full Name</span>
+              <span class="field-hint">Required</span>
+            </label>
+
+            <div class="field-control">
+
+              <i
+                data-lucide="user-round"
+                class="field-icon"
+                aria-hidden="true"
+              ></i>
+
+              <input
+                id="register-name"
+                type="text"
+                name="name"
+                required
+                autocomplete="name"
+                placeholder="Security User"
+                class="auth-input"
+              >
+
+            </div>
+          </div>
+
+
+          <!-- Email -->
+          <div class="field">
+
+            <label for="register-email" class="field-label">
+              <span>Email Address</span>
+              <span class="field-hint">Required</span>
+            </label>
+
+            <div class="field-control">
+
+              <i
+                data-lucide="mail"
+                class="field-icon"
+                aria-hidden="true"
+              ></i>
+
+              <input
+                id="register-email"
+                type="email"
+                name="email"
+                required
+                autocomplete="email"
+                placeholder="user@soc.internal"
+                class="auth-input"
+              >
+
+            </div>
+          </div>
+
+
+          <!-- Password -->
+          <div class="field">
+
+            <label for="register-password" class="field-label">
+              <span>Password</span>
+              <span class="field-hint">10+ chars · uppercase · number</span>
+            </label>
+
+            <div class="field-control password-wrap">
+
+              <i
+                data-lucide="key-round"
+                class="field-icon"
+                aria-hidden="true"
+              ></i>
+
+              <input
+                id="register-password"
+                type="password"
+                name="password"
+                required
+                minlength="10"
+                autocomplete="new-password"
+                placeholder="Create a secure password"
+                class="auth-input"
+              >
+
+              <button
+                type="button"
+                class="password-toggle"
+                id="password-toggle"
+                aria-label="Show password"
+                title="Show password"
+              >
+                <i data-lucide="eye" width="15" height="15"></i>
+              </button>
+
+            </div>
+
+          </div>
+
+
+          <!-- Password strength -->
+          <div class="password-strength">
+
+            <div class="strength-track" aria-hidden="true">
+              <span class="strength-segment"></span>
+              <span class="strength-segment"></span>
+              <span class="strength-segment"></span>
+              <span class="strength-segment"></span>
+            </div>
+
+            <span id="strength-label" class="strength-label">
+              PASSWORD REQUIREMENTS
+            </span>
+
+          </div>
+
+
+          <button
+            type="submit"
+            class="auth-submit"
+            id="register-submit"
+          >
+            <span>Create Workstation Account</span>
+            <i data-lucide="arrow-right" width="15" height="15"></i>
+          </button>
+
+        </form>
+
+
+        <div class="auth-divider">
+          Existing user
+        </div>
+
+
+        <div class="auth-login">
+          Already registered?
+          <a href="{{ url_for('dashboard.login') }}">
+            Sign in to workstation
+          </a>
+        </div>
+
+
+        <div class="security-note">
+          <i data-lucide="lock-keyhole" width="14" height="14"></i>
+
+          <span>
+            Your account credentials are submitted directly to the
+            application's authentication endpoint.
+          </span>
+        </div>
+
+      </section>
+
+    </main>
+
   </div>
 
+
   <script>
-    document.addEventListener("DOMContentLoaded", () => {
-      if (window.lucide) lucide.createIcons();
+    document.addEventListener("DOMContentLoaded", function () {
+
+      if (window.lucide) {
+        lucide.createIcons();
+      }
+
+      const passwordInput = document.getElementById("register-password");
+      const passwordToggle = document.getElementById("password-toggle");
+      const strengthLabel = document.getElementById("strength-label");
+      const segments = document.querySelectorAll(".strength-segment");
+
+      /* -------------------------------------------------------
+         Password visibility
+         ------------------------------------------------------- */
+
+      if (passwordToggle && passwordInput) {
+
+        passwordToggle.addEventListener("click", function () {
+
+          const isPassword = passwordInput.type === "password";
+
+          passwordInput.type = isPassword ? "text" : "password";
+
+          passwordToggle.setAttribute(
+            "aria-label",
+            isPassword ? "Hide password" : "Show password"
+          );
+
+          passwordToggle.setAttribute(
+            "title",
+            isPassword ? "Hide password" : "Show password"
+          );
+
+          passwordToggle.innerHTML = isPassword
+            ? '<i data-lucide="eye-off" width="15" height="15"></i>'
+            : '<i data-lucide="eye" width="15" height="15"></i>';
+
+          if (window.lucide) {
+            lucide.createIcons();
+          }
+
+        });
+
+      }
+
+
+      /* -------------------------------------------------------
+         Password strength indicator
+         Visual helper only — backend remains authoritative.
+         ------------------------------------------------------- */
+
+      if (passwordInput) {
+
+        passwordInput.addEventListener("input", function () {
+
+          const value = passwordInput.value;
+
+          let score = 0;
+
+          if (value.length >= 10) score++;
+          if (/[A-Z]/.test(value)) score++;
+          if (/[0-9]/.test(value)) score++;
+          if (/[^A-Za-z0-9]/.test(value)) score++;
+
+          segments.forEach(function (segment, index) {
+            segment.style.background =
+              index < score
+                ? "var(--accent)"
+                : "var(--border-subtle)";
+          });
+
+          if (!value) {
+            strengthLabel.textContent = "PASSWORD REQUIREMENTS";
+          } else if (score <= 1) {
+            strengthLabel.textContent = "WEAK — ADD MORE REQUIREMENTS";
+          } else if (score === 2) {
+            strengthLabel.textContent = "MODERATE — ADD MORE COMPLEXITY";
+          } else if (score === 3) {
+            strengthLabel.textContent = "GOOD — ALMOST READY";
+          } else {
+            strengthLabel.textContent = "STRONG PASSWORD";
+          }
+
+        });
+
+      }
+
     });
   </script>
+
 </body>
 </html>

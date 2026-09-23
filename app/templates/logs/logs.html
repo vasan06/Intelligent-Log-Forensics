@@ -3,136 +3,601 @@
 {% block title %}Log Stream & Evidence Explorer — Log Forensics{% endblock %}
 
 {% block content %}
-<div class="page-header">
-  <div class="page-title">
-    <div class="page-breadcrumb">
-      <span>PLATFORM</span> / <span>LOG STREAM</span> / <span class="page-breadcrumb-current">EVIDENCE EXPLORER</span>
+
+<div class="forensics-page">
+
+  <!-- =========================================================
+       PAGE HEADER
+       ========================================================= -->
+
+  <header class="page-header forensics-header">
+    <div class="page-title">
+      <div class="page-breadcrumb">
+        <span>PLATFORM</span>
+        <span class="breadcrumb-separator">/</span>
+        <span>LOG STREAM</span>
+        <span class="breadcrumb-separator">/</span>
+        <span class="page-breadcrumb-current">EVIDENCE EXPLORER</span>
+      </div>
+
+
+  <div class="title-with-status">
+    <div>
+      <h1>Log Stream &amp; Evidence Explorer</h1>
+      <p>
+        Inspect normalized telemetry, trace suspicious activity,
+        and correlate individual events with forensic evidence.
+      </p>
     </div>
-    <h1>Log Stream & Contextual Evidence Workstation</h1>
-    <p>Filter log records, inspect raw vs normalized JSON payloads, and manage analyst risk labels</p>
-  </div>
 
-  <div style="display:flex; gap:8px;">
-    <a href="{{ url_for('upload.upload_page') }}" class="btn btn-secondary btn-sm">← Uploads</a>
-    <button onclick="fetchLogs()" class="btn btn-primary btn-sm"><i data-lucide="refresh-cw" style="width:13px;"></i> Refresh Stream</button>
+    <div class="stream-status">
+      <span class="status-dot"></span>
+      <span>STREAM READY</span>
+    </div>
   </div>
 </div>
 
-<section class="investigation-flow" aria-label="Investigation flow">
-  <span>Observe</span><i data-lucide="arrow-right"></i>
-  <span>Investigate</span><i data-lucide="arrow-right"></i>
-  <span>Correlate</span><i data-lucide="arrow-right"></i>
-  <span>Respond</span><i data-lucide="arrow-right"></i>
-  <span>Verify</span>
-</section>
+<div class="header-actions">
+  <a
+    href="{{ url_for('upload.upload_page') }}"
+    class="btn btn-secondary btn-sm"
+  >
+    <i data-lucide="arrow-left" style="width:14px;"></i>
+    Uploads
+  </a>
 
-<!-- Search & Source Filter Bar -->
-<div class="card card-body" style="background:var(--bg-raised); display:flex; flex-direction:column; gap:12px;">
-  <div style="display:flex; gap:12px; flex-wrap:wrap;">
-    <input type="text" id="log-query" placeholder="Search by IP, endpoint, status code, or query..." class="input" style="flex:2; font-family:var(--font-mono); font-size:12px;" oninput="fetchLogs()">
-    <select id="log-source" class="select-input" style="flex:1; font-family:var(--font-mono); font-size:12px;" onchange="fetchLogs()">
-      <option value="">All Log Sources</option>
-    </select>
+  <button
+    onclick="fetchLogs()"
+    class="btn btn-primary btn-sm"
+    type="button"
+  >
+    <i data-lucide="refresh-cw" style="width:14px;"></i>
+    Refresh Stream
+  </button>
+</div>
+
+
+  </header>
+
+  <!-- =========================================================
+       INVESTIGATION PIPELINE
+       ========================================================= -->
+
+  <section class="investigation-flow" aria-label="Forensic investigation workflow">
+
+
+<div class="flow-step flow-active">
+  <span class="flow-index">01</span>
+  <div>
+    <strong>Observe</strong>
+    <small>Collect telemetry</small>
   </div>
 </div>
 
-<section class="analytics-grid" aria-label="Log analytics">
-  <div class="analysis-panel">
-    <div class="analysis-panel-head">
+<span class="flow-line"></span>
+
+<div class="flow-step">
+  <span class="flow-index">02</span>
+  <div>
+    <strong>Investigate</strong>
+    <small>Inspect evidence</small>
+  </div>
+</div>
+
+<span class="flow-line"></span>
+
+<div class="flow-step">
+  <span class="flow-index">03</span>
+  <div>
+    <strong>Correlate</strong>
+    <small>Connect signals</small>
+  </div>
+</div>
+
+<span class="flow-line"></span>
+
+<div class="flow-step">
+  <span class="flow-index">04</span>
+  <div>
+    <strong>Respond</strong>
+    <small>Classify risk</small>
+  </div>
+</div>
+
+<span class="flow-line"></span>
+
+<div class="flow-step">
+  <span class="flow-index">05</span>
+  <div>
+    <strong>Verify</strong>
+    <small>Validate findings</small>
+  </div>
+</div>
+
+
+  </section>
+
+  <!-- =========================================================
+       COMMAND / FILTER DECK
+       ========================================================= -->
+
+  <section class="filter-deck card">
+
+
+<div class="filter-deck-heading">
+  <div class="filter-icon">
+    <i data-lucide="scan-search"></i>
+  </div>
+
+  <div>
+    <span class="eyebrow">Evidence Query</span>
+    <h3>Search &amp; Filter Telemetry</h3>
+  </div>
+
+  <span class="filter-file-tag">
+    FILE #{{ file_id }}
+  </span>
+</div>
+
+<div class="filter-controls">
+
+  <div class="search-field">
+    <i data-lucide="search"></i>
+    <input
+      type="text"
+      id="log-query"
+      placeholder="Search IP, endpoint, method, status code, event..."
+      autocomplete="off"
+      oninput="fetchLogs()"
+    >
+    <kbd>SEARCH</kbd>
+  </div>
+
+  <div class="source-field">
+    <label for="log-source">SOURCE</label>
+
+    <div class="select-shell">
+      <i data-lucide="database"></i>
+
+      <select
+        id="log-source"
+        class="select-input"
+        onchange="fetchLogs()"
+      >
+        <option value="">All Log Sources</option>
+      </select>
+
+      <i data-lucide="chevron-down" class="select-chevron"></i>
+    </div>
+  </div>
+
+</div>
+
+
+  </section>
+
+  <!-- =========================================================
+       TELEMETRY ANALYTICS
+       ========================================================= -->
+
+  <section class="analytics-grid" aria-label="Log analytics">
+
+
+<!-- EVENT VOLUME -->
+<article class="analysis-panel card">
+
+  <div class="analysis-panel-head">
+    <div class="analysis-heading">
+      <span class="metric-index">01</span>
+
       <div>
-        <span class="eyebrow">Question</span>
+        <span class="eyebrow">Temporal Analysis</span>
         <h3>When did activity change?</h3>
       </div>
-      <span class="chart-meta" id="volume-meta">Awaiting events</span>
     </div>
-    <canvas id="event-volume-chart" class="chart-canvas" height="150" aria-label="Event volume over time"></canvas>
+
+    <span
+      class="chart-meta"
+      id="volume-meta"
+    >
+      Awaiting events
+    </span>
   </div>
-  <div class="analysis-panel">
-    <div class="analysis-panel-head">
+
+  <div class="chart-stage">
+    <div class="chart-grid-lines">
+      <span></span>
+      <span></span>
+      <span></span>
+      <span></span>
+    </div>
+
+    <canvas
+      id="event-volume-chart"
+      class="chart-canvas"
+      height="150"
+      aria-label="Event volume over time"
+    ></canvas>
+  </div>
+
+</article>
+
+
+<!-- SOURCE DISTRIBUTION -->
+<article class="analysis-panel card">
+
+  <div class="analysis-panel-head">
+    <div class="analysis-heading">
+      <span class="metric-index">02</span>
+
       <div>
-        <span class="eyebrow">Question</span>
-        <h3>Which sources dominate the evidence?</h3>
+        <span class="eyebrow">Source Analysis</span>
+        <h3>Which sources dominate?</h3>
       </div>
     </div>
-    <div id="source-distribution" class="bar-list" aria-live="polite"></div>
+
+    <i
+      data-lucide="layers-3"
+      class="panel-icon"
+    ></i>
   </div>
-  <div class="analysis-panel">
-    <div class="analysis-panel-head">
+
+  <div
+    id="source-distribution"
+    class="bar-list"
+    aria-live="polite"
+  >
+    <div class="analytics-empty">
+      <span class="loading-pulse"></span>
+      Waiting for telemetry...
+    </div>
+  </div>
+
+</article>
+
+
+<!-- SEVERITY DISTRIBUTION -->
+<article class="analysis-panel card">
+
+  <div class="analysis-panel-head">
+    <div class="analysis-heading">
+      <span class="metric-index">03</span>
+
       <div>
-        <span class="eyebrow">Question</span>
-        <h3>Where are risk signals concentrated?</h3>
+        <span class="eyebrow">Risk Analysis</span>
+        <h3>Where are signals concentrated?</h3>
       </div>
     </div>
-    <div id="severity-distribution" class="bar-list" aria-live="polite"></div>
+
+    <i
+      data-lucide="triangle-alert"
+      class="panel-icon"
+    ></i>
   </div>
-</section>
 
-<!-- Workspace Layout: Stream Table + Evidence Panel Drawer -->
-<div class="grid-3" style="grid-template-columns: 2fr 1fr;">
-  <!-- Log Stream Table -->
-  <div class="card overflow-hidden">
-    <div class="card-header" style="background:var(--bg-raised); font-family:var(--font-mono); font-size:11.5px;">
-      <span id="log-count-badge">Loading log stream...</span>
-      <span style="color:var(--text-muted);">Select any event to view evidence</span>
-    </div>
-
-    <div class="table-wrap" style="max-height:600px; overflow-y:auto;">
-      <table class="table">
-        <thead>
-          <tr>
-            <th>Timestamp</th>
-            <th>Source</th>
-            <th>Event / Method</th>
-            <th>Endpoint / IP</th>
-            <th>Status</th>
-            <th>Risk Signal</th>
-          </tr>
-        </thead>
-        <tbody id="logs-tbody">
-          <tr><td colspan="6" style="text-align:center; padding:30px; color:var(--text-muted);">Loading logs for File #<span class="file-id-val">{{ file_id }}</span>...</td></tr>
-        </tbody>
-      </table>
+  <div
+    id="severity-distribution"
+    class="bar-list"
+    aria-live="polite"
+  >
+    <div class="analytics-empty">
+      <span class="loading-pulse"></span>
+      Calculating risk distribution...
     </div>
   </div>
 
-  <!-- Selected Log Evidence Inspection Drawer -->
-  <div class="card card-body" id="evidence-panel" style="display:none; flex-direction:column; gap:14px; border-color:var(--accent-border);">
-    <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid var(--border-subtle); padding-bottom:10px;">
+</article>
+
+
+  </section>
+
+  <!-- =========================================================
+       PRIMARY EVIDENCE WORKSPACE
+       ========================================================= -->
+
+  <section
+    class="evidence-workspace"
+    aria-label="Log evidence workspace"
+  >
+
+
+<!-- =======================================================
+     STREAM TABLE
+     ======================================================= -->
+<article class="stream-panel card">
+
+  <div class="stream-panel-header">
+
+    <div class="stream-heading">
+      <div class="stream-heading-icon">
+        <i data-lucide="list-tree"></i>
+      </div>
+
       <div>
-        <span style="font-size:10px; font-family:var(--font-mono); color:var(--accent); font-weight:700; text-transform:uppercase;">EVIDENCE PANEL</span>
-        <h3 id="panel-event-type" style="font-size:14px; font-weight:700;">Log Event</h3>
-      </div>
-      <button onclick="closeEvidencePanel()" style="background:none; border:none; color:var(--text-muted); cursor:pointer; font-size:16px;">✕</button>
-    </div>
+        <span class="eyebrow">Live Evidence Feed</span>
 
-    <!-- Toggle View Mode -->
-    <div style="display:flex; background:var(--bg-raised); padding:3px; border-radius:var(--r-md); border:1px solid var(--border-subtle); font-family:var(--font-mono); font-size:11px;">
-      <button id="btn-mode-normalized" onclick="setPayloadView('normalized')" style="flex:1; padding:4px; border:none; background:var(--bg-surface); border-radius:4px; font-weight:600; cursor:pointer;">Normalized JSON</button>
-      <button id="btn-mode-raw" onclick="setPayloadView('raw')" style="flex:1; padding:4px; border:none; background:transparent; color:var(--text-muted); font-weight:600; cursor:pointer;">Raw Payload</button>
-    </div>
-
-    <!-- Payload Display -->
-    <pre id="panel-payload" style="padding:12px; background:#070b14; color:#93c5fd; font-family:var(--font-mono); font-size:11px; border-radius:var(--r-md); max-height:220px; overflow:auto; border:1px solid rgba(255,255,255,0.1);"></pre>
-
-    <!-- Correlated Risk Event & Labeling Buttons -->
-    <div id="panel-risk-box" style="padding:12px; background:var(--bg-raised); border-radius:var(--r-md); border:1px solid var(--border-subtle); display:flex; flex-direction:column; gap:8px;">
-      <div style="display:flex; justify-content:space-between; align-items:center;">
-        <span style="font-size:10.5px; font-family:var(--font-mono); font-weight:700; color:var(--text-muted);">CORRELATED ANOMALY</span>
-        <span id="panel-risk-severity" class="badge badge-critical">CRITICAL</span>
-      </div>
-      <div id="panel-risk-cat" style="font-size:12.5px; font-weight:700; color:var(--text-primary);">Risk Category</div>
-      <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-top:4px;">
-        <button id="btn-label-confirm" class="btn btn-primary btn-sm">Confirm Threat</button>
-        <button id="btn-label-fp" class="btn btn-secondary btn-sm">False Positive</button>
+        <h2>
+          Event Telemetry
+          <span
+            id="log-count-badge"
+            class="stream-count"
+          >
+            Loading...
+          </span>
+        </h2>
       </div>
     </div>
+
+    <div class="stream-header-meta">
+      <span class="live-indicator">
+        <span class="status-dot"></span>
+        LIVE
+      </span>
+
+      <span>
+        Select an event to inspect evidence
+      </span>
+    </div>
+
   </div>
+
+
+  <div class="table-wrap stream-table-wrap">
+
+    <table class="table evidence-table">
+
+      <thead>
+        <tr>
+          <th>
+            <span class="th-label">Timestamp</span>
+          </th>
+
+          <th>
+            <span class="th-label">Source</span>
+          </th>
+
+          <th>
+            <span class="th-label">Event / Method</span>
+          </th>
+
+          <th>
+            <span class="th-label">Endpoint / IP</span>
+          </th>
+
+          <th>
+            <span class="th-label">Status</span>
+          </th>
+
+          <th>
+            <span class="th-label">Risk Signal</span>
+          </th>
+        </tr>
+      </thead>
+
+      <tbody id="logs-tbody">
+
+        <tr>
+          <td
+            colspan="6"
+            class="table-loading"
+          >
+            <div class="table-loader">
+              <span class="loading-pulse"></span>
+
+              <div>
+                <strong>Initializing evidence stream</strong>
+                <small>
+                  Loading logs for File #
+                  <span class="file-id-val">{{ file_id }}</span>
+                </small>
+              </div>
+            </div>
+          </td>
+        </tr>
+
+      </tbody>
+
+    </table>
+
+  </div>
+
+</article>
+
+
+<!-- =======================================================
+     EVIDENCE INSPECTOR
+     ======================================================= -->
+<aside
+  class="evidence-inspector card"
+  id="evidence-panel"
+  style="display:none;"
+>
+
+  <div class="inspector-header">
+
+    <div class="inspector-title">
+
+      <div class="inspector-icon">
+        <i data-lucide="file-search-2"></i>
+      </div>
+
+      <div>
+        <span class="eyebrow">Evidence Panel</span>
+        <h3 id="panel-event-type">
+          Log Event
+        </h3>
+      </div>
+
+    </div>
+
+    <button
+      onclick="closeEvidencePanel()"
+      class="inspector-close"
+      type="button"
+      aria-label="Close evidence panel"
+    >
+      <i data-lucide="x"></i>
+    </button>
+
+  </div>
+
+
+  <!-- EVENT CONTEXT -->
+  <div class="inspector-context">
+
+    <div class="context-line">
+      <span class="context-label">INSPECTION MODE</span>
+      <span class="context-value">FORENSIC</span>
+    </div>
+
+    <div class="context-line">
+      <span class="context-label">EVIDENCE STATE</span>
+      <span class="context-value context-live">
+        <span class="status-dot"></span>
+        ACTIVE
+      </span>
+    </div>
+
+  </div>
+
+
+  <!-- PAYLOAD MODE -->
+  <div class="payload-switch">
+
+    <button
+      id="btn-mode-normalized"
+      onclick="setPayloadView('normalized')"
+      type="button"
+      class="payload-mode active"
+    >
+      <i data-lucide="braces"></i>
+      Normalized JSON
+    </button>
+
+    <button
+      id="btn-mode-raw"
+      onclick="setPayloadView('raw')"
+      type="button"
+      class="payload-mode"
+    >
+      <i data-lucide="file-code-2"></i>
+      Raw Payload
+    </button>
+
+  </div>
+
+
+  <!-- PAYLOAD -->
+  <div class="payload-container">
+
+    <div class="payload-header">
+      <span>PAYLOAD</span>
+      <span class="payload-language">JSON</span>
+    </div>
+
+    <pre
+      id="panel-payload"
+      class="payload-view"
+    ></pre>
+
+  </div>
+
+
+  <!-- RISK ASSESSMENT -->
+  <div
+    id="panel-risk-box"
+    class="risk-assessment"
+  >
+
+    <div class="risk-heading">
+
+      <div>
+        <span class="eyebrow">Correlated Anomaly</span>
+        <strong id="panel-risk-cat">
+          Risk Category
+        </strong>
+      </div>
+
+      <span
+        id="panel-risk-severity"
+        class="badge badge-critical"
+      >
+        CRITICAL
+      </span>
+
+    </div>
+
+
+    <div class="risk-divider"></div>
+
+
+    <div class="risk-actions">
+
+      <button
+        id="btn-label-confirm"
+        class="btn btn-primary btn-sm"
+        type="button"
+      >
+        <i data-lucide="shield-check"></i>
+        Confirm Threat
+      </button>
+
+      <button
+        id="btn-label-fp"
+        class="btn btn-secondary btn-sm"
+        type="button"
+      >
+        <i data-lucide="circle-off"></i>
+        False Positive
+      </button>
+
+    </div>
+
+  </div>
+
+
+  <!-- INSPECTOR FOOTER -->
+  <div class="inspector-footer">
+
+    <i data-lucide="info"></i>
+
+    <span>
+      Evidence shown here is sourced from the selected backend log record.
+    </span>
+
+  </div>
+
+</aside>
+
+
+  </section>
+
 </div>
+
 {% endblock %}
 
 {% block scripts %}
+
 <script>
+  /*
+   * Backend compatibility hook.
+   * Keep this global because logs.js uses FILE_ID.
+   */
   window.FILE_ID = parseInt("{{ file_id or 1 }}", 10);
 </script>
-<script src="{{ url_for('static', filename='js/logs.js') }}"></script>
+
+<script src="{{ url_for('static', filename='js/logs.js', v='20260923') }}"></script>
+
+<script>
+  /*
+   * Re-render Lucide icons after dynamic page initialization.
+   * Existing logs.js remains the source of truth for data behaviour.
+   */
+  document.addEventListener("DOMContentLoaded", function () {
+    if (window.lucide) {
+      lucide.createIcons();
+    }
+  });
+</script>
+
 {% endblock %}

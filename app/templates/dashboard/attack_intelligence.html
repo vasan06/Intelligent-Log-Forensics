@@ -1,61 +1,434 @@
 {% extends "base.html" %}
 
-{% block title %}MITRE ATT&CK Matrix — Log Forensics{% endblock %}
+{% block title %}MITRE ATT&CK Intelligence — Log Forensics{% endblock %}
 
 {% block content %}
-<div class="page-header">
-  <div class="page-title">
-    <div class="page-breadcrumb">
-      <span>PLATFORM</span> / <span>MITRE FRAMEWORK</span> / <span class="page-breadcrumb-current">ATT&CK MATRIX</span>
+
+<section class="attack-intelligence-page">
+
+  <!-- =========================================================
+       HEADER
+       ========================================================= -->
+
+  <div class="page-header attack-matrix-header">
+
+
+<div class="page-title">
+
+  <div class="page-breadcrumb">
+    <span>PLATFORM</span>
+    <span>/</span>
+    <span>THREAT INTELLIGENCE</span>
+    <span>/</span>
+    <span class="page-breadcrumb-current">MITRE ATT&amp;CK</span>
+  </div>
+
+  <div class="matrix-title-row">
+
+    <div class="matrix-title-icon">
+      <i data-lucide="network"></i>
     </div>
-    <h1>MITRE ATT&CK Intelligence & Technique Matrix</h1>
-    <p>Map observed log indicators to known adversary tactics, techniques, and remediation rules</p>
-  </div>
-</div>
 
-<!-- Filter Bar -->
-<div class="card card-body" style="background:var(--bg-raised);">
-  <div style="display:flex; gap:12px;">
-    <input type="text" id="attack-query" placeholder="Search techniques by ID (e.g. T1059) or name..." class="input" style="font-family:var(--font-mono); font-size:12px;" oninput="filterAttacks()">
-  </div>
-</div>
-
-<!-- Matrix Grid -->
-<div class="grid-3" id="attacks-grid" style="margin-top:16px;">
-  {% for key, attack in attacks.items() %}
-  {% set slug = attack.name.lower().replace(" ", "-").replace("/", "-") %}
-  <a href="{{ url_for('dashboard.attack_detail', slug=slug) }}" class="card card-body attack-card-item" data-name="{{ attack.name.lower() }}" data-mitre="{{ attack.mitre.lower() }}" style="display:flex; flex-direction:column; justify-space-between; gap:10px; text-decoration:none;">
     <div>
-      <div style="display:flex; justify-content:space-between; align-items:center;">
-        <span class="badge badge-mitre">{{ attack.mitre }}</span>
-        <span class="badge badge-high">{{ attack.urgency or "MEDIUM" }}</span>
-      </div>
-      <h3 style="font-size:14px; font-weight:700; color:var(--text-primary); margin-top:8px;">{{ attack.name }}</h3>
-      <div style="font-size:11px; font-family:var(--font-mono); color:var(--accent); font-weight:700; text-transform:uppercase; margin-top:2px;">TACTIC: {{ attack.tactic }}</div>
-      <p style="font-size:11.5px; color:var(--text-muted); margin-top:6px; display:-webkit-box; -webkit-line-clamp:3; -webkit-box-orient:vertical; overflow:hidden;">{{ attack.summary }}</p>
+      <h1>MITRE ATT&amp;CK Intelligence</h1>
+      <p>
+        Investigate adversary techniques through mapped telemetry,
+        detection signals, and defensive controls.
+      </p>
     </div>
-    <div style="border-top:1px solid var(--border-subtle); padding-top:8px; display:flex; justify-content:space-between; align-items:center; font-family:var(--font-mono); font-size:11px; color:var(--accent); font-weight:600;">
-      <span>Inspect Details</span>
-      <span>→</span>
-    </div>
-  </a>
-  {% endfor %}
+
+  </div>
+
 </div>
+
+<div class="matrix-header-status">
+  <span class="matrix-status-dot"></span>
+  INTELLIGENCE ENGINE ONLINE
+</div>
+
+
+  </div>
+
+  <!-- =========================================================
+       INTELLIGENCE SUMMARY
+       ========================================================= -->
+
+  <section class="matrix-overview-card">
+
+
+<div class="matrix-overview-main">
+
+  <div class="overview-kicker">
+    THREAT KNOWLEDGE BASE
+  </div>
+
+  <h2>Technique Intelligence Matrix</h2>
+
+  <p>
+    Search the configured ATT&amp;CK techniques and open any profile
+    to inspect its associated detection signals and mitigation controls.
+  </p>
+
+</div>
+
+<div class="matrix-overview-metrics">
+
+  <div class="matrix-metric">
+    <span class="matrix-metric-label">TECHNIQUES</span>
+    <strong id="attack-total-count">
+      {{ attacks|length }}
+    </strong>
+  </div>
+
+  <div class="matrix-metric-divider"></div>
+
+  <div class="matrix-metric">
+    <span class="matrix-metric-label">FRAMEWORK</span>
+    <strong>ATT&amp;CK</strong>
+  </div>
+
+  <div class="matrix-metric-divider"></div>
+
+  <div class="matrix-metric">
+    <span class="matrix-metric-label">STATUS</span>
+    <strong class="metric-online">READY</strong>
+  </div>
+
+</div>
+
+
+  </section>
+
+  <!-- =========================================================
+       SEARCH / FILTER
+       ========================================================= -->
+
+  <section class="matrix-command-bar">
+
+
+<div class="matrix-search">
+
+  <div class="matrix-search-icon">
+    <i data-lucide="search"></i>
+  </div>
+
+  <input
+    type="text"
+    id="attack-query"
+    class="matrix-search-input"
+    placeholder="Search by technique name, MITRE ID, or tactic..."
+    autocomplete="off"
+    oninput="filterAttacks()"
+  >
+
+  <button
+    type="button"
+    class="matrix-search-clear"
+    id="attack-search-clear"
+    onclick="clearAttackSearch()"
+    aria-label="Clear search"
+    title="Clear search"
+  >
+    <i data-lucide="x"></i>
+  </button>
+
+</div>
+
+<div class="matrix-filter-info">
+
+  <span class="filter-results-label">SHOWING</span>
+
+  <strong id="attack-visible-count">
+    {{ attacks|length }}
+  </strong>
+
+  <span class="filter-results-label">TECHNIQUES</span>
+
+</div>
+
+
+  </section>
+
+  <!-- =========================================================
+       TECHNIQUE MATRIX
+       ========================================================= -->
+
+  <section class="matrix-section">
+
+
+<div class="matrix-section-header">
+
+  <div>
+    <span class="section-kicker">TECHNIQUE CATALOG</span>
+    <h2>Adversary Technique Profiles</h2>
+  </div>
+
+  <div class="matrix-legend">
+
+    <span>
+      <i class="legend-dot legend-mitre"></i>
+      MITRE ID
+    </span>
+
+    <span>
+      <i class="legend-dot legend-tactic"></i>
+      TACTIC
+    </span>
+
+  </div>
+
+</div>
+
+
+<div
+  class="attack-matrix-grid"
+  id="attacks-grid"
+>
+
+  {% for key, attack in attacks.items() %}
+
+  {% set slug = attack.name.lower().replace(" ", "-").replace("/", "-") %}
+
+  <a
+    href="{{ url_for('dashboard.attack_detail', slug=slug) }}"
+    class="attack-technique-card"
+    data-name="{{ attack.name|lower }}"
+    data-mitre="{{ attack.mitre|lower }}"
+    data-tactic="{{ attack.tactic|lower }}"
+  >
+
+    <!-- Card top -->
+    <div class="technique-card-top">
+
+      <span class="technique-id">
+        {{ attack.mitre }}
+      </span>
+
+      <span class="technique-open">
+        <i data-lucide="arrow-up-right"></i>
+      </span>
+
+    </div>
+
+
+    <!-- Technique identity -->
+    <div class="technique-card-content">
+
+      <h3>
+        {{ attack.name }}
+      </h3>
+
+      <div class="technique-tactic">
+        <span class="tactic-marker"></span>
+        {{ attack.tactic }}
+      </div>
+
+      {% if attack.summary %}
+      <p>
+        {{ attack.summary }}
+      </p>
+      {% endif %}
+
+    </div>
+
+
+    <!-- Card footer -->
+    <div class="technique-card-footer">
+
+      <span class="technique-footer-label">
+        INSPECT PROFILE
+      </span>
+
+      <span class="technique-footer-arrow">
+        →
+      </span>
+
+    </div>
+
+  </a>
+
+  {% endfor %}
+
+
+  <!-- Empty state -->
+  <div
+    class="matrix-empty-state"
+    id="attack-empty-state"
+    hidden
+  >
+
+    <div class="matrix-empty-icon">
+      <i data-lucide="search-x"></i>
+    </div>
+
+    <h3>No techniques found</h3>
+
+    <p>
+      No configured ATT&amp;CK technique matches the current search.
+    </p>
+
+    <button
+      type="button"
+      class="btn btn-secondary btn-sm"
+      onclick="clearAttackSearch()"
+    >
+      Clear Search
+    </button>
+
+  </div>
+
+</div>
+
+
+  </section>
+
+  <!-- =========================================================
+       MATRIX FOOTER
+       ========================================================= -->
+
+  <section class="matrix-footer-panel">
+
+
+<div class="matrix-footer-icon">
+  <i data-lucide="shield"></i>
+</div>
+
+<div class="matrix-footer-copy">
+  <span class="section-kicker">SYSTEM NOTE</span>
+
+  <p>
+    Technique profiles provide contextual intelligence for forensic
+    investigation. Open a technique to review its configured telemetry
+    signals and defensive controls.
+  </p>
+</div>
+
+<div class="matrix-footer-mark">
+  <span>ATT&amp;CK</span>
+  <strong>INTEL</strong>
+</div>
+
+
+  </section>
+
+</section>
+
 {% endblock %}
 
 {% block scripts %}
+
 <script>
-function filterAttacks() {
-  const q = document.getElementById('attack-query').value.toLowerCase();
-  document.querySelectorAll('.attack-card-item').forEach((card) => {
-    const name = card.dataset.name;
-    const mitre = card.dataset.mitre;
-    if (name.includes(q) || mitre.includes(q)) {
-      card.style.display = 'flex';
-    } else {
-      card.style.display = 'none';
+(function () {
+
+  const searchInput = document.getElementById("attack-query");
+  const clearButton = document.getElementById("attack-search-clear");
+  const visibleCount = document.getElementById("attack-visible-count");
+  const emptyState = document.getElementById("attack-empty-state");
+
+  function getCards() {
+    return Array.from(
+      document.querySelectorAll(".attack-technique-card")
+    );
+  }
+
+  window.filterAttacks = function () {
+
+    const query = (searchInput?.value || "")
+      .trim()
+      .toLowerCase();
+
+    const cards = getCards();
+
+    let visible = 0;
+
+    cards.forEach((card) => {
+
+      const name = card.dataset.name || "";
+      const mitre = card.dataset.mitre || "";
+      const tactic = card.dataset.tactic || "";
+
+      const matches =
+        !query ||
+        name.includes(query) ||
+        mitre.includes(query) ||
+        tactic.includes(query);
+
+      card.hidden = !matches;
+
+      if (matches) {
+        visible += 1;
+      }
+
+    });
+
+    if (visibleCount) {
+      visibleCount.textContent = visible;
     }
+
+    if (clearButton) {
+      clearButton.classList.toggle(
+        "is-visible",
+        query.length > 0
+      );
+    }
+
+    if (emptyState) {
+      emptyState.hidden = visible !== 0;
+    }
+
+  };
+
+
+  window.clearAttackSearch = function () {
+
+    if (!searchInput) {
+      return;
+    }
+
+    searchInput.value = "";
+
+    window.filterAttacks();
+
+    searchInput.focus();
+
+  };
+
+
+  document.addEventListener("keydown", function (event) {
+
+    if (
+      event.key === "/" &&
+      document.activeElement !== searchInput &&
+      !event.ctrlKey &&
+      !event.metaKey &&
+      !event.altKey
+    ) {
+      event.preventDefault();
+
+      searchInput?.focus();
+    }
+
+    if (
+      event.key === "Escape" &&
+      document.activeElement === searchInput
+    ) {
+      window.clearAttackSearch();
+    }
+
   });
-}
+
+
+  document.addEventListener("DOMContentLoaded", function () {
+
+    window.filterAttacks();
+
+    if (window.lucide) {
+      lucide.createIcons();
+    }
+
+  });
+
+})();
 </script>
+
 {% endblock %}

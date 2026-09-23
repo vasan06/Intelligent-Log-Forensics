@@ -1,57 +1,676 @@
 <!doctype html>
 <html lang="en" data-theme="light">
+
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <meta
+    name="description"
+    content="Secure user access to the Intelligent Log Forensics workstation."
+  >
+
   <title>Sign In — Intelligent Log Forensics</title>
+
+  <!-- =========================================================
+       TYPOGRAPHY
+       ========================================================= -->
+
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="{{ url_for('static', filename='css/design-tokens.css') }}">
-  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
-  <script src="https://unpkg.com/lucide@0.468.0/dist/umd/lucide.min.js" defer></script>
-</head>
-<body style="display:flex; align-items:center; justify-content:center; min-height:100vh; background:var(--bg-base); padding:20px;">
-  <div class="card card-body" style="width:100%; max-width:400px; padding:32px; display:flex; flex-direction:column; gap:20px; box-shadow:var(--shadow-lg);">
-    <div style="display:flex; align-items:center; gap:10px;">
-      <div style="width:36px; height:36px; border-radius:var(--r-md); background:var(--accent); color:#fff; display:flex; align-items:center; justify-content:center;">
-        <i data-lucide="shield-alert" style="width:20px;"></i>
-      </div>
-      <div>
-        <h2 style="font-size:18px; font-weight:800; color:var(--text-primary);">Log Forensics</h2>
-        <span style="font-size:10px; font-family:var(--font-mono); color:var(--text-muted); uppercase; tracking-widest;">ANALYST WORKSTATION</span>
-      </div>
-    </div>
 
-    {% if error %}
-    <div style="padding:10px 14px; border-radius:var(--r-md); background:var(--critical-bg); border:1px solid var(--critical-border); color:var(--critical); font-size:12px;">
-      {{ error }}
-    </div>
-    {% endif %}
+  <link
+    href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600;700&family=Manrope:wght@400;500;600;700;800&display=swap"
+    rel="stylesheet"
+  >
 
-    <form action="{{ url_for('auth.login') }}" method="post" style="display:flex; flex-direction:column; gap:14px;">
-      <div style="display:flex; flex-direction:column; gap:6px;">
-        <label style="font-size:11px; font-weight:700; font-family:var(--font-mono); color:var(--text-secondary); text-transform:uppercase;">EMAIL ADDRESS</label>
-        <input type="email" name="email" required placeholder="analyst@soc.internal" class="input">
-      </div>
-
-      <div style="display:flex; flex-direction:column; gap:6px;">
-        <label style="font-size:11px; font-weight:700; font-family:var(--font-mono); color:var(--text-secondary); text-transform:uppercase;">PASSWORD</label>
-        <input type="password" name="password" required placeholder="••••••••••••" class="input">
-      </div>
-
-      <button type="submit" class="btn btn-primary" style="margin-top:6px; padding:10px;">Sign In to Workstation →</button>
-    </form>
-
-    <div style="text-align:center; font-size:12px; color:var(--text-muted);">
-      Don't have an account? <a href="{{ url_for('dashboard.register') }}" style="color:var(--accent); font-weight:600;">Create Account</a>
-    </div>
-  </div>
+  <!-- =========================================================
+       THEME
+       ========================================================= -->
 
   <script>
-    document.addEventListener("DOMContentLoaded", () => {
-      if (window.lucide) lucide.createIcons();
-    });
+    (function () {
+      try {
+        const savedTheme = localStorage.getItem("lf-theme");
+
+        if (savedTheme) {
+          document.documentElement.dataset.theme = savedTheme;
+        } else {
+          document.documentElement.dataset.theme =
+            window.matchMedia &&
+            window.matchMedia("(prefers-color-scheme: dark)").matches
+              ? "dark"
+              : "light";
+        }
+      } catch (error) {
+        document.documentElement.dataset.theme = "light";
+      }
+    })();
   </script>
+
+  <!-- =========================================================
+       APPLICATION STYLES
+       ========================================================= -->
+
+  <link
+    rel="stylesheet"
+    href="{{ url_for('static', filename='css/design-tokens.css', v='20260923') }}"
+  >
+
+  <link
+    rel="stylesheet"
+    href="{{ url_for('static', filename='css/style.css', v='20260923') }}"
+  >
+
+  <!-- =========================================================
+       ICONS
+       ========================================================= -->
+
+  <script
+    src="https://unpkg.com/lucide@0.468.0/dist/umd/lucide.min.js"
+    defer
+  ></script>
+</head>
+
+
+<body class="auth-page">
+
+  <!-- =========================================================
+       AUTHENTICATION BACKGROUND
+       Decorative only — no application logic.
+       ========================================================= -->
+
+  <div class="auth-background" aria-hidden="true">
+
+    <div class="auth-grid"></div>
+
+    <div class="auth-orbit auth-orbit-one"></div>
+    <div class="auth-orbit auth-orbit-two"></div>
+
+    <div class="auth-glow auth-glow-one"></div>
+    <div class="auth-glow auth-glow-two"></div>
+
+  </div>
+
+
+  <!-- =========================================================
+       AUTHENTICATION HEADER
+       ========================================================= -->
+
+  <header class="auth-header">
+
+    <a
+      href="{{ url_for('dashboard.index') }}"
+      class="auth-brand"
+      aria-label="Intelligent Log Forensics"
+    >
+
+      <span class="auth-brand-mark">
+        <i data-lucide="shield-alert" aria-hidden="true"></i>
+      </span>
+
+      <span class="auth-brand-copy">
+
+        <span class="auth-brand-name">
+          LOG FORENSICS
+        </span>
+
+        <span class="auth-brand-subtitle">
+          INTELLIGENT SECURITY WORKSTATION
+        </span>
+
+      </span>
+
+    </a>
+
+
+    <div class="auth-header-status">
+
+      <span class="system-status-indicator"></span>
+
+      <span>
+        SECURE ENVIRONMENT
+      </span>
+
+    </div>
+
+  </header>
+
+
+  <!-- =========================================================
+       MAIN AUTHENTICATION AREA
+       ========================================================= -->
+
+  <main class="auth-main">
+
+    <section
+      class="auth-layout"
+      aria-labelledby="login-title"
+    >
+
+
+      <!-- =====================================================
+           LEFT — PRODUCT / SECURITY CONTEXT
+           ===================================================== -->
+
+      <div class="auth-introduction">
+
+        <div class="auth-kicker">
+
+          <span class="auth-kicker-line"></span>
+
+          <span>
+            SECURITY OPERATIONS
+          </span>
+
+        </div>
+
+
+        <h1 class="auth-heading">
+          Investigate the signal.
+          <span>Understand the incident.</span>
+        </h1>
+
+
+        <p class="auth-description">
+          Access the forensic workstation to analyze security telemetry,
+          correlate incidents, map adversary behavior, and build
+          evidence-backed root-cause analysis.
+        </p>
+
+
+        <!-- Investigation pipeline -->
+
+        <div
+          class="auth-pipeline"
+          aria-label="Forensic investigation workflow"
+        >
+
+          <div class="auth-pipeline-item">
+
+            <span class="auth-pipeline-index">
+              01
+            </span>
+
+            <span class="auth-pipeline-icon">
+              <i data-lucide="file-search" aria-hidden="true"></i>
+            </span>
+
+            <span class="auth-pipeline-text">
+              <strong>Collect</strong>
+              <small>Security evidence</small>
+            </span>
+
+          </div>
+
+
+          <div class="auth-pipeline-connector"></div>
+
+
+          <div class="auth-pipeline-item">
+
+            <span class="auth-pipeline-index">
+              02
+            </span>
+
+            <span class="auth-pipeline-icon">
+              <i data-lucide="git-compare" aria-hidden="true"></i>
+            </span>
+
+            <span class="auth-pipeline-text">
+              <strong>Correlate</strong>
+              <small>Signals &amp; events</small>
+            </span>
+
+          </div>
+
+
+          <div class="auth-pipeline-connector"></div>
+
+
+          <div class="auth-pipeline-item">
+
+            <span class="auth-pipeline-index">
+              03
+            </span>
+
+            <span class="auth-pipeline-icon">
+              <i data-lucide="crosshair" aria-hidden="true"></i>
+            </span>
+
+            <span class="auth-pipeline-text">
+              <strong>Explain</strong>
+              <small>Root cause</small>
+            </span>
+
+          </div>
+
+        </div>
+
+
+        <!-- Security telemetry strip -->
+
+        <div class="auth-telemetry">
+
+          <div class="auth-telemetry-label">
+            <span class="auth-telemetry-dot"></span>
+            WORKSTATION STATUS
+          </div>
+
+          <div class="auth-telemetry-values">
+
+            <span>
+              <strong>MITRE</strong>
+              ATT&amp;CK
+            </span>
+
+            <span class="auth-telemetry-divider"></span>
+
+            <span>
+              <strong>RCA</strong>
+              ENGINE
+            </span>
+
+            <span class="auth-telemetry-divider"></span>
+
+            <span>
+              <strong>LOG</strong>
+              ANALYSIS
+            </span>
+
+          </div>
+
+        </div>
+
+      </div>
+
+
+      <!-- =====================================================
+           RIGHT — LOGIN CARD
+           ===================================================== -->
+
+      <div class="auth-card-wrapper">
+
+        <div class="auth-card">
+
+          <!-- Card heading -->
+
+          <div class="auth-card-header">
+
+            <div class="auth-card-icon">
+              <i data-lucide="lock-keyhole" aria-hidden="true"></i>
+            </div>
+
+            <div>
+
+              <span class="auth-card-eyebrow">
+                USER ACCESS
+              </span>
+
+              <h2 id="login-title">
+                Sign in to workstation
+              </h2>
+
+              <p>
+                Authenticate to continue your investigation.
+              </p>
+
+            </div>
+
+          </div>
+
+
+          <!-- Error -->
+
+          {% if error %}
+
+          <div
+            class="auth-alert auth-alert-error"
+            role="alert"
+          >
+
+            <span class="auth-alert-icon">
+              <i data-lucide="triangle-alert" aria-hidden="true"></i>
+            </span>
+
+            <div>
+              <strong>Authentication failed</strong>
+              <span>{{ error }}</span>
+            </div>
+
+          </div>
+
+          {% endif %}
+
+
+          <!-- Login form -->
+
+          <form
+            action="{{ url_for('auth.login') }}"
+            method="post"
+            class="auth-form"
+            autocomplete="on"
+          >
+
+            <!-- Email -->
+
+            <div class="auth-field">
+
+              <label
+                for="login-email"
+                class="auth-label"
+              >
+                <span>EMAIL ADDRESS</span>
+                <small>REQUIRED</small>
+              </label>
+
+
+              <div class="auth-input-wrapper">
+
+                <i
+                  data-lucide="mail"
+                  class="auth-input-icon"
+                  aria-hidden="true"
+                ></i>
+
+                <input
+                  id="login-email"
+                  type="email"
+                  name="email"
+                  class="input auth-input"
+                  required
+                  autocomplete="email"
+                  placeholder="user@soc.internal"
+                  spellcheck="false"
+                >
+
+              </div>
+
+            </div>
+
+
+            <!-- Password -->
+
+            <div class="auth-field">
+
+              <div class="auth-label-row">
+
+                <label
+                  for="login-password"
+                  class="auth-label"
+                >
+                  <span>PASSWORD</span>
+                  <small>REQUIRED</small>
+                </label>
+
+              </div>
+
+
+              <div class="auth-input-wrapper">
+
+                <i
+                  data-lucide="key-round"
+                  class="auth-input-icon"
+                  aria-hidden="true"
+                ></i>
+
+                <input
+                  id="login-password"
+                  type="password"
+                  name="password"
+                  class="input auth-input auth-password-input"
+                  required
+                  autocomplete="current-password"
+                  placeholder="Enter your password"
+                >
+
+                <button
+                  type="button"
+                  class="auth-password-toggle"
+                  id="password-toggle"
+                  aria-label="Show password"
+                  title="Show password"
+                >
+                  <i
+                    data-lucide="eye"
+                    aria-hidden="true"
+                  ></i>
+                </button>
+
+              </div>
+
+            </div>
+
+
+            <!-- Submit -->
+
+            <button
+              type="submit"
+              class="btn btn-primary auth-submit"
+            >
+
+              <span class="auth-submit-icon">
+                <i data-lucide="log-in" aria-hidden="true"></i>
+              </span>
+
+              <span>
+                Sign In to Workstation
+              </span>
+
+              <i
+                data-lucide="arrow-right"
+                class="auth-submit-arrow"
+                aria-hidden="true"
+              ></i>
+
+            </button>
+
+          </form>
+
+
+          <!-- Registration -->
+
+          <div class="auth-register">
+
+            <span>
+              New user?
+            </span>
+
+            <a href="{{ url_for('dashboard.register') }}">
+              Create user account
+              <i data-lucide="arrow-up-right" aria-hidden="true"></i>
+            </a>
+
+          </div>
+
+
+          <!-- Trust footer -->
+
+          <div class="auth-card-footer">
+
+            <div class="auth-trust-item">
+
+              <i
+                data-lucide="shield-check"
+                aria-hidden="true"
+              ></i>
+
+              <span>
+                Protected session
+              </span>
+
+            </div>
+
+
+            <span class="auth-footer-divider"></span>
+
+
+            <div class="auth-trust-item">
+
+              <i
+                data-lucide="database"
+                aria-hidden="true"
+              ></i>
+
+              <span>
+                Evidence controlled
+              </span>
+
+            </div>
+
+          </div>
+
+        </div>
+
+
+        <!-- Technical identity -->
+
+        <div class="auth-card-meta">
+
+          <span>
+            NODE / ILF-AUTH
+          </span>
+
+          <span>
+            <span class="auth-meta-pulse"></span>
+            READY
+          </span>
+
+        </div>
+
+      </div>
+
+    </section>
+
+  </main>
+
+
+  <!-- =========================================================
+       PAGE FOOTER
+       ========================================================= -->
+
+  <footer class="auth-footer">
+
+    <span>
+      INTELLIGENT LOG FORENSICS
+    </span>
+
+    <span class="auth-footer-separator">
+      /
+    </span>
+
+    <span>
+      MITRE RCA WORKSTATION
+    </span>
+
+    <span class="auth-footer-spacer"></span>
+
+    <span>
+      SECURE USER ACCESS
+    </span>
+
+  </footer>
+
+
+  <!-- =========================================================
+       AUTHENTICATION JAVASCRIPT
+       ========================================================= -->
+
+  <script>
+
+    document.addEventListener("DOMContentLoaded", function () {
+
+      /*
+       * Initialize Lucide icons.
+       */
+      if (window.lucide) {
+        window.lucide.createIcons();
+      }
+
+
+      /*
+       * Password visibility toggle.
+       */
+      const passwordInput =
+        document.getElementById("login-password");
+
+      const passwordToggle =
+        document.getElementById("password-toggle");
+
+
+      if (passwordInput && passwordToggle) {
+
+        passwordToggle.addEventListener("click", function () {
+
+          const isPassword =
+            passwordInput.type === "password";
+
+          passwordInput.type =
+            isPassword ? "text" : "password";
+
+
+          passwordToggle.setAttribute(
+            "aria-label",
+            isPassword
+              ? "Hide password"
+              : "Show password"
+          );
+
+
+          passwordToggle.setAttribute(
+            "title",
+            isPassword
+              ? "Hide password"
+              : "Show password"
+          );
+
+
+          passwordToggle.innerHTML = isPassword
+            ? '<i data-lucide="eye-off" aria-hidden="true"></i>'
+            : '<i data-lucide="eye" aria-hidden="true"></i>';
+
+
+          if (window.lucide) {
+            window.lucide.createIcons();
+          }
+
+        });
+
+      }
+
+
+      /*
+       * Prevent accidental double submission.
+       */
+      const loginForm =
+        document.querySelector(".auth-form");
+
+      if (loginForm) {
+
+        loginForm.addEventListener("submit", function () {
+
+          const submitButton =
+            loginForm.querySelector(".auth-submit");
+
+          if (!submitButton) {
+            return;
+          }
+
+          submitButton.classList.add("is-loading");
+          submitButton.setAttribute("aria-busy", "true");
+
+          submitButton.querySelector("span:nth-child(2)")
+            ?.replaceChildren(
+              document.createTextNode("Authenticating...")
+            );
+
+        });
+
+      }
+
+    });
+
+  </script>
+
 </body>
 </html>

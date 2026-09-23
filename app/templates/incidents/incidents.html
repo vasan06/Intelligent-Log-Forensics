@@ -3,82 +3,587 @@
 {% block title %}Incident Workspace & Root Cause Reasoning — Log Forensics{% endblock %}
 
 {% block content %}
-<div class="page-header">
-  <div class="page-title">
-    <div class="page-breadcrumb">
-      <span>PLATFORM</span> / <span>INVESTIGATION</span> / <span class="page-breadcrumb-current">INCIDENT WORKSTATION</span>
-    </div>
-    <h1>Incident Workspace & Root Cause Reasoning</h1>
-    <p>Sequential attack timeline, causal graph lineage, evidence logs, and MITRE mapping</p>
-  </div>
 
-  <div style="display:flex; gap:8px;">
-    <button onclick="downloadReport()" class="btn btn-secondary btn-sm"><i data-lucide="download" style="width:13px;"></i> Export PDF Report</button>
-    <a href="{{ url_for('dashboard.remediation') }}" class="btn btn-primary btn-sm"><i data-lucide="shield-alert" style="width:13px;"></i> Remediation Plan</a>
-  </div>
-</div>
+<div class="incident-workspace">
 
-<!-- Main Layout: Incidents Sidebar + Investigation Workspace -->
-<div class="grid-3" style="grid-template-columns: 1fr 3fr;">
-  <!-- Left Col: Incidents Selector -->
-  <div class="card">
-    <div class="card-header">
-      <div class="card-title"><i data-lucide="shield-alert" style="color:var(--accent);"></i> Active Incidents</div>
-    </div>
-    <div class="card-body" id="incidents-sidebar-list" style="display:flex; flex-direction:column; gap:8px;">
-      <div style="text-align:center; padding:16px; color:var(--text-muted); font-size:12px;">Loading incidents...</div>
-    </div>
-  </div>
+  <!-- =========================================================
+       INVESTIGATION HEADER
+       ========================================================= -->
+  <section class="page-header incident-page-header">
 
-  <!-- Right Col: Main Investigation Workspace -->
-  <div style="display:flex; flex-direction:column; gap:20px;">
-    <!-- Incident Banner -->
-    <div class="card card-body" style="background: linear-gradient(to right, var(--bg-surface), rgba(37,99,235,0.06));">
-      <div style="display:flex; justify-content:space-between; align-items:flex-start;">
+    <div class="page-title">
+
+      <div class="page-breadcrumb">
+        <span>PLATFORM</span>
+        <span>/</span>
+        <span>INVESTIGATION</span>
+        <span>/</span>
+        <span class="page-breadcrumb-current">
+          INCIDENT WORKSTATION
+        </span>
+      </div>
+
+      <div class="incident-heading-row">
+
         <div>
-          <div style="display:flex; align-items:center; gap:8px;">
-            <span id="inc-badge-severity" class="badge badge-critical">CRITICAL INCIDENT</span>
-            <span id="inc-id-tag" style="font-size:11px; font-family:var(--font-mono); color:var(--text-muted);">INCIDENT #01</span>
+          <div class="incident-console-label">
+            <span class="incident-console-pulse"></span>
+            FORENSIC INVESTIGATION CONSOLE
           </div>
-          <h2 id="inc-title" style="margin-top:6px; font-size:18px;">Select an incident to investigate</h2>
-          <p id="inc-summary" style="font-size:12px; margin-top:4px; max-width:700px; color:var(--text-secondary);">Select an incident from the left sidebar to view root cause analysis and evidence timelines.</p>
+
+          <h1>Incident Workspace</h1>
+
+          <p>
+            Trace attack progression, correlate evidence, reconstruct
+            root cause, and map observed activity to MITRE ATT&CK.
+          </p>
         </div>
-        <div style="font-family:var(--font-mono); text-align:right;">
-          <span style="font-size:10px; color:var(--text-muted); text-transform:uppercase;">Overall Threat Score</span>
-          <div id="inc-score" style="font-size:24px; font-weight:800; color:var(--critical);">--</div>
+
+        <div class="incident-header-actions">
+
+          <button
+            onclick="downloadReport()"
+            class="btn btn-secondary btn-sm"
+            type="button"
+          >
+            <i data-lucide="file-down"></i>
+            Export Report
+          </button>
+
+          <a
+            href="{{ url_for('dashboard.remediation') }}"
+            class="btn btn-primary btn-sm"
+          >
+            <i data-lucide="shield-alert"></i>
+            Remediation Plan
+          </a>
+
         </div>
-      </div>
-    </div>
 
-    <!-- RCA Causal Graph Component -->
-    <div class="card card-body" style="display:flex; flex-direction:column; gap:16px;">
-      <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid var(--border-subtle); padding-bottom:12px;">
-        <h3 style="display:flex; align-items:center; gap:8px;"><i data-lucide="git-commit" style="color:var(--accent); width:16px;"></i> Root Cause Analysis (RCA) Causal Graph</h3>
-        <span style="font-size:11px; font-family:var(--font-mono); color:var(--accent); font-weight:700;">BACKEND EVIDENCE ONLY</span>
       </div>
 
-      <!-- Causal Lineage Nodes -->
-      <div class="rca-chain" id="rca-nodes-container">
-        <!-- JS rendered nodes -->
-      </div>
     </div>
 
-    <!-- Sequential Timeline -->
-    <div class="card">
-      <div class="card-header">
-        <div class="card-title"><i data-lucide="terminal" style="color:var(--accent);"></i> Chronological Attack Event Timeline</div>
+  </section>
+
+
+  <!-- =========================================================
+       INVESTIGATION STATUS STRIP
+       ========================================================= -->
+  <section class="incident-status-strip">
+
+    <div class="incident-status-item">
+
+      <div class="incident-status-icon">
+        <i data-lucide="radar"></i>
       </div>
-      <div class="card-body" id="inc-events-timeline" style="display:flex; flex-direction:column; gap:12px;">
-        <div style="text-align:center; padding:16px; color:var(--text-muted); font-size:12px;">Loading attack steps...</div>
+
+      <div>
+        <span>INVESTIGATION MODE</span>
+        <strong>ROOT CAUSE ANALYSIS</strong>
       </div>
+
     </div>
+
+
+    <div class="incident-status-divider"></div>
+
+
+    <div class="incident-status-item">
+
+      <div class="incident-status-icon">
+        <i data-lucide="database-search"></i>
+      </div>
+
+      <div>
+        <span>EVIDENCE SOURCE</span>
+        <strong>UPLOADED TELEMETRY</strong>
+      </div>
+
+    </div>
+
+
+    <div class="incident-status-divider"></div>
+
+
+    <div class="incident-status-item">
+
+      <div class="incident-status-icon">
+        <i data-lucide="git-branch"></i>
+      </div>
+
+      <div>
+        <span>ANALYSIS METHOD</span>
+        <strong>CAUSAL CORRELATION</strong>
+      </div>
+
+    </div>
+
+
+    <div class="incident-status-divider"></div>
+
+
+    <div class="incident-status-item incident-status-live">
+
+      <span class="incident-live-dot"></span>
+
+      <div>
+        <span>SYSTEM STATE</span>
+        <strong>LIVE</strong>
+      </div>
+
+    </div>
+
+  </section>
+
+
+  <!-- =========================================================
+       MAIN INVESTIGATION LAYOUT
+       ========================================================= -->
+  <div class="incident-layout">
+
+
+    <!-- =======================================================
+         INCIDENT INDEX / LEFT PANEL
+         ======================================================= -->
+    <aside class="incident-index card">
+
+      <div class="incident-index-header">
+
+        <div class="incident-index-title">
+
+          <div class="incident-section-icon critical">
+            <i data-lucide="shield-alert"></i>
+          </div>
+
+          <div>
+            <h2>Incident Index</h2>
+            <span>ACTIVE INVESTIGATIONS</span>
+          </div>
+
+        </div>
+
+        <div class="incident-count-badge" id="incident-count">
+          --
+        </div>
+
+      </div>
+
+
+      <div class="incident-index-toolbar">
+
+        <div class="incident-index-search">
+          <i data-lucide="search"></i>
+
+          <input
+            type="search"
+            id="incident-search"
+            placeholder="Filter incidents..."
+            autocomplete="off"
+          >
+        </div>
+
+      </div>
+
+
+      <div
+        class="incident-sidebar-list"
+        id="incidents-sidebar-list"
+      >
+
+        <div class="incident-sidebar-loading">
+
+          <span class="incident-loader"></span>
+
+          <div>
+            <strong>Loading investigations</strong>
+            <span>Retrieving incident telemetry...</span>
+          </div>
+
+        </div>
+
+      </div>
+
+
+      <div class="incident-index-footer">
+
+        <div class="incident-footer-marker"></div>
+
+        <div>
+          <strong>Evidence-backed analysis</strong>
+          <span>
+            Incident details are populated from backend forensic data.
+          </span>
+        </div>
+
+      </div>
+
+    </aside>
+
+
+    <!-- =======================================================
+         INVESTIGATION CANVAS
+         ======================================================= -->
+    <main class="incident-canvas">
+
+
+      <!-- =====================================================
+           ACTIVE INCIDENT HERO
+           ===================================================== -->
+      <section
+        class="incident-hero card"
+        id="incident-hero"
+      >
+
+        <div class="incident-hero-grid">
+
+          <div class="incident-hero-main">
+
+            <div class="incident-identity-row">
+
+              <span
+                id="inc-badge-severity"
+                class="badge badge-critical"
+              >
+                CRITICAL INCIDENT
+              </span>
+
+              <span
+                id="inc-id-tag"
+                class="incident-id"
+              >
+                INCIDENT #01
+              </span>
+
+              <span class="incident-evidence-state">
+                <span></span>
+                EVIDENCE LINKED
+              </span>
+
+            </div>
+
+
+            <h2 id="inc-title">
+              Select an incident to investigate
+            </h2>
+
+
+            <p id="inc-summary">
+              Select an incident from the investigation index to view
+              root cause analysis, correlated evidence, and chronological
+              attack activity.
+            </p>
+
+          </div>
+
+
+          <div class="incident-threat-score">
+
+            <span>OVERALL THREAT SCORE</span>
+
+            <div class="incident-score-value">
+              <strong id="inc-score">--</strong>
+              <small>/100</small>
+            </div>
+
+            <div class="incident-score-track">
+              <span id="incident-score-fill"></span>
+            </div>
+
+            <div class="incident-score-caption">
+              Calculated from observed forensic indicators
+            </div>
+
+          </div>
+
+        </div>
+
+
+        <div class="incident-hero-footer">
+
+          <div class="incident-hero-meta">
+            <i data-lucide="clock-3"></i>
+            <span>Investigation session active</span>
+          </div>
+
+          <div class="incident-hero-meta">
+            <i data-lucide="shield-check"></i>
+            <span>Backend evidence only</span>
+          </div>
+
+          <div class="incident-hero-meta">
+            <i data-lucide="network"></i>
+            <span>Correlation enabled</span>
+          </div>
+
+        </div>
+
+      </section>
+
+
+      <!-- =====================================================
+           RCA CAUSAL GRAPH
+           ===================================================== -->
+      <section class="card rca-panel">
+
+        <div class="rca-panel-header">
+
+          <div class="rca-heading">
+
+            <div class="incident-section-icon">
+              <i data-lucide="git-branch"></i>
+            </div>
+
+            <div>
+              <h2>Root Cause Analysis</h2>
+              <p>
+                Causal lineage reconstructed from correlated evidence
+              </p>
+            </div>
+
+          </div>
+
+
+          <div class="rca-confidence">
+
+            <span>ANALYSIS SOURCE</span>
+
+            <strong>
+              <span class="rca-source-dot"></span>
+              BACKEND EVIDENCE
+            </strong>
+
+          </div>
+
+        </div>
+
+
+        <div class="rca-graph-toolbar">
+
+          <div class="rca-legend">
+
+            <span>
+              <i class="rca-legend-node source"></i>
+              SOURCE
+            </span>
+
+            <span>
+              <i class="rca-legend-node event"></i>
+              EVENT
+            </span>
+
+            <span>
+              <i class="rca-legend-node impact"></i>
+              IMPACT
+            </span>
+
+          </div>
+
+          <div class="rca-graph-hint">
+            <i data-lucide="move-horizontal"></i>
+            CAUSAL LINEAGE
+          </div>
+
+        </div>
+
+
+        <div
+          class="rca-chain"
+          id="rca-nodes-container"
+        >
+
+          <div class="rca-empty-state">
+
+            <div class="rca-empty-icon">
+              <i data-lucide="git-branch"></i>
+            </div>
+
+            <strong>Select an incident</strong>
+
+            <span>
+              The causal investigation graph will be constructed
+              from the selected incident evidence.
+            </span>
+
+          </div>
+
+        </div>
+
+      </section>
+
+
+      <!-- =====================================================
+           ATTACK TIMELINE
+           ===================================================== -->
+      <section class="card timeline-panel">
+
+        <div class="timeline-panel-header">
+
+          <div class="timeline-heading">
+
+            <div class="incident-section-icon">
+              <i data-lucide="history"></i>
+            </div>
+
+            <div>
+              <h2>Chronological Attack Timeline</h2>
+              <p>
+                Ordered sequence of observed forensic events
+              </p>
+            </div>
+
+          </div>
+
+
+          <div class="timeline-live-state">
+            <span></span>
+            CORRELATED EVENTS
+          </div>
+
+        </div>
+
+
+        <div class="timeline-summary-bar">
+
+          <div class="timeline-summary-item">
+            <span>EVENT SEQUENCE</span>
+            <strong id="timeline-event-count">--</strong>
+          </div>
+
+          <div class="timeline-summary-item">
+            <span>TIME ORDER</span>
+            <strong>CHRONOLOGICAL</strong>
+          </div>
+
+          <div class="timeline-summary-item">
+            <span>SOURCE</span>
+            <strong>FORENSIC LOGS</strong>
+          </div>
+
+        </div>
+
+
+        <div
+          class="incident-events-timeline"
+          id="inc-events-timeline"
+        >
+
+          <div class="timeline-loading">
+
+            <div class="timeline-loading-line"></div>
+
+            <div class="timeline-loading-content">
+
+              <span class="incident-loader"></span>
+
+              <div>
+                <strong>Loading attack sequence</strong>
+                <span>
+                  Correlating evidence events...
+                </span>
+              </div>
+
+            </div>
+
+          </div>
+
+        </div>
+
+      </section>
+
+
+      <!-- =====================================================
+           INVESTIGATION NOTE
+           ===================================================== -->
+      <section class="incident-analysis-note">
+
+        <div class="incident-analysis-note-icon">
+          <i data-lucide="info"></i>
+        </div>
+
+        <div>
+          <strong>Investigation integrity</strong>
+
+          <p>
+            RCA relationships, event sequences, severity indicators,
+            and threat scores displayed in this workspace are populated
+            from the application's forensic analysis backend.
+          </p>
+        </div>
+
+      </section>
+
+    </main>
+
   </div>
+
 </div>
+
 {% endblock %}
 
+
 {% block scripts %}
+
 <script>
+  /*
+   * ==========================================================
+   * INCIDENT WORKSPACE BOOTSTRAP
+   * ==========================================================
+   *
+   * FILE_ID is intentionally preserved because incidents.js
+   * uses it to identify the forensic dataset being investigated.
+   */
+
   window.FILE_ID = parseInt("{{ file_id or 1 }}", 10);
+
+
+  /*
+   * ==========================================================
+   * INCIDENT SEARCH
+   * ==========================================================
+   *
+   * This is intentionally lightweight. It does not modify the
+   * backend incident-loading logic.
+   */
+
+  document.addEventListener("DOMContentLoaded", () => {
+
+    const searchInput =
+      document.getElementById("incident-search");
+
+    if (!searchInput) {
+      return;
+    }
+
+    searchInput.addEventListener("input", () => {
+
+      const query =
+        searchInput.value.trim().toLowerCase();
+
+      document
+        .querySelectorAll(
+          "#incidents-sidebar-list [data-incident-search]"
+        )
+        .forEach((item) => {
+
+          const searchable =
+            String(
+              item.dataset.incidentSearch || ""
+            ).toLowerCase();
+
+          item.style.display =
+            !query || searchable.includes(query)
+              ? ""
+              : "none";
+
+        });
+
+    });
+
+  });
 </script>
-<script src="{{ url_for('static', filename='js/incidents.js') }}"></script>
+
+
+<script src="{{ url_for('static', filename='js/incidents.js', v='20260923') }}"></script>
+
 {% endblock %}

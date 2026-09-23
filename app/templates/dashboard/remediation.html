@@ -1,43 +1,409 @@
 {% extends "base.html" %}
 
-{% block title %}Actionable Remediation & Solution Architecture - Log Forensics{% endblock %}
+{% block title %}Remediation & Solution Architecture — Log Forensics{% endblock %}
 
 {% block content %}
-<div class="page-header">
-  <div class="page-title">
-    <div class="page-breadcrumb">
-      <span>PLATFORM</span> / <span>INVESTIGATION</span> / <span class="page-breadcrumb-current">REMEDIATION & ARCHITECTURE</span>
+
+<section class="remediation-page">
+
+  <!-- =========================================================
+       PAGE HEADER
+       ========================================================= -->
+
+  <div class="page-header remediation-header">
+
+
+<div class="page-title">
+
+  <div class="page-breadcrumb">
+    <span>PLATFORM</span>
+    <span>/</span>
+    <span>INVESTIGATION</span>
+    <span>/</span>
+    <span class="page-breadcrumb-current">REMEDIATION</span>
+  </div>
+
+  <div class="remediation-title-row">
+
+    <div class="remediation-title-icon">
+      <i data-lucide="shield-check"></i>
     </div>
-    <h1>Actionable Remediation & Architecture Guidance</h1>
-    <p>Containment, correction, hardening, and verification guidance grounded in uploaded evidence.</p>
+
+    <div>
+      <h1>Remediation Command Center</h1>
+      <p>
+        Translate forensic findings into containment, correction,
+        hardening, and verification actions.
+      </p>
+    </div>
+
   </div>
 
-  <button onclick="window.print()" class="btn btn-secondary btn-sm"><i data-lucide="download" style="width:13px;"></i> Print Action Plan</button>
 </div>
 
-<div class="card card-body" style="background: linear-gradient(to right, rgba(37,99,235,0.06), var(--bg-surface)); border-color: var(--accent-border);">
+<button
+  type="button"
+  onclick="window.print()"
+  class="btn btn-secondary btn-sm"
+>
+  <i data-lucide="printer" style="width:14px;"></i>
+  Print Action Plan
+</button>
+
+
+  </div>
+
+  <!-- =========================================================
+       ACTION FLOW HERO
+       ========================================================= -->
+
+  <section class="remediation-hero">
+
+
+<div class="remediation-hero-content">
+
+  <div class="remediation-kicker">
+    <span class="remediation-live-dot"></span>
+    RESPONSE WORKFLOW
+  </div>
+
+  <h2>
+    From forensic evidence
+    <span>to verified resolution.</span>
+  </h2>
+
+  <p>
+    Recommendations shown below are populated from the application's
+    available forensic findings. No infrastructure actions are
+    fabricated when supporting evidence is unavailable.
+  </p>
+
+</div>
+
+
+<div class="remediation-flow-preview">
+
+  <div class="flow-preview-item">
+    <span>01</span>
+    <strong>IDENTIFY</strong>
+    <small>Problem</small>
+  </div>
+
+  <div class="flow-preview-line"></div>
+
+  <div class="flow-preview-item">
+    <span>02</span>
+    <strong>CONTAIN</strong>
+    <small>Action</small>
+  </div>
+
+  <div class="flow-preview-line"></div>
+
+  <div class="flow-preview-item">
+    <span>03</span>
+    <strong>CORRECT</strong>
+    <small>Result</small>
+  </div>
+
+  <div class="flow-preview-line"></div>
+
+  <div class="flow-preview-item">
+    <span>04</span>
+    <strong>VERIFY</strong>
+    <small>Evidence</small>
+  </div>
+
+</div>
+
+
+  </section>
+
+  <!-- =========================================================
+       REMEDIATION PLAN
+       ========================================================= -->
+
+  <section class="remediation-plan-section">
+
+
+<div class="section-heading-row">
+
   <div>
-    <span class="eyebrow" style="color:var(--accent);">Recommended Action Flow</span>
-    <h2 style="font-size:18px; margin-top:4px;">Problem -> Action -> Expected Result -> Verification</h2>
-    <p style="font-size:12px; margin-top:4px; max-width:780px; color:var(--text-secondary);">This page avoids fabricated infrastructure commands. Specific recommendations appear from risk events and forensic reports when the backend returns them.</p>
+    <span class="section-kicker">RESPONSE PIPELINE</span>
+    <h2>Action Plan</h2>
   </div>
-  <div class="solution-flow" id="remediation-phases" style="margin-top:16px;"></div>
+
+  <div class="section-heading-status">
+    <span class="status-pulse"></span>
+    BACKEND-DERIVED
+  </div>
+
 </div>
 
-<div class="card card-body" style="display:flex; flex-direction:column; gap:14px;">
-  <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid var(--border-subtle); padding-bottom:12px;">
-    <h3 style="display:flex; align-items:center; gap:8px;"><i data-lucide="server" style="color:var(--accent); width:16px;"></i> Solution Architecture & System Topology</h3>
-    <span style="font-family:var(--font-mono); font-size:11px; color:var(--text-muted); font-weight:700;">REAL DATA ONLY</span>
+
+<!-- Existing JS target — DO NOT REMOVE -->
+<div
+  class="solution-flow remediation-phase-container"
+  id="remediation-phases"
+></div>
+
+
+  </section>
+
+  <!-- =========================================================
+       ARCHITECTURE SECTION
+       ========================================================= -->
+
+  <section class="architecture-section">
+
+
+<div class="architecture-header">
+
+  <div class="architecture-heading">
+
+    <div class="architecture-icon">
+      <i data-lucide="network"></i>
+    </div>
+
+    <div>
+      <span class="section-kicker">SYSTEM TOPOLOGY</span>
+      <h2>Solution Architecture</h2>
+      <p>
+        Infrastructure and control relationships exposed by
+        the forensic backend.
+      </p>
+    </div>
+
   </div>
 
-  <div class="grid-4" id="arch-nodes-grid"></div>
-
-  <div class="evidence-note">
-    Architecture visualization will appear here when the backend exposes real endpoint, identity, network, application, database, gateway, control, or policy relationships.
+  <div class="architecture-badge">
+    <i data-lucide="database"></i>
+    REAL DATA ONLY
   </div>
+
 </div>
+
+
+<!-- Existing JS target — DO NOT REMOVE -->
+<div
+  class="architecture-node-grid"
+  id="arch-nodes-grid"
+></div>
+
+
+<!-- Empty / information state -->
+<div
+  class="architecture-empty-state"
+  id="architecture-empty-state"
+>
+
+  <div class="architecture-empty-visual">
+
+    <div class="architecture-empty-ring ring-one"></div>
+    <div class="architecture-empty-ring ring-two"></div>
+
+    <div class="architecture-empty-core">
+      <i data-lucide="network"></i>
+    </div>
+
+  </div>
+
+  <div class="architecture-empty-copy">
+
+    <span class="section-kicker">
+      TOPOLOGY VISUALIZATION
+    </span>
+
+    <h3>Awaiting system relationships</h3>
+
+    <p>
+      Architecture relationships will appear here when the backend
+      exposes endpoint, identity, network, application, database,
+      gateway, control, or policy connections.
+    </p>
+
+  </div>
+
+</div>
+
+
+  </section>
+
+  <!-- =========================================================
+       RESPONSE PRINCIPLES
+       ========================================================= -->
+
+  <section class="response-principles">
+
+
+<div class="principles-heading">
+
+  <span class="section-kicker">RESPONSE MODEL</span>
+
+  <h2>
+    Every remediation action should answer four questions.
+  </h2>
+
+</div>
+
+
+<div class="principles-grid">
+
+  <article class="principle-card">
+
+    <div class="principle-number">01</div>
+
+    <div class="principle-icon">
+      <i data-lucide="circle-alert"></i>
+    </div>
+
+    <div>
+      <span>PROBLEM</span>
+      <h3>What happened?</h3>
+      <p>
+        Identify the observed forensic condition and supporting evidence.
+      </p>
+    </div>
+
+  </article>
+
+
+  <article class="principle-card">
+
+    <div class="principle-number">02</div>
+
+    <div class="principle-icon">
+      <i data-lucide="wrench"></i>
+    </div>
+
+    <div>
+      <span>ACTION</span>
+      <h3>What changes?</h3>
+      <p>
+        Define the corrective or containment action appropriate to the finding.
+      </p>
+    </div>
+
+  </article>
+
+
+  <article class="principle-card">
+
+    <div class="principle-number">03</div>
+
+    <div class="principle-icon">
+      <i data-lucide="target"></i>
+    </div>
+
+    <div>
+      <span>RESULT</span>
+      <h3>What should improve?</h3>
+      <p>
+        Establish the expected security or operational outcome.
+      </p>
+    </div>
+
+  </article>
+
+
+  <article class="principle-card">
+
+    <div class="principle-number">04</div>
+
+    <div class="principle-icon">
+      <i data-lucide="badge-check"></i>
+    </div>
+
+    <div>
+      <span>VERIFY</span>
+      <h3>How do we prove it?</h3>
+      <p>
+        Confirm resolution using observable telemetry or forensic evidence.
+      </p>
+    </div>
+
+  </article>
+
+</div>
+
+
+  </section>
+
+  <!-- =========================================================
+       ANALYST NOTICE
+       ========================================================= -->
+
+  <section class="remediation-notice">
+
+
+<div class="remediation-notice-icon">
+  <i data-lucide="info"></i>
+</div>
+
+<div class="remediation-notice-content">
+
+  <strong>Evidence-first remediation</strong>
+
+  <p>
+    This workspace intentionally avoids presenting unsupported
+    infrastructure commands or assumptions. Actionable guidance
+    should remain traceable to the available forensic evidence.
+  </p>
+
+</div>
+
+<div class="remediation-notice-mark">
+  <span>RCA</span>
+  <strong>→</strong>
+  <span>FIX</span>
+</div>
+
+
+  </section>
+
+</section>
+
 {% endblock %}
 
 {% block scripts %}
-<script src="{{ url_for('static', filename='js/remediation.js') }}"></script>
+
+<script src="{{ url_for('static', filename='js/remediation.js', v='20260923') }}"></script>
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+
+  /*
+   * The remediation.js file owns the backend-driven content.
+   * This helper only manages the architecture placeholder visibility.
+   */
+
+  const architectureGrid =
+    document.getElementById("arch-nodes-grid");
+
+  const emptyState =
+    document.getElementById("architecture-empty-state");
+
+  if (!architectureGrid || !emptyState) {
+    return;
+  }
+
+  const observer = new MutationObserver(function () {
+
+    const hasNodes =
+      architectureGrid.children.length > 0;
+
+    emptyState.classList.toggle(
+      "is-hidden",
+      hasNodes
+    );
+
+  });
+
+  observer.observe(architectureGrid, {
+    childList: true,
+    subtree: true
+  });
+
+});
+</script>
+
 {% endblock %}

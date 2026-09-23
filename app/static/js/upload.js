@@ -1,4 +1,4 @@
-/* Upload & SOC Generator Vanilla JavaScript */
+/* Upload & SIEM stream controls */
 function fetchGeneratorStatus() {
   fetch('/api/v1/generator/status')
     .then((res) => (res.ok ? res.json() : null))
@@ -27,7 +27,7 @@ function startGenerator(mode) {
   })
     .then((res) => (res.ok ? res.json() : null))
     .then((data) => {
-      if (data && window.showToast) window.showToast(`Started simulator in ${mode} mode`, 'ok');
+      if (data && window.showToast) window.showToast(`Started SIEM stream in ${mode} mode`, 'ok');
       fetchGeneratorStatus();
     });
 }
@@ -36,7 +36,7 @@ function stopGenerator() {
   fetch('/api/v1/generator/stop', { method: 'POST' })
     .then((res) => (res.ok ? res.json() : null))
     .then(() => {
-      if (window.showToast) window.showToast('Stopped SOC simulator', 'info');
+      if (window.showToast) window.showToast('Stopped SIEM stream', 'info');
       fetchGeneratorStatus();
     });
 }

@@ -1,116 +1,1173 @@
 {% extends "base.html" %}
 
-{% block title %}Investigation Overview — Log Forensics{% endblock %}
+{% block title %}Investigation Command Center — Log Forensics{% endblock %}
 
 {% block content %}
-<section class="landing-hero" aria-labelledby="landing-title">
-  <div class="landing-copy">
-    <span class="eyebrow">Security Intelligence Workstation</span>
-    <h1 id="landing-title">Intelligent Log Forensics</h1>
-    <p>Turn uploaded security logs into correlated incidents, evidence-backed RCA, MITRE ATT&CK context, remediation guidance, and verification steps.</p>
-    <div class="landing-actions">
-      <a href="{{ url_for('upload.upload_page') }}" class="btn btn-primary"><i data-lucide="upload-cloud"></i> Analyze Evidence</a>
-      <a href="{{ url_for('incidents.tracker') }}" class="btn btn-secondary"><i data-lucide="git-branch"></i> Open Investigations</a>
+
+<div class="dashboard-shell">
+
+  <!-- =========================================================
+       COMMAND HEADER
+       ========================================================= -->
+  <section class="command-header">
+
+    <div class="command-heading">
+      <div class="page-breadcrumb">
+        <span>PLATFORM</span>
+        <span class="breadcrumb-separator">/</span>
+        <span class="page-breadcrumb-current">COMMAND CENTER</span>
+      </div>
+
+      <div class="command-title-row">
+        <div>
+          <div class="status-kicker">
+            <span class="status-pulse"></span>
+            SECURITY INTELLIGENCE WORKSTATION
+          </div>
+
+          <h1>Investigation Command Center</h1>
+
+          <p>
+            Correlate telemetry, investigate incidents, map adversary behavior,
+            and move from evidence to verified remediation.
+          </p>
+        </div>
+
+        <div class="command-actions">
+          <button
+            type="button"
+            onclick="fetchOverview()"
+            class="btn btn-secondary btn-sm"
+            title="Refresh security telemetry"
+          >
+            <i data-lucide="refresh-cw"></i>
+            Refresh
+          </button>
+
+          <a
+            href="{{ url_for('upload.upload_page') }}"
+            class="btn btn-primary btn-sm"
+          >
+            <i data-lucide="scan-line"></i>
+            Analyze Logs
+          </a>
+        </div>
+      </div>
     </div>
-  </div>
-  <div class="reasoning-model" aria-label="Product reasoning model">
-    <div class="reasoning-lane"><span>Raw logs</span><strong>Normalize</strong></div>
-    <div class="reasoning-lane"><span>Signals</span><strong>Correlate</strong></div>
-    <div class="reasoning-lane"><span>Incident</span><strong>Explain</strong></div>
-    <div class="reasoning-lane"><span>MITRE</span><strong>Map</strong></div>
-    <div class="reasoning-lane"><span>Response</span><strong>Verify</strong></div>
-  </div>
-</section>
 
-<div class="page-header">
-  <div class="page-title">
-    <div class="page-breadcrumb">
-      <span>PLATFORM</span> / <span class="page-breadcrumb-current">SYSTEM OVERVIEW & REASONING</span>
-    </div>
-    <h1>Investigation Overview</h1>
-    <p>Real-time security telemetry, active threat priorities, and automated forensic conclusions</p>
-  </div>
+    <!-- Live system state -->
+    <div class="command-status">
+      <div class="command-status-item">
+        <span class="status-dot"></span>
+        <div>
+          <span class="status-label">SYSTEM</span>
+          <strong>OPERATIONAL</strong>
+        </div>
+      </div>
 
-  <div style="display:flex; gap:8px;">
-    <button onclick="fetchOverview()" class="btn btn-secondary btn-sm"><i data-lucide="refresh-cw" style="width:13px;"></i> Refresh</button>
-    <a href="{{ url_for('upload.upload_page') }}" class="btn btn-primary btn-sm"><i data-lucide="terminal" style="width:13px;"></i> Analyze New Logs</a>
-  </div>
-</div>
+      <div class="command-status-divider"></div>
 
-<!-- Dominant Hero Story Card -->
-<div class="card card-body" style="background: linear-gradient(to right, rgba(37,99,235,0.06), var(--bg-surface)); border-color: var(--accent-border);">
-  <div style="display:flex; justify-content:space-between; align-items:flex-start; flex-wrap:wrap; gap:16px;">
-    <div>
-      <span style="font-size:11px; font-family:var(--font-mono); font-weight:700; color:var(--accent); text-transform:uppercase; letter-spacing:0.08em;">SYSTEM HEALTH & TRUST REASONING</span>
-      <h2 id="hero-title" style="margin-top:4px;">Loading system status telemetry...</h2>
-      <p id="hero-desc" style="font-size:12.5px; margin-top:4px; max-width:750px;">Fetching logs, risks, and health metrics from backend service...</p>
+      <div class="command-status-item">
+        <i data-lucide="radio"></i>
+        <div>
+          <span class="status-label">TELEMETRY</span>
+          <strong>LIVE</strong>
+        </div>
+      </div>
+
+      <div class="command-status-divider"></div>
+
+      <div class="command-status-item">
+        <i data-lucide="clock-3"></i>
+        <div>
+          <span class="status-label">LAST SYNC</span>
+          <strong id="dashboard-sync-time">--:--:--</strong>
+        </div>
+      </div>
     </div>
 
-    <div style="display:flex; gap:20px; font-family:var(--font-mono); border-left:1px solid var(--border-subtle); padding-left:16px;">
+  </section>
+
+
+  <!-- =========================================================
+       SYSTEM POSTURE HERO
+       ========================================================= -->
+  <section class="posture-panel">
+
+    <div class="posture-main">
+
+      <div class="posture-copy">
+        <span class="section-label">
+          <i data-lucide="shield"></i>
+          CURRENT SECURITY POSTURE
+        </span>
+
+        <h2 id="hero-title">
+          Loading security posture...
+        </h2>
+
+        <p id="hero-desc">
+          Correlating available forensic telemetry and risk indicators.
+        </p>
+
+        <div class="posture-actions">
+          <a
+            href="{{ url_for('incidents.tracker') }}"
+            class="btn btn-secondary btn-sm"
+          >
+            <i data-lucide="shield-alert"></i>
+            Investigate Incidents
+          </a>
+
+          <a
+            href="{{ url_for('dashboard.attack_intelligence') }}"
+            class="btn btn-ghost btn-sm"
+          >
+            MITRE Intelligence
+            <i data-lucide="arrow-up-right"></i>
+          </a>
+        </div>
+      </div>
+
+      <!-- Dynamic health gauge -->
+      <div class="health-gauge-wrap">
+
+        <div class="health-gauge">
+          <div class="health-gauge-ring">
+            <div class="health-gauge-inner">
+              <span id="stat-health">--</span>
+              <small>HEALTH</small>
+            </div>
+          </div>
+        </div>
+
+        <div class="health-gauge-caption">
+          <span>POSTURE INDEX</span>
+          <strong id="health-status-label">Analyzing</strong>
+        </div>
+
+      </div>
+
+    </div>
+
+
+    <!-- =======================================================
+         KPI STRIP
+         ======================================================= -->
+    <div class="kpi-strip">
+
+      <div class="kpi-item">
+        <div class="kpi-icon">
+          <i data-lucide="database"></i>
+        </div>
+
+        <div class="kpi-content">
+          <span>Total Logs</span>
+          <strong id="stat-total-logs">--</strong>
+          <small>Evidence records</small>
+        </div>
+      </div>
+
+
+      <div class="kpi-item">
+        <div class="kpi-icon">
+          <i data-lucide="triangle-alert"></i>
+        </div>
+
+        <div class="kpi-content">
+          <span>Risk Events</span>
+          <strong id="stat-risks">--</strong>
+          <small>Correlated indicators</small>
+        </div>
+      </div>
+
+
+      <div class="kpi-item">
+        <div class="kpi-icon">
+          <i data-lucide="activity"></i>
+        </div>
+
+        <div class="kpi-content">
+          <span>Average Risk</span>
+          <strong id="stat-avg-risk">--</strong>
+          <small>Observed event score</small>
+        </div>
+      </div>
+
+
+      <div class="kpi-item">
+        <div class="kpi-icon">
+          <i data-lucide="badge-check"></i>
+        </div>
+
+        <div class="kpi-content">
+          <span>Evidence Quality</span>
+          <strong id="stat-quality">--</strong>
+          <small>Telemetry confidence</small>
+        </div>
+      </div>
+
+    </div>
+
+  </section>
+
+
+  <!-- =========================================================
+       PRIMARY INVESTIGATION GRID
+       ========================================================= -->
+  <section class="dashboard-grid-main">
+
+    <!-- =======================================================
+         INCIDENT COMMAND STREAM
+         ======================================================= -->
+    <div class="dashboard-card incident-command-card">
+
+      <div class="dashboard-card-header">
+
+        <div class="card-heading-group">
+          <div class="card-heading-icon">
+            <i data-lucide="siren"></i>
+          </div>
+
+          <div>
+            <h3>Investigation Priorities</h3>
+            <p>Active incidents requiring user review</p>
+          </div>
+        </div>
+
+        <a
+          href="{{ url_for('incidents.tracker') }}"
+          class="card-header-link"
+        >
+          View all
+          <i data-lucide="arrow-up-right"></i>
+        </a>
+
+      </div>
+
+
+      <div
+        id="incidents-list"
+        class="incident-stream"
+      >
+        <div class="dashboard-loading">
+          <div class="loading-orbit"></div>
+          <span>Loading active investigations...</span>
+        </div>
+      </div>
+
+    </div>
+
+
+    <!-- =======================================================
+         RISK PROFILE
+         ======================================================= -->
+    <aside class="dashboard-card risk-profile-card">
+
+      <div class="dashboard-card-header">
+
+        <div class="card-heading-group">
+          <div class="card-heading-icon">
+            <i data-lucide="radar"></i>
+          </div>
+
+          <div>
+            <h3>Risk Profile</h3>
+            <p>Current threat distribution</p>
+          </div>
+        </div>
+
+      </div>
+
+
+      <div class="risk-profile-body">
+
+        <div class="risk-orbit">
+
+          <div class="risk-orbit-ring ring-one"></div>
+          <div class="risk-orbit-ring ring-two"></div>
+          <div class="risk-orbit-ring ring-three"></div>
+
+          <div class="risk-core">
+            <span id="risk-core-value">--</span>
+            <small>AVG RISK</small>
+          </div>
+
+          <span class="orbit-node node-one"></span>
+          <span class="orbit-node node-two"></span>
+          <span class="orbit-node node-three"></span>
+
+        </div>
+
+
+        <div class="risk-legend">
+
+          <div class="risk-legend-row">
+            <span class="risk-legend-dot critical"></span>
+            <span>Critical</span>
+            <strong id="risk-critical">--</strong>
+          </div>
+
+          <div class="risk-legend-row">
+            <span class="risk-legend-dot high"></span>
+            <span>High</span>
+            <strong id="risk-high">--</strong>
+          </div>
+
+          <div class="risk-legend-row">
+            <span class="risk-legend-dot medium"></span>
+            <span>Medium</span>
+            <strong id="risk-medium">--</strong>
+          </div>
+
+          <div class="risk-legend-row">
+            <span class="risk-legend-dot low"></span>
+            <span>Low</span>
+            <strong id="risk-low">--</strong>
+          </div>
+
+        </div>
+
+      </div>
+
+    </aside>
+
+  </section>
+
+
+  <!-- =========================================================
+       TELEMETRY + ACTOR INTELLIGENCE
+       ========================================================= -->
+  <section class="dashboard-grid-secondary">
+
+    <!-- =======================================================
+         TELEMETRY VISUALIZER
+         ======================================================= -->
+    <div class="dashboard-card telemetry-card">
+
+      <div class="dashboard-card-header">
+
+        <div class="card-heading-group">
+          <div class="card-heading-icon">
+            <i data-lucide="waves"></i>
+          </div>
+
+          <div>
+            <h3>Telemetry Activity Field</h3>
+            <p>Spatial representation of observed log activity</p>
+          </div>
+        </div>
+
+        <div class="telemetry-live">
+          <span></span>
+          LIVE
+        </div>
+
+      </div>
+
+
+      <div class="telemetry-toolbar">
+
+        <div class="telemetry-metric">
+          <span>STREAM</span>
+          <strong>EVENT TELEMETRY</strong>
+        </div>
+
+        <div class="telemetry-metric">
+          <span>MODE</span>
+          <strong>REALTIME</strong>
+        </div>
+
+        <div class="telemetry-metric">
+          <span>STATUS</span>
+          <strong id="telemetry-status">MONITORING</strong>
+        </div>
+
+      </div>
+
+
+      <div class="telemetry-canvas-wrap">
+
+        <canvas
+          id="telemetry-canvas"
+          aria-label="Log event telemetry visualization"
+        ></canvas>
+
+        <div class="telemetry-grid-overlay"></div>
+
+        <div class="telemetry-axis telemetry-axis-x">
+          <span>LOW ACTIVITY</span>
+          <span>EVENT DENSITY</span>
+          <span>HIGH ACTIVITY</span>
+        </div>
+
+        <div class="telemetry-corner telemetry-corner-tl">
+          EVENT FIELD / 01
+        </div>
+
+        <div class="telemetry-corner telemetry-corner-tr">
+          LIVE STREAM
+        </div>
+
+        <div class="telemetry-corner telemetry-corner-bl">
+          LOG CORRELATION
+        </div>
+
+        <div class="telemetry-corner telemetry-corner-br">
+          60 FPS
+        </div>
+
+      </div>
+
+    </div>
+
+
+    <!-- =======================================================
+         SUSPICIOUS ACTORS
+         ======================================================= -->
+    <aside class="dashboard-card actor-card">
+
+      <div class="dashboard-card-header">
+
+        <div class="card-heading-group">
+          <div class="card-heading-icon">
+            <i data-lucide="scan-search"></i>
+          </div>
+
+          <div>
+            <h3>Suspicious Actors</h3>
+            <p>Highest observed source activity</p>
+          </div>
+        </div>
+
+      </div>
+
+
+      <div
+        id="top-ips-list"
+        class="actor-list"
+      >
+        <div class="dashboard-loading">
+          <div class="loading-orbit"></div>
+          <span>Analyzing source activity...</span>
+        </div>
+      </div>
+
+
+      <div class="actor-footer">
+        <span>
+          <i data-lucide="info"></i>
+          Based on available forensic telemetry
+        </span>
+      </div>
+
+    </aside>
+
+  </section>
+
+
+  <!-- =========================================================
+       INVESTIGATION WORKFLOW
+       ========================================================= -->
+  <section class="workflow-panel">
+
+    <div class="workflow-header">
+
       <div>
-        <div style="font-size:10px; color:var(--text-muted); text-transform:uppercase;">Health Index</div>
-        <div id="stat-health" style="font-size:24px; font-weight:800; color:var(--accent);">--</div>
-      </div>
-      <div>
-        <div style="font-size:10px; color:var(--text-muted); text-transform:uppercase;">Avg Risk Score</div>
-        <div id="stat-avg-risk" style="font-size:24px; font-weight:800; color:var(--high);">--</div>
-      </div>
-    </div>
-  </div>
+        <span class="section-label">
+          <i data-lucide="route"></i>
+          FORENSIC WORKFLOW
+        </span>
 
-  <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px; margin-top:16px; pt:12px; border-top:1px solid var(--border-subtle); font-size:12px; font-family:var(--font-mono);">
-    <div style="display:flex; gap:16px; color:var(--text-muted);">
-      <span>Total Logs: <strong id="stat-total-logs" style="color:var(--text-primary);">--</strong></span>
-      <span>Risk Events: <strong id="stat-risks" style="color:var(--high);">--</strong></span>
-      <span>Quality Score: <strong id="stat-quality" style="color:var(--ok);">--</strong></span>
+        <h2>Evidence → Explanation → Response</h2>
+
+        <p>
+          Follow the investigation lifecycle from raw telemetry
+          through verified remediation.
+        </p>
+      </div>
+
     </div>
-    <div style="display:flex; gap:12px;">
-      <a href="{{ url_for('incidents.tracker') }}" class="btn btn-ghost btn-sm" style="color:var(--accent);">View Incidents →</a>
-      <a href="{{ url_for('dashboard.remediation') }}" class="btn btn-ghost btn-sm" style="color:var(--accent);">Remediation Plan →</a>
+
+
+    <div class="workflow-track">
+
+      <a
+        href="{{ url_for('upload.upload_page') }}"
+        class="workflow-node"
+      >
+        <div class="workflow-node-number">01</div>
+
+        <div class="workflow-node-icon">
+          <i data-lucide="file-search"></i>
+        </div>
+
+        <div class="workflow-node-content">
+          <span>COLLECT</span>
+          <strong>Evidence</strong>
+          <p>Upload and inspect security logs.</p>
+        </div>
+
+        <i data-lucide="arrow-right" class="workflow-arrow"></i>
+      </a>
+
+
+      <a
+        href="{{ url_for('incidents.tracker') }}"
+        class="workflow-node"
+      >
+        <div class="workflow-node-number">02</div>
+
+        <div class="workflow-node-icon">
+          <i data-lucide="git-merge"></i>
+        </div>
+
+        <div class="workflow-node-content">
+          <span>CORRELATE</span>
+          <strong>Incidents</strong>
+          <p>Group related signals into investigations.</p>
+        </div>
+
+        <i data-lucide="arrow-right" class="workflow-arrow"></i>
+      </a>
+
+
+      <a
+        href="{{ url_for('dashboard.attack_intelligence') }}"
+        class="workflow-node"
+      >
+        <div class="workflow-node-number">03</div>
+
+        <div class="workflow-node-icon">
+          <i data-lucide="crosshair"></i>
+        </div>
+
+        <div class="workflow-node-content">
+          <span>MAP</span>
+          <strong>MITRE ATT&CK</strong>
+          <p>Connect observed behavior to techniques.</p>
+        </div>
+
+        <i data-lucide="arrow-right" class="workflow-arrow"></i>
+      </a>
+
+
+      <a
+        href="{{ url_for('dashboard.remediation') }}"
+        class="workflow-node"
+      >
+        <div class="workflow-node-number">04</div>
+
+        <div class="workflow-node-icon">
+          <i data-lucide="shield-check"></i>
+        </div>
+
+        <div class="workflow-node-content">
+          <span>RESPOND</span>
+          <strong>Remediation</strong>
+          <p>Apply corrective and hardening guidance.</p>
+        </div>
+
+        <i data-lucide="arrow-right" class="workflow-arrow"></i>
+      </a>
+
+
+      <a
+        href="{{ url_for('upload.history') }}"
+        class="workflow-node"
+      >
+        <div class="workflow-node-number">05</div>
+
+        <div class="workflow-node-icon">
+          <i data-lucide="archive-check"></i>
+        </div>
+
+        <div class="workflow-node-content">
+          <span>VERIFY</span>
+          <strong>Evidence Archive</strong>
+          <p>Review historical forensic evidence.</p>
+        </div>
+      </a>
+
     </div>
-  </div>
+
+  </section>
+
+
+  <!-- =========================================================
+       FOOTER SYSTEM BAR
+       ========================================================= -->
+  <footer class="dashboard-system-footer">
+
+    <div class="system-footer-left">
+      <span class="footer-system-dot"></span>
+      <span>INTELLIGENT LOG FORENSICS</span>
+      <span class="footer-divider">/</span>
+      <span>RCA ENGINE</span>
+    </div>
+
+    <div class="system-footer-right">
+      <span>MITRE-AWARE</span>
+      <span class="footer-divider">·</span>
+      <span>EVIDENCE-BACKED</span>
+      <span class="footer-divider">·</span>
+      <span>LIVE TELEMETRY</span>
+    </div>
+
+  </footer>
+
 </div>
 
-<!-- Grid 2 Cols: Priorities & Log Spatial Map -->
-<div class="grid-3" style="grid-template-columns: 2fr 1fr;">
-  <div style="display:flex; flex-direction:column; gap:20px;">
-    <!-- Active Incidents Card -->
-    <div class="card">
-      <div class="card-header">
-        <div class="card-title"><i data-lucide="shield-alert" style="color:var(--accent);"></i> Investigation Priorities & Active Incidents</div>
-        <a href="{{ url_for('incidents.tracker') }}" style="font-size:11.5px; font-family:var(--font-mono);">View All Incidents</a>
-      </div>
-      <div class="card-body" id="incidents-list" style="display:flex; flex-direction:column; gap:10px;">
-        <div style="text-align:center; padding:20px; color:var(--text-muted); font-size:12px;">Loading active incidents...</div>
-      </div>
-    </div>
-
-    <!-- Spatial Canvas Telemetry Map -->
-    <div class="card card-body" style="display:flex; flex-direction:column; gap:12px;">
-      <div style="display:flex; justify-content:space-between; align-items:center;">
-        <h4 style="display:flex; align-items:center; gap:6px;"><i data-lucide="activity" style="color:var(--accent); width:16px;"></i> Log Event Telemetry Spatial Cluster Map</h4>
-        <span style="font-size:11px; font-family:var(--font-mono); color:var(--text-muted);">REALTIME CANVAS</span>
-      </div>
-      <div style="position:relative; background:#070b14; border-radius:var(--r-md); overflow:hidden; border:1px solid var(--border-subtle);">
-        <canvas id="telemetry-canvas" style="width:100%; height:220px; display:block;"></canvas>
-      </div>
-    </div>
-  </div>
-
-  <!-- Right Sidebar: Suspicious IPs -->
-  <div style="display:flex; flex-direction:column; gap:20px;">
-    <div class="card">
-      <div class="card-header">
-        <div class="card-title"><i data-lucide="terminal" style="color:var(--accent);"></i> Top Suspicious IP Actors</div>
-      </div>
-      <div class="card-body" id="top-ips-list" style="display:flex; flex-direction:column; gap:8px;">
-        <div style="text-align:center; padding:12px; color:var(--text-muted); font-size:12px;">Loading IP actors...</div>
-      </div>
-    </div>
-  </div>
-</div>
 {% endblock %}
 
+
 {% block scripts %}
-<script src="{{ url_for('static', filename='js/dashboard.js') }}"></script>
+
+<script src="{{ url_for('static', filename='js/dashboard.js', v='20260923') }}"></script>
+
+<script>
+  /*
+   * Dashboard visual layer
+   * -----------------------------------------------
+   * This script intentionally does not replace the
+   * existing dashboard.js data logic.
+   *
+   * It only adds visual behavior to the dashboard.
+   */
+
+  document.addEventListener("DOMContentLoaded", function () {
+
+    /* -------------------------------------------------------
+       Icon initialization
+       ------------------------------------------------------- */
+    if (window.lucide) {
+      lucide.createIcons();
+    }
+
+
+    /* -------------------------------------------------------
+       Local clock / sync indicator
+       ------------------------------------------------------- */
+    function updateDashboardClock() {
+      const target = document.getElementById("dashboard-sync-time");
+
+      if (!target) return;
+
+      const now = new Date();
+
+      target.textContent = now.toLocaleTimeString([], {
+        hour: "2-digit",
+        minute: "2-digit",
+        second: "2-digit",
+        hour12: false
+      });
+    }
+
+    updateDashboardClock();
+    setInterval(updateDashboardClock, 1000);
+
+
+    /* -------------------------------------------------------
+       Telemetry canvas
+       ------------------------------------------------------- */
+    const canvas = document.getElementById("telemetry-canvas");
+
+    if (!canvas) return;
+
+    const context = canvas.getContext("2d");
+
+    if (!context) return;
+
+
+    let width = 0;
+    let height = 0;
+    let animationFrame = null;
+
+
+    const particles = [];
+    const particleCount = 46;
+
+
+    function resizeCanvas() {
+
+      const rect = canvas.getBoundingClientRect();
+
+      const pixelRatio = Math.min(
+        window.devicePixelRatio || 1,
+        2
+      );
+
+      width = Math.max(1, Math.floor(rect.width));
+      height = Math.max(1, Math.floor(rect.height));
+
+      canvas.width = width * pixelRatio;
+      canvas.height = height * pixelRatio;
+
+      context.setTransform(
+        pixelRatio,
+        0,
+        0,
+        pixelRatio,
+        0,
+        0
+      );
+    }
+
+
+    function createParticle(index) {
+
+      const angle =
+        (index / particleCount) *
+        Math.PI *
+        2;
+
+      const radius =
+        0.18 +
+        Math.random() * 0.32;
+
+      return {
+        x:
+          0.5 +
+          Math.cos(angle) *
+          radius,
+
+        y:
+          0.5 +
+          Math.sin(angle) *
+          radius *
+          0.72,
+
+        size:
+          1.2 +
+          Math.random() * 2.4,
+
+        phase:
+          Math.random() *
+          Math.PI *
+          2,
+
+        speed:
+          0.002 +
+          Math.random() * 0.004
+      };
+    }
+
+
+    for (let i = 0; i < particleCount; i++) {
+      particles.push(createParticle(i));
+    }
+
+
+    function drawTelemetry(timestamp) {
+
+      if (!width || !height) {
+        animationFrame =
+          requestAnimationFrame(drawTelemetry);
+
+        return;
+      }
+
+
+      context.clearRect(
+        0,
+        0,
+        width,
+        height
+      );
+
+
+      /*
+       * Background field
+       */
+      const background =
+        context.createRadialGradient(
+          width * 0.5,
+          height * 0.5,
+          0,
+          width * 0.5,
+          height * 0.5,
+          Math.max(width, height) * 0.7
+        );
+
+      background.addColorStop(
+        0,
+        "rgba(30, 64, 175, 0.13)"
+      );
+
+      background.addColorStop(
+        0.5,
+        "rgba(15, 23, 42, 0.08)"
+      );
+
+      background.addColorStop(
+        1,
+        "rgba(2, 6, 23, 0)"
+      );
+
+      context.fillStyle = background;
+
+      context.fillRect(
+        0,
+        0,
+        width,
+        height
+      );
+
+
+      /*
+       * Telemetry axis lines
+       */
+      context.beginPath();
+
+      context.strokeStyle =
+        "rgba(148, 163, 184, 0.08)";
+
+      context.lineWidth = 1;
+
+
+      for (
+        let x = 0;
+        x < width;
+        x += 44
+      ) {
+        context.moveTo(x, 0);
+        context.lineTo(x, height);
+      }
+
+
+      for (
+        let y = 0;
+        y < height;
+        y += 36
+      ) {
+        context.moveTo(0, y);
+        context.lineTo(width, y);
+      }
+
+
+      context.stroke();
+
+
+      /*
+       * Connection network
+       */
+      const points = particles.map((particle) => {
+
+        const movement =
+          Math.sin(
+            timestamp * particle.speed +
+            particle.phase
+          ) * 0.015;
+
+        return {
+          x:
+            (particle.x + movement) *
+            width,
+
+          y:
+            (particle.y + movement) *
+            height
+        };
+      });
+
+
+      context.lineWidth = 0.7;
+
+
+      for (let i = 0; i < points.length; i++) {
+
+        for (
+          let j = i + 1;
+          j < points.length;
+          j++
+        ) {
+
+          const dx =
+            points[i].x -
+            points[j].x;
+
+          const dy =
+            points[i].y -
+            points[j].y;
+
+          const distance =
+            Math.sqrt(
+              dx * dx +
+              dy * dy
+            );
+
+
+          if (distance < 90) {
+
+            const opacity =
+              (1 - distance / 90) *
+              0.16;
+
+            context.strokeStyle =
+              "rgba(96, 165, 250, " +
+              opacity +
+              ")";
+
+            context.beginPath();
+
+            context.moveTo(
+              points[i].x,
+              points[i].y
+            );
+
+            context.lineTo(
+              points[j].x,
+              points[j].y
+            );
+
+            context.stroke();
+          }
+        }
+      }
+
+
+      /*
+       * Event points
+       */
+      points.forEach((point, index) => {
+
+        const pulse =
+          0.55 +
+          Math.sin(
+            timestamp * 0.002 +
+            index
+          ) *
+          0.25;
+
+        context.beginPath();
+
+        context.arc(
+          point.x,
+          point.y,
+          particles[index].size,
+          0,
+          Math.PI * 2
+        );
+
+        context.fillStyle =
+          "rgba(96, 165, 250, " +
+          pulse +
+          ")";
+
+        context.fill();
+
+
+        /*
+         * Occasional larger signal ring
+         */
+        if (index % 8 === 0) {
+
+          context.beginPath();
+
+          context.arc(
+            point.x,
+            point.y,
+            particles[index].size * 4,
+            0,
+            Math.PI * 2
+          );
+
+          context.strokeStyle =
+            "rgba(96, 165, 250, 0.12)";
+
+          context.lineWidth = 1;
+
+          context.stroke();
+        }
+      });
+
+
+      /*
+       * Central correlation node
+       */
+      const centerX = width * 0.5;
+      const centerY = height * 0.5;
+
+
+      const corePulse =
+        1 +
+        Math.sin(timestamp * 0.003) *
+        0.08;
+
+
+      context.beginPath();
+
+      context.arc(
+        centerX,
+        centerY,
+        9 * corePulse,
+        0,
+        Math.PI * 2
+      );
+
+      context.fillStyle =
+        "rgba(59, 130, 246, 0.22)";
+
+      context.fill();
+
+
+      context.beginPath();
+
+      context.arc(
+        centerX,
+        centerY,
+        4,
+        0,
+        Math.PI * 2
+      );
+
+      context.fillStyle =
+        "rgba(147, 197, 253, 0.9)";
+
+      context.fill();
+
+
+      animationFrame =
+        requestAnimationFrame(drawTelemetry);
+    }
+
+
+    resizeCanvas();
+
+    window.addEventListener(
+      "resize",
+      resizeCanvas
+    );
+
+
+    animationFrame =
+      requestAnimationFrame(drawTelemetry);
+
+
+    /*
+     * Stop animation when page is hidden.
+     * Restart when visible again.
+     */
+    document.addEventListener(
+      "visibilitychange",
+      function () {
+
+        if (document.hidden) {
+
+          if (animationFrame) {
+            cancelAnimationFrame(
+              animationFrame
+            );
+
+            animationFrame = null;
+          }
+
+        } else if (!animationFrame) {
+
+          animationFrame =
+            requestAnimationFrame(
+              drawTelemetry
+            );
+        }
+
+      }
+    );
+
+
+    /* -------------------------------------------------------
+       Health UI synchronization
+       -------------------------------------------------------
+       Existing dashboard.js remains the source of truth.
+       This observer only mirrors the already-populated
+       health value into the visual gauge.
+       ------------------------------------------------------- */
+
+    const healthElement =
+      document.getElementById("stat-health");
+
+    const healthLabel =
+      document.getElementById("health-status-label");
+
+    const riskCore =
+      document.getElementById("risk-core-value");
+
+    const averageRisk =
+      document.getElementById("stat-avg-risk");
+
+
+    function syncVisualMetrics() {
+
+      if (
+        healthElement &&
+        healthLabel
+      ) {
+
+        const raw =
+          healthElement.textContent
+            .trim()
+            .replace("%", "");
+
+        const value =
+          parseFloat(raw);
+
+
+        if (!Number.isNaN(value)) {
+
+          healthLabel.textContent =
+            value >= 80
+              ? "STABLE"
+              : value >= 55
+                ? "ATTENTION"
+                : "ELEVATED";
+        }
+      }
+
+
+      if (
+        riskCore &&
+        averageRisk
+      ) {
+
+        riskCore.textContent =
+          averageRisk.textContent.trim() ||
+          "--";
+      }
+    }
+
+
+    syncVisualMetrics();
+
+
+    const observer =
+      new MutationObserver(
+        syncVisualMetrics
+      );
+
+
+    if (healthElement) {
+      observer.observe(
+        healthElement,
+        {
+          childList: true,
+          characterData: true,
+          subtree: true
+        }
+      );
+    }
+
+
+    if (averageRisk) {
+      observer.observe(
+        averageRisk,
+        {
+          childList: true,
+          characterData: true,
+          subtree: true
+        }
+      );
+    }
+
+  });
+</script>
+
 {% endblock %}

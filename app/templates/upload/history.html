@@ -1,78 +1,787 @@
 {% extends "base.html" %}
 
-{% block title %}Evidence Archive History - Log Forensics{% endblock %}
+{% block title %}Evidence Archive — Log Forensics{% endblock %}
 
 {% block content %}
-<div class="page-header">
-  <div class="page-title">
-    <div class="page-breadcrumb">
-      <span>PLATFORM</span> / <span>LOG LAB</span> / <span class="page-breadcrumb-current">EVIDENCE ARCHIVE</span>
+
+<div class="archive-page">
+
+  <!-- =========================================================
+       PAGE HEADER
+       ========================================================= -->
+
+  <section class="page-header archive-header">
+    <div class="page-title">
+      <div class="page-breadcrumb">
+        <span>PLATFORM</span>
+        <span class="breadcrumb-separator">/</span>
+        <span>LOG LAB</span>
+        <span class="breadcrumb-separator">/</span>
+        <span class="page-breadcrumb-current">EVIDENCE ARCHIVE</span>
+      </div>
+
+
+  <div class="archive-title-row">
+    <div>
+      <div class="archive-kicker">
+        <span class="status-dot"></span>
+        FORENSIC EVIDENCE REPOSITORY
+      </div>
+
+      <h1>Evidence Archive</h1>
+
+      <p>
+        Historical datasets, processing state, forensic trust, and investigation
+        continuity across every uploaded evidence package.
+      </p>
     </div>
-    <h1>Evidence Archive & Historic Log Files</h1>
-    <p>Uploaded datasets, processing state, forensic trust, and the fastest route back into evidence review.</p>
-  </div>
-
-  <a href="{{ url_for('upload.upload_page') }}" class="btn btn-primary btn-sm"><i data-lucide="upload-cloud" style="width:13px;"></i> Upload Dataset</a>
-</div>
-
-<div class="card overflow-hidden">
-  <div class="card-header" style="background:var(--bg-raised); font-family:var(--font-mono); font-size:11.5px;">
-    <span>HISTORIC EVIDENCE FILES</span>
-    <span style="color:var(--text-muted);">CLICK TO EXPLORE LOG STREAM</span>
-  </div>
-
-  <div class="table-wrap">
-    <table class="table">
-      <thead>
-        <tr>
-          <th>Archive ID</th>
-          <th>File Name</th>
-          <th>Total Records</th>
-          <th>Status</th>
-          <th>Risks</th>
-          <th>Incidents</th>
-          <th>Trust Score</th>
-          <th>Action</th>
-        </tr>
-      </thead>
-      <tbody id="history-tbody">
-        <tr><td colspan="8" class="empty-row">Loading evidence archives...</td></tr>
-      </tbody>
-    </table>
   </div>
 </div>
+
+<div class="archive-header-actions">
+  <button
+    type="button"
+    class="btn btn-secondary btn-sm"
+    id="refresh-history"
+    onclick="loadEvidenceArchives(true)"
+  >
+    <i data-lucide="refresh-cw"></i>
+    Refresh Archive
+  </button>
+
+  <a
+    href="{{ url_for('upload.upload_page') }}"
+    class="btn btn-primary btn-sm"
+  >
+    <i data-lucide="upload-cloud"></i>
+    Upload Evidence
+  </a>
+</div>
+
+
+  </section>
+
+  <!-- =========================================================
+       ARCHIVE OVERVIEW
+       ========================================================= -->
+
+  <section class="archive-overview">
+
+
+<div class="archive-stat-card">
+  <div class="archive-stat-icon">
+    <i data-lucide="database"></i>
+  </div>
+
+  <div class="archive-stat-content">
+    <span class="archive-stat-label">ARCHIVED DATASETS</span>
+    <strong id="archive-total">--</strong>
+    <small>Evidence packages</small>
+  </div>
+</div>
+
+<div class="archive-stat-card">
+  <div class="archive-stat-icon">
+    <i data-lucide="file-text"></i>
+  </div>
+
+  <div class="archive-stat-content">
+    <span class="archive-stat-label">LOG RECORDS</span>
+    <strong id="archive-records">--</strong>
+    <small>Total processed records</small>
+  </div>
+</div>
+
+<div class="archive-stat-card">
+  <div class="archive-stat-icon risk">
+    <i data-lucide="triangle-alert"></i>
+  </div>
+
+  <div class="archive-stat-content">
+    <span class="archive-stat-label">RISK SIGNALS</span>
+    <strong id="archive-risks">--</strong>
+    <small>Detected anomalies</small>
+  </div>
+</div>
+
+<div class="archive-stat-card">
+  <div class="archive-stat-icon trust">
+    <i data-lucide="shield-check"></i>
+  </div>
+
+  <div class="archive-stat-content">
+    <span class="archive-stat-label">FORENSIC TRUST</span>
+    <strong id="archive-trust">--</strong>
+    <small>Average evidence score</small>
+  </div>
+</div>
+
+
+  </section>
+
+  <!-- =========================================================
+       ARCHIVE WORKSPACE
+       ========================================================= -->
+
+  <section class="archive-workspace card">
+
+
+<!-- Toolbar -->
+<div class="archive-toolbar">
+
+  <div class="archive-toolbar-heading">
+    <div class="archive-section-icon">
+      <i data-lucide="archive"></i>
+    </div>
+
+    <div>
+      <h2>Evidence Packages</h2>
+      <p>Browse and reopen previously processed forensic evidence.</p>
+    </div>
+  </div>
+
+  <div class="archive-toolbar-controls">
+
+    <div class="archive-search">
+      <i data-lucide="search"></i>
+      <input
+        type="search"
+        id="history-search"
+        placeholder="Search filename or archive ID..."
+        autocomplete="off"
+      >
+    </div>
+
+    <select id="history-status" class="select-input">
+      <option value="">All statuses</option>
+      <option value="completed">Completed</option>
+      <option value="processing">Processing</option>
+      <option value="failed">Failed</option>
+    </select>
+
+  </div>
+
+</div>
+
+
+<!-- Archive Meta -->
+<div class="archive-meta-bar">
+  <div class="archive-meta-left">
+    <span class="archive-live-indicator">
+      <span></span>
+      ARCHIVE INDEX
+    </span>
+
+    <span id="history-result-count">
+      Loading evidence...
+    </span>
+  </div>
+
+  <div class="archive-meta-right">
+    <span>Click any package to inspect its evidence stream</span>
+  </div>
+</div>
+
+
+<!-- =======================================================
+     TABLE
+     ======================================================= -->
+<div class="table-wrap archive-table-wrap">
+
+  <table class="table archive-table">
+
+    <thead>
+      <tr>
+        <th class="archive-id-column">ARCHIVE</th>
+        <th>EVIDENCE PACKAGE</th>
+        <th>RECORDS</th>
+        <th>PROCESSING</th>
+        <th>RISKS</th>
+        <th>INCIDENTS</th>
+        <th>FORENSIC TRUST</th>
+        <th class="archive-action-column">ACTION</th>
+      </tr>
+    </thead>
+
+    <tbody id="history-tbody">
+
+      <tr>
+        <td colspan="8">
+          <div class="archive-loading">
+            <div class="archive-loader">
+              <span></span>
+              <span></span>
+              <span></span>
+            </div>
+
+            <strong>Indexing evidence archive</strong>
+            <small>Retrieving processed datasets...</small>
+          </div>
+        </td>
+      </tr>
+
+    </tbody>
+
+  </table>
+
+</div>
+
+
+<!-- =======================================================
+     EMPTY STATE
+     ======================================================= -->
+<div id="history-empty" class="archive-empty" hidden>
+
+  <div class="archive-empty-visual">
+    <i data-lucide="archive-x"></i>
+  </div>
+
+  <h3>No evidence packages found</h3>
+
+  <p>
+    There are no archived datasets matching the current filters.
+    Upload a dataset or change the search criteria to continue.
+  </p>
+
+  <a
+    href="{{ url_for('upload.upload_page') }}"
+    class="btn btn-primary btn-sm"
+  >
+    <i data-lucide="upload-cloud"></i>
+    Upload Evidence
+  </a>
+
+</div>
+
+
+<!-- =======================================================
+     ERROR STATE
+     ======================================================= -->
+<div id="history-error" class="archive-error" hidden>
+
+  <div class="archive-error-icon">
+    <i data-lucide="wifi-off"></i>
+  </div>
+
+  <div>
+    <strong>Evidence archive unavailable</strong>
+    <p>
+      The archive index could not be retrieved. Check authentication
+      and backend connectivity, then retry.
+    </p>
+  </div>
+
+  <button
+    type="button"
+    class="btn btn-secondary btn-sm"
+    onclick="loadEvidenceArchives(true)"
+  >
+    <i data-lucide="rotate-cw"></i>
+    Retry
+  </button>
+
+</div>
+
+
+  </section>
+
+</div>
+
 {% endblock %}
 
 {% block scripts %}
+
 <script>
-document.addEventListener('DOMContentLoaded', () => {
-  fetch('/api/v1/uploads?limit=100')
-    .then((res) => (res.ok ? res.json() : []))
-    .then((uploads) => {
-      const tbody = document.getElementById('history-tbody');
-      if (!tbody) return;
-      if (uploads.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="8" class="empty-row">No evidence archives yet. Upload a dataset to start an investigation trail.</td></tr>`;
-        return;
+(function () {
+  "use strict";
+
+  let evidenceArchives = [];
+
+  const tbody = document.getElementById("history-tbody");
+  const searchInput = document.getElementById("history-search");
+  const statusFilter = document.getElementById("history-status");
+  const resultCount = document.getElementById("history-result-count");
+
+  const emptyState = document.getElementById("history-empty");
+  const errorState = document.getElementById("history-error");
+
+  const totalEl = document.getElementById("archive-total");
+  const recordsEl = document.getElementById("archive-records");
+  const risksEl = document.getElementById("archive-risks");
+  const trustEl = document.getElementById("archive-trust");
+
+  function escapeHTML(value) {
+    return String(value ?? "")
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;")
+      .replace(/'/g, "&#039;");
+  }
+
+  function formatNumber(value) {
+    const number = Number(value || 0);
+
+    if (!Number.isFinite(number)) {
+      return "0";
+    }
+
+    return number.toLocaleString();
+  }
+
+  function normalizeStatus(status) {
+    return String(status || "unknown")
+      .trim()
+      .toLowerCase();
+  }
+
+  function getStatusClass(status) {
+    const normalized = normalizeStatus(status);
+
+    if (
+      normalized === "completed" ||
+      normalized === "complete" ||
+      normalized === "success" ||
+      normalized === "processed"
+    ) {
+      return "archive-status-success";
+    }
+
+    if (
+      normalized === "processing" ||
+      normalized === "queued" ||
+      normalized === "pending"
+    ) {
+      return "archive-status-processing";
+    }
+
+    if (
+      normalized === "failed" ||
+      normalized === "error"
+    ) {
+      return "archive-status-failed";
+    }
+
+    return "archive-status-default";
+  }
+
+  function getStatusIcon(status) {
+    const normalized = normalizeStatus(status);
+
+    if (
+      normalized === "completed" ||
+      normalized === "complete" ||
+      normalized === "success" ||
+      normalized === "processed"
+    ) {
+      return "check-circle-2";
+    }
+
+    if (
+      normalized === "processing" ||
+      normalized === "queued" ||
+      normalized === "pending"
+    ) {
+      return "loader-circle";
+    }
+
+    if (
+      normalized === "failed" ||
+      normalized === "error"
+    ) {
+      return "circle-x";
+    }
+
+    return "circle-help";
+  }
+
+  function calculateOverview(uploads) {
+    const total = uploads.length;
+
+    const records = uploads.reduce(
+      (sum, item) => sum + Number(item.total_records || 0),
+      0
+    );
+
+    const risks = uploads.reduce(
+      (sum, item) => sum + Number(item.risk_count || 0),
+      0
+    );
+
+    const trustScores = uploads
+      .map(item => item.forensic_trust?.score)
+      .filter(score => score !== null && score !== undefined && Number.isFinite(Number(score)))
+      .map(Number);
+
+    const averageTrust = trustScores.length
+      ? trustScores.reduce((sum, score) => sum + score, 0) / trustScores.length
+      : null;
+
+    totalEl.textContent = formatNumber(total);
+    recordsEl.textContent = formatNumber(records);
+    risksEl.textContent = formatNumber(risks);
+
+    trustEl.textContent =
+      averageTrust === null
+        ? "--"
+        : `${Math.round(averageTrust)}%`;
+  }
+
+  function renderArchives() {
+    const query = String(searchInput?.value || "")
+      .trim()
+      .toLowerCase();
+
+    const status = String(statusFilter?.value || "")
+      .trim()
+      .toLowerCase();
+
+    const filtered = evidenceArchives.filter(item => {
+
+      const id = String(item.id ?? "").toLowerCase();
+
+      const fileName = String(item.file_name ?? "")
+        .toLowerCase();
+
+      const itemStatus = normalizeStatus(item.processing_status);
+
+      const matchesSearch =
+        !query ||
+        id.includes(query) ||
+        fileName.includes(query);
+
+      const matchesStatus =
+        !status ||
+        itemStatus === status;
+
+      return matchesSearch && matchesStatus;
+    });
+
+    resultCount.textContent =
+      `${filtered.length} of ${evidenceArchives.length} evidence packages`;
+
+    if (!filtered.length) {
+      tbody.innerHTML = "";
+      emptyState.hidden = false;
+      return;
+    }
+
+    emptyState.hidden = true;
+
+    tbody.innerHTML = filtered.map((item) => {
+
+      const id = Number(item.id);
+
+      const fileName =
+        item.file_name ||
+        `Evidence Package #${id}`;
+
+      const records =
+        Number(item.total_records || 0);
+
+      const risks =
+        Number(item.risk_count || 0);
+
+      const incidents =
+        Number(item.incident_count || 0);
+
+      const trustScore =
+        item.forensic_trust?.score;
+
+      const status =
+        item.processing_status ||
+        "unknown";
+
+      const statusClass =
+        getStatusClass(status);
+
+      const statusIcon =
+        getStatusIcon(status);
+
+      return `
+        <tr
+          class="archive-row"
+          data-id="${escapeHTML(id)}"
+          data-href="/logs/${encodeURIComponent(id)}"
+          tabindex="0"
+          role="link"
+          aria-label="Open evidence archive ${escapeHTML(id)}"
+        >
+
+          <td class="archive-id-cell">
+            <span class="archive-id-mark">
+              #${escapeHTML(id)}
+            </span>
+          </td>
+
+
+          <td class="archive-file-cell">
+
+            <div class="archive-file">
+
+              <div class="archive-file-icon">
+                <i data-lucide="file-json-2"></i>
+              </div>
+
+              <div class="archive-file-info">
+                <strong title="${escapeHTML(fileName)}">
+                  ${escapeHTML(fileName)}
+                </strong>
+
+                <span>
+                  Evidence dataset
+                </span>
+              </div>
+
+            </div>
+
+          </td>
+
+
+          <td>
+            <span class="archive-number">
+              ${formatNumber(records)}
+            </span>
+          </td>
+
+
+          <td>
+
+            <span class="archive-status ${statusClass}">
+
+              <i data-lucide="${statusIcon}"></i>
+
+              ${escapeHTML(status)}
+
+            </span>
+
+          </td>
+
+
+          <td>
+
+            <span class="archive-risk-value ${risks > 0 ? "has-risk" : ""}">
+              ${formatNumber(risks)}
+            </span>
+
+          </td>
+
+
+          <td>
+
+            <span class="archive-incident-value ${incidents > 0 ? "has-incidents" : ""}">
+              ${formatNumber(incidents)}
+            </span>
+
+          </td>
+
+
+          <td>
+
+            <div class="trust-score">
+
+              <div class="trust-score-value">
+                ${
+                  trustScore !== null &&
+                  trustScore !== undefined
+                    ? `${escapeHTML(trustScore)}%`
+                    : "--"
+                }
+              </div>
+
+              ${
+                trustScore !== null &&
+                trustScore !== undefined
+                  ? `
+                    <div class="trust-score-track">
+                      <span style="width:${Math.max(
+                        0,
+                        Math.min(100, Number(trustScore))
+                      )}%"></span>
+                    </div>
+                  `
+                  : ""
+              }
+
+            </div>
+
+          </td>
+
+
+          <td class="archive-action-cell">
+
+            <a
+              href="/logs/${encodeURIComponent(id)}"
+              class="archive-open-button"
+              onclick="event.stopPropagation();"
+            >
+              <span>Inspect</span>
+              <i data-lucide="arrow-up-right"></i>
+            </a>
+
+          </td>
+
+        </tr>
+      `;
+    }).join("");
+
+    bindRowNavigation();
+
+    if (window.lucide) {
+      lucide.createIcons();
+    }
+  }
+
+  function bindRowNavigation() {
+    document.querySelectorAll(".archive-row").forEach(row => {
+
+      row.addEventListener("click", function () {
+        const destination = this.dataset.href;
+
+        if (destination) {
+          window.location.href = destination;
+        }
+      });
+
+      row.addEventListener("keydown", function (event) {
+
+        if (
+          event.key === "Enter" ||
+          event.key === " "
+        ) {
+          event.preventDefault();
+
+          const destination = this.dataset.href;
+
+          if (destination) {
+            window.location.href = destination;
+          }
+        }
+      });
+
+    });
+  }
+
+  window.loadEvidenceArchives = function (showRefreshState) {
+
+    if (showRefreshState) {
+      const button = document.getElementById("refresh-history");
+
+      if (button) {
+        button.disabled = true;
+
+        button.innerHTML = `
+          <i data-lucide="loader-circle"></i>
+          Refreshing...
+        `;
+
+        if (window.lucide) {
+          lucide.createIcons();
+        }
+      }
+    }
+
+    errorState.hidden = true;
+    emptyState.hidden = true;
+
+    fetch("/api/v1/uploads?limit=100", {
+      method: "GET",
+      credentials: "same-origin",
+      headers: {
+        "Accept": "application/json"
+      }
+    })
+      .then((response) => {
+
+        if (!response.ok) {
+          throw new Error(
+            `Archive request failed with status ${response.status}`
+          );
+        }
+
+        return response.json();
+      })
+
+      .then((uploads) => {
+
+        evidenceArchives =
+          Array.isArray(uploads)
+            ? uploads
+            : [];
+
+        calculateOverview(evidenceArchives);
+
+        renderArchives();
+
+      })
+
+      .catch((error) => {
+
+        console.error(
+          "Evidence archive error:",
+          error
+        );
+
+        evidenceArchives = [];
+
+        tbody.innerHTML = "";
+
+        emptyState.hidden = true;
+        errorState.hidden = false;
+
+        resultCount.textContent =
+          "Archive unavailable";
+
+      })
+
+      .finally(() => {
+
+        const button =
+          document.getElementById("refresh-history");
+
+        if (button) {
+
+          button.disabled = false;
+
+          button.innerHTML = `
+            <i data-lucide="refresh-cw"></i>
+            Refresh Archive
+          `;
+
+          if (window.lucide) {
+            lucide.createIcons();
+          }
+        }
+
+      });
+  };
+
+
+  searchInput?.addEventListener(
+    "input",
+    renderArchives
+  );
+
+  statusFilter?.addEventListener(
+    "change",
+    renderArchives
+  );
+
+
+  document.addEventListener(
+    "DOMContentLoaded",
+    () => {
+
+      loadEvidenceArchives(false);
+
+      if (window.lucide) {
+        lucide.createIcons();
       }
 
-      tbody.innerHTML = uploads.map((u) => `
-        <tr onclick="window.location.href='/logs/${u.id}'">
-          <td style="font-family:var(--font-mono); color:var(--text-muted);">#${u.id}</td>
-          <td style="font-family:var(--font-mono); font-weight:700; color:var(--text-primary);">${u.file_name}</td>
-          <td style="font-family:var(--font-mono);">${Number(u.total_records || 0).toLocaleString()}</td>
-          <td><span class="badge badge-ok">${u.processing_status || 'unknown'}</span></td>
-          <td style="font-family:var(--font-mono); font-weight:700; color:var(--high);">${u.risk_count || 0}</td>
-          <td style="font-family:var(--font-mono); font-weight:700; color:var(--mitre);">${u.incident_count || 0}</td>
-          <td style="font-family:var(--font-mono); font-weight:700; color:var(--accent);">${u.forensic_trust?.score ?? '--'}${u.forensic_trust?.score != null ? '%' : ''}</td>
-          <td><a href="/logs/${u.id}" class="btn btn-ghost btn-sm" style="font-family:var(--font-mono);">Explore -></a></td>
-        </tr>
-      `).join('');
-    })
-    .catch(() => {
-      const tbody = document.getElementById('history-tbody');
-      if (tbody) tbody.innerHTML = `<tr><td colspan="8" class="empty-row">Evidence archive unavailable. Check authentication and backend connectivity, then retry.</td></tr>`;
-    });
-});
+    }
+  );
+
+})();
 </script>
+
 {% endblock %}

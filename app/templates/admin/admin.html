@@ -1,114 +1,727 @@
 {% extends "base.html" %}
 
-{% block title %}System Administration — Log Forensics{% endblock %}
+{% block title %}System Administration — Intelligent Log Forensics{% endblock %}
 
 {% block content %}
-<div class="page-header">
-  <div class="page-title">
-    <div class="page-breadcrumb">
-      <span>PLATFORM</span> / <span>ADMINISTRATION</span> / <span class="page-breadcrumb-current">SYSTEM CONSOLE</span>
-    </div>
-    <h1>System Administration & Model Health</h1>
-    <p>Database engine status, user access role management, and machine learning F1 retraining curves</p>
-  </div>
-</div>
 
-<!-- Stats Grid -->
-<div class="grid-4">
-  <div class="card card-body">
-    <span style="font-size:10.5px; font-family:var(--font-mono); color:var(--text-muted); text-transform:uppercase;">PLATFORM USERS</span>
-    <div id="adm-users" style="font-size:24px; font-weight:800; color:var(--text-primary); margin-top:2px;">--</div>
-  </div>
-  <div class="card card-body">
-    <span style="font-size:10.5px; font-family:var(--font-mono); color:var(--text-muted); text-transform:uppercase;">PARSED LOG RECORDS</span>
-    <div id="adm-logs" style="font-size:24px; font-weight:800; color:var(--accent); margin-top:2px;">--</div>
-  </div>
-  <div class="card card-body">
-    <span style="font-size:10.5px; font-family:var(--font-mono); color:var(--text-muted); text-transform:uppercase;">RISK ANOMALIES</span>
-    <div id="adm-risks" style="font-size:24px; font-weight:800; color:var(--high); margin-top:2px;">--</div>
-  </div>
-  <div class="card card-body">
-    <span style="font-size:10.5px; font-family:var(--font-mono); color:var(--text-muted); text-transform:uppercase;">ML MODEL VERSION</span>
-    <div id="adm-model" style="font-size:24px; font-weight:800; color:var(--mitre); font-family:var(--font-mono); margin-top:2px;">v2.4-rf</div>
-  </div>
-</div>
+<div class="admin-page">
 
-<div class="grid-3" style="grid-template-columns: 2fr 1fr; margin-top:16px;">
-  <!-- User List -->
-  <div class="card">
-    <div class="card-header">
-      <div class="card-title"><i data-lucide="users" style="color:var(--accent);"></i> Registered User Accounts</div>
-    </div>
-    <div class="table-wrap">
-      <table class="table">
-        <thead>
-          <tr>
-            <th>User Name</th>
-            <th>Email Address</th>
-            <th>Role</th>
-            <th>Status</th>
-          </tr>
-        </thead>
-        <tbody id="adm-users-tbody">
-          <tr><td colspan="4" style="text-align:center; padding:20px; color:var(--text-muted);">Loading users...</td></tr>
-        </tbody>
-      </table>
-    </div>
-  </div>
-
-  <!-- DB Engine -->
-  <div class="card card-body" style="display:flex; flex-direction:column; gap:12px;">
-    <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid var(--border-subtle); padding-bottom:10px;">
-      <h3 style="display:flex; align-items:center; gap:8px;"><i data-lucide="database" style="color:var(--accent); width:16px;"></i> Database Engine Status</h3>
-      <span class="badge badge-ok">HEALTHY</span>
-    </div>
-
-    <div style="display:flex; flex-direction:column; gap:8px; font-family:var(--font-mono); font-size:12px;">
-      <div style="display:flex; justify-content:space-between; padding:8px; background:var(--bg-raised); border-radius:4px;">
-        <span style="color:var(--text-muted);">Database:</span>
-        <strong style="color:var(--text-primary);" id="db-name">forensics_db</strong>
+  <!-- =========================================================
+       PAGE HEADER
+       ========================================================= -->
+  <section class="page-header admin-header">
+    <div class="page-title">
+      <div class="page-breadcrumb">
+        <span>PLATFORM</span>
+        <span>/</span>
+        <span>ADMINISTRATION</span>
+        <span>/</span>
+        <span class="page-breadcrumb-current">SYSTEM CONSOLE</span>
       </div>
-      <div style="display:flex; justify-content:space-between; padding:8px; background:var(--bg-raised); border-radius:4px;">
-        <span style="color:var(--text-muted);">Engine User:</span>
-        <strong style="color:var(--text-primary);" id="db-user">postgres</strong>
-      </div>
-      <div style="display:flex; justify-content:space-between; padding:8px; background:var(--bg-raised); border-radius:4px;">
-        <span style="color:var(--text-muted);">Engine Version:</span>
-        <strong style="color:var(--text-primary);" id="db-ver">PostgreSQL 16.2</strong>
+
+      <div class="admin-title-row">
+        <div>
+          <h1>System Administration</h1>
+          <p>
+            Platform access, forensic data health, database status,
+            and machine-learning runtime visibility.
+          </p>
+        </div>
+
+        <div class="admin-runtime-status">
+          <span class="admin-status-dot"></span>
+          <div>
+            <strong>SYSTEM ONLINE</strong>
+            <span>ADMIN CONSOLE</span>
+          </div>
+        </div>
       </div>
     </div>
-  </div>
+  </section>
+
+
+  <!-- =========================================================
+       PLATFORM METRICS
+       ========================================================= -->
+  <section class="admin-metrics" aria-label="Platform metrics">
+
+    <article class="admin-metric-card">
+      <div class="admin-metric-top">
+        <div class="admin-metric-icon">
+          <i data-lucide="users"></i>
+        </div>
+
+        <span class="admin-metric-label">PLATFORM USERS</span>
+      </div>
+
+      <div class="admin-metric-value" id="adm-users">--</div>
+
+      <div class="admin-metric-footer">
+        <span class="admin-metric-indicator"></span>
+        <span>Registered accounts</span>
+      </div>
+    </article>
+
+
+    <article class="admin-metric-card">
+      <div class="admin-metric-top">
+        <div class="admin-metric-icon">
+          <i data-lucide="file-search"></i>
+        </div>
+
+        <span class="admin-metric-label">PARSED LOG RECORDS</span>
+      </div>
+
+      <div class="admin-metric-value accent" id="adm-logs">--</div>
+
+      <div class="admin-metric-footer">
+        <span class="admin-metric-indicator"></span>
+        <span>Processed forensic records</span>
+      </div>
+    </article>
+
+
+    <article class="admin-metric-card">
+      <div class="admin-metric-top">
+        <div class="admin-metric-icon warning">
+          <i data-lucide="triangle-alert"></i>
+        </div>
+
+        <span class="admin-metric-label">RISK ANOMALIES</span>
+      </div>
+
+      <div class="admin-metric-value warning" id="adm-risks">--</div>
+
+      <div class="admin-metric-footer">
+        <span class="admin-metric-indicator warning"></span>
+        <span>Detected risk events</span>
+      </div>
+    </article>
+
+
+    <article class="admin-metric-card">
+      <div class="admin-metric-top">
+        <div class="admin-metric-icon model">
+          <i data-lucide="brain-circuit"></i>
+        </div>
+
+        <span class="admin-metric-label">ML MODEL VERSION</span>
+      </div>
+
+      <div class="admin-metric-value model" id="adm-model">v2.4-rf</div>
+
+      <div class="admin-metric-footer">
+        <span class="admin-metric-indicator model"></span>
+        <span>Active detection model</span>
+      </div>
+    </article>
+
+  </section>
+
+
+  <!-- =========================================================
+       MAIN ADMINISTRATION GRID
+       ========================================================= -->
+  <section class="admin-main-grid">
+
+    <!-- =======================================================
+         USER ACCOUNTS
+         ======================================================= -->
+    <article class="card admin-users-panel">
+
+      <div class="card-header admin-panel-header">
+
+        <div class="admin-panel-heading">
+          <div class="admin-section-icon">
+            <i data-lucide="users-round"></i>
+          </div>
+
+          <div>
+            <div class="card-title">Registered User Accounts</div>
+            <p class="admin-panel-description">
+              Current platform identities and access roles
+            </p>
+          </div>
+        </div>
+
+        <div class="admin-panel-meta">
+          <span class="admin-live-dot"></span>
+          LIVE DATA
+        </div>
+
+      </div>
+
+
+      <div class="admin-user-toolbar">
+
+        <div class="admin-search">
+          <i data-lucide="search"></i>
+          <input
+            type="search"
+            id="admin-user-search"
+            placeholder="Search users or email..."
+            autocomplete="off"
+          >
+        </div>
+
+        <div class="admin-user-count">
+          <span id="admin-visible-users">--</span>
+          <span>accounts</span>
+        </div>
+
+      </div>
+
+
+      <div class="table-wrap admin-table-wrap">
+
+        <table class="table admin-users-table">
+
+          <thead>
+            <tr>
+              <th>IDENTITY</th>
+              <th>EMAIL ADDRESS</th>
+              <th>ACCESS ROLE</th>
+              <th>ACCOUNT STATUS</th>
+            </tr>
+          </thead>
+
+          <tbody id="adm-users-tbody">
+
+            <tr class="admin-loading-row">
+              <td colspan="4">
+                <div class="admin-table-loading">
+                  <span class="admin-loader"></span>
+                  <span>Loading registered accounts...</span>
+                </div>
+              </td>
+            </tr>
+
+          </tbody>
+
+        </table>
+
+      </div>
+
+    </article>
+
+
+    <!-- =======================================================
+         DATABASE ENGINE
+         ======================================================= -->
+    <aside class="admin-database-panel">
+
+      <article class="card admin-db-card">
+
+        <div class="admin-db-header">
+
+          <div class="admin-panel-heading">
+            <div class="admin-section-icon database">
+              <i data-lucide="database"></i>
+            </div>
+
+            <div>
+              <div class="card-title">Database Engine</div>
+              <p class="admin-panel-description">
+                Persistence layer status
+              </p>
+            </div>
+          </div>
+
+          <span class="badge badge-ok">
+            <span class="admin-badge-dot"></span>
+            HEALTHY
+          </span>
+
+        </div>
+
+
+        <div class="admin-db-health">
+
+          <div class="admin-db-health-line">
+            <span></span>
+            <span></span>
+            <span></span>
+            <span></span>
+            <span></span>
+            <span></span>
+            <span></span>
+            <span></span>
+          </div>
+
+          <div class="admin-db-health-label">
+            <span>ENGINE STATUS</span>
+            <strong>OPERATIONAL</strong>
+          </div>
+
+        </div>
+
+
+        <div class="admin-db-details">
+
+          <div class="admin-db-detail">
+            <div class="admin-db-detail-icon">
+              <i data-lucide="database-zap"></i>
+            </div>
+
+            <div class="admin-db-detail-content">
+              <span>DATABASE</span>
+              <strong id="db-name">forensics_db</strong>
+            </div>
+          </div>
+
+
+          <div class="admin-db-detail">
+            <div class="admin-db-detail-icon">
+              <i data-lucide="user-cog"></i>
+            </div>
+
+            <div class="admin-db-detail-content">
+              <span>ENGINE USER</span>
+              <strong id="db-user">postgres</strong>
+            </div>
+          </div>
+
+
+          <div class="admin-db-detail">
+            <div class="admin-db-detail-icon">
+              <i data-lucide="server-cog"></i>
+            </div>
+
+            <div class="admin-db-detail-content">
+              <span>ENGINE VERSION</span>
+              <strong id="db-ver">PostgreSQL 16.2</strong>
+            </div>
+          </div>
+
+        </div>
+
+
+        <div class="admin-db-footer">
+
+          <div class="admin-db-footer-icon">
+            <i data-lucide="shield-check"></i>
+          </div>
+
+          <div>
+            <strong>Persistence layer available</strong>
+            <span>
+              Database connectivity is available to the administration console.
+            </span>
+          </div>
+
+        </div>
+
+      </article>
+
+
+      <!-- =====================================================
+           MODEL HEALTH
+           ===================================================== -->
+      <article class="card admin-model-card">
+
+        <div class="admin-model-header">
+
+          <div class="admin-panel-heading">
+            <div class="admin-section-icon model">
+              <i data-lucide="brain-circuit"></i>
+            </div>
+
+            <div>
+              <div class="card-title">Model Runtime</div>
+              <p class="admin-panel-description">
+                Detection model metadata
+              </p>
+            </div>
+          </div>
+
+          <span class="admin-model-version" id="adm-model-secondary">
+            v2.4-rf
+          </span>
+
+        </div>
+
+
+        <div class="admin-model-visual">
+
+          <div class="admin-model-ring">
+            <div class="admin-model-ring-inner">
+              <i data-lucide="scan-search"></i>
+              <span>ML</span>
+            </div>
+          </div>
+
+          <div class="admin-model-copy">
+            <span>ACTIVE MODEL</span>
+            <strong id="adm-model-label">Random Forest</strong>
+            <p>
+              Model metadata is synchronized with the administration API.
+            </p>
+          </div>
+
+        </div>
+
+
+        <div class="admin-model-meta">
+
+          <div>
+            <span>STATUS</span>
+            <strong>
+              <span class="admin-status-dot"></span>
+              READY
+            </strong>
+          </div>
+
+          <div>
+            <span>VERSION</span>
+            <strong id="adm-model-meta-version">v2.4-rf</strong>
+          </div>
+
+        </div>
+
+      </article>
+
+    </aside>
+
+  </section>
+
+
+  <!-- =========================================================
+       ADMIN CONSOLE FOOTER
+       ========================================================= -->
+  <section class="admin-console-footer">
+
+    <div class="admin-console-footer-icon">
+      <i data-lucide="lock-keyhole"></i>
+    </div>
+
+    <div>
+      <strong>Administrative Console</strong>
+      <p>
+        Access to this area should remain restricted to authorized platform administrators.
+      </p>
+    </div>
+
+    <div class="admin-console-footer-state">
+      <span></span>
+      SECURE SESSION
+    </div>
+
+  </section>
+
 </div>
+
 {% endblock %}
+
 
 {% block scripts %}
+
 <script>
-document.addEventListener('DOMContentLoaded', () => {
-  fetch('/api/v1/admin/overview')
-    .then((res) => (res.ok ? res.json() : null))
+document.addEventListener("DOMContentLoaded", () => {
+
+  /*
+   * ==========================================================
+   * ADMIN OVERVIEW
+   * ==========================================================
+   */
+
+  fetch("/api/v1/admin/overview")
+    .then((res) => {
+      if (!res.ok) {
+        throw new Error("Unable to load administration overview");
+      }
+
+      return res.json();
+    })
     .then((data) => {
-      if (!data) return;
-      document.getElementById('adm-users').textContent = data.users || 0;
-      document.getElementById('adm-logs').textContent = (data.logs || 0).toLocaleString();
-      document.getElementById('adm-risks').textContent = data.risks || 0;
-      if (data.model_version) document.getElementById('adm-model').textContent = data.model_version;
+
+      const users = document.getElementById("adm-users");
+      const logs = document.getElementById("adm-logs");
+      const risks = document.getElementById("adm-risks");
+      const model = document.getElementById("adm-model");
+
+      if (users) {
+        users.textContent = Number(data.users || 0).toLocaleString();
+      }
+
+      if (logs) {
+        logs.textContent = Number(data.logs || 0).toLocaleString();
+      }
+
+      if (risks) {
+        risks.textContent = Number(data.risks || 0).toLocaleString();
+      }
+
+      if (data.model_version) {
+
+        if (model) {
+          model.textContent = data.model_version;
+        }
+
+        const secondaryModel =
+          document.getElementById("adm-model-secondary");
+
+        const metaModel =
+          document.getElementById("adm-model-meta-version");
+
+        if (secondaryModel) {
+          secondaryModel.textContent = data.model_version;
+        }
+
+        if (metaModel) {
+          metaModel.textContent = data.model_version;
+        }
+      }
+
+    })
+    .catch(() => {
+
+      const targets = [
+        "adm-users",
+        "adm-logs",
+        "adm-risks"
+      ];
+
+      targets.forEach((id) => {
+
+        const element = document.getElementById(id);
+
+        if (element) {
+          element.textContent = "—";
+        }
+
+      });
+
     });
 
-  fetch('/api/v1/admin/users')
-    .then((res) => (res.ok ? res.json() : []))
-    .then((users) => {
-      const tbody = document.getElementById('adm-users-tbody');
-      if (!tbody) return;
-      tbody.innerHTML = users.map((u) => `
+
+  /*
+   * ==========================================================
+   * REGISTERED USERS
+   * ==========================================================
+   */
+
+  const tbody = document.getElementById("adm-users-tbody");
+  const searchInput = document.getElementById("admin-user-search");
+  const visibleCount = document.getElementById("admin-visible-users");
+
+  let adminUsers = [];
+
+
+  function renderUsers(users) {
+
+    if (!tbody) {
+      return;
+    }
+
+    if (!users.length) {
+
+      tbody.innerHTML = `
         <tr>
-          <td style="font-weight:700; color:var(--text-primary);">${u.name}</td>
-          <td style="font-family:var(--font-mono); font-size:11.5px; color:var(--text-muted);">${u.email}</td>
-          <td><span class="badge ${u.role === 'admin' ? 'badge-critical' : 'badge-accent'}">${u.role.toUpperCase()}</span></td>
-          <td><span class="badge ${u.active ? 'badge-ok' : 'badge-default'}">${u.active ? 'ACTIVE' : 'INACTIVE'}</span></td>
+          <td colspan="4">
+            <div class="admin-empty-state">
+              <div class="admin-empty-icon">
+                <i data-lucide="users-round"></i>
+              </div>
+
+              <strong>No users found</strong>
+
+              <span>
+                No registered accounts match the current search.
+              </span>
+            </div>
+          </td>
         </tr>
-      `).join('');
+      `;
+
+      if (visibleCount) {
+        visibleCount.textContent = "0";
+      }
+
+      if (window.lucide) {
+        lucide.createIcons();
+      }
+
+      return;
+    }
+
+
+    tbody.innerHTML = users.map((user) => {
+
+      const name = escapeHTML(user.name || "Unknown User");
+      const email = escapeHTML(user.email || "—");
+      const role = String(user.role || "user").toLowerCase();
+      const active = Boolean(user.active);
+
+      const roleClass =
+        role === "admin"
+          ? "badge-critical"
+          : "badge-accent";
+
+      const statusClass =
+        active
+          ? "badge-ok"
+          : "badge-default";
+
+      const statusText =
+        active
+          ? "ACTIVE"
+          : "INACTIVE";
+
+
+      return `
+        <tr class="admin-user-row"
+            data-search="${escapeHTML(
+              `${user.name || ""} ${user.email || ""} ${role}`
+            ).toLowerCase()}">
+
+          <td>
+            <div class="admin-identity">
+
+              <div class="admin-avatar">
+                ${escapeHTML(
+                  String(user.name || "U")
+                    .trim()
+                    .charAt(0)
+                    .toUpperCase()
+                )}
+              </div>
+
+              <div class="admin-identity-copy">
+                <strong>${name}</strong>
+                <span>PLATFORM IDENTITY</span>
+              </div>
+
+            </div>
+          </td>
+
+          <td>
+            <span class="admin-email">
+              ${email}
+            </span>
+          </td>
+
+          <td>
+            <span class="badge ${roleClass}">
+              ${escapeHTML(role.toUpperCase())}
+            </span>
+          </td>
+
+          <td>
+            <span class="badge ${statusClass}">
+              <span class="admin-badge-dot"></span>
+              ${statusText}
+            </span>
+          </td>
+
+        </tr>
+      `;
+
+    }).join("");
+
+
+    if (visibleCount) {
+      visibleCount.textContent = users.length.toLocaleString();
+    }
+
+    if (window.lucide) {
+      lucide.createIcons();
+    }
+  }
+
+
+  function filterUsers() {
+
+    const query =
+      String(searchInput?.value || "")
+        .trim()
+        .toLowerCase();
+
+    const filtered = adminUsers.filter((user) => {
+
+      const searchable = [
+        user.name || "",
+        user.email || "",
+        user.role || ""
+      ]
+        .join(" ")
+        .toLowerCase();
+
+      return searchable.includes(query);
     });
+
+    renderUsers(filtered);
+  }
+
+
+  function escapeHTML(value) {
+
+    return String(value)
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;")
+      .replace(/'/g, "&#039;");
+  }
+
+
+  if (searchInput) {
+    searchInput.addEventListener("input", filterUsers);
+  }
+
+
+  fetch("/api/v1/admin/users")
+    .then((res) => {
+
+      if (!res.ok) {
+        throw new Error("Unable to load users");
+      }
+
+      return res.json();
+    })
+    .then((users) => {
+
+      adminUsers =
+        Array.isArray(users)
+          ? users
+          : [];
+
+      renderUsers(adminUsers);
+
+    })
+    .catch(() => {
+
+      if (!tbody) {
+        return;
+      }
+
+      tbody.innerHTML = `
+        <tr>
+          <td colspan="4">
+            <div class="admin-error-state">
+              <div class="admin-error-icon">
+                <i data-lucide="cloud-off"></i>
+              </div>
+
+              <strong>Unable to load user accounts</strong>
+
+              <span>
+                The administration service did not return user data.
+              </span>
+            </div>
+          </td>
+        </tr>
+      `;
+
+      if (visibleCount) {
+        visibleCount.textContent = "—";
+      }
+
+      if (window.lucide) {
+        lucide.createIcons();
+      }
+    });
+
 });
 </script>
-{% endblock %}
 
+{% endblock %}

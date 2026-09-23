@@ -1,65 +1,446 @@
 {% extends "base.html" %}
 
-{% block title %}{{ attack.name }} ({{ attack.mitre }}) — Log Forensics{% endblock %}
+{% block title %}{{ attack.name }} · {{ attack.mitre }} — Log Forensics{% endblock %}
 
 {% block content %}
-<div class="page-header">
-  <div class="page-title">
-    <div class="page-breadcrumb">
-      <span>PLATFORM</span> / <span>MITRE FRAMEWORK</span> / <span class="page-breadcrumb-current">{{ attack.mitre }}</span>
-    </div>
-    <h1>{{ attack.name }}</h1>
-    <p>Technique ID: {{ attack.mitre }} · Tactic: {{ attack.tactic }}</p>
+
+<section class="intel-detail-page">
+
+  <!-- =========================================================
+       PAGE HEADER
+       ========================================================= -->
+
+  <div class="page-header intel-page-header">
+
+
+<div class="page-title">
+  <div class="page-breadcrumb">
+    <span>PLATFORM</span>
+    <span>/</span>
+    <span>MITRE ATT&amp;CK</span>
+    <span>/</span>
+    <span class="page-breadcrumb-current">{{ attack.mitre }}</span>
   </div>
 
-  <a href="{{ url_for('dashboard.attack_intelligence') }}" class="btn btn-secondary btn-sm">← Back to ATT&CK Matrix</a>
+  <div class="intel-title-row">
+    <div class="intel-title-mark">
+      <i data-lucide="crosshair"></i>
+    </div>
+
+    <div>
+      <h1>{{ attack.name }}</h1>
+      <p>
+        ATT&amp;CK technique intelligence, detection telemetry,
+        and defensive controls
+      </p>
+    </div>
+  </div>
 </div>
 
-<!-- Hero Card -->
-<div class="card card-body" style="background: linear-gradient(to right, rgba(124,58,237,0.06), var(--bg-surface)); border-color: var(--mitre-border);">
-  <div style="display:flex; justify-content:space-between; align-items:flex-start;">
-    <div>
-      <div style="display:flex; gap:8px; align-items:center;">
-        <span class="badge badge-mitre">{{ attack.mitre }}</span>
-        <span style="font-size:11px; font-family:var(--font-mono); color:var(--text-muted); uppercase;">TACTIC: {{ attack.tactic }}</span>
-      </div>
-      <h2 style="margin-top:6px;">{{ attack.name }}</h2>
-      <p style="font-size:12.5px; margin-top:4px; max-width:800px; color:var(--text-secondary);">{{ attack.summary }}</p>
+<a
+  href="{{ url_for('dashboard.attack_intelligence') }}"
+  class="btn btn-secondary btn-sm"
+>
+  <i data-lucide="arrow-left" style="width:14px;"></i>
+  Back to Matrix
+</a>
+
+
+  </div>
+
+  <!-- =========================================================
+       TECHNIQUE HERO
+       ========================================================= -->
+
+  <section class="attack-hero-card">
+
+
+<div class="attack-hero-grid">
+
+  <div class="attack-identity">
+
+    <div class="attack-identity-top">
+      <span class="attack-id-badge">
+        {{ attack.mitre }}
+      </span>
+
+      <span class="attack-status">
+        <span class="attack-status-dot"></span>
+        TECHNIQUE PROFILE
+      </span>
     </div>
+
+    <h2>{{ attack.name }}</h2>
+
+    <div class="attack-meta-row">
+
+      <div class="attack-meta">
+        <span class="attack-meta-label">TACTIC</span>
+        <strong>{{ attack.tactic }}</strong>
+      </div>
+
+      {% if attack.urgency %}
+      <div class="attack-meta">
+        <span class="attack-meta-label">URGENCY</span>
+        <strong>{{ attack.urgency }}</strong>
+      </div>
+      {% endif %}
+
+      <div class="attack-meta">
+        <span class="attack-meta-label">FRAMEWORK</span>
+        <strong>MITRE ATT&amp;CK</strong>
+      </div>
+
+    </div>
+
+    {% if attack.summary %}
+    <div class="attack-summary">
+      <div class="attack-summary-icon">
+        <i data-lucide="file-search"></i>
+      </div>
+
+      <p>{{ attack.summary }}</p>
+    </div>
+    {% endif %}
+
+  </div>
+
+
+  <div class="attack-reference-panel">
+
+    <div class="reference-orbit">
+      <div class="reference-orbit-ring"></div>
+
+      <div class="reference-core">
+        <i data-lucide="crosshair"></i>
+      </div>
+    </div>
+
+    <span class="reference-label">
+      TECHNIQUE
+    </span>
+
+    <strong class="reference-id">
+      {{ attack.mitre }}
+    </strong>
 
     {% if attack.reference %}
-    <a href="{{ attack.reference }}" target="_blank" class="btn btn-secondary btn-sm" style="font-family:var(--font-mono); font-size:11px;">MITRE Docs ↗</a>
+    <a
+      href="{{ attack.reference }}"
+      target="_blank"
+      rel="noopener noreferrer"
+      class="reference-link"
+    >
+      <i data-lucide="external-link"></i>
+      Open MITRE Documentation
+    </a>
     {% endif %}
-  </div>
-</div>
 
-<div class="grid-2" style="margin-top:16px;">
-  <!-- Signals -->
-  <div class="card">
-    <div class="card-header">
-      <div class="card-title"><i data-lucide="terminal" style="color:var(--accent);"></i> Detection Signals & Telemetry Rules</div>
-    </div>
-    <div class="card-body" style="display:flex; flex-direction:column; gap:8px;">
-      {% for sig in attack.signals %}
-      <div style="padding:10px; background:var(--bg-raised); border-radius:var(--r-md); font-family:var(--font-mono); font-size:11.5px; color:var(--text-secondary); border:1px solid var(--border-subtle);">
-        <strong style="color:var(--accent);">0{{ loop.index }}.</strong> {{ sig }}
-      </div>
-      {% endfor %}
-    </div>
   </div>
 
-  <!-- Solutions -->
-  <div class="card">
-    <div class="card-header">
-      <div class="card-title"><i data-lucide="shield-check" style="color:var(--ok);"></i> Mitigation & Security Controls</div>
-    </div>
-    <div class="card-body" style="display:flex; flex-direction:column; gap:8px;">
-      {% for sol in attack.solutions %}
-      <div style="padding:10px; background:var(--bg-raised); border-radius:var(--r-md); font-size:12px; color:var(--text-secondary); border:1px solid var(--border-subtle); display:flex; gap:8px;">
-        <span style="color:var(--ok); font-weight:700;">✓</span> {{ sol }}
-      </div>
-      {% endfor %}
-    </div>
-  </div>
 </div>
+
+
+  </section>
+
+  <!-- =========================================================
+       INTELLIGENCE OVERVIEW
+       ========================================================= -->
+
+  <div class="attack-section-heading">
+
+
+<div>
+  <span class="section-kicker">TECHNIQUE INTELLIGENCE</span>
+  <h2>Detection &amp; Defensive Context</h2>
+</div>
+
+<span class="section-counter">
+  {{ attack.signals|length }} SIGNALS
+  <span>·</span>
+  {{ attack.solutions|length }} CONTROLS
+</span>
+
+
+  </div>
+
+  <!-- =========================================================
+       SIGNALS + MITIGATION
+       ========================================================= -->
+
+  <div class="attack-intelligence-grid">
+
+
+<!-- Detection Signals -->
+<section class="intel-panel">
+
+  <div class="intel-panel-header">
+
+    <div class="intel-panel-title">
+      <div class="panel-icon panel-icon-detection">
+        <i data-lucide="scan-search"></i>
+      </div>
+
+      <div>
+        <span class="panel-kicker">OBSERVATION LAYER</span>
+        <h3>Detection Signals</h3>
+      </div>
+    </div>
+
+    <span class="panel-count">
+      {{ attack.signals|length }}
+    </span>
+
+  </div>
+
+
+  <div class="signal-list">
+
+    {% for sig in attack.signals %}
+
+    <article class="signal-item">
+
+      <div class="signal-index">
+        {{ "%02d"|format(loop.index) }}
+      </div>
+
+      <div class="signal-content">
+        <div class="signal-label">
+          TELEMETRY RULE {{ loop.index }}
+        </div>
+
+        <p>{{ sig }}</p>
+      </div>
+
+      <div class="signal-arrow">
+        <i data-lucide="arrow-up-right"></i>
+      </div>
+
+    </article>
+
+    {% else %}
+
+    <div class="intel-empty-state">
+      <i data-lucide="scan-line"></i>
+      <span>No detection signals available.</span>
+    </div>
+
+    {% endfor %}
+
+  </div>
+
+</section>
+
+
+<!-- Mitigation Controls -->
+<section class="intel-panel">
+
+  <div class="intel-panel-header">
+
+    <div class="intel-panel-title">
+      <div class="panel-icon panel-icon-defense">
+        <i data-lucide="shield-check"></i>
+      </div>
+
+      <div>
+        <span class="panel-kicker">DEFENSE LAYER</span>
+        <h3>Mitigation Controls</h3>
+      </div>
+    </div>
+
+    <span class="panel-count">
+      {{ attack.solutions|length }}
+    </span>
+
+  </div>
+
+
+  <div class="control-list">
+
+    {% for sol in attack.solutions %}
+
+    <article class="control-item">
+
+      <div class="control-check">
+        <i data-lucide="check"></i>
+      </div>
+
+      <div class="control-content">
+        <span class="control-label">
+          CONTROL {{ "%02d"|format(loop.index) }}
+        </span>
+
+        <p>{{ sol }}</p>
+      </div>
+
+    </article>
+
+    {% else %}
+
+    <div class="intel-empty-state">
+      <i data-lucide="shield-off"></i>
+      <span>No mitigation controls available.</span>
+    </div>
+
+    {% endfor %}
+
+  </div>
+
+</section>
+
+
+  </div>
+
+  <!-- =========================================================
+       INVESTIGATION FLOW
+       ========================================================= -->
+
+  <section class="investigation-flow-panel">
+
+
+<div class="flow-header">
+
+  <div>
+    <span class="section-kicker">ANALYST WORKFLOW</span>
+    <h2>Technique Investigation Flow</h2>
+  </div>
+
+  <span class="flow-live-indicator">
+    <span></span>
+    ANALYSIS PATH
+  </span>
+
+</div>
+
+
+<div class="investigation-flow">
+
+  <div class="flow-node">
+
+    <div class="flow-node-number">01</div>
+
+    <div class="flow-node-icon">
+      <i data-lucide="database"></i>
+    </div>
+
+    <div>
+      <span>COLLECT</span>
+      <strong>Raw Telemetry</strong>
+    </div>
+
+  </div>
+
+
+  <div class="flow-connector">
+    <span></span>
+  </div>
+
+
+  <div class="flow-node">
+
+    <div class="flow-node-number">02</div>
+
+    <div class="flow-node-icon">
+      <i data-lucide="scan-search"></i>
+    </div>
+
+    <div>
+      <span>DETECT</span>
+      <strong>Signals</strong>
+    </div>
+
+  </div>
+
+
+  <div class="flow-connector">
+    <span></span>
+  </div>
+
+
+  <div class="flow-node">
+
+    <div class="flow-node-number">03</div>
+
+    <div class="flow-node-icon">
+      <i data-lucide="crosshair"></i>
+    </div>
+
+    <div>
+      <span>MAP</span>
+      <strong>{{ attack.mitre }}</strong>
+    </div>
+
+  </div>
+
+
+  <div class="flow-connector">
+    <span></span>
+  </div>
+
+
+  <div class="flow-node">
+
+    <div class="flow-node-number">04</div>
+
+    <div class="flow-node-icon">
+      <i data-lucide="shield-check"></i>
+    </div>
+
+    <div>
+      <span>RESPOND</span>
+      <strong>Security Controls</strong>
+    </div>
+
+  </div>
+
+</div>
+
+
+  </section>
+
+  <!-- =========================================================
+       FOOTER ACTIONS
+       ========================================================= -->
+
+  <div class="attack-footer-actions">
+
+
+<div class="attack-footer-context">
+  <i data-lucide="info"></i>
+
+  <span>
+    Technique intelligence is derived from the application's
+    configured MITRE ATT&amp;CK knowledge base.
+  </span>
+</div>
+
+<div class="attack-footer-buttons">
+
+  {% if attack.reference %}
+  <a
+    href="{{ attack.reference }}"
+    target="_blank"
+    rel="noopener noreferrer"
+    class="btn btn-secondary btn-sm"
+  >
+    <i data-lucide="external-link" style="width:14px;"></i>
+    MITRE Reference
+  </a>
+  {% endif %}
+
+  <a
+    href="{{ url_for('dashboard.attack_intelligence') }}"
+    class="btn btn-primary btn-sm"
+  >
+    <i data-lucide="grid-2x2" style="width:14px;"></i>
+    Explore Matrix
+  </a>
+
+</div>
+
+
+  </div>
+
+</section>
+
 {% endblock %}

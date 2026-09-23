@@ -4,7 +4,7 @@ A self-hosted cybersecurity SIEM/forensics platform for analysts. Upload log evi
 
 ## Architecture
 
-```
+
 React SPA (Vite + TypeScript)
     ↓  HttpOnly JWT cookies + CSRF
 Flask API (/api/v1/*)
@@ -12,7 +12,7 @@ Flask API (/api/v1/*)
 Services → Engines → Repositories
     ↓
 PostgreSQL  +  PyOD ML models  +  SSE event stream
-```
+
 
 ## Stack
 
@@ -36,10 +36,10 @@ docker compose up -d --build
 
 ## Quick start
 
-```bash
+bash
 cp .env.example .env          # fill in values
 docker compose up --build
-```
+
 
 App available at http://localhost:5000 by default.
 
@@ -78,13 +78,13 @@ Change these before any real deployment.
 
 ## Frontend development
 
-```bash
+bash
 cd frontend
 npm install
 npm run dev      # http://localhost:5173
 npm run build    # Production build → dist/
 npm run type-check
-```
+
 
 ## Security notes
 
@@ -98,7 +98,7 @@ npm run type-check
 ## Design system
 
 The v2 UI uses:
-- **Manrope** — primary sans-serif interface font
+ **Manrope** — primary sans-serif interface font
 - **JetBrains Mono** — monospace for IDs, hashes, timestamps, code
 - Dark slate palette (`#0d1117` base, `#388bfd` accent)
 - CSS custom properties throughout — easily themed

@@ -24,7 +24,7 @@ const remediationPhases = [
   {
     phase: "04",
     title: "Report",
-    problem: "Analysts need a defensible record of evidence and reasoning.",
+    problem: "Users need a defensible record of evidence and reasoning.",
     action: "Generate the forensic PDF from the evidence archive after reviewing findings and MITRE mappings.",
     verify: "Ensure the report contains only backend-returned findings and recommendations.",
   },
