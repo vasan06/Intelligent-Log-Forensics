@@ -1,0 +1,97 @@
+﻿/* ==========================================================================
+   INTELLIGENT LOG FORENSIC - DESIGN TOKENS
+   Godmode Spec: Cyber Threat Intelligence Visual Palette
+   ========================================================================== */
+
+:root {
+  /* Color System */
+  --bg-primary: #f5f7fb;
+  --surface-primary: #ffffff;
+  --surface-secondary: #eef2f7;
+  --surface-tertiary: #e3eaf3;
+  --panel-border: #d8e0ea;
+  --panel-border-glow: rgba(79, 70, 229, 0.2);
+
+  /* Accents */
+  --accent-hero: #4F46E5;         /* Electric Indigo */
+  --accent-hero-glow: rgba(79, 70, 229, 0.4);
+  --accent-data: #06B6D4;         /* Cyan */
+  --accent-data-glow: rgba(6, 182, 212, 0.4);
+  --accent-sky: #0EA5E9;
+
+  /* Threat Severity Tiers */
+  --threat-critical: #EF4444;     /* Level 4 */
+  --threat-critical-glow: rgba(239, 68, 68, 0.35);
+  --threat-critical-bg: rgba(239, 68, 68, 0.12);
+
+  --threat-high: #F97316;         /* Level 3 */
+  --threat-high-glow: rgba(249, 115, 22, 0.35);
+  --threat-high-bg: rgba(249, 115, 22, 0.12);
+
+  --threat-medium: #EAB308;       /* Level 2 */
+  --threat-medium-glow: rgba(234, 179, 8, 0.35);
+  --threat-medium-bg: rgba(234, 179, 8, 0.12);
+
+  --threat-safe: #22C55E;         /* Level 1 / Low / Safe */
+  --threat-safe-glow: rgba(34, 197, 94, 0.35);
+  --threat-safe-bg: rgba(34, 197, 94, 0.12);
+
+  /* Typography Colors */
+  --text-primary: #172033;
+  --text-secondary: #475569;
+  --text-muted: #64748b;
+  --text-data: #52647a;
+  --text-highlight: #0284c7;
+
+  /* Gradients */
+  --gradient-hero: linear-gradient(135deg, #4F46E5 0%, #06B6D4 50%, #0EA5E9 100%);
+  --gradient-surface: linear-gradient(180deg, rgba(255, 255, 255, 0.96) 0%, rgba(245, 247, 251, 0.98) 100%);
+  --gradient-glow-radial: radial-gradient(circle at 50% 0%, rgba(79, 70, 229, 0.08) 0%, transparent 70%);
+  --gradient-threat-glow: radial-gradient(circle at center, rgba(239, 68, 68, 0.25) 0%, transparent 70%);
+
+  /* Typography Families */
+  --font-display: 'Space Grotesk', -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-body: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --font-mono: 'JetBrains Mono', SFMono-Regular, Consolas, monospace;
+
+  /* Spacing Scale */
+  --space-1: 0.25rem;  /* 4px */
+  --space-2: 0.5rem;   /* 8px */
+  --space-3: 0.75rem;  /* 12px */
+  --space-4: 1rem;     /* 16px */
+  --space-5: 1.25rem;  /* 20px */
+  --space-6: 1.5rem;   /* 24px */
+  --space-8: 2rem;     /* 32px */
+  --space-10: 2.5rem;  /* 40px */
+  --space-12: 3rem;    /* 48px */
+  --space-16: 4rem;    /* 64px */
+  --space-20: 5rem;    /* 80px */
+
+  /* Border Radii */
+  --radius-xs: 4px;
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+  --radius-xl: 24px;
+  --radius-full: 9999px;
+
+  /* Shadows & Glows */
+  --shadow-sm: 0 2px 8px rgba(31, 45, 61, 0.08);
+  --shadow-md: 0 4px 20px rgba(31, 45, 61, 0.12);
+  --shadow-lg: 0 12px 36px rgba(31, 45, 61, 0.16);
+  --glow-indigo: 0 0 24px rgba(79, 70, 229, 0.35);
+  --glow-cyan: 0 0 24px rgba(6, 182, 212, 0.35);
+  --glow-critical: 0 0 24px rgba(239, 68, 68, 0.4);
+
+  /* Transitions */
+  --transition-fast: 150ms cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-normal: 250ms cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-smooth: 400ms cubic-bezier(0.16, 1, 0.3, 1);
+
+  /* Layout Constants */
+  --sidebar-collapsed-width: 68px;
+  --sidebar-expanded-width: 250px;
+  --header-height: 68px;
+  --max-width: 1440px;
+}
+

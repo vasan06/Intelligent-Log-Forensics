@@ -1,0 +1,214 @@
+﻿/* ==========================================================================
+   DASHBOARD PAGE STYLES - SOC FORENSIC MONITOR
+   ========================================================================== */
+
+.dashboard-hero-panel {
+  display: grid;
+  grid-template-columns: 1fr 340px;
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.96) 0%, rgba(238, 242, 247, 0.85) 100%);
+  border: 1px solid var(--panel-border);
+  border-radius: var(--radius-lg);
+  padding: var(--space-6) var(--space-8);
+  margin-bottom: var(--space-8);
+  position: relative;
+  overflow: hidden;
+  align-items: center;
+}
+
+.dashboard-hero-info {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.system-status-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  background: rgba(34, 197, 94, 0.1);
+  border: 1px solid rgba(34, 197, 94, 0.3);
+  padding: 4px 10px;
+  border-radius: var(--radius-full);
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  color: var(--threat-safe);
+  width: fit-content;
+}
+
+.dashboard-3d-cube-container {
+  width: 100%;
+  height: 180px;
+  position: relative;
+}
+
+#dashboard-server-canvas {
+  width: 100% !important;
+  height: 100% !important;
+  display: block;
+}
+
+/* Generator Controls bar */
+.feed-controls-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 18px;
+  background: var(--surface-secondary);
+  border: 1px solid var(--panel-border);
+  border-radius: var(--radius-sm);
+  margin-bottom: var(--space-4);
+}
+
+.generator-status-indicator {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  font-family: var(--font-mono);
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+}
+
+/* Charts and Feeds Layout */
+.dashboard-grid-main {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: var(--space-6);
+  margin-bottom: var(--space-8);
+}
+
+.chart-card-body {
+  position: relative;
+  width: 100%;
+  height: 260px;
+}
+
+/* Custom SVG Donut Component */
+.svg-donut-wrapper {
+  position: relative;
+  width: 200px;
+  height: 200px;
+  margin: 0 auto;
+}
+
+.svg-donut-center {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  text-align: center;
+}
+
+.donut-center-value {
+  font-family: var(--font-display);
+  font-size: 1.8rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  line-height: 1;
+}
+
+.donut-center-label {
+  font-size: 0.72rem;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-top: 4px;
+}
+
+.donut-legend {
+  display: flex;
+  justify-content: space-around;
+  margin-top: var(--space-4);
+  padding-top: var(--space-4);
+  border-top: 1px solid var(--panel-border);
+}
+
+.legend-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  font-size: 0.75rem;
+  color: var(--text-muted);
+}
+
+.legend-color-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  margin-bottom: 4px;
+}
+
+/* Live Log Stream Table Container */
+.live-table-container {
+  height: 380px;
+  overflow-y: auto;
+  border: 1px solid var(--panel-border);
+  border-radius: var(--radius-sm);
+  background: var(--surface-primary);
+}
+
+.live-table-container table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.live-table-container tbody tr {
+  transition: background-color 0.4s ease;
+}
+
+.live-table-container td {
+  padding: 8px 14px;
+  font-size: 0.82rem;
+  border-bottom: 1px solid rgba(28, 46, 74, 0.4);
+}
+
+/* Recent Incidents List */
+.recent-incidents-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.incident-mini-card {
+  padding: 12px 16px;
+  background: var(--surface-secondary);
+  border: 1px solid var(--panel-border);
+  border-radius: var(--radius-sm);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  transition: all var(--transition-fast);
+  cursor: pointer;
+}
+
+.incident-mini-card:hover {
+  border-color: var(--accent-data);
+  transform: translateX(4px);
+}
+
+.incident-mini-title {
+  font-weight: 600;
+  font-size: 0.88rem;
+  color: var(--text-primary);
+  margin-bottom: 2px;
+}
+
+.incident-mini-meta {
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  display: flex;
+  gap: var(--space-3);
+}
+
+@media (max-width: 1024px) {
+  .dashboard-hero-panel {
+    grid-template-columns: 1fr;
+  }
+  .dashboard-3d-cube-container {
+    height: 140px;
+  }
+  .dashboard-grid-main {
+    grid-template-columns: 1fr;
+  }
+}
+

@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Log Forensic | {{ mode|capitalize }}</title>
+  <link rel="stylesheet" href="/static/css/tokens.css">
+  <link rel="stylesheet" href="/static/css/layout.css">
+  <link rel="stylesheet" href="/static/css/components.css">
+</head>
+<body>
+  <main style="min-height:100vh;display:grid;place-items:center;padding:2rem;">
+    <section class="forensic-card" style="width:min(100%,420px);">
+      <div class="brand-wrapper" style="margin-bottom:2rem;">
+        <div class="brand-logo-icon">LF</div>
+        <span class="brand-title">LOG FORENSIC</span>
+      </div>
+      {% for category, message in get_flashed_messages(with_categories=true) %}
+        <div class="badge badge-{{ 'critical' if category == 'danger' else 'safe' }}" style="margin-bottom:1rem;">{{ message }}</div>
+      {% endfor %}
+      <h1 class="page-title">{{ {'login':'Operator sign in','register':'Create operator account','recovery':'Recover access'}[mode] }}</h1>
+      <form method="post" style="display:grid;gap:1rem;margin-top:1.5rem;">
+        {% if mode == 'register' %}
+          <label>Display name<input class="form-control" name="display_name" required></label>
+        {% endif %}
+        <label>Work email<input class="form-control" type="email" name="work_email" required></label>
+        {% if mode != 'recovery' %}
+          <label>Password<input class="form-control" type="password" name="credential" required minlength="8"></label>
+        {% endif %}
+        <button class="btn btn-primary" type="submit">{{ 'Continue' if mode == 'recovery' else 'Authenticate' }}</button>
+      </form>
+      <p style="margin-top:1.5rem;color:var(--text-muted);font-size:.85rem;">
+        <a href="/" style="color:var(--accent-hero);">Return to portal</a>
+      </p>
+    </section>
+  </main>
+</body>
+</html>
+

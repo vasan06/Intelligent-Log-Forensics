@@ -1,0 +1,191 @@
+/* ==========================================================================
+   ANALYZE / UPLOAD PAGE STYLES - LIGHT EVIDENCE PIPELINE
+   ========================================================================== */
+
+.analyze-grid {
+  display: grid;
+  grid-template-columns: 1.1fr 1fr;
+  gap: var(--space-8);
+  margin-bottom: var(--space-8);
+  align-items: start;
+}
+
+/* Upload Zone */
+.upload-dropzone {
+  border: 2px dashed #CBD5E1;
+  background: #FFFFFF;
+  border-radius: var(--radius-lg);
+  padding: var(--space-12) var(--space-6);
+  text-align: center;
+  cursor: pointer;
+  transition: all var(--transition-normal);
+  position: relative;
+  overflow: hidden;
+  box-shadow: var(--shadow-sm);
+}
+
+.upload-dropzone:hover, .upload-dropzone.drag-active {
+  background: #F8FAFC;
+  border-color: var(--accent-hero);
+  box-shadow: var(--shadow-md);
+}
+
+.upload-icon-circle {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  background: #EEF2FF;
+  border: 1px solid #C7D2FE;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto var(--space-4);
+  color: var(--accent-hero);
+}
+
+.supported-formats-pills {
+  display: flex;
+  justify-content: center;
+  gap: var(--space-2);
+  margin-top: var(--space-4);
+}
+
+.format-badge {
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  padding: 4px 10px;
+  border-radius: var(--radius-xs);
+  background: var(--surface-secondary);
+  border: 1px solid var(--panel-border);
+  color: var(--text-secondary);
+}
+
+/* 3D Helix Canvas Container */
+.dna-helix-panel {
+  background: #FFFFFF;
+  border: 1px solid var(--panel-border);
+  border-radius: var(--radius-lg);
+  padding: var(--space-6);
+  display: flex;
+  flex-direction: column;
+  height: 520px;
+  position: relative;
+  box-shadow: var(--shadow-sm);
+}
+
+#evidence-helix-canvas {
+  width: 100% !important;
+  height: 100% !important;
+  display: block;
+}
+
+.helix-overlay-status {
+  position: absolute;
+  top: var(--space-6);
+  left: var(--space-6);
+  z-index: 10;
+  pointer-events: none;
+}
+
+/* Sequential Pipeline Steps */
+.pipeline-flow {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: var(--space-2);
+  margin: var(--space-6) 0;
+  background: #FFFFFF;
+  padding: var(--space-4);
+  border-radius: var(--radius-md);
+  border: 1px solid var(--panel-border);
+  box-shadow: var(--shadow-sm);
+}
+
+.pipeline-step {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  padding: var(--space-2);
+  border-radius: var(--radius-sm);
+  background: var(--surface-secondary);
+  border: 1px solid transparent;
+  transition: all var(--transition-normal);
+}
+
+.step-node-icon {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: #FFFFFF;
+  border: 1px solid var(--panel-border);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.75rem;
+  font-family: var(--font-mono);
+  color: var(--text-muted);
+  margin-bottom: var(--space-1);
+}
+
+.step-node-name {
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: var(--text-muted);
+}
+
+.pipeline-step.active {
+  border-color: var(--accent-hero);
+  background: #EEF2FF;
+}
+.pipeline-step.active .step-node-icon {
+  background: var(--accent-hero);
+  color: #FFFFFF;
+  border-color: var(--accent-hero);
+}
+.pipeline-step.active .step-node-name {
+  color: var(--accent-hero);
+}
+
+.pipeline-step.complete {
+  border-color: #BBF7D0;
+  background: #F0FDF4;
+}
+.pipeline-step.complete .step-node-icon {
+  background: var(--threat-safe);
+  color: #FFFFFF;
+  border-color: var(--threat-safe);
+}
+.pipeline-step.complete .step-node-name {
+  color: var(--threat-safe);
+}
+
+/* Results Panel */
+.analysis-results-panel {
+  display: none;
+  background: #FFFFFF;
+  border: 1px solid var(--panel-border);
+  border-radius: var(--radius-lg);
+  padding: var(--space-8);
+  margin-top: var(--space-8);
+  box-shadow: var(--shadow-sm);
+  animation: slideInFromBottom 0.5s ease forwards;
+}
+
+.analysis-results-panel.visible {
+  display: block;
+}
+
+@media (max-width: 1024px) {
+  .analyze-grid {
+    grid-template-columns: 1fr;
+  }
+  .pipeline-flow {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+
+@media (max-width: 640px) {
+  .pipeline-flow {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}

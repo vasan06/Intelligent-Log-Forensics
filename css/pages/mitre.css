@@ -1,0 +1,128 @@
+﻿/* ==========================================================================
+   MITRE ATT&CK PAGE STYLES - 3D TACTICAL MATRIX
+   ========================================================================== */
+
+.mitre-layout-wrapper {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  min-height: calc(100vh - 140px);
+}
+
+.tactic-filter-bar {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  overflow-x: auto;
+  padding-bottom: var(--space-4);
+  margin-bottom: var(--space-4);
+  border-bottom: 1px solid var(--panel-border);
+}
+
+.tactic-chip {
+  padding: 6px 14px;
+  background: var(--surface-secondary);
+  border: 1px solid var(--panel-border);
+  border-radius: var(--radius-full);
+  color: var(--text-secondary);
+  font-size: 0.8rem;
+  font-weight: 500;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all var(--transition-fast);
+}
+
+.tactic-chip:hover, .tactic-chip.active {
+  background: var(--accent-hero);
+  border-color: var(--accent-hero);
+  color: #FFFFFF;
+  box-shadow: 0 0 14px rgba(79, 70, 229, 0.4);
+}
+
+.mitre-3d-viewport {
+  width: 100%;
+  height: 620px;
+  background: radial-gradient(circle at center, rgba(238, 242, 247, 0.9) 0%, rgba(245, 247, 251, 0.98) 100%);
+  border: 1px solid var(--panel-border);
+  border-radius: var(--radius-lg);
+  position: relative;
+  overflow: hidden;
+}
+
+#mitre-matrix-canvas {
+  width: 100% !important;
+  height: 100% !important;
+  display: block;
+}
+
+.matrix-legend-overlay {
+  position: absolute;
+  bottom: 20px;
+  left: 20px;
+  background: rgba(255, 255, 255, 0.92);
+  backdrop-filter: blur(8px);
+  padding: 10px 16px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--panel-border);
+  display: flex;
+  gap: var(--space-4);
+  font-size: 0.75rem;
+  font-family: var(--font-mono);
+  z-index: 10;
+}
+
+/* Detail Drawer */
+.mitre-detail-drawer {
+  position: fixed;
+  top: 0;
+  right: -480px;
+  width: 460px;
+  max-width: 90vw;
+  height: 100vh;
+  background: var(--surface-primary);
+  border-left: 1px solid var(--panel-border);
+  box-shadow: -10px 0 30px rgba(0, 0, 0, 0.8);
+  z-index: 1200;
+  transition: right var(--transition-smooth);
+  display: flex;
+  flex-direction: column;
+}
+
+.mitre-detail-drawer.open {
+  right: 0;
+}
+
+.drawer-header {
+  padding: var(--space-6);
+  border-bottom: 1px solid var(--panel-border);
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+}
+
+.drawer-body {
+  padding: var(--space-6);
+  overflow-y: auto;
+  flex-grow: 1;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-6);
+}
+
+.drawer-close-btn {
+  background: transparent;
+  border: none;
+  color: var(--text-muted);
+  cursor: pointer;
+  font-size: 1.2rem;
+}
+.drawer-close-btn:hover {
+  color: var(--text-primary);
+}
+
+.technique-id-badge {
+  font-family: var(--font-mono);
+  color: var(--accent-data);
+  font-size: 0.85rem;
+  font-weight: 700;
+}

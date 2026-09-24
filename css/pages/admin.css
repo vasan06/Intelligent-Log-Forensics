@@ -1,0 +1,67 @@
+﻿/* ==========================================================================
+   ADMIN PAGE STYLES - 4 MANAGEMENT TABS & SYSTEM TELEMETRY
+   ========================================================================== */
+
+.admin-header {
+  margin-bottom: var(--space-6);
+}
+
+.health-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--space-6);
+  margin-bottom: var(--space-8);
+}
+
+.health-node-card {
+  background: var(--surface-primary);
+  border: 1px solid var(--panel-border);
+  border-radius: var(--radius-md);
+  padding: var(--space-6);
+}
+
+.health-status-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: var(--space-4);
+}
+
+.health-metric-bar {
+  height: 6px;
+  background: var(--surface-secondary);
+  border-radius: var(--radius-full);
+  overflow: hidden;
+  margin-top: var(--space-2);
+}
+
+.health-metric-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--accent-data), var(--threat-safe));
+  border-radius: var(--radius-full);
+  transition: width 0.5s ease;
+}
+
+.audit-feed {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.audit-item {
+  padding: 12px 16px;
+  background: var(--surface-primary);
+  border: 1px solid var(--panel-border);
+  border-radius: var(--radius-sm);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 0.85rem;
+}
+
+@media (max-width: 900px) {
+  .health-grid {
+    grid-template-columns: 1fr;
+  }
+}
+

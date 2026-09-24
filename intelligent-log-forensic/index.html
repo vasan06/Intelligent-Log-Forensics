@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Intelligent Log Forensic — Every Log. Every Threat. Every Answer.</title>
+
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+
+  <!-- Core Stylesheets -->
+  <link rel="stylesheet" href="css/tokens.css">
+  <link rel="stylesheet" href="css/layout.css">
+  <link rel="stylesheet" href="css/components.css">
+  <link rel="stylesheet" href="css/animations.css">
+  <link rel="stylesheet" href="css/pages/landing.css">
+
+  <!-- CDN Libraries -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>
+</head>
+<body>
+
+  <!-- Top Navigation Bar -->
+  <header class="site-nav">
+    <a href="index.html" class="brand-wrapper">
+      <div class="brand-logo-icon">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+          <path d="M9 12l2 2 4-4"/>
+        </svg>
+      </div>
+      <span class="brand-title">INTELLIGENT LOG FORENSIC</span>
+    </a>
+
+    <ul class="nav-links">
+      <li><a href="dashboard.html" class="nav-link">Dashboard</a></li>
+      <li><a href="analyze.html" class="nav-link">Analyze</a></li>
+      <li><a href="incidents.html" class="nav-link">Incidents</a></li>
+      <li><a href="mitre.html" class="nav-link">MITRE ATT&CK</a></li>
+      <li><a href="admin.html" class="nav-link">Admin</a></li>
+    </ul>
+
+    <div>
+      <a href="dashboard.html" class="btn btn-primary btn-sm">Launch SOC Console</a>
+    </div>
+  </header>
+
+  <!-- Hero Section with 3D Exploded Server Model -->
+  <section class="hero-section">
+    <div class="hero-grid">
+      <div class="hero-content">
+    
+
+        <h1 class="hero-title">
+          Every Log.<br>
+          <span class="gradient-text">Every Threat.</span><br>
+          Every Answer.
+        </h1>
+
+        <p class="hero-tagline">
+          Automated Telemetry Ingestion · Heuristic Threat Scoring · 3D Exploded Forensics
+        </p>
+
+        <p class="hero-description">
+          Dismantle infrastructure log telemetry down to the root packet. Reconstruct adversary attack paths, auto-correlate MITRE ATT&CK techniques, and visualize malicious intrusions in real-time 3D space.
+        </p>
+
+        <div class="hero-actions">
+          <a href="analyze.html" class="btn btn-primary" style="padding: 14px 28px; font-size: 1rem;">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+            Analyze Logs
+          </a>
+          <a href="dashboard.html" class="btn btn-outline" style="padding: 14px 28px; font-size: 1rem;">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+            View Live Demo
+          </a>
+        </div>
+      </div>
+
+      <!-- 3D Exploded Server Canvas -->
+      <div class="hero-3d-wrapper" id="hero-server-canvas"></div>
+    </div>
+
+    <!-- Scroll Indicator -->
+    <div class="hero-scroll-indicator">
+      <div class="scroll-mouse">
+        <div class="scroll-wheel"></div>
+      </div>
+      <span>SCROLL TO DISMANTLE</span>
+    </div>
+  </section>
+
+  <!-- Live Threat Ticker Bar -->
+  <div class="threat-ticker-section">
+    <div class="ticker-track" id="threat-ticker-track">
+      <!-- Populated dynamically via Landing.js -->
+    </div>
+  </div>
+
+  <!-- How It Works: 3-Step Horizontal Section -->
+  <section class="how-it-works-section">
+    <div class="section-intro">
+      <div class="section-label">INVESTIGATION PIPELINE</div>
+      <h2 class="section-title">Forensic Ingestion to Attribution</h2>
+    </div>
+
+    <div class="steps-slider-wrapper">
+      <!-- Step 1 -->
+      <div class="step-card">
+        <div class="step-number">01 INGEST</div>
+        <div class="step-canvas-container" style="display:flex;align-items:center;justify-content:center;">
+          <svg width="80" height="80" viewBox="0 0 24 24" fill="none" stroke="#4F46E5" stroke-width="1.5">
+            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+            <polyline points="14 2 14 8 20 8"/>
+            <line x1="16" y1="13" x2="8" y2="13"/>
+            <line x1="16" y1="17" x2="8" y2="17"/>
+            <polyline points="10 9 9 9 8 9"/>
+          </svg>
+        </div>
+        <h3 class="feature-title">Multi-Format Extraction</h3>
+        <p class="feature-desc">Drag and drop Apache, Syslog, RFC 2822, CSV, or raw JSON. Isolated line-level recovery prevents syntax corruptions from failing batches.</p>
+      </div>
+
+      <!-- Step 2 -->
+      <div class="step-card">
+        <div class="step-number">02 DETECT</div>
+        <div class="step-canvas-container" style="display:flex;align-items:center;justify-content:center;">
+          <svg width="80" height="80" viewBox="0 0 24 24" fill="none" stroke="#06B6D4" stroke-width="1.5">
+            <circle cx="11" cy="11" r="8"/>
+            <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+            <line x1="11" y1="8" x2="11" y2="14"/>
+            <line x1="8" y1="11" x2="14" y2="11"/>
+          </svg>
+        </div>
+        <h3 class="feature-title">ThreatEngine Analysis</h3>
+        <p class="feature-desc">Keyword exploit scanning, sliding window brute-force detection, IP velocity profiling, and ML-style heuristic threat scoring (0–100).</p>
+      </div>
+
+      <!-- Step 3 -->
+      <div class="step-card">
+        <div class="step-number">03 ATTRIBUTE</div>
+        <div class="step-canvas-container" style="display:flex;align-items:center;justify-content:center;">
+          <svg width="80" height="80" viewBox="0 0 24 24" fill="none" stroke="#EF4444" stroke-width="1.5">
+            <polygon points="12 2 2 7 12 12 22 7 12 2"/>
+            <polyline points="2 17 12 22 22 17"/>
+            <polyline points="2 12 12 17 22 12"/>
+          </svg>
+        </div>
+        <h3 class="feature-title">3D Incident Reconstruction</h3>
+        <p class="feature-desc">Automatic correlation into MITRE ATT&CK tactical techniques, incident lifecycle tracking, and interactive 3D attack graph timelines.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- 2x3 Feature Grid -->
+  <section class="features-section">
+    <div class="section-intro">
+      <div class="section-label">SOC CAPABILITY MATRIX</div>
+      <h2 class="section-title">Built for High-Velocity Digital Forensics</h2>
+    </div>
+
+    <div class="features-grid">
+      <div class="feature-card">
+        <div class="feature-canvas-holder"></div>
+        <h3 class="feature-title">Dismantled 3D Architecture</h3>
+        <p class="feature-desc">Hardware rack models physically explode in Three.js space to represent forensic breakdown of complex server clusters under active assault.</p>
+      </div>
+
+      <div class="feature-card">
+        <div class="feature-canvas-holder"></div>
+        <h3 class="feature-title">Real-Time Threat Generation</h3>
+        <p class="feature-desc">10 live attack scenario generators simulate continuous multi-vector intrusions rotating every 800ms–2000ms with zero server dependencies.</p>
+      </div>
+
+      <div class="feature-card">
+        <div class="feature-canvas-holder"></div>
+        <h3 class="feature-title">MITRE ATT&CK Matrix 3D</h3>
+        <p class="feature-desc">Instanced 3D tactical tiles with raycaster hover lift, persistent threat pulse frequencies, and instant mitigation playbooks.</p>
+      </div>
+
+      <div class="feature-card">
+        <div class="feature-canvas-holder"></div>
+        <h3 class="feature-title">Attack Path Graphing</h3>
+        <p class="feature-desc">Directed 3D topology tracing ingress vectors from external adversary nodes across DMZ gateways to backend database vaults.</p>
+      </div>
+
+      <div class="feature-card">
+        <div class="feature-canvas-holder"></div>
+        <h3 class="feature-title">DNA Helix Evidence Chain</h3>
+        <p class="feature-desc">3D double helix pipeline tracks cryptographic integrity: SHA-256 verification, token normalization, and batch trust metrics.</p>
+      </div>
+
+      <div class="feature-card">
+        <div class="feature-canvas-holder"></div>
+        <h3 class="feature-title">Zero-Lag Telemetry Feed</h3>
+        <p class="feature-desc">Hardware-accelerated DOM capping, CSS critical entry flashes, custom SVG vector donuts, and specialized dark mode charts.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- MITRE ATT&CK Preview Section -->
+  <section class="mitre-preview-section">
+    <div class="mitre-preview-container">
+      <div>
+        <div class="section-label">TACTICAL TAXONOMY</div>
+        <h2 class="section-title" style="margin-bottom: var(--space-4);">Tactical Matrix at Depth</h2>
+        <p style="color: var(--text-secondary); line-height: 1.7; margin-bottom: var(--space-6);">
+          Every detected log event is systematically mapped against the standard MITRE ATT&CK enterprise knowledge base. Identify persistence, lateral movement, credential dumping, and command & control beacons instantly.
+        </p>
+        <a href="mitre.html" class="btn btn-secondary">
+          Explore Full 3D Matrix
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
+        </a>
+      </div>
+
+      <div class="mitre-canvas-box" id="mitre-teaser-canvas"></div>
+    </div>
+  </section>
+
+  <!-- Full-Width CTA Section -->
+  <section class="landing-cta">
+    <div class="cta-box">
+      <h2 style="font-family: var(--font-display); font-size: 2.6rem; font-weight: 700; margin-bottom: var(--space-4);">
+        Ready to Uncover Every Cyber Threat?
+      </h2>
+      <p style="color: var(--text-secondary); max-width: 600px; margin: 0 auto var(--space-8); font-size: 1.05rem;">
+        Launch the live SOC console or upload raw evidence logs to initiate deep forensic decomposition in real-time 3D.
+      </p>
+      <a href="analyze.html" class="btn btn-primary" style="padding: 16px 36px; font-size: 1.05rem;">
+        Start Forensic Investigation
+      </a>
+    </div>
+  </section>
+
+  <!-- Minimal Footer -->
+  <footer class="landing-footer">
+    <div class="footer-inner">
+      <div style="display:flex;align-items:center;gap:var(--space-3);">
+        <div class="brand-logo-icon" style="width:26px;height:26px;">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="2.2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+        </div>
+        <span style="font-family:var(--font-display);font-weight:700;font-size:0.95rem;">Intelligent Log Forensic</span>
+      </div>
+
+      <div style="display:flex;gap:var(--space-6);font-size:0.85rem;color:var(--text-muted);">
+        <a href="dashboard.html" style="color:inherit;text-decoration:none;">Dashboard</a>
+        <a href="analyze.html" style="color:inherit;text-decoration:none;">Upload & Analyze</a>
+        <a href="incidents.html" style="color:inherit;text-decoration:none;">Incidents</a>
+        <a href="mitre.html" style="color:inherit;text-decoration:none;">MITRE ATT&CK</a>
+        <a href="admin.html" style="color:inherit;text-decoration:none;">Admin</a>
+      </div>
+
+      <div style="font-size:0.75rem;color:var(--text-muted);font-family:var(--font-mono);">
+        MSc Capstone Level · Advanced Cybersecurity SOC Forensic Research
+      </div>
+    </div>
+  </footer>
+
+  <!-- Core Scripts -->
+  <script src="js/core/EventBus.js"></script>
+  <script src="js/core/AppState.js"></script>
+  <script src="js/core/Router.js"></script>
+  <script src="js/engine/ThreatEngine.js"></script>
+  <script src="js/engine/LogParser.js"></script>
+  <script src="js/engine/LiveGenerator.js"></script>
+  <script src="js/three/ServerModel.js"></script>
+  <script src="js/three/MitreMatrix3D.js"></script>
+  <script src="js/pages/Landing.js"></script>
+</body>
+</html>
