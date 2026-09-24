@@ -2,7 +2,7 @@ import hashlib
 import json
 from pathlib import Path
 from typing import Any
-
+import sqlite3
 from flask import (
     Blueprint,
     current_app,
@@ -125,30 +125,90 @@ def render_login_view():
 @auth_blueprint.route("/auth/enlist", methods=["GET", "POST"])
 def render_registration_view():
     if request.method == "POST":
-        name = request.form.get("display_name", "").strip() or request.form.get("name", "").strip()
-        email = request.form.get("work_email", "").strip().lower() or request.form.get("email", "").strip().lower()
-        pwd = request.form.get("credential", "") or request.form.get("password", "")
+        name = request.form.get("display_name", "").strip()
+        email = request.form.get("work_email", "").strip().lower()
+        password = request.form.get("credential", "")
+        confirm_password = request.form.get("confirm_credential", "")
 
-        if len(pwd) < 8 or not name or "@" not in email:
-            flash("Enlistment parameters invalid. Password must have >= 8 chars and valid email.", "danger")
-            return render_template("auth.html", mode="register")
+        errors = []
+
+        if not name:
+            errors.append("Display name is required.")
+
+        if not email or "@" not in email or "." not in email.rsplit("@", 1)[-1]:
+            errors.append("Enter a valid email address.")
+
+        if len(password) < 8:
+            errors.append("Password must contain at least 8 characters.")
+
+        if password != confirm_password:
+            errors.append("Passwords do not match.")
+
+        if errors:
+            for error in errors:
+                flash(error, "danger")
+            return render_template(
+                "auth.html",
+                mode="register",
+                form_data={
+                    "display_name": name,
+                    "work_email": email,
+                },
+            )
 
         try:
             with acquire_connection() as conn:
+                existing_user = conn.execute(
+                    "SELECT operator_id FROM operators WHERE work_email = ?",
+                    (email,),
+                ).fetchone()
+
+                if existing_user:
+                    flash("An account with this email already exists.", "danger")
+                    return render_template(
+                        "auth.html",
+                        mode="register",
+                        form_data={
+                            "display_name": name,
+                            "work_email": email,
+                        },
+                    )
+
                 conn.execute(
                     """
-                    INSERT INTO operators (display_name, work_email, credential_hash, clearance_tier, registered_at)
+                    INSERT INTO operators (
+                        display_name,
+                        work_email,
+                        credential_hash,
+                        clearance_tier,
+                        registered_at
+                    )
                     VALUES (?, ?, ?, ?, ?)
                     """,
-                    (name, email, generate_password_hash(pwd), "Analyst", SentinelSettings.get_current_utc_timestamp()),
+                    (
+                        name,
+                        email,
+                        generate_password_hash(password),
+                        "Analyst",
+                        SentinelSettings.get_current_utc_timestamp(),
+                    ),
                 )
-            flash("Operator profile activated. You may authenticate now.", "success")
+
+            flash("Account created successfully. Please sign in.", "success")
             return redirect(url_for("auth_views.render_login_view"))
+
+        except sqlite3.IntegrityError:
+            flash("An account with this email already exists.", "danger")
+
         except Exception:
-            flash("Enlistment failed: That work email is already assigned.", "danger")
+            current_app.logger.exception("User registration failed")
+            flash("Unable to create the account. Please try again.", "danger")
 
-    return render_template("auth.html", mode="register")
-
+    return render_template(
+        "auth.html",
+        mode="register",
+        form_data={},
+    )
 
 @auth_blueprint.route("/auth/recovery", methods=["GET", "POST"])
 def render_recovery_view():

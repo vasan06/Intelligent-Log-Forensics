@@ -3,37 +3,265 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Log Forensic | {{ mode|capitalize }}</title>
+
+  <title>
+    Log Forensic |
+    {{ "Create Account" if mode == "register" else "Sign In" if mode == "login" else "Recover Password" }}
+  </title>
+
   <link rel="stylesheet" href="/static/css/tokens.css">
   <link rel="stylesheet" href="/static/css/layout.css">
   <link rel="stylesheet" href="/static/css/components.css">
 </head>
+
 <body>
-  <main style="min-height:100vh;display:grid;place-items:center;padding:2rem;">
-    <section class="forensic-card" style="width:min(100%,420px);">
-      <div class="brand-wrapper" style="margin-bottom:2rem;">
-        <div class="brand-logo-icon">LF</div>
-        <span class="brand-title">LOG FORENSIC</span>
-      </div>
-      {% for category, message in get_flashed_messages(with_categories=true) %}
-        <div class="badge badge-{{ 'critical' if category == 'danger' else 'safe' }}" style="margin-bottom:1rem;">{{ message }}</div>
-      {% endfor %}
-      <h1 class="page-title">{{ {'login':'Operator sign in','register':'Create operator account','recovery':'Recover access'}[mode] }}</h1>
-      <form method="post" style="display:grid;gap:1rem;margin-top:1.5rem;">
-        {% if mode == 'register' %}
-          <label>Display name<input class="form-control" name="display_name" required></label>
-        {% endif %}
-        <label>Work email<input class="form-control" type="email" name="work_email" required></label>
-        {% if mode != 'recovery' %}
-          <label>Password<input class="form-control" type="password" name="credential" required minlength="8"></label>
-        {% endif %}
-        <button class="btn btn-primary" type="submit">{{ 'Continue' if mode == 'recovery' else 'Authenticate' }}</button>
-      </form>
-      <p style="margin-top:1.5rem;color:var(--text-muted);font-size:.85rem;">
-        <a href="/" style="color:var(--accent-hero);">Return to portal</a>
+
+<main style="
+  min-height:100vh;
+  display:grid;
+  place-items:center;
+  padding:24px;
+">
+
+  <section
+    class="forensic-card"
+    style="
+      width:min(100%,460px);
+      padding:32px;
+    "
+  >
+
+    <div class="brand-wrapper" style="margin-bottom:28px;">
+      <div class="brand-logo-icon">LF</div>
+      <span class="brand-title">LOG FORENSIC</span>
+    </div>
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        <div style="display:grid;gap:10px;margin-bottom:20px;">
+          {% for category, message in messages %}
+            <div
+              class="badge badge-{{ 'critical' if category == 'danger' else 'safe' }}"
+              style="padding:10px 12px;"
+            >
+              {{ message }}
+            </div>
+          {% endfor %}
+        </div>
+      {% endif %}
+    {% endwith %}
+
+    {% set form_data = form_data or {} %}
+
+    {% if mode == "register" %}
+
+      <h1 class="page-title">Create Account</h1>
+
+      <p style="
+        color:var(--text-muted);
+        margin-top:8px;
+        font-size:.9rem;
+      ">
+        Create your account to access the forensic analysis platform.
       </p>
-    </section>
-  </main>
+
+      <form
+        method="POST"
+        action="{{ url_for('auth_views.render_registration_view') }}"
+        style="
+          display:grid;
+          gap:16px;
+          margin-top:24px;
+        "
+      >
+
+        <label>
+          Display name
+          <input
+            class="form-control"
+            type="text"
+            name="display_name"
+            value="{{ form_data.get('display_name', '') }}"
+            autocomplete="name"
+            required
+          >
+        </label>
+
+        <label>
+          Email
+          <input
+            class="form-control"
+            type="email"
+            name="work_email"
+            value="{{ form_data.get('work_email', '') }}"
+            autocomplete="email"
+            required
+          >
+        </label>
+
+        <label>
+          Password
+          <input
+            class="form-control"
+            type="password"
+            name="credential"
+            autocomplete="new-password"
+            minlength="8"
+            required
+          >
+        </label>
+
+        <label>
+          Confirm password
+          <input
+            class="form-control"
+            type="password"
+            name="confirm_credential"
+            autocomplete="new-password"
+            minlength="8"
+            required
+          >
+        </label>
+
+        <button
+          class="btn btn-primary"
+          type="submit"
+        >
+          Create Account
+        </button>
+
+      </form>
+
+      <p style="
+        margin-top:20px;
+        color:var(--text-muted);
+        font-size:.9rem;
+        text-align:center;
+      ">
+        Already have an account?
+        <a href="{{ url_for('auth_views.render_login_view') }}">
+          Sign in
+        </a>
+      </p>
+
+    {% elif mode == "login" %}
+
+      <h1 class="page-title">Sign In</h1>
+
+      <form
+        method="POST"
+        action="{{ url_for('auth_views.render_login_view') }}"
+        style="
+          display:grid;
+          gap:16px;
+          margin-top:24px;
+        "
+      >
+
+        <label>
+          Email
+          <input
+            class="form-control"
+            type="email"
+            name="work_email"
+            autocomplete="email"
+            required
+          >
+        </label>
+
+        <label>
+          Password
+          <input
+            class="form-control"
+            type="password"
+            name="credential"
+            autocomplete="current-password"
+            required
+          >
+        </label>
+
+        <button
+          class="btn btn-primary"
+          type="submit"
+        >
+          Sign In
+        </button>
+
+      </form>
+
+      <div style="
+        display:flex;
+        justify-content:space-between;
+        margin-top:20px;
+        font-size:.9rem;
+      ">
+        <a href="{{ url_for('auth_views.render_registration_view') }}">
+          Create account
+        </a>
+
+        <a href="{{ url_for('auth_views.render_recovery_view') }}">
+          Forgot password?
+        </a>
+      </div>
+
+    {% else %}
+
+      <h1 class="page-title">Recover Access</h1>
+
+      <form
+        method="POST"
+        action="{{ url_for('auth_views.render_recovery_view') }}"
+        style="
+          display:grid;
+          gap:16px;
+          margin-top:24px;
+        "
+      >
+
+        <label>
+          Email
+          <input
+            class="form-control"
+            type="email"
+            name="work_email"
+            autocomplete="email"
+            required
+          >
+        </label>
+
+        <button
+          class="btn btn-primary"
+          type="submit"
+        >
+          Continue
+        </button>
+
+      </form>
+
+      <p style="
+        margin-top:20px;
+        text-align:center;
+      ">
+        <a href="{{ url_for('auth_views.render_login_view') }}">
+          Back to sign in
+        </a>
+      </p>
+
+    {% endif %}
+
+    <p style="
+      margin-top:24px;
+      text-align:center;
+      font-size:.85rem;
+    ">
+      <a href="/">
+        Return to portal
+      </a>
+    </p>
+
+  </section>
+
+</main>
+
 </body>
 </html>
-
