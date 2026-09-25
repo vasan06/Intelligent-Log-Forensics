@@ -8,7 +8,9 @@
         {% if mode == "register" %}
             Create Operator Account | Intelligent Log Forensic
         {% elif mode == "recovery" %}
-            Credential Recovery | Intelligent Log Forensic
+            Password Recovery | Intelligent Log Forensics
+        {% elif mode == "reset" %}
+            Reset Password | Intelligent Log Forensics
         {% else %}
             Operator Login | Intelligent Log Forensic
         {% endif %}
@@ -50,7 +52,7 @@
         <!-- Left / Brand Panel -->
         <section class="auth-visual-panel">
 
-            <a href="{{ url_for('ops_views.render_home_portal') }}" class="auth-brand">
+            <a href="{{ url_for('index') }}" class="auth-brand">
 
                 <div class="auth-brand-mark">
                     <svg
@@ -70,7 +72,7 @@
                 </div>
 
                 <div class="auth-brand-copy">
-                    <strong>INTELLIGENT LOG FORENSIC</strong>
+                    <strong>INTELLIGENT LOG FORENSICS</strong>
                     <span>FORENSIC OPERATIONS PLATFORM</span>
                 </div>
 
@@ -182,7 +184,7 @@
 
                     <form
                         method="POST"
-                        action="{{ url_for('auth_views.render_login_view') }}"
+                        action="{{ url_for('sign_in') }}"
                         class="auth-form"
                         autocomplete="on"
                     >
@@ -240,7 +242,7 @@
                                 </label>
 
                                 <a
-                                    href="{{ url_for('auth_views.render_recovery_view') }}"
+                                    href="{{ url_for('forgot_password_public') }}"
                                     class="auth-inline-link"
                                 >
                                     Recover access
@@ -356,7 +358,7 @@
                             No operator account?
                         </span>
 
-                        <a href="{{ url_for('auth_views.render_registration_view') }}">
+                        <a href="{{ url_for('sign_up') }}">
                             Enlist as Operator
                         </a>
 
@@ -715,7 +717,7 @@
 
                         <p>
                             Submit your registered work email to log a
-                            credential recovery request.
+                            password reset link.
                         </p>
 
                     </div>
@@ -863,6 +865,24 @@
                         </a>
 
                     </div>
+
+                {% elif mode == "reset" %}
+                    <div class="auth-form-header">
+                        <div class="auth-form-kicker">PASSWORD RESET</div>
+                        <h2>Set a New Password</h2>
+                        <p>Choose a new password for your account.</p>
+                    </div>
+                    {% with messages = get_flashed_messages(with_categories=true) %}
+                        {% if messages %}<div class="auth-alert-stack">{% for category, message in messages %}<div class="auth-alert auth-alert-{{ category }}"><span class="auth-alert-indicator"></span><span>{{ message }}</span></div>{% endfor %}</div>{% endif %}
+                    {% endwith %}
+                    <form method="POST" action="{{ url_for('reset_password_public') }}" class="auth-form" autocomplete="off">
+                        <input type="hidden" name="token" value="{{ reset_token or '' }}">
+                        <div class="form-field"><label for="reset_password">New Password</label><input id="reset_password" name="password" type="password" minlength="10" required></div>
+                        <div class="form-field"><label for="reset_confirm">Confirm Password</label><input id="reset_confirm" name="confirm_password" type="password" minlength="10" required></div>
+                        <div class="auth-form-note"><span class="note-icon">i</span><span>Use at least 10 characters with uppercase, lowercase and a number.</span></div>
+                        <button type="submit" class="auth-submit-button"><span>Update Password</span></button>
+                    </form>
+                    <div class="auth-form-footer"><a href="{{ url_for('sign_in') }}">Return to Sign In</a></div>
 
                 {% endif %}
 
