@@ -28,28 +28,16 @@
 <link rel="stylesheet" href="{{ url_for('static', filename='css/animations.css') }}">
 <link rel="stylesheet" href="{{ url_for('static', filename='css/pages/landing.css') }}">
 
-<!-- =========================================================
-     THREE.JS
-     ========================================================= -->
-<script src="{{ url_for('static', filename='js/r128/three.min.js') }}"></script>
-
-<!-- Optional animation library -->
-<script
-    src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"
-    defer
-></script>
-
-<script
-    src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"
-    defer
-></script>
-<script src="https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.min.js"></script>
-<script src="{{ url_for('static', filename='js/core/EventBus.js') }}"></script>
-<script src="{{ url_for('static', filename='js/core/AppState.js') }}"></script>
-<script src="{{ url_for('static', filename='js/core/Router.js') }}"></script>
-
-<script src="{{ url_for('static', filename='js/three/ServerModel.js') }}"></script>
-<script src="{{ url_for('static', filename='js/pages/Landing.js') }}"></script>
+<link rel="stylesheet" href="{{ url_for('static', filename='css/tokens.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/layout.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/components.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/animations.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/pages/landing.css') }}">
+<script src="{{ url_for('static', filename='js/core/EventBus.js') }}" defer></script>
+<script src="{{ url_for('static', filename='js/core/AppState.js') }}" defer></script>
+<script src="{{ url_for('static', filename='js/core/Router.js') }}" defer></script>
+<script src="{{ url_for('static', filename='js/three/ForensicSystem3D.js') }}" defer></script>
+<script src="{{ url_for('static', filename='js/pages/Landing.js') }}" defer></script>
 </head>
 
 <body class="landing-page">
@@ -115,28 +103,28 @@
             {% if operator %}
 
                 <a
-                    href="{{ url_for('ops_views.render_command_deck') }}"
+                    href="{{ url_for('dashboard') }}"
                     class="nav-link"
                 >
                     Dashboard
                 </a>
 
                 <a
-                    href="{{ url_for('ops_views.render_ingest_station') }}"
+                    href="{{ url_for('evidence') }}"
                     class="nav-link"
                 >
                     Analyze
                 </a>
 
                 <a
-                    href="{{ url_for('ops_views.render_dockets_queue') }}"
+                    href="{{ url_for('incidents_public') }}"
                     class="nav-link"
                 >
                     Incidents
                 </a>
 
                 <a
-                    href="{{ url_for('ops_views.render_mitre_matrix') }}"
+                    href="{{ url_for('mitre_public') }}"
                     class="nav-link"
                 >
                     MITRE ATT&CK
@@ -156,14 +144,14 @@
             {% else %}
 
                 <a
-                    href="{{ url_for('auth_views.render_login_view') }}"
+                    href="{{ url_for('sign_in') }}"
                     class="nav-link"
                 >
                     Login
                 </a>
 
                 <a
-                    href="{{ url_for('auth_views.render_registration_view') }}"
+                    href="{{ url_for('sign_up') }}"
                     class="nav-link"
                 >
                     Sign Up
@@ -195,7 +183,7 @@
                 </a>
 
                 <a
-                    href="{{ url_for('auth_views.terminate_session') }}"
+                    href="{{ url_for('sign_out') }}"
                     class="nav-logout"
                     aria-label="Terminate session"
                 >
