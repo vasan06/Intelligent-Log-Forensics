@@ -1,262 +1,1243 @@
 <!DOCTYPE html>
+
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Evidence Ingestion & Analysis</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-  <!-- Google Fonts -->
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
 
-  <!-- Core Stylesheets -->
-  <link rel="stylesheet" href="/static/css/tokens.css">
-  <link rel="stylesheet" href="/static/css/layout.css">
-  <link rel="stylesheet" href="/static/css/components.css">
-  <link rel="stylesheet" href="/static/css/animations.css">
-  <link rel="stylesheet" href="/static/css/pages/analyze.css">
+<title>Command Deck | Intelligent Log Forensic</title>
 
-  <!-- CDN Libraries -->
-  <script src="/static/js/r128/three.min.js"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+
+<link
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&family=Space+Grotesk:wght@500;600;700&display=swap"
+    rel="stylesheet"
+>
+
+<link rel="stylesheet" href="/static/css/tokens.css">
+<link rel="stylesheet" href="/static/css/layout.css">
+<link rel="stylesheet" href="/static/css/components.css">
+<link rel="stylesheet" href="/static/css/animations.css">
+<link rel="stylesheet" href="/static/css/pages/dashboard.css">
+
+
 </head>
-<body>
 
-  <div class="app-shell">
-    <!-- Collapsible 64px to 240px Left Sidebar -->
-    <aside class="app-sidebar">
-      <div class="sidebar-header">
-        <div class="brand-logo-icon">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="2.2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
-        </div>
-        <span class="brand-title">LOG FORENSIC</span>
-      </div>
+<body class="dashboard-page">
 
-      <nav class="sidebar-nav">
-        <a href="/dashboard" class="sidebar-item">
-          <div class="sidebar-icon">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
-          </div>
-          <span class="sidebar-label">Dashboard</span>
-        </a>
+<div class="app-shell">
 
-        <a href="/analyze" class="sidebar-item active">
-          <div class="sidebar-icon">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
-          </div>
-          <span class="sidebar-label">Upload & Analyze</span>
-        </a>
 
-        <a href="/incidents" class="sidebar-item">
-          <div class="sidebar-icon">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 2 7 12 12 22 7 12 2"/><polyline points="2 17 12 22 22 17"/><polyline points="2 12 12 17 22 12"/></svg>
-          </div>
-          <span class="sidebar-label">Attack Incidents</span>
-        </a>
+<!-- =========================================================
+     SIDEBAR
+========================================================== -->
 
-        <a href="/mitre" class="sidebar-item">
-          <div class="sidebar-icon">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="m4.93 4.93 4.24 4.24"/><path d="m14.83 9.17 4.24-4.24"/><path d="m14.83 14.83 4.24 4.24"/><path d="m9.17 14.83-4.24 4.24"/></svg>
-          </div>
-          <span class="sidebar-label">MITRE ATT&CK</span>
-        </a>
+<aside class="app-sidebar">
 
-        <a href="/admin" class="sidebar-item">
-          <div class="sidebar-icon">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2a10 10 0 1 0 10 10A10 10 0 0 0 12 2zm1 14.93V17a1 1 0 0 1-2 0v-.07A7.003 7.003 0 0 1 5.07 11H5a1 1 0 0 1 0-2h.07A7.003 7.003 0 0 1 11 5.07V5a1 1 0 0 1 2 0v.07A7.003 7.003 0 0 1 18.93 11H19a1 1 0 0 1 0 2h-.07A7.003 7.003 0 0 1 13 16.93z"/></svg>
-          </div>
-          <span class="sidebar-label">Admin Console</span>
-        </a>
-      </nav>
+    <div class="sidebar-brand">
+        <a href="{{ url_for('ops_views.render_command_deck') }}" class="brand-link">
 
-      <div class="sidebar-footer">
-        <a href="/" style="color:var(--text-muted);text-decoration:none;display:flex;align-items:center;gap:10px;">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
-          <span class="sidebar-label">Exit to Home</span>
-        </a>
-      </div>
-    </aside>
-
-    <!-- Main Content Area -->
-    <main class="app-main">
-      <header class="app-topbar">
-        <div class="page-title-group">
-          <h1 class="page-title">Evidence Ingestion Pipeline</h1>
-          <span class="page-breadcrumb">/ forensics / upload-verify</span>
-        </div>
-
-        <div class="topbar-actions">
-          <button class="btn btn-secondary btn-sm" id="load-demo-logs-btn">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="5 3 19 12 5 21 5 3"/></svg>
-            Load Sample Forensic Batch
-          </button>
-        </div>
-      </header>
-
-      <div class="page-container">
-        <!-- 7-Stage Pipeline Step Indicator -->
-        <div class="pipeline-flow">
-          <div class="pipeline-step" id="step-upload">
-            <div class="step-node-icon">01</div>
-            <div class="step-node-name">Upload</div>
-          </div>
-          <div class="pipeline-step" id="step-hash">
-            <div class="step-node-icon">02</div>
-            <div class="step-node-name">SHA-256 Hash</div>
-          </div>
-          <div class="pipeline-step" id="step-parse">
-            <div class="step-node-icon">03</div>
-            <div class="step-node-name">Parse</div>
-          </div>
-          <div class="pipeline-step" id="step-normalize">
-            <div class="step-node-icon">04</div>
-            <div class="step-node-name">Normalize</div>
-          </div>
-          <div class="pipeline-step" id="step-detect">
-            <div class="step-node-icon">05</div>
-            <div class="step-node-name">Detect Rules</div>
-          </div>
-          <div class="pipeline-step" id="step-score">
-            <div class="step-node-icon">06</div>
-            <div class="step-node-name">ML Score</div>
-          </div>
-          <div class="pipeline-step" id="step-incident">
-            <div class="step-node-icon">07</div>
-            <div class="step-node-name">Correlate</div>
-          </div>
-        </div>
-
-        <!-- 2-Column Ingestion Workspace -->
-        <div class="analyze-grid">
-          <!-- Left: Drag-Drop Upload Area -->
-          <div class="forensic-card" style="display:flex;flex-direction:column;justify-content:center;">
-            <div class="upload-dropzone" id="log-dropzone">
-              <input type="file" id="log-file-input" style="display: none;" accept=".csv,.json,.log,.txt">
-              
-              <div class="upload-icon-circle">
-                <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                  <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
-                  <polyline points="17 8 12 3 7 8"/>
-                  <line x1="12" y1="3" x2="12" y2="15"/>
+            <div class="brand-mark">
+                <svg width="22" height="22"
+                     viewBox="0 0 24 24"
+                     fill="none"
+                     stroke="currentColor"
+                     stroke-width="2"
+                     stroke-linecap="round"
+                     stroke-linejoin="round">
+                    <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
+                    <path d="M9 12l2 2 4-4"></path>
                 </svg>
-              </div>
-
-              <h3 style="font-family: var(--font-display); font-size: 1.3rem; margin-bottom: 8px;">
-                Drop Forensic Evidence File Here
-              </h3>
-              <p style="color: var(--text-secondary); font-size: 0.9rem; max-width: 380px; margin: 0 auto var(--space-4);">
-                Drag & drop web server, firewall, or endpoint audit logs to run automated cryptographic verification and exploit discovery.
-              </p>
-
-              <button class="btn btn-primary" id="browse-files-btn">Browse Local Logs</button>
-
-              <div class="supported-formats-pills">
-                <span class="format-badge">.CSV</span>
-                <span class="format-badge">.JSON</span>
-                <span class="format-badge">.LOG (Apache / Syslog)</span>
-                <span class="format-badge">.TXT</span>
-              </div>
             </div>
 
-            <!-- Current File Integrity Card -->
-            <div style="margin-top: var(--space-6); background: var(--surface-secondary); padding: 16px; border-radius: var(--radius-sm); border: 1px solid var(--panel-border);">
-              <div style="font-size: 0.75rem; text-transform: uppercase; color: var(--text-muted); font-weight: 600; letter-spacing: 0.05em; margin-bottom: 4px;">
-                Active Evidence Target
-              </div>
-              <div id="current-file-name" style="font-weight: 600; font-size: 0.95rem; color: var(--text-primary); margin-bottom: 6px;">
-                Waiting for file ingest...
-              </div>
-              <div style="font-size: 0.75rem; text-transform: uppercase; color: var(--text-muted); font-weight: 600; letter-spacing: 0.05em; margin-bottom: 4px;">
-                Cryptographic Integrity (SHA-256)
-              </div>
-              <div id="current-file-hash" class="forensic-mono" style="font-size: 0.78rem; word-break: break-all; color: var(--accent-data);">
-                e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
-              </div>
+            <div class="brand-copy">
+                <strong>ILF</strong>
+                <span>COMMAND DECK</span>
             </div>
-          </div>
 
-          <!-- Right: 3D DNA Helix Evidence Chain Scene -->
-          <div class="dna-helix-panel">
-            <div class="helix-overlay-status">
-              <span class="badge badge-indigo">3D EVIDENCE HELIX</span>
-              <div style="font-size: 0.8rem; color: var(--text-muted); margin-top: 4px;">
-                Node strands illuminate upon cryptographic verification
-              </div>
-            </div>
-            <div id="evidence-helix-canvas"></div>
-          </div>
+        </a>
+    </div>
+
+
+    <nav class="sidebar-navigation">
+
+        <div class="nav-section-label">
+            OPERATIONS
         </div>
 
-        <!-- Post-Analysis Results Panel (Slides up smoothly) -->
-        <div class="analysis-results-panel" id="analysis-results-panel">
-          <div class="card-header">
+        <a
+            href="{{ url_for('ops_views.render_command_deck') }}"
+            class="sidebar-nav-link active"
+        >
+            <span class="nav-icon">
+                <svg width="18" height="18"
+                     viewBox="0 0 24 24"
+                     fill="none"
+                     stroke="currentColor"
+                     stroke-width="1.8">
+                    <rect x="3" y="3" width="7" height="7"></rect>
+                    <rect x="14" y="3" width="7" height="7"></rect>
+                    <rect x="3" y="14" width="7" height="7"></rect>
+                    <rect x="14" y="14" width="7" height="7"></rect>
+                </svg>
+            </span>
+            <span>Dashboard</span>
+        </a>
+
+
+        <a
+            href="{{ url_for('ops_views.render_ingest_station') }}"
+            class="sidebar-nav-link"
+        >
+            <span class="nav-icon">
+                <svg width="18" height="18"
+                     viewBox="0 0 24 24"
+                     fill="none"
+                     stroke="currentColor"
+                     stroke-width="1.8">
+                    <path d="M12 3v12"></path>
+                    <path d="m7 10 5 5 5-5"></path>
+                    <path d="M5 21h14"></path>
+                </svg>
+            </span>
+            <span>Analyze Logs</span>
+        </a>
+
+
+        <a
+            href="{{ url_for('ops_views.render_dockets_queue') }}"
+            class="sidebar-nav-link"
+        >
+            <span class="nav-icon">
+                <svg width="18" height="18"
+                     viewBox="0 0 24 24"
+                     fill="none"
+                     stroke="currentColor"
+                     stroke-width="1.8">
+                    <path d="M4 5h16"></path>
+                    <path d="M4 12h16"></path>
+                    <path d="M4 19h16"></path>
+                    <circle cx="8" cy="5" r="1"></circle>
+                    <circle cx="16" cy="12" r="1"></circle>
+                    <circle cx="10" cy="19" r="1"></circle>
+                </svg>
+            </span>
+            <span>Incidents</span>
+        </a>
+
+
+        <a
+            href="{{ url_for('ops_views.render_mitre_matrix') }}"
+            class="sidebar-nav-link"
+        >
+            <span class="nav-icon">
+                <svg width="18" height="18"
+                     viewBox="0 0 24 24"
+                     fill="none"
+                     stroke="currentColor"
+                     stroke-width="1.8">
+                    <circle cx="12" cy="12" r="8"></circle>
+                    <path d="M12 4v16"></path>
+                    <path d="M4 12h16"></path>
+                </svg>
+            </span>
+            <span>MITRE ATT&amp;CK</span>
+        </a>
+
+
+        <a
+            href="{{ url_for('ops_views.render_vault_archive') }}"
+            class="sidebar-nav-link"
+        >
+            <span class="nav-icon">
+                <svg width="18" height="18"
+                     viewBox="0 0 24 24"
+                     fill="none"
+                     stroke="currentColor"
+                     stroke-width="1.8">
+                    <path d="M4 7h16"></path>
+                    <path d="M6 7V5h12v2"></path>
+                    <path d="M5 7h14l-1 13H6L5 7z"></path>
+                    <path d="M9 11h6"></path>
+                </svg>
+            </span>
+            <span>Evidence Vault</span>
+        </a>
+
+
+        <a
+            href="{{ url_for('ops_views.render_remediation_playbooks') }}"
+            class="sidebar-nav-link"
+        >
+            <span class="nav-icon">
+                <svg width="18" height="18"
+                     viewBox="0 0 24 24"
+                     fill="none"
+                     stroke="currentColor"
+                     stroke-width="1.8">
+                    <path d="M12 3v18"></path>
+                    <path d="M5 7h14"></path>
+                    <path d="M5 17h14"></path>
+                    <circle cx="8" cy="7" r="2"></circle>
+                    <circle cx="16" cy="17" r="2"></circle>
+                </svg>
+            </span>
+            <span>Playbooks</span>
+        </a>
+
+
+        {% if operator is defined and operator and operator.clearance_tier == "Commander" %}
+
+            <div class="nav-section-label nav-section-secondary">
+                CONTROL
+            </div>
+
+            <a
+                href="{{ url_for('ops_views.render_commander_console') }}"
+                class="sidebar-nav-link"
+            >
+                <span class="nav-icon">
+                    <svg width="18" height="18"
+                         viewBox="0 0 24 24"
+                         fill="none"
+                         stroke="currentColor"
+                         stroke-width="1.8">
+                        <path d="M12 3l8 4v5c0 5-3.5 8-8 9-4.5-1-8-4-8-9V7l8-4z"></path>
+                        <path d="M9 12l2 2 4-4"></path>
+                    </svg>
+                </span>
+                <span>Commander</span>
+            </a>
+
+        {% endif %}
+
+    </nav>
+
+
+    <div class="sidebar-footer">
+
+        <div class="system-status">
+            <span class="status-indicator"></span>
+
             <div>
-              <h3 class="card-title">Forensic Ingestion Report & Threat Attribution</h3>
-              <span class="card-subtitle">Automated breakdown by ThreatEngine</span>
+                <strong>SYSTEM ONLINE</strong>
+                <small>Telemetry pipeline nominal</small>
             </div>
-            <span class="badge badge-safe">ANALYSIS COMPLETE</span>
-          </div>
-
-          <!-- Ingestion Metric Summary Row -->
-          <div class="grid-kpi" style="margin-bottom: var(--space-6);">
-            <div class="forensic-card" style="padding: 16px;">
-              <span class="kpi-label">Total Records</span>
-              <div class="kpi-value" id="res-total-logs">0</div>
-            </div>
-            <div class="forensic-card" style="padding: 16px;">
-              <span class="kpi-label">Threats Identified</span>
-              <div class="kpi-value" id="res-threat-count" style="color: #EF4444;">0</div>
-            </div>
-            <div class="forensic-card" style="padding: 16px;">
-              <span class="kpi-label">Batch Trust Score</span>
-              <div class="kpi-value" id="res-trust-score" style="color: #06B6D4;">100%</div>
-            </div>
-            <div class="forensic-card" style="padding: 16px;">
-              <span class="kpi-label">Severity Breakdown</span>
-              <div style="display: flex; gap: 8px; margin-top: 10px; font-family: var(--font-mono); font-size: 0.85rem;">
-                <span style="color:#EF4444;">Crit: <b id="res-crit-count">0</b></span>
-                <span style="color:#F97316;">High: <b id="res-high-count">0</b></span>
-                <span style="color:#EAB308;">Med: <b id="res-med-count">0</b></span>
-                <span style="color:#22C55E;">Safe: <b id="res-safe-count">0</b></span>
-              </div>
-            </div>
-          </div>
-
-          <!-- Parsed Records Evidence Table -->
-          <div class="table-wrapper">
-            <table class="forensic-table">
-              <thead>
-                <tr>
-                  <th>Timestamp</th>
-                  <th>Source IP</th>
-                  <th>Severity</th>
-                  <th>MITRE ID</th>
-                  <th>Evaluated Payload / Command</th>
-                  <th>Confidence</th>
-                </tr>
-              </thead>
-              <tbody id="analysis-preview-table-body">
-                <!-- Rows injected dynamically via Analyze.js -->
-              </tbody>
-            </table>
-          </div>
         </div>
 
-      </div>
-    </main>
-  </div>
+        <a
+            href="{{ url_for('auth_views.terminate_session') }}"
+            class="logout-link"
+        >
+            <svg width="17" height="17"
+                 viewBox="0 0 24 24"
+                 fill="none"
+                 stroke="currentColor"
+                 stroke-width="1.8">
+                <path d="M10 17l5-5-5-5"></path>
+                <path d="M15 12H3"></path>
+                <path d="M21 19V5a2 2 0 0 0-2-2h-5"></path>
+            </svg>
+            Sign Out
+        </a>
 
-  <!-- Core Scripts -->
-  <script src="/static/js/core/EventBus.js"></script>
-  <script src="/static/js/core/AppState.js"></script>
-  <script src="/static/js/core/Router.js"></script>
-  <script src="/static/js/engine/ThreatEngine.js"></script>
-  <script src="/static/js/engine/LogParser.js"></script>
-  <script src="/static/js/engine/LiveGenerator.js"></script>
-  <script src="/static/js/three/EvidenceHelix.js"></script>
-  <script src="/static/js/pages/Analyze.js"></script>
+    </div>
+
+</aside>
+
+
+<!-- =========================================================
+     MAIN APPLICATION
+========================================================== -->
+
+<main class="app-main">
+
+    <header class="command-header">
+
+        <div class="command-heading">
+
+            <div class="breadcrumb">
+                <span>OPERATIONS</span>
+                <span class="breadcrumb-separator">/</span>
+                <strong>COMMAND DECK</strong>
+            </div>
+
+            <h1>Security Operations Command Deck</h1>
+
+            <p>
+                Real-time forensic telemetry, threat intelligence,
+                and incident activity overview.
+            </p>
+
+        </div>
+
+
+        <div class="command-header-actions">
+
+            <button
+                type="button"
+                class="icon-button"
+                id="refresh-dashboard"
+                title="Refresh telemetry"
+                aria-label="Refresh telemetry"
+            >
+                <svg width="18" height="18"
+                     viewBox="0 0 24 24"
+                     fill="none"
+                     stroke="currentColor"
+                     stroke-width="1.8">
+                    <path d="M20 11a8.1 8.1 0 0 0-15.5-2"></path>
+                    <path d="M4 4v5h5"></path>
+                    <path d="M4 13a8.1 8.1 0 0 0 15.5 2"></path>
+                    <path d="M20 20v-5h-5"></path>
+                </svg>
+            </button>
+
+
+            <a
+                href="{{ url_for('ops_views.render_ingest_station') }}"
+                class="header-action-button"
+            >
+                <svg width="17" height="17"
+                     viewBox="0 0 24 24"
+                     fill="none"
+                     stroke="currentColor"
+                     stroke-width="1.8">
+                    <path d="M12 3v12"></path>
+                    <path d="m7 10 5 5 5-5"></path>
+                    <path d="M5 21h14"></path>
+                </svg>
+
+                Analyze Evidence
+            </a>
+
+        </div>
+
+    </header>
+
+
+    <!-- SYSTEM STATUS -->
+
+    <section class="system-status-strip">
+
+        <div class="status-strip-item">
+            <span class="status-dot online"></span>
+            <span>FORENSIC ENGINE</span>
+            <strong>ONLINE</strong>
+        </div>
+
+        <div class="status-strip-item">
+            <span class="status-dot online"></span>
+            <span>DATABASE</span>
+            <strong>OPERATIONAL</strong>
+        </div>
+
+        <div class="status-strip-item">
+            <span class="status-dot online"></span>
+            <span>ML INFERENCE</span>
+            <strong>SYNCHRONIZED</strong>
+        </div>
+
+        <div class="status-strip-time">
+            UTC
+            <span id="dashboard-clock">--:--:--</span>
+        </div>
+
+    </section>
+
+
+    <!-- KPI METRICS -->
+
+    <section class="metrics-grid">
+
+        <article class="metric-card metric-card-primary">
+
+            <div class="metric-card-top">
+                <span class="metric-label">TOTAL SIGNALS</span>
+
+                <div class="metric-icon">
+                    <svg width="19" height="19"
+                         viewBox="0 0 24 24"
+                         fill="none"
+                         stroke="currentColor"
+                         stroke-width="1.8">
+                        <path d="M4 18V6"></path>
+                        <path d="M4 18h16"></path>
+                        <path d="M8 15v-4"></path>
+                        <path d="M12 15V8"></path>
+                        <path d="M16 15V5"></path>
+                    </svg>
+                </div>
+            </div>
+
+            <div class="metric-value" id="metric-total-signals">
+                {{ telemetry.total_signals|default(0) }}
+            </div>
+
+            <div class="metric-meta">
+                Parsed telemetry records
+            </div>
+
+        </article>
+
+
+        <article class="metric-card metric-card-danger">
+
+            <div class="metric-card-top">
+                <span class="metric-label">THREAT SIGNALS</span>
+
+                <div class="metric-icon">
+                    <svg width="19" height="19"
+                         viewBox="0 0 24 24"
+                         fill="none"
+                         stroke="currentColor"
+                         stroke-width="1.8">
+                        <path d="M12 3l9 16H3L12 3z"></path>
+                        <path d="M12 9v4"></path>
+                        <circle cx="12" cy="16.5" r=".7" fill="currentColor"></circle>
+                    </svg>
+                </div>
+            </div>
+
+            <div class="metric-value" id="metric-total-threats">
+                {{ telemetry.total_threats|default(0) }}
+            </div>
+
+            <div class="metric-meta">
+                Detected threat events
+            </div>
+
+        </article>
+
+
+        <article class="metric-card metric-card-warning">
+
+            <div class="metric-card-top">
+                <span class="metric-label">ACTIVE INCIDENTS</span>
+
+                <div class="metric-icon">
+                    <svg width="19" height="19"
+                         viewBox="0 0 24 24"
+                         fill="none"
+                         stroke="currentColor"
+                         stroke-width="1.8">
+                        <circle cx="12" cy="12" r="8"></circle>
+                        <path d="M12 8v5l3 2"></path>
+                    </svg>
+                </div>
+            </div>
+
+            <div class="metric-value" id="metric-active-clusters">
+                {{ telemetry.active_clusters|default(0) }}
+            </div>
+
+            <div class="metric-meta">
+                Open incident clusters
+            </div>
+
+        </article>
+
+
+        <article class="metric-card metric-card-info">
+
+            <div class="metric-card-top">
+                <span class="metric-label">EVIDENCE BUNDLES</span>
+
+                <div class="metric-icon">
+                    <svg width="19" height="19"
+                         viewBox="0 0 24 24"
+                         fill="none"
+                         stroke="currentColor"
+                         stroke-width="1.8">
+                        <path d="M4 7h16"></path>
+                        <path d="M6 7V5h12v2"></path>
+                        <path d="M5 7h14l-1 13H6L5 7z"></path>
+                    </svg>
+                </div>
+            </div>
+
+            <div class="metric-value" id="metric-vault-bundles">
+                {{ telemetry.vault_bundles|default(0) }}
+            </div>
+
+            <div class="metric-meta">
+                Evidence stored in vault
+            </div>
+
+        </article>
+
+
+        <article class="metric-card metric-card-purple">
+
+            <div class="metric-card-top">
+                <span class="metric-label">THREAT INDEX</span>
+
+                <div class="metric-icon">
+                    <svg width="19" height="19"
+                         viewBox="0 0 24 24"
+                         fill="none"
+                         stroke="currentColor"
+                         stroke-width="1.8">
+                        <path d="M4 19h16"></path>
+                        <path d="M6 16l4-5 3 3 5-7"></path>
+                    </svg>
+                </div>
+            </div>
+
+            <div class="metric-value">
+                <span id="metric-threat-index">
+                    {{ telemetry.average_threat_index|default(0) }}
+                </span>
+                <small>/100</small>
+            </div>
+
+            <div class="metric-meta">
+                Average threat magnitude
+            </div>
+
+        </article>
+
+
+        <article class="metric-card metric-card-success">
+
+            <div class="metric-card-top">
+                <span class="metric-label">FORENSIC FIDELITY</span>
+
+                <div class="metric-icon">
+                    <svg width="19" height="19"
+                         viewBox="0 0 24 24"
+                         fill="none"
+                         stroke="currentColor"
+                         stroke-width="1.8">
+                        <path d="M12 3l8 4v5c0 5-3.5 8-8 9-4.5-1-8-4-8-9V7l8-4z"></path>
+                        <path d="m8 12 2.5 2.5L16 9"></path>
+                    </svg>
+                </div>
+            </div>
+
+            <div class="metric-value">
+                <span id="metric-fidelity">
+                    {{ telemetry.fidelity_rating|default(0) }}
+                </span>
+                <small>%</small>
+            </div>
+
+            <div class="metric-meta">
+                Indexed evidence quality
+            </div>
+
+        </article>
+
+    </section>
+
+
+    <!-- ANALYTICS -->
+
+    <section class="dashboard-grid">
+
+        <!-- SEVERITY -->
+
+        <article class="dashboard-panel severity-panel">
+
+            <div class="panel-header">
+
+                <div>
+                    <span class="panel-kicker">THREAT LANDSCAPE</span>
+                    <h2>Urgency Distribution</h2>
+                </div>
+
+                <span class="live-badge">
+                    <span></span>
+                    LIVE
+                </span>
+
+            </div>
+
+
+            <div class="severity-chart-wrapper">
+
+                <div
+                    class="chart-container"
+                    id="severity-chart"
+                    data-critical="{{ telemetry.urgency_breakdown.get('Critical', 0) }}"
+                    data-high="{{ telemetry.urgency_breakdown.get('High', 0) }}"
+                    data-elevated="{{ telemetry.urgency_breakdown.get('Elevated', 0) }}"
+                    data-notice="{{ telemetry.urgency_breakdown.get('Notice', 0) }}"
+                ></div>
+
+
+                <div class="severity-summary">
+
+                    <div class="severity-item critical">
+                        <span class="severity-marker"></span>
+                        <div>
+                            <strong>
+                                {{ telemetry.urgency_breakdown.get('Critical', 0) }}
+                            </strong>
+                            <small>Critical</small>
+                        </div>
+                    </div>
+
+
+                    <div class="severity-item high">
+                        <span class="severity-marker"></span>
+                        <div>
+                            <strong>
+                                {{ telemetry.urgency_breakdown.get('High', 0) }}
+                            </strong>
+                            <small>High</small>
+                        </div>
+                    </div>
+
+
+                    <div class="severity-item elevated">
+                        <span class="severity-marker"></span>
+                        <div>
+                            <strong>
+                                {{ telemetry.urgency_breakdown.get('Elevated', 0) }}
+                            </strong>
+                            <small>Elevated</small>
+                        </div>
+                    </div>
+
+
+                    <div class="severity-item notice">
+                        <span class="severity-marker"></span>
+                        <div>
+                            <strong>
+                                {{ telemetry.urgency_breakdown.get('Notice', 0) }}
+                            </strong>
+                            <small>Notice</small>
+                        </div>
+                    </div>
+
+                </div>
+
+            </div>
+
+        </article>
+
+
+        <!-- RISK -->
+
+        <article class="dashboard-panel risk-panel">
+
+            <div class="panel-header">
+
+                <div>
+                    <span class="panel-kicker">RISK ANALYTICS</span>
+                    <h2>Threat Index</h2>
+                </div>
+
+                <button
+                    type="button"
+                    class="panel-menu-button"
+                    aria-label="Risk panel options"
+                >
+                    •••
+                </button>
+
+            </div>
+
+
+            <div class="risk-donut-area">
+
+                <div
+                    id="risk-donut"
+                    class="risk-donut"
+                    data-score="{{ telemetry.average_threat_index|default(0) }}"
+                >
+                    <div class="risk-donut-inner">
+                        <strong>
+                            {{ telemetry.average_threat_index|default(0) }}
+                        </strong>
+                        <span>RISK INDEX</span>
+                    </div>
+                </div>
+
+            </div>
+
+
+            <div class="risk-scale">
+
+                <div>
+                    <span class="risk-scale-dot low"></span>
+                    <span>Low</span>
+                </div>
+
+                <div>
+                    <span class="risk-scale-dot medium"></span>
+                    <span>Moderate</span>
+                </div>
+
+                <div>
+                    <span class="risk-scale-dot high"></span>
+                    <span>High</span>
+                </div>
+
+                <div>
+                    <span class="risk-scale-dot critical"></span>
+                    <span>Critical</span>
+                </div>
+
+            </div>
+
+        </article>
+
+
+        <!-- LIVE ACTIVITY -->
+
+        <article class="dashboard-panel activity-panel">
+
+            <div class="panel-header">
+
+                <div>
+                    <span class="panel-kicker">FORENSIC ACTIVITY</span>
+                    <h2>Recent Activity</h2>
+                </div>
+
+                <a
+                    href="{{ url_for('ops_views.render_vault_archive') }}"
+                    class="panel-link"
+                >
+                    View Vault
+                </a>
+
+            </div>
+
+
+            <div class="live-feed" id="live-feed">
+
+                {% if telemetry.recent_trail %}
+
+                    {% for item in telemetry.recent_trail %}
+
+                        <div class="feed-item">
+
+                            <div class="feed-indicator {% if item.category == 'Cluster' %}danger{% else %}info{% endif %}">
+                            </div>
+
+                            <div class="feed-content">
+
+                                <div class="feed-topline">
+                                    <span class="feed-category">
+                                        {{ item.category }}
+                                    </span>
+
+                                    <time>
+                                        {{ item.timestamp }}
+                                    </time>
+                                </div>
+
+                                <strong class="feed-title">
+                                    {{ item.title }}
+                                </strong>
+
+                                <span class="feed-status">
+                                    {{ item.status_note }}
+                                </span>
+
+                            </div>
+
+                        </div>
+
+                    {% endfor %}
+
+                {% else %}
+
+                    <div class="empty-state">
+
+                        <div class="empty-state-icon">
+                            <svg width="24" height="24"
+                                 viewBox="0 0 24 24"
+                                 fill="none"
+                                 stroke="currentColor"
+                                 stroke-width="1.6">
+                                <circle cx="12" cy="12" r="8"></circle>
+                                <path d="M12 8v4l3 2"></path>
+                            </svg>
+                        </div>
+
+                        <strong>No recent activity</strong>
+
+                        <span>
+                            New telemetry events will appear here.
+                        </span>
+
+                    </div>
+
+                {% endif %}
+
+            </div>
+
+        </article>
+
+
+        <!-- INCIDENTS -->
+
+        <article class="dashboard-panel incidents-panel">
+
+            <div class="panel-header">
+
+                <div>
+                    <span class="panel-kicker">THREAT RESPONSE</span>
+                    <h2>Incident Snapshot</h2>
+                </div>
+
+                <a
+                    href="{{ url_for('ops_views.render_dockets_queue') }}"
+                    class="panel-link"
+                >
+                    All Incidents
+                </a>
+
+            </div>
+
+
+            <div class="incident-list">
+
+                {% if telemetry.recent_dockets %}
+
+                    {% for incident in telemetry.recent_dockets %}
+
+                        <a
+                            href="{{ url_for(
+                                'ops_views.render_docket_investigation',
+                                docket_id=incident['cluster_id']
+                            ) }}"
+                            class="incident-row"
+                        >
+
+                            <div class="incident-severity severity-{{ incident['triage_severity']|lower }}">
+                                {{ incident['triage_severity'] }}
+                            </div>
+
+                            <div class="incident-info">
+
+                                <strong>
+                                    {{ incident['cluster_headline'] }}
+                                </strong>
+
+                                <span>
+                                    Confidence:
+                                    {{ incident['attribution_confidence'] }}%
+                                </span>
+
+                            </div>
+
+                            <svg
+                                class="incident-arrow"
+                                width="17"
+                                height="17"
+                                viewBox="0 0 24 24"
+                                fill="none"
+                                stroke="currentColor"
+                                stroke-width="1.8"
+                            >
+                                <path d="m9 18 6-6-6-6"></path>
+                            </svg>
+
+                        </a>
+
+                    {% endfor %}
+
+                {% else %}
+
+                    <div class="empty-state compact">
+
+                        <strong>No active incidents</strong>
+
+                        <span>
+                            The incident queue is currently clear.
+                        </span>
+
+                    </div>
+
+                {% endif %}
+
+            </div>
+
+        </article>
+
+
+        <!-- PIPELINE HEALTH -->
+
+        <article class="dashboard-panel telemetry-panel">
+
+            <div class="panel-header">
+
+                <div>
+                    <span class="panel-kicker">PLATFORM TELEMETRY</span>
+                    <h2>Pipeline Health</h2>
+                </div>
+
+                <span class="nominal-badge">
+                    NOMINAL
+                </span>
+
+            </div>
+
+
+            <div class="telemetry-grid">
+
+                <div class="telemetry-item">
+
+                    <span class="telemetry-label">
+                        INGESTION
+                    </span>
+
+                    <div class="telemetry-value">
+                        <strong>100%</strong>
+                        <span>READY</span>
+                    </div>
+
+                    <div class="telemetry-progress">
+                        <span class="telemetry-progress-fill progress-complete"></span>
+                    </div>
+
+                </div>
+
+
+                <div class="telemetry-item">
+
+                    <span class="telemetry-label">
+                        CORRELATION
+                    </span>
+
+                    <div class="telemetry-value">
+                        <strong>100%</strong>
+                        <span>READY</span>
+                    </div>
+
+                    <div class="telemetry-progress">
+                        <span class="telemetry-progress-fill progress-complete"></span>
+                    </div>
+
+                </div>
+
+
+                <div class="telemetry-item">
+
+                    <span class="telemetry-label">
+                        EVIDENCE INDEX
+                    </span>
+
+                    <div class="telemetry-value">
+                        <strong>
+                            {{ telemetry.fidelity_rating|default(0) }}%
+                        </strong>
+                        <span>TRUST</span>
+                    </div>
+
+                    <div
+                        class="telemetry-progress"
+                        data-progress="{{ telemetry.fidelity_rating|default(0) }}"
+                    >
+                        <span class="telemetry-progress-fill dynamic-progress"></span>
+                    </div>
+
+                </div>
+
+
+                <div class="telemetry-item">
+
+                    <span class="telemetry-label">
+                        ACTIVE CLUSTERS
+                    </span>
+
+                    <div class="telemetry-value">
+                        <strong>
+                            {{ telemetry.active_clusters|default(0) }}
+                        </strong>
+                        <span>OPEN</span>
+                    </div>
+
+                    <div
+                        class="telemetry-progress"
+                        data-active-clusters="{{ telemetry.active_clusters|default(0) }}"
+                    >
+                        <span class="telemetry-progress-fill cluster-progress"></span>
+                    </div>
+
+                </div>
+
+            </div>
+
+        </article>
+
+    </section>
+
+
+    <!-- QUICK ACTIONS -->
+
+    <section class="quick-actions-section">
+
+        <div class="section-heading-inline">
+
+            <div>
+                <span class="panel-kicker">OPERATIONS</span>
+                <h2>Quick Actions</h2>
+            </div>
+
+        </div>
+
+
+        <div class="quick-actions-grid">
+
+            <a
+                href="{{ url_for('ops_views.render_ingest_station') }}"
+                class="quick-action-card"
+            >
+
+                <div class="quick-action-icon">
+                    <svg width="21" height="21"
+                         viewBox="0 0 24 24"
+                         fill="none"
+                         stroke="currentColor"
+                         stroke-width="1.8">
+                        <path d="M12 3v12"></path>
+                        <path d="m7 10 5 5 5-5"></path>
+                        <path d="M5 21h14"></path>
+                    </svg>
+                </div>
+
+                <div>
+                    <strong>Analyze Evidence</strong>
+                    <span>Upload and process forensic logs</span>
+                </div>
+
+                <span class="quick-action-arrow">→</span>
+
+            </a>
+
+
+            <a
+                href="{{ url_for('ops_views.render_dockets_queue') }}"
+                class="quick-action-card"
+            >
+
+                <div class="quick-action-icon">
+                    <svg width="21" height="21"
+                         viewBox="0 0 24 24"
+                         fill="none"
+                         stroke="currentColor"
+                         stroke-width="1.8">
+                        <circle cx="12" cy="12" r="8"></circle>
+                        <path d="M12 8v4l3 2"></path>
+                    </svg>
+                </div>
+
+                <div>
+                    <strong>Investigate Incidents</strong>
+                    <span>Review active threat dockets</span>
+                </div>
+
+                <span class="quick-action-arrow">→</span>
+
+            </a>
+
+
+            <a
+                href="{{ url_for('ops_views.render_mitre_matrix') }}"
+                class="quick-action-card"
+            >
+
+                <div class="quick-action-icon">
+                    <svg width="21" height="21"
+                         viewBox="0 0 24 24"
+                         fill="none"
+                         stroke="currentColor"
+                         stroke-width="1.8">
+                        <circle cx="12" cy="12" r="8"></circle>
+                        <path d="M12 4v16"></path>
+                        <path d="M4 12h16"></path>
+                    </svg>
+                </div>
+
+                <div>
+                    <strong>MITRE ATT&amp;CK</strong>
+                    <span>Explore mapped techniques</span>
+                </div>
+
+                <span class="quick-action-arrow">→</span>
+
+            </a>
+
+
+            <a
+                href="{{ url_for('ops_views.render_vault_archive') }}"
+                class="quick-action-card"
+            >
+
+                <div class="quick-action-icon">
+                    <svg width="21" height="21"
+                         viewBox="0 0 24 24"
+                         fill="none"
+                         stroke="currentColor"
+                         stroke-width="1.8">
+                        <path d="M4 7h16"></path>
+                        <path d="M6 7V5h12v2"></path>
+                        <path d="M5 7h14l-1 13H6L5 7z"></path>
+                    </svg>
+                </div>
+
+                <div>
+                    <strong>Evidence Vault</strong>
+                    <span>Browse indexed evidence</span>
+                </div>
+
+                <span class="quick-action-arrow">→</span>
+
+            </a>
+
+        </div>
+
+    </section>
+
+
+    <!-- FOOTER -->
+
+    <footer class="app-footer">
+
+        <div>
+            <strong>INTELLIGENT LOG FORENSIC</strong>
+            <span>Security Operations Platform</span>
+        </div>
+
+        <div class="footer-right">
+            <span>Forensic Engine</span>
+            <span class="footer-status-dot"></span>
+            <span>Operational</span>
+        </div>
+
+    </footer>
+
+</main>
+
+
+</div>
+
+<!-- =========================================================
+     JAVASCRIPT
+========================================================== -->
+
+<script src="/static/js/core/EventBus.js"></script>
+
+<script src="/static/js/core/AppState.js"></script>
+
+<script src="/static/js/core/Router.js"></script>
+
+<script src="/static/js/charts/LiveFeed.js"></script>
+
+<script src="/static/js/charts/RiskDonut.js"></script>
+
+<script src="/static/js/charts/SeverityBar.js"></script>
+
+<script src="/static/js/pages/Dashboard.js"></script>
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+
+    /* =========================================================
+       DYNAMIC TELEMETRY PROGRESS
+    ========================================================== */
+
+    const progressBars = document.querySelectorAll(
+        ".telemetry-progress[data-progress]"
+    );
+
+    progressBars.forEach(function (container) {
+
+        const value = Number(
+            container.dataset.progress || 0
+        );
+
+        const fill = container.querySelector(
+            ".dynamic-progress"
+        );
+
+        if (!fill) {
+            return;
+        }
+
+        const safeValue = Math.max(
+            0,
+            Math.min(100, value)
+        );
+
+        fill.style.width = safeValue + "%";
+    });
+
+
+    /* =========================================================
+       ACTIVE CLUSTER PROGRESS
+    ========================================================== */
+
+    const clusterBars = document.querySelectorAll(
+        ".telemetry-progress[data-active-clusters]"
+    );
+
+    clusterBars.forEach(function (container) {
+
+        const clusters = Number(
+            container.dataset.activeClusters || 0
+        );
+
+        const fill = container.querySelector(
+            ".cluster-progress"
+        );
+
+        if (!fill) {
+            return;
+        }
+
+        if (clusters === 0) {
+
+            fill.classList.add(
+                "progress-complete"
+            );
+
+        } else {
+
+            fill.classList.add(
+                "progress-active"
+            );
+        }
+    });
+
+
+    /* =========================================================
+       UTC CLOCK
+    ========================================================== */
+
+    const clock = document.getElementById(
+        "dashboard-clock"
+    );
+
+    function updateClock() {
+
+        if (!clock) {
+            return;
+        }
+
+        const now = new Date();
+
+        clock.textContent =
+            now.toISOString()
+               .substring(11, 19);
+    }
+
+    updateClock();
+
+    setInterval(
+        updateClock,
+        1000
+    );
+
+});
+</script>
+
 </body>
 </html>
-
-
-

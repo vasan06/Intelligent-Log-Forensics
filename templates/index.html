@@ -1,271 +1,1342 @@
 <!DOCTYPE html>
+
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Intelligent Log Forensic</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-  <!-- Google Fonts -->
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
 
-  <!-- Core Stylesheets -->
-  <link rel="stylesheet" href="/static/css/tokens.css">
-  <link rel="stylesheet" href="/static/css/layout.css">
-  <link rel="stylesheet" href="/static/css/components.css">
-  <link rel="stylesheet" href="/static/css/animations.css">
-  <link rel="stylesheet" href="/static/css/pages/landing.css">
+<title>Intelligent Log Forensics</title>
 
-  <!-- CDN Libraries -->
-  <script src="/static/js/r128/three.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>
+<!-- =========================================================
+     TYPOGRAPHY
+     ========================================================= -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+
+<link
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&family=Space+Grotesk:wght@400;500;600;700&display=swap"
+    rel="stylesheet"
+>
+
+<!-- =========================================================
+     GLOBAL STYLES
+     ========================================================= -->
+<link rel="stylesheet" href="{{ url_for('static', filename='css/tokens.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/layout.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/components.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/animations.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/pages/landing.css') }}">
+
+<!-- =========================================================
+     THREE.JS
+     ========================================================= -->
+<script src="{{ url_for('static', filename='js/r128/three.min.js') }}"></script>
+
+<!-- Optional animation library -->
+<script
+    src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"
+    defer
+></script>
+
+<script
+    src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"
+    defer
+></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.min.js"></script>
+<script src="{{ url_for('static', filename='js/core/EventBus.js') }}"></script>
+<script src="{{ url_for('static', filename='js/core/AppState.js') }}"></script>
+<script src="{{ url_for('static', filename='js/core/Router.js') }}"></script>
+
+<script src="{{ url_for('static', filename='js/three/ServerModel.js') }}"></script>
+<script src="{{ url_for('static', filename='js/pages/Landing.js') }}"></script>
 </head>
-<body>
 
-  <!-- Top Navigation Bar -->
-  <header class="site-nav">
-    <a href="/" class="brand-wrapper">
-      <div class="brand-logo-icon">
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
-          <path d="M9 12l2 2 4-4"/>
-        </svg>
-      </div>
-      <span class="brand-title">INTELLIGENT LOG FORENSIC</span>
-    </a>
+<body class="landing-page">
 
-    <ul class="nav-links">
-      <li><a href="/dashboard" class="nav-link">Dashboard</a></li>
-      <li><a href="/analyze" class="nav-link">Analyze</a></li>
-      <li><a href="/incidents" class="nav-link">Incidents</a></li>
-      <li><a href="/mitre" class="nav-link">MITRE ATT&CK</a></li>
-      <li><a href="/admin" class="nav-link">Admin</a></li>
-    </ul>
 
-    <div>
-      <a href="/dashboard" class="btn btn-primary btn-sm">Launch SOC Console</a>
-    </div>
-  </header>
+<!-- =========================================================
+     PAGE BACKGROUND / DECORATION
+     ========================================================= -->
+<div class="page-background" aria-hidden="true">
+    <div class="background-grid"></div>
+    <div class="background-glow background-glow-primary"></div>
+    <div class="background-glow background-glow-secondary"></div>
+</div>
 
-  <!-- Hero Section with 3D Exploded Server Model -->
-  <section class="hero-section">
-    <div class="hero-grid">
-      <div class="hero-content">
-        <h1 class="hero-title">
-          Every Log.<br>
-          <span class="gradient-text">Every Threat.</span><br>
-          Every Answer.
-        </h1>
 
-        <p class="hero-tagline">
-          Automated Telemetry Ingestion A· Heuristic Threat Scoring A· 3D Exploded Forensics
-        </p>
+<!-- =========================================================
+     NAVIGATION
+     ========================================================= -->
+<header class="site-nav">
 
-        <p class="hero-description">
-          Dismantle infrastructure log telemetry down to the root packet. Reconstruct adversary attack paths, auto-correlate MITRE ATT&CK techniques, and visualize malicious intrusions in real-time 3D space.
-        </p>
+    <div class="site-nav-inner">
 
-        <div class="hero-actions">
-          <a href="/analyze" class="btn btn-primary" style="padding: 14px 28px; font-size: 1rem;">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
-            Analyze Logs
-          </a>
-          <a href="/dashboard" class="btn btn-outline" style="padding: 14px 28px; font-size: 1rem;">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="5 3 19 12 5 21 5 3"/></svg>
-            View Live Demo
-          </a>
-        </div>
-      </div>
+        <!-- Brand -->
+        <a
+            href="{{ url_for('ops_views.render_home_portal') }}"
+            class="brand-wrapper"
+            aria-label="Intelligent Log Forensics home"
+        >
+            <div class="brand-logo-icon">
 
-      <!-- 3D Exploded Server Canvas -->
-      <div class="hero-3d-wrapper" id="hero-server-canvas"></div>
-    </div>
+                <svg
+                    width="22"
+                    height="22"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    aria-hidden="true"
+                >
+                    <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
+                    <path d="M9 12l2 2 4-4"></path>
+                </svg>
 
-    <!-- Scroll Indicator -->
-    <div class="hero-scroll-indicator">
-      <div class="scroll-mouse">
-        <div class="scroll-wheel"></div>
-      </div>
-      <span>SCROLL TO DISMANTLE</span>
-    </div>
-  </section>
+            </div>
 
-  <!-- Live Threat Ticker Bar -->
-  <div class="threat-ticker-section">
-    <div class="ticker-track" id="threat-ticker-track">
-      <!-- Populated dynamically via Landing.js -->
-    </div>
-  </div>
+            <div class="brand-copy">
+                <span class="brand-title">
+                    INTELLIGENT LOG
+                </span>
 
-  <!-- How It Works: 3-Step Horizontal Section -->
-  <section class="how-it-works-section">
-    <div class="section-intro">
-      <div class="section-label">INVESTIGATION PIPELINE</div>
-      <h2 class="section-title">Forensic Ingestion to Attribution</h2>
-    </div>
-
-    <div class="steps-slider-wrapper">
-      <!-- Step 1 -->
-      <div class="step-card">
-        <div class="step-number">01 INGEST</div>
-        <div class="step-canvas-container" style="display:flex;align-items:center;justify-content:center;">
-          <svg width="80" height="80" viewBox="0 0 24 24" fill="none" stroke="#4F46E5" stroke-width="1.5">
-            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
-            <polyline points="14 2 14 8 20 8"/>
-            <line x1="16" y1="13" x2="8" y2="13"/>
-            <line x1="16" y1="17" x2="8" y2="17"/>
-            <polyline points="10 9 9 9 8 9"/>
-          </svg>
-        </div>
-        <h3 class="feature-title">Multi-Format Extraction</h3>
-        <p class="feature-desc">Drag and drop Apache, Syslog, RFC 2822, CSV, or raw JSON. Isolated line-level recovery prevents syntax corruptions from failing batches.</p>
-      </div>
-
-      <!-- Step 2 -->
-      <div class="step-card">
-        <div class="step-number">02 DETECT</div>
-        <div class="step-canvas-container" style="display:flex;align-items:center;justify-content:center;">
-          <svg width="80" height="80" viewBox="0 0 24 24" fill="none" stroke="#06B6D4" stroke-width="1.5">
-            <circle cx="11" cy="11" r="8"/>
-            <line x1="21" y1="21" x2="16.65" y2="16.65"/>
-            <line x1="11" y1="8" x2="11" y2="14"/>
-            <line x1="8" y1="11" x2="14" y2="11"/>
-          </svg>
-        </div>
-        <h3 class="feature-title">ThreatEngine Analysis</h3>
-        <p class="feature-desc">Keyword exploit scanning, sliding window brute-force detection, IP velocity profiling, and ML-style heuristic threat scoring (0â€“100).</p>
-      </div>
-
-      <!-- Step 3 -->
-      <div class="step-card">
-        <div class="step-number">03 ATTRIBUTE</div>
-        <div class="step-canvas-container" style="display:flex;align-items:center;justify-content:center;">
-          <svg width="80" height="80" viewBox="0 0 24 24" fill="none" stroke="#EF4444" stroke-width="1.5">
-            <polygon points="12 2 2 7 12 12 22 7 12 2"/>
-            <polyline points="2 17 12 22 22 17"/>
-            <polyline points="2 12 12 17 22 12"/>
-          </svg>
-        </div>
-        <h3 class="feature-title">3D Incident Reconstruction</h3>
-        <p class="feature-desc">Automatic correlation into MITRE ATT&CK tactical techniques, incident lifecycle tracking, and interactive 3D attack graph timelines.</p>
-      </div>
-    </div>
-  </section>
-
-  <!-- 2x3 Feature Grid -->
-  <section class="features-section">
-    <div class="section-intro">
-      <div class="section-label">SOC CAPABILITY MATRIX</div>
-      <h2 class="section-title">Built for High-Velocity Digital Forensics</h2>
-    </div>
-
-    <div class="features-grid">
-      <div class="feature-card">
-        <div class="feature-canvas-holder"></div>
-        <h3 class="feature-title">Dismantled 3D Architecture</h3>
-        <p class="feature-desc">Hardware rack models physically explode in Three.js space to represent forensic breakdown of complex server clusters under active assault.</p>
-      </div>
-
-      <div class="feature-card">
-        <div class="feature-canvas-holder"></div>
-        <h3 class="feature-title">Real-Time Threat Generation</h3>
-        <p class="feature-desc">10 live attack scenario generators simulate continuous multi-vector intrusions rotating every 800msâ€“2000ms with zero server dependencies.</p>
-      </div>
-
-      <div class="feature-card">
-        <div class="feature-canvas-holder"></div>
-        <h3 class="feature-title">MITRE ATT&CK Matrix 3D</h3>
-        <p class="feature-desc">Instanced 3D tactical tiles with raycaster hover lift, persistent threat pulse frequencies, and instant mitigation playbooks.</p>
-      </div>
-
-      <div class="feature-card">
-        <div class="feature-canvas-holder"></div>
-        <h3 class="feature-title">Attack Path Graphing</h3>
-        <p class="feature-desc">Directed 3D topology tracing ingress vectors from external adversary nodes across DMZ gateways to backend database vaults.</p>
-      </div>
-
-      <div class="feature-card">
-        <div class="feature-canvas-holder"></div>
-        <h3 class="feature-title">DNA Helix Evidence Chain</h3>
-        <p class="feature-desc">3D double helix pipeline tracks cryptographic integrity: SHA-256 verification, token normalization, and batch trust metrics.</p>
-      </div>
-
-      <div class="feature-card">
-        <div class="feature-canvas-holder"></div>
-        <h3 class="feature-title">Zero-Lag Telemetry Feed</h3>
-        <p class="feature-desc">Hardware-accelerated DOM capping, CSS critical entry flashes, custom SVG vector donuts, and specialized dark mode charts.</p>
-      </div>
-    </div>
-  </section>
-
-  <!-- MITRE ATT&CK Preview Section -->
-  <section class="mitre-preview-section">
-    <div class="mitre-preview-container">
-      <div>
-        <div class="section-label">TACTICAL TAXONOMY</div>
-        <h2 class="section-title" style="margin-bottom: var(--space-4);">Tactical Matrix at Depth</h2>
-        <p style="color: var(--text-secondary); line-height: 1.7; margin-bottom: var(--space-6);">
-          Every detected log event is systematically mapped against the standard MITRE ATT&CK enterprise knowledge base. Identify persistence, lateral movement, credential dumping, and command & control beacons instantly.
-        </p>
-        <a href="/mitre" class="btn btn-secondary">
-          Explore Full 3D Matrix
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
+                <span class="brand-subtitle">
+                    FORENSICS PLATFORM
+                </span>
+            </div>
         </a>
-      </div>
 
-      <div class="mitre-canvas-box" id="mitre-teaser-canvas"></div>
-    </div>
-  </section>
 
-  <!-- Full-Width CTA Section -->
-  <section class="landing-cta">
-    <div class="cta-box">
-      <h2 style="font-family: var(--font-display); font-size: 2.6rem; font-weight: 700; margin-bottom: var(--space-4);">
-        Ready to Uncover Every Cyber Threat?
-      </h2>
-      <p style="color: var(--text-secondary); max-width: 600px; margin: 0 auto var(--space-8); font-size: 1.05rem;">
-        Launch the live SOC console or upload raw evidence logs to initiate deep forensic decomposition in real-time 3D.
-      </p>
-      <a href="/analyze" class="btn btn-primary" style="padding: 16px 36px; font-size: 1.05rem;">
-        Start Forensic Investigation
-      </a>
-    </div>
-  </section>
+        <!-- Navigation -->
+        <nav class="main-navigation" aria-label="Main navigation">
 
-  <!-- Minimal Footer -->
-  <footer class="landing-footer">
-    <div class="footer-inner">
-      <div style="display:flex;align-items:center;gap:var(--space-3);">
-        <div class="brand-logo-icon" style="width:26px;height:26px;">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="2.2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+            {% if operator %}
+
+                <a
+                    href="{{ url_for('ops_views.render_command_deck') }}"
+                    class="nav-link"
+                >
+                    Dashboard
+                </a>
+
+                <a
+                    href="{{ url_for('ops_views.render_ingest_station') }}"
+                    class="nav-link"
+                >
+                    Analyze
+                </a>
+
+                <a
+                    href="{{ url_for('ops_views.render_dockets_queue') }}"
+                    class="nav-link"
+                >
+                    Incidents
+                </a>
+
+                <a
+                    href="{{ url_for('ops_views.render_mitre_matrix') }}"
+                    class="nav-link"
+                >
+                    MITRE ATT&CK
+                </a>
+
+                {% if operator.clearance_tier == "Commander" %}
+
+                    <a
+                        href="{{ url_for('ops_views.render_commander_console') }}"
+                        class="nav-link"
+                    >
+                        Admin
+                    </a>
+
+                {% endif %}
+
+            {% else %}
+
+                <a
+                    href="{{ url_for('auth_views.render_login_view') }}"
+                    class="nav-link"
+                >
+                    Login
+                </a>
+
+                <a
+                    href="{{ url_for('auth_views.render_registration_view') }}"
+                    class="nav-link"
+                >
+                    Sign Up
+                </a>
+
+            {% endif %}
+
+        </nav>
+
+
+        <!-- Navigation Actions -->
+        <div class="nav-actions">
+
+            {% if operator %}
+
+                <div class="operator-status">
+                    <span class="status-dot"></span>
+
+                    <span>
+                        {{ operator.display_name }}
+                    </span>
+                </div>
+
+                <a
+                    href="{{ url_for('ops_views.render_command_deck') }}"
+                    class="btn btn-primary btn-sm"
+                >
+                    Open SOC
+                </a>
+
+                <a
+                    href="{{ url_for('auth_views.terminate_session') }}"
+                    class="nav-logout"
+                    aria-label="Terminate session"
+                >
+                    Logout
+                </a>
+
+            {% else %}
+
+                <a
+                    href="{{ url_for('auth_views.render_login_view') }}"
+                    class="btn btn-primary btn-sm"
+                >
+                    Login
+                </a>
+
+                <a
+                    href="{{ url_for('auth_views.render_registration_view') }}"
+                    class="btn btn-outline btn-sm"
+                >
+                    Sign Up
+                </a>
+
+            {% endif %}
+
         </div>
-        <span style="font-family:var(--font-display);font-weight:700;font-size:0.95rem;">Intelligent Log Forensic</span>
-      </div>
 
-      <div style="display:flex;gap:var(--space-6);font-size:0.85rem;color:var(--text-muted);">
-        <a href="/dashboard" style="color:inherit;text-decoration:none;">Dashboard</a>
-        <a href="/analyze" style="color:inherit;text-decoration:none;">Upload & Analyze</a>
-        <a href="/incidents" style="color:inherit;text-decoration:none;">Incidents</a>
-        <a href="/mitre" style="color:inherit;text-decoration:none;">MITRE ATT&CK</a>
-        <a href="/admin" style="color:inherit;text-decoration:none;">Admin</a>
-      </div>
     </div>
-  </footer>
 
-  <!-- Core Scripts -->
-  <script src="/static/js/core/EventBus.js"></script>
-  <script src="/static/js/core/AppState.js"></script>
-  <script src="/static/js/core/Router.js"></script>
-  <script src="/static/js/engine/ThreatEngine.js"></script>
-  <script src="/static/js/engine/LogParser.js"></script>
-  <script src="/static/js/engine/LiveGenerator.js"></script>
-  <script src="/static/js/three/ServerModel.js"></script>
-  <script src="/static/js/three/MitreMatrix3D.js"></script>
-  <script src="/static/js/pages/Landing.js"></script>
+</header>
+
+
+<main>
+
+    <!-- =====================================================
+         HERO
+         ===================================================== -->
+    <section class="hero-section">
+
+        <div class="hero-grid">
+
+            <!-- Hero Content -->
+            <div class="hero-content">
+
+                <div class="hero-eyebrow">
+                    <span class="eyebrow-line"></span>
+
+                    <span>
+                        DIGITAL FORENSICS COMMAND PLATFORM
+                    </span>
+
+                    <span class="eyebrow-live">
+                        LIVE
+                    </span>
+                </div>
+
+
+                <h1 class="hero-title">
+
+                    Every Log.
+
+                    <span class="gradient-text">
+                        Every Threat.
+                    </span>
+
+                    Every Answer.
+
+                </h1>
+
+
+                <p class="hero-tagline">
+                    TELEMETRY INGESTION
+                    <span>•</span>
+                    THREAT DETECTION
+                    <span>•</span>
+                    INCIDENT RECONSTRUCTION
+                </p>
+
+
+                <p class="hero-description">
+                    Intelligent Log Forensics transforms raw infrastructure
+                    telemetry into structured evidence, threat signals,
+                    incident clusters, and MITRE ATT&CK intelligence.
+                </p>
+
+
+                <!-- Hero Actions -->
+                <div class="hero-actions">
+
+                    {% if operator %}
+
+                        <a
+                            href="{{ url_for('ops_views.render_ingest_station') }}"
+                            class="btn btn-primary btn-lg"
+                        >
+
+                            <span class="btn-icon">
+                                <svg
+                                    width="18"
+                                    height="18"
+                                    viewBox="0 0 24 24"
+                                    fill="none"
+                                    stroke="currentColor"
+                                    stroke-width="2"
+                                    stroke-linecap="round"
+                                    stroke-linejoin="round"
+                                >
+                                    <path d="M12 3v12"></path>
+                                    <path d="m7 8 5-5 5 5"></path>
+                                    <path d="M5 21h14"></path>
+                                </svg>
+                            </span>
+
+                            Analyze Evidence
+
+                        </a>
+
+
+                        <a
+                            href="{{ url_for('ops_views.render_command_deck') }}"
+                            class="btn btn-outline btn-lg"
+                        >
+
+                            <span class="btn-icon">
+                                <svg
+                                    width="18"
+                                    height="18"
+                                    viewBox="0 0 24 24"
+                                    fill="none"
+                                    stroke="currentColor"
+                                    stroke-width="2"
+                                >
+                                    <polygon points="5 3 19 12 5 21 5 3"></polygon>
+                                </svg>
+                            </span>
+
+                            Open Command Deck
+
+                        </a>
+
+                    {% else %}
+
+                        <a
+                            href="{{ url_for('auth_views.render_login_view') }}"
+                            class="btn btn-primary btn-lg"
+                        >
+                            Access Platform
+                        </a>
+
+                        <a
+                            href="{{ url_for('auth_views.render_registration_view') }}"
+                            class="btn btn-outline btn-lg"
+                        >
+                            Create Operator Account
+                        </a>
+
+                    {% endif %}
+
+                </div>
+
+
+                <!-- Trust Indicators -->
+                <div class="hero-trust-row">
+
+                    <div class="trust-item">
+                        <span class="trust-value">SHA-256</span>
+                        <span class="trust-label">Evidence Integrity</span>
+                    </div>
+
+                    <div class="trust-divider"></div>
+
+                    <div class="trust-item">
+                        <span class="trust-value">ML + Rules</span>
+                        <span class="trust-label">Threat Correlation</span>
+                    </div>
+
+                    <div class="trust-divider"></div>
+
+                    <div class="trust-item">
+                        <span class="trust-value">MITRE</span>
+                        <span class="trust-label">Technique Mapping</span>
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <!-- =================================================
+                 3D FORENSIC VISUALIZATION
+                 ================================================= -->
+            <div class="hero-visual">
+
+                <div class="hero-visual-header">
+
+                    <div>
+                        <span class="visual-label">
+                            LIVE FORENSIC MODEL
+                        </span>
+
+                        <span class="visual-status">
+                            SYSTEM ONLINE
+                        </span>
+                    </div>
+
+                    <div class="visual-coordinates">
+                        X 00.84
+                        Y 04.21
+                        Z 02.17
+                    </div>
+
+                </div>
+
+
+                <div
+                    id="hero-server-canvas"
+                    class="hero-3d-wrapper"
+                    aria-label="Interactive 3D forensic server visualization"
+                ></div>
+
+
+                <div class="hero-visual-footer">
+
+                    <div class="model-indicator">
+                        <span class="pulse-dot"></span>
+                        <span>TELEMETRY LINK ACTIVE</span>
+                    </div>
+
+                    <div class="model-hint">
+                        DRAG TO ROTATE
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <!-- Scroll Indicator -->
+        <div class="hero-scroll-indicator">
+
+            <div class="scroll-mouse">
+                <div class="scroll-wheel"></div>
+            </div>
+
+            <span>
+                EXPLORE FORENSIC PIPELINE
+            </span>
+
+        </div>
+
+    </section>
+
+
+    <!-- =====================================================
+         LIVE PLATFORM TELEMETRY
+         ===================================================== -->
+    <section class="landing-telemetry">
+
+        <div class="section-container">
+
+            <div class="section-heading-row">
+
+                <div>
+                    <div class="section-label">
+                        PLATFORM TELEMETRY
+                    </div>
+
+                    <h2 class="section-title">
+                        Investigation at a Glance
+                    </h2>
+                </div>
+
+                <div class="live-indicator">
+                    <span class="status-dot"></span>
+                    LIVE DATA
+                </div>
+
+            </div>
+
+
+            <div class="telemetry-grid">
+
+                <!-- Signals -->
+                <article class="telemetry-card">
+
+                    <div class="telemetry-card-top">
+                        <span class="telemetry-label">
+                            SIGNALS PROCESSED
+                        </span>
+
+                        <span class="telemetry-icon">
+                            SIG
+                        </span>
+                    </div>
+
+                    <div
+                        class="telemetry-value"
+                        data-metric="total-signals"
+                    >
+                        {{ telemetry.total_signals | default(0) }}
+                    </div>
+
+                    <div class="telemetry-footer">
+                        Normalized telemetry records
+                    </div>
+
+                </article>
+
+
+                <!-- Threats -->
+                <article class="telemetry-card telemetry-card-threat">
+
+                    <div class="telemetry-card-top">
+                        <span class="telemetry-label">
+                            THREAT SIGNALS
+                        </span>
+
+                        <span class="telemetry-icon">
+                            RSK
+                        </span>
+                    </div>
+
+                    <div
+                        class="telemetry-value"
+                        data-metric="total-threats"
+                    >
+                        {{ telemetry.total_threats | default(0) }}
+                    </div>
+
+                    <div class="telemetry-footer">
+                        Correlated threat events
+                    </div>
+
+                </article>
+
+
+                <!-- Incidents -->
+                <article class="telemetry-card">
+
+                    <div class="telemetry-card-top">
+                        <span class="telemetry-label">
+                            ACTIVE CLUSTERS
+                        </span>
+
+                        <span class="telemetry-icon">
+                            INC
+                        </span>
+                    </div>
+
+                    <div
+                        class="telemetry-value"
+                        data-metric="active-clusters"
+                    >
+                        {{ telemetry.active_clusters | default(0) }}
+                    </div>
+
+                    <div class="telemetry-footer">
+                        Open investigation dockets
+                    </div>
+
+                </article>
+
+
+                <!-- Evidence -->
+                <article class="telemetry-card">
+
+                    <div class="telemetry-card-top">
+                        <span class="telemetry-label">
+                            EVIDENCE BUNDLES
+                        </span>
+
+                        <span class="telemetry-icon">
+                            VLT
+                        </span>
+                    </div>
+
+                    <div
+                        class="telemetry-value"
+                        data-metric="vault-bundles"
+                    >
+                        {{ telemetry.vault_bundles | default(0) }}
+                    </div>
+
+                    <div class="telemetry-footer">
+                        Indexed forensic bundles
+                    </div>
+
+                </article>
+
+
+                <!-- Threat Index -->
+                <article class="telemetry-card">
+
+                    <div class="telemetry-card-top">
+                        <span class="telemetry-label">
+                            AVG THREAT INDEX
+                        </span>
+
+                        <span class="telemetry-icon">
+                            IDX
+                        </span>
+                    </div>
+
+                    <div
+                        class="telemetry-value"
+                        data-metric="average-threat"
+                    >
+                        {{ telemetry.average_threat_index | default(0) }}
+                    </div>
+
+                    <div class="telemetry-footer">
+                        Aggregate threat magnitude
+                    </div>
+
+                </article>
+
+
+                <!-- Fidelity -->
+                <article class="telemetry-card telemetry-card-success">
+
+                    <div class="telemetry-card-top">
+                        <span class="telemetry-label">
+                            FORENSIC FIDELITY
+                        </span>
+
+                        <span class="telemetry-icon">
+                            FID
+                        </span>
+                    </div>
+
+                    <div
+                        class="telemetry-value"
+                        data-metric="fidelity"
+                    >
+                        {{ telemetry.fidelity_rating | default(0) }}%
+                    </div>
+
+                    <div class="telemetry-footer">
+                        Indexed evidence quality
+                    </div>
+
+                </article>
+
+            </div>
+
+        </div>
+
+    </section>
+
+
+    <!-- =====================================================
+         LIVE THREAT TICKER
+         ===================================================== -->
+    <section class="threat-ticker-section">
+
+        <div class="ticker-header">
+            <span class="ticker-live-dot"></span>
+
+            <span class="ticker-title">
+                LIVE THREAT STREAM
+            </span>
+
+            <span class="ticker-divider"></span>
+
+            <span class="ticker-subtitle">
+                PLATFORM EVENTS
+            </span>
+        </div>
+
+
+        <div
+            class="ticker-track"
+            id="threat-ticker-track"
+            aria-live="polite"
+        >
+
+            <div class="ticker-placeholder">
+                Initializing telemetry stream...
+            </div>
+
+        </div>
+
+    </section>
+
+
+    <!-- =====================================================
+         FORENSIC PIPELINE
+         ===================================================== -->
+    <section class="how-it-works-section">
+
+        <div class="section-container">
+
+            <div class="section-intro">
+
+                <div class="section-label">
+                    INVESTIGATION PIPELINE
+                </div>
+
+                <h2 class="section-title">
+                    From Raw Evidence to Attribution
+                </h2>
+
+                <p class="section-description">
+                    Every uploaded evidence bundle moves through a
+                    deterministic forensic pipeline before becoming
+                    an investigation-ready incident.
+                </p>
+
+            </div>
+
+
+            <div class="steps-slider-wrapper">
+
+                <!-- STEP 01 -->
+                <article class="step-card">
+
+                    <div class="step-card-header">
+                        <span class="step-number">
+                            01
+                        </span>
+
+                        <span class="step-code">
+                            INGEST
+                        </span>
+                    </div>
+
+
+                    <div class="step-canvas-container">
+
+                        <div class="pipeline-icon pipeline-icon-blue">
+
+                            <svg
+                                width="72"
+                                height="72"
+                                viewBox="0 0 24 24"
+                                fill="none"
+                                stroke="currentColor"
+                                stroke-width="1.3"
+                                stroke-linecap="round"
+                                stroke-linejoin="round"
+                            >
+                                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                                <polyline points="14 2 14 8 20 8"></polyline>
+                                <line x1="16" y1="13" x2="8" y2="13"></line>
+                                <line x1="16" y1="17" x2="8" y2="17"></line>
+                                <polyline points="10 9 9 9 8 9"></polyline>
+                            </svg>
+
+                        </div>
+
+                    </div>
+
+
+                    <h3 class="feature-title">
+                        Multi-Format Extraction
+                    </h3>
+
+                    <p class="feature-desc">
+                        Parse supported evidence streams into normalized
+                        telemetry records while preserving the original
+                        evidence bundle and cryptographic digest.
+                    </p>
+
+                </article>
+
+
+                <!-- STEP 02 -->
+                <article class="step-card">
+
+                    <div class="step-card-header">
+                        <span class="step-number">
+                            02
+                        </span>
+
+                        <span class="step-code">
+                            DETECT
+                        </span>
+                    </div>
+
+
+                    <div class="step-canvas-container">
+
+                        <div class="pipeline-icon pipeline-icon-cyan">
+
+                            <svg
+                                width="72"
+                                height="72"
+                                viewBox="0 0 24 24"
+                                fill="none"
+                                stroke="currentColor"
+                                stroke-width="1.3"
+                                stroke-linecap="round"
+                                stroke-linejoin="round"
+                            >
+                                <circle cx="11" cy="11" r="8"></circle>
+                                <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                                <line x1="11" y1="8" x2="11" y2="14"></line>
+                                <line x1="8" y1="11" x2="14" y2="11"></line>
+                            </svg>
+
+                        </div>
+
+                    </div>
+
+
+                    <h3 class="feature-title">
+                        Threat Correlation
+                    </h3>
+
+                    <p class="feature-desc">
+                        Combine rule signatures, anomaly analysis,
+                        velocity patterns, and threat scoring to identify
+                        suspicious telemetry.
+                    </p>
+
+                </article>
+
+
+                <!-- STEP 03 -->
+                <article class="step-card">
+
+                    <div class="step-card-header">
+                        <span class="step-number">
+                            03
+                        </span>
+
+                        <span class="step-code">
+                            ATTRIBUTE
+                        </span>
+                    </div>
+
+
+                    <div class="step-canvas-container">
+
+                        <div class="pipeline-icon pipeline-icon-red">
+
+                            <svg
+                                width="72"
+                                height="72"
+                                viewBox="0 0 24 24"
+                                fill="none"
+                                stroke="currentColor"
+                                stroke-width="1.3"
+                                stroke-linecap="round"
+                                stroke-linejoin="round"
+                            >
+                                <polygon points="12 2 2 7 12 12 22 7 12 2"></polygon>
+                                <polyline points="2 17 12 22 22 17"></polyline>
+                                <polyline points="2 12 12 17 22 12"></polyline>
+                            </svg>
+
+                        </div>
+
+                    </div>
+
+
+                    <h3 class="feature-title">
+                        Incident Reconstruction
+                    </h3>
+
+                    <p class="feature-desc">
+                        Correlate threat signals into incident clusters,
+                        associate MITRE ATT&CK techniques, and expose the
+                        resulting investigation timeline.
+                    </p>
+
+                </article>
+
+            </div>
+
+        </div>
+
+    </section>
+
+
+    <!-- =====================================================
+         CAPABILITY MATRIX
+         ===================================================== -->
+    <section class="features-section">
+
+        <div class="section-container">
+
+            <div class="section-intro">
+
+                <div class="section-label">
+                    FORENSIC CAPABILITY MATRIX
+                </div>
+
+                <h2 class="section-title">
+                    Built Around the Investigation Workflow
+                </h2>
+
+                <p class="section-description">
+                    The platform connects ingestion, detection, evidence,
+                    incident analysis, and tactical attribution through
+                    one operational interface.
+                </p>
+
+            </div>
+
+
+            <div class="features-grid">
+
+                <article class="feature-card">
+                    <div class="feature-canvas-holder">
+                        <span class="feature-number">01</span>
+                    </div>
+
+                    <h3 class="feature-title">
+                        Evidence Vault
+                    </h3>
+
+                    <p class="feature-desc">
+                        Preserve uploaded evidence with SHA-256 integrity,
+                        processing state, record counts, and forensic
+                        fidelity metadata.
+                    </p>
+                </article>
+
+
+                <article class="feature-card">
+                    <div class="feature-canvas-holder">
+                        <span class="feature-number">02</span>
+                    </div>
+
+                    <h3 class="feature-title">
+                        Threat Correlation
+                    </h3>
+
+                    <p class="feature-desc">
+                        Convert normalized telemetry into threat signals
+                        using the platform correlation pipeline.
+                    </p>
+                </article>
+
+
+                <article class="feature-card">
+                    <div class="feature-canvas-holder">
+                        <span class="feature-number">03</span>
+                    </div>
+
+                    <h3 class="feature-title">
+                        Incident Clustering
+                    </h3>
+
+                    <p class="feature-desc">
+                        Group related threat activity into investigation
+                        dockets with severity and attribution confidence.
+                    </p>
+                </article>
+
+
+                <article class="feature-card">
+                    <div class="feature-canvas-holder">
+                        <span class="feature-number">04</span>
+                    </div>
+
+                    <h3 class="feature-title">
+                        MITRE ATT&CK Mapping
+                    </h3>
+
+                    <p class="feature-desc">
+                        Connect detected activity with the enterprise
+                        technique taxonomy used by the forensic workflow.
+                    </p>
+                </article>
+
+
+                <article class="feature-card">
+                    <div class="feature-canvas-holder">
+                        <span class="feature-number">05</span>
+                    </div>
+
+                    <h3 class="feature-title">
+                        Network Graph
+                    </h3>
+
+                    <p class="feature-desc">
+                        Explore relationships between source addresses,
+                        resources, threat domains, and incident clusters.
+                    </p>
+                </article>
+
+
+                <article class="feature-card">
+                    <div class="feature-canvas-holder">
+                        <span class="feature-number">06</span>
+                    </div>
+
+                    <h3 class="feature-title">
+                        Investigation Dossier
+                    </h3>
+
+                    <p class="feature-desc">
+                        Generate a consolidated forensic investigation brief
+                        from the platform telemetry state.
+                    </p>
+                </article>
+
+            </div>
+
+        </div>
+
+    </section>
+
+
+    <!-- =====================================================
+         MITRE PREVIEW
+         ===================================================== -->
+    <section class="mitre-preview-section">
+
+        <div class="section-container">
+
+            <div class="mitre-preview-container">
+
+                <div class="mitre-preview-content">
+
+                    <div class="section-label">
+                        TACTICAL TAXONOMY
+                    </div>
+
+                    <h2 class="section-title">
+                        MITRE ATT&CK at Investigation Depth
+                    </h2>
+
+                    <p class="section-description">
+                        Detected threat signals can be associated with
+                        enterprise techniques and surfaced through the
+                        platform's tactical matrix.
+                    </p>
+
+
+                    <div class="mitre-preview-stats">
+
+                        <div class="mitre-stat">
+                            <span class="mitre-stat-value">
+                                ATT&CK
+                            </span>
+
+                            <span class="mitre-stat-label">
+                                Enterprise Taxonomy
+                            </span>
+                        </div>
+
+                        <div class="mitre-stat">
+                            <span class="mitre-stat-value">
+                                LIVE
+                            </span>
+
+                            <span class="mitre-stat-label">
+                                Technique Activity
+                            </span>
+                        </div>
+
+                    </div>
+
+
+                    <a
+                        href="{{ url_for('ops_views.render_mitre_matrix') }}"
+                        class="btn btn-secondary"
+                    >
+                        Explore MITRE Matrix
+
+                        <svg
+                            width="16"
+                            height="16"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            stroke-width="2"
+                        >
+                            <polyline points="9 18 15 12 9 6"></polyline>
+                        </svg>
+
+                    </a>
+
+                </div>
+
+
+                <div
+                    id="mitre-teaser-canvas"
+                    class="mitre-canvas-box"
+                    aria-label="MITRE ATT&CK visualization"
+                ></div>
+
+            </div>
+
+        </div>
+
+    </section>
+
+
+    <!-- =====================================================
+         CTA
+         ===================================================== -->
+    <section class="landing-cta">
+
+        <div class="section-container">
+
+            <div class="cta-box">
+
+                <div class="section-label">
+                    FORENSIC OPERATIONS
+                </div>
+
+                <h2>
+                    Ready to Investigate the Evidence?
+                </h2>
+
+                <p>
+                    Upload telemetry, inspect threat signals,
+                    reconstruct incidents, and move from raw logs
+                    to actionable forensic intelligence.
+                </p>
+
+
+                <div class="cta-actions">
+
+                    {% if operator %}
+
+                        <a
+                            href="{{ url_for('ops_views.render_ingest_station') }}"
+                            class="btn btn-primary btn-lg"
+                        >
+                            Start Investigation
+                        </a>
+
+                        <a
+                            href="{{ url_for('ops_views.render_command_deck') }}"
+                            class="btn btn-outline btn-lg"
+                        >
+                            Open Command Deck
+                        </a>
+
+                    {% else %}
+
+                        <a
+                            href="{{ url_for('auth_views.render_login_view') }}"
+                            class="btn btn-primary btn-lg"
+                        >
+                            Sign In to Investigate
+                        </a>
+
+                        <a
+                            href="{{ url_for('auth_views.render_registration_view') }}"
+                            class="btn btn-outline btn-lg"
+                        >
+                            Create Account
+                        </a>
+
+                    {% endif %}
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </section>
+
+</main>
+
+
+<!-- =========================================================
+     FOOTER
+     ========================================================= -->
+<footer class="landing-footer">
+
+    <div class="footer-inner">
+
+        <div class="footer-brand">
+
+            <div class="brand-logo-icon">
+
+                <svg
+                    width="18"
+                    height="18"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                >
+                    <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
+                </svg>
+
+            </div>
+
+            <div>
+                <strong>
+                    Intelligent Log Forensics
+                </strong>
+
+                <span>
+                    Digital Forensic Operations Platform
+                </span>
+            </div>
+
+        </div>
+
+
+        <div class="footer-links">
+
+            <a
+                href="{{ url_for('ops_views.render_command_deck') }}"
+            >
+                Dashboard
+            </a>
+
+            <a
+                href="{{ url_for('ops_views.render_ingest_station') }}"
+            >
+                Analyze
+            </a>
+
+            <a
+                href="{{ url_for('ops_views.render_dockets_queue') }}"
+            >
+                Incidents
+            </a>
+
+            <a
+                href="{{ url_for('ops_views.render_mitre_matrix') }}"
+            >
+                MITRE ATT&CK
+            </a>
+
+            {% if operator and operator.clearance_tier == "Commander" %}
+
+                <a
+                    href="{{ url_for('ops_views.render_commander_console') }}"
+                >
+                    Admin
+                </a>
+
+            {% endif %}
+
+        </div>
+
+
+        <div class="footer-meta">
+            <span>
+                FORENSIC SYSTEM
+            </span>
+
+            <span class="footer-status">
+                <span class="status-dot"></span>
+                OPERATIONAL
+            </span>
+        </div>
+
+    </div>
+
+</footer>
+
+
+<!-- =========================================================
+     CORE JAVASCRIPT
+     ========================================================= -->
+
+<!-- Application state -->
+<script
+    src="{{ url_for('static', filename='js/core/AppState.js') }}"
+    defer
+></script>
+
+<!-- Event system -->
+<script
+    src="{{ url_for('static', filename='js/core/EventBus.js') }}"
+    defer
+></script>
+
+<!-- Router -->
+<script
+    src="{{ url_for('static', filename='js/core/Router.js') }}"
+    defer
+></script>
+
+
+<!-- =========================================================
+     FORENSIC ENGINES
+     ========================================================= -->
+
+<script
+    src="{{ url_for('static', filename='js/engine/ThreatEngine.js') }}"
+    defer
+></script>
+
+<script
+    src="{{ url_for('static', filename='js/engine/LogParser.js') }}"
+    defer
+></script>
+
+<script
+    src="{{ url_for('static', filename='js/engine/LiveGenerator.js') }}"
+    defer
+></script>
+
+
+<!-- =========================================================
+     THREE.JS VISUALIZATION
+     ========================================================= -->
+
+<script
+    src="{{ url_for('static', filename='js/three/ServerModel.js') }}"
+    defer
+></script>
+
+<script
+    src="{{ url_for('static', filename='js/three/MitreMatrix3D.js') }}"
+    defer
+></script>
+
+
+<!-- =========================================================
+     LANDING PAGE CONTROLLER
+     ========================================================= -->
+
+<script
+    src="{{ url_for('static', filename='js/pages/Landing.js') }}"
+    defer
+></script>
+<!-- Three.js -->
+<script
+    src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js">
+</script>
+
+<!-- Core JS -->
+<script src="{{ url_for('static', filename='js/core/EventBus.js') }}"></script>
+<script src="{{ url_for('static', filename='js/core/AppState.js') }}"></script>
+<script src="{{ url_for('static', filename='js/core/Router.js') }}"></script>
+
+<!-- Three.js Components -->
+<script src="{{ url_for('static', filename='js/three/ServerModel.js') }}"></script>
+<script src="{{ url_for('static', filename='js/three/AttackGraph.js') }}"></script>
+<script src="{{ url_for('static', filename='js/three/EvidenceHelix.js') }}"></script>
+<script src="{{ url_for('static', filename='js/three/LogWaterfall.js') }}"></script>
+<script src="{{ url_for('static', filename='js/three/MitreMatrix3D.js') }}"></script>
+
+<!-- Page JS -->
+<script src="{{ url_for('static', filename='js/pages/Landing.js') }}"></script>
+
 </body>
 </html>
-
-
-

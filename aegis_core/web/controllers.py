@@ -235,9 +235,15 @@ def terminate_session():
 
 @ops_blueprint.route("/")
 def render_home_portal():
+    operator = resolve_active_operator()
     telemetry = gather_platform_telemetry()
-    return render_template("index.html", telemetry=telemetry, metrics=telemetry)
 
+    return render_template(
+        "index.html",
+        telemetry=telemetry,
+        metrics=telemetry,
+        operator=operator,
+    )
 
 @ops_blueprint.route("/operations/deck")
 @require_clearance("Analyst")

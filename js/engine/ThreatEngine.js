@@ -1,271 +1,829 @@
-/**
- * INTELLIGENT LOG FORENSIC - THREAT ENGINE
- * Fresh, production-grade cybersecurity heuristic detection & ML-style scoring engine
- * Zero-copy fresh architecture
- */
+/* ============================================================
+   ILF — THREAT ENGINE
+   /static/js/engine/ThreatEngine.js
+   ============================================================ */
 
-class ThreatEngine {
-  constructor() {
-    // Stateful tracking across logs & sessions
-    this.ipProfiler = new Map(); // ip -> { count, failures, lastSeen, endpoints: Set, flags: [] }
-    this.signatureDatabase = this.initializeSignatures();
-    this.eventDeduplicationCache = new Set();
-    this.MAX_DEDUP_CACHE = 5000;
-  }
+(function () {
+    "use strict";
 
-  initializeSignatures() {
-    return [
-      {
-        id: 'SIG-SQLI',
-        name: 'SQL Injection Exploitation',
-        technique: 'T1190',
-        tactic: 'Initial Access',
-        regex: /(\bUNION\b[\s+]+SELECT|\bOR\b[\s+]+['"]?\d+['"]?\s*=\s*['"]?\d+|--|;--|\bSLEEP\(\d+\)|'\s*OR\s*'1'='1|INFORMATION_SCHEMA)/i,
-        baseSeverity: 'critical',
-        baseConfidence: 94
-      },
-      {
-        id: 'SIG-TRAV',
-        name: 'Directory Path Traversal',
-        technique: 'T1083',
-        tactic: 'Discovery',
-        regex: /(\.\.\/|\.\.\\|%2e%2e%2f|%2e%2e\/|\/etc\/passwd|\/etc\/shadow|win\.ini|boot\.ini)/i,
-        baseSeverity: 'high',
-        baseConfidence: 90
-      },
-      {
-        id: 'SIG-XSS',
-        name: 'Cross-Site Scripting Probe',
-        technique: 'T1059',
-        tactic: 'Execution',
-        regex: /(<script[\s\S]*?>|javascript:|onload\s*=|onerror\s*=|alert\(|document\.cookie|<img\s+src=x\s+onerror)/i,
-        baseSeverity: 'high',
-        baseConfidence: 86
-      },
-      {
-        id: 'SIG-C2',
-        name: 'C2 Beaconing / Reverse Shell',
-        technique: 'T1071',
-        tactic: 'Command and Control',
-        regex: /(\/c2\/beacon|heartbeat_check|cmd\.exe\s+\/c|\/bin\/(ba)?sh\s+-i|base64_decode\()/i,
-        baseSeverity: 'critical',
-        baseConfidence: 96
-      },
-      {
-        id: 'SIG-DUMP',
-        name: 'Credential Dumping Tool Artifact',
-        technique: 'T1003',
-        tactic: 'Credential Access',
-        regex: /(mimikatz|sekurlsa|procdump|lsass\.dmp|\/etc\/shadow|samdump2|secretsdump)/i,
-        baseSeverity: 'critical',
-        baseConfidence: 98
-      },
-      {
-        id: 'SIG-SUDO',
-        name: 'Unauthorized Privilege Escalation',
-        technique: 'T1068',
-        tactic: 'Privilege Escalation',
-        regex: /(sudo\s+.*NOPASSWD|chmod\s+\+s|setuid|pkexec\s+--user|\/bin\/bash\s+-p)/i,
-        baseSeverity: 'high',
-        baseConfidence: 89
-      },
-      {
-        id: 'SIG-EXFIL',
-        name: 'High-Volume Data Exfiltration',
-        technique: 'T1041',
-        tactic: 'Exfiltration',
-        regex: /(POST\s+\/(upload|backup|sync).*([0-9]{3,}\s*MB|[0-9]{6,}\s*bytes)|curl\s+-F\s+file=@)/i,
-        baseSeverity: 'critical',
-        baseConfidence: 92
-      }
-    ];
-  }
+    const ThreatEngine = {
 
-  /**
-   * Evaluates a single normalized log entry against all threat heuristic vectors
-   */
-  inspectLog(logEntry) {
-    const findings = [];
-    const sourceIp = logEntry.source_ip || 'unknown';
-    const payload = `${logEntry.method || ''} ${logEntry.target || ''} ${logEntry.payload_snippet || ''} ${logEntry.raw_message || ''}`;
+        /* --------------------------------------------------------
+           Configuration
+        -------------------------------------------------------- */
 
-    // 1. IP Profiling & Historical Frequency Analysis
-    let ipProfile = this.ipProfiler.get(sourceIp);
-    if (!ipProfile) {
-      ipProfile = { count: 0, authFailures: 0, endpoints: new Set(), lastSeen: Date.now() };
-      this.ipProfiler.set(sourceIp, ipProfile);
-    }
-    ipProfile.count += 1;
-    ipProfile.lastSeen = Date.now();
-    if (logEntry.target) {
-      ipProfile.endpoints.add(logEntry.target);
-    }
+        config: {
+            criticalThreshold: 80,
+            highThreshold: 60,
+            elevatedThreshold: 35,
 
-    // 2. Exploit Signature Scanning
-    let matchedSig = null;
-    for (const sig of this.signatureDatabase) {
-      if (sig.regex.test(payload)) {
-        matchedSig = sig;
-        findings.push({
-          type: 'EXPLOIT_SIGNATURE',
-          signatureId: sig.id,
-          name: sig.name,
-          technique: sig.technique,
-          tactic: sig.tactic,
-          severity: sig.baseSeverity,
-          confidence: sig.baseConfidence
-        });
-        break; // prioritize primary signature
-      }
-    }
+            clusterWindowMs: 5 * 60 * 1000,
 
-    // 3. Authentication Failure & Brute Force Pattern Analysis
-    const isAuthFail = /AUTH FAIL|Failed password|login failure|invalid credentials|401 Unauthorized/i.test(payload);
-    if (isAuthFail) {
-      ipProfile.authFailures += 1;
-      if (ipProfile.authFailures >= 3) {
-        findings.push({
-          type: 'BRUTE_FORCE',
-          signatureId: 'SIG-BRUTE',
-          name: 'Credential Brute Force Attack',
-          technique: 'T1110',
-          tactic: 'Credential Access',
-          severity: ipProfile.authFailures > 10 ? 'critical' : 'high',
-          confidence: Math.min(99, 70 + (ipProfile.authFailures * 3))
-        });
-      }
-    }
+            maxSignals: 5000
+        },
 
-    // 4. Reconnaissance & Port / Endpoint Scanning
-    if (ipProfile.endpoints.size > 8 || ipProfile.count > 25 || /SCAN|PORT\s+SCAN|nmap/i.test(payload)) {
-      findings.push({
-        type: 'RECONNAISSANCE',
-        signatureId: 'SIG-SCAN',
-        name: 'Network Reconnaissance / Port Scan',
-        technique: 'T1046',
-        tactic: 'Discovery',
-        severity: 'medium',
-        confidence: 85
-      });
-    }
+        /* --------------------------------------------------------
+           Utility
+        -------------------------------------------------------- */
 
-    // 5. Service Instability / Server Crash Patterns
-    const statusCode = logEntry.status_code;
-    if (statusCode && statusCode >= 500 && statusCode <= 599) {
-      findings.push({
-        type: 'SERVICE_ANOMALY',
-        signatureId: 'SIG-5XX',
-        name: 'Server Error Exploitation Instability',
-        technique: 'T1499',
-        tactic: 'Impact',
-        severity: 'medium',
-        confidence: 72
-      });
-    }
+        normalize(value) {
+            return String(value ?? "")
+                .trim()
+                .toLowerCase();
+        },
 
-    // 6. ML-style Heuristic Threat Scoring (0 - 100)
-    const compositeScore = this.computeRiskScore(findings, ipProfile, logEntry);
+        clamp(value, min, max) {
+            return Math.min(
+                Math.max(value, min),
+                max
+            );
+        },
 
-    // 7. Deduplication Check to avoid flooding
-    const dedupSignature = `${sourceIp}:${logEntry.target}:${findings.map(f => f.signatureId).join(',')}`;
-    const isDuplicate = this.eventDeduplicationCache.has(dedupSignature);
-    if (!isDuplicate) {
-      this.eventDeduplicationCache.add(dedupSignature);
-      if (this.eventDeduplicationCache.size > this.MAX_DEDUP_CACHE) {
-        // Clear half of cache to maintain bounded memory
-        const keys = Array.from(this.eventDeduplicationCache.keys()).slice(0, 1000);
-        keys.forEach(k => this.eventDeduplicationCache.delete(k));
-      }
-    }
+        safeNumber(value, fallback = 0) {
+            const number = Number(value);
 
-    // Final consolidated severity
-    let finalSeverity = 'safe';
-    let primaryTechnique = logEntry.mitre_technique || 'None';
-    let primaryConfidence = 50;
-    let attackType = 'Benign Traffic';
+            return Number.isFinite(number)
+                ? number
+                : fallback;
+        },
 
-    if (findings.length > 0) {
-      // Pick top finding
-      const top = findings.sort((a, b) => {
-        const ranks = { critical: 4, high: 3, medium: 2, safe: 1 };
-        return ranks[b.severity] - ranks[a.severity];
-      })[0];
+        /* --------------------------------------------------------
+           Keyword dictionaries
+        -------------------------------------------------------- */
 
-      finalSeverity = top.severity;
-      primaryTechnique = top.technique;
-      primaryConfidence = top.confidence;
-      attackType = top.name;
-    } else if (compositeScore > 75) {
-      finalSeverity = 'high';
-      attackType = 'Anomalous Activity';
-    } else if (compositeScore > 40) {
-      finalSeverity = 'medium';
-      attackType = 'Suspicious Probe';
-    }
+        keywords: {
+            critical: [
+                "ransomware",
+                "credential dump",
+                "credential dumping",
+                "privilege escalation",
+                "data exfiltration",
+                "exfiltration",
+                "malware",
+                "rootkit",
+                "persistence",
+                "command and control",
+                "c2",
+                "reverse shell"
+            ],
 
-    return {
-      sourceIp,
-      compositeScore,
-      severity: finalSeverity,
-      mitreTechnique: primaryTechnique,
-      confidence: primaryConfidence,
-      attackType,
-      findings,
-      isDuplicate,
-      isRiskEvent: compositeScore >= 60 || finalSeverity === 'critical' || finalSeverity === 'high'
+            high: [
+                "failed login",
+                "authentication failure",
+                "brute force",
+                "powershell",
+                "remote access",
+                "ssh",
+                "rdp",
+                "suspicious",
+                "unauthorized",
+                "blocked",
+                "denied",
+                "execution"
+            ],
+
+            elevated: [
+                "warning",
+                "anomaly",
+                "unexpected",
+                "connection",
+                "network",
+                "process",
+                "file modified",
+                "file deleted",
+                "upload",
+                "download"
+            ]
+        },
+
+        /* --------------------------------------------------------
+           MITRE mapping
+        -------------------------------------------------------- */
+
+        mitreMap: [
+            {
+                id: "T1059",
+                name: "Command and Scripting Interpreter",
+                keywords: [
+                    "command",
+                    "shell",
+                    "powershell",
+                    "cmd",
+                    "script",
+                    "execution"
+                ]
+            },
+
+            {
+                id: "T1078",
+                name: "Valid Accounts",
+                keywords: [
+                    "login",
+                    "authentication",
+                    "account",
+                    "credential",
+                    "user"
+                ]
+            },
+
+            {
+                id: "T1110",
+                name: "Brute Force",
+                keywords: [
+                    "brute force",
+                    "failed login",
+                    "authentication failure",
+                    "password failure"
+                ]
+            },
+
+            {
+                id: "T1021",
+                name: "Remote Services",
+                keywords: [
+                    "ssh",
+                    "rdp",
+                    "remote access",
+                    "remote service"
+                ]
+            },
+
+            {
+                id: "T1041",
+                name: "Exfiltration Over C2 Channel",
+                keywords: [
+                    "exfiltration",
+                    "exfil",
+                    "data transfer",
+                    "data export"
+                ]
+            },
+
+            {
+                id: "T1566",
+                name: "Phishing",
+                keywords: [
+                    "phishing",
+                    "malicious email",
+                    "suspicious email",
+                    "attachment"
+                ]
+            },
+
+            {
+                id: "T1547",
+                name: "Boot or Logon Autostart Execution",
+                keywords: [
+                    "startup",
+                    "autostart",
+                    "persistence",
+                    "autorun"
+                ]
+            },
+
+            {
+                id: "T1055",
+                name: "Process Injection",
+                keywords: [
+                    "process injection",
+                    "injected process",
+                    "injection"
+                ]
+            }
+        ],
+
+        /* --------------------------------------------------------
+           Build searchable text
+        -------------------------------------------------------- */
+
+        getSearchText(record) {
+            return this.normalize(
+                [
+                    record.raw,
+                    record.message,
+                    record.eventType,
+                    record.sourceIp,
+                    record.destinationIp,
+                    record.username,
+                    record.hostname
+                ]
+                    .filter(Boolean)
+                    .join(" ")
+            );
+        },
+
+        /* --------------------------------------------------------
+           Keyword scoring
+        -------------------------------------------------------- */
+
+        keywordScore(text) {
+            let score = 0;
+
+            const matches = [];
+
+            const checkGroup = (
+                words,
+                points
+            ) => {
+                words.forEach((keyword) => {
+                    if (text.includes(keyword)) {
+                        score += points;
+                        matches.push(keyword);
+                    }
+                });
+            };
+
+            checkGroup(
+                this.keywords.critical,
+                35
+            );
+
+            checkGroup(
+                this.keywords.high,
+                20
+            );
+
+            checkGroup(
+                this.keywords.elevated,
+                8
+            );
+
+            return {
+                score: this.clamp(
+                    score,
+                    0,
+                    100
+                ),
+                matches
+            };
+        },
+
+        /* --------------------------------------------------------
+           Severity score
+        -------------------------------------------------------- */
+
+        calculateScore(record) {
+            const text =
+                this.getSearchText(record);
+
+            const keywordResult =
+                this.keywordScore(text);
+
+            let score =
+                keywordResult.score;
+
+            const parserSeverity =
+                this.normalize(
+                    record.severity
+                );
+
+            if (parserSeverity === "critical") {
+                score += 35;
+            } else if (
+                parserSeverity === "high"
+            ) {
+                score += 25;
+            } else if (
+                parserSeverity === "medium"
+            ) {
+                score += 12;
+            }
+
+            /*
+             * Network source + destination pair.
+             */
+            if (
+                record.sourceIp &&
+                record.destinationIp
+            ) {
+                score += 5;
+            }
+
+            /*
+             * Remote access events deserve additional context.
+             */
+            if (
+                [
+                    "remote_access",
+                    "access_failure"
+                ].includes(
+                    this.normalize(
+                        record.eventType
+                    )
+                )
+            ) {
+                score += 8;
+            }
+
+            return {
+                score: this.clamp(
+                    score,
+                    0,
+                    100
+                ),
+                matches:
+                    keywordResult.matches
+            };
+        },
+
+        /* --------------------------------------------------------
+           Severity classification
+        -------------------------------------------------------- */
+
+        classifySeverity(score) {
+            if (
+                score >=
+                this.config.criticalThreshold
+            ) {
+                return "Critical";
+            }
+
+            if (
+                score >=
+                this.config.highThreshold
+            ) {
+                return "High";
+            }
+
+            if (
+                score >=
+                this.config.elevatedThreshold
+            ) {
+                return "Elevated";
+            }
+
+            return "Notice";
+        },
+
+        /* --------------------------------------------------------
+           MITRE technique detection
+        -------------------------------------------------------- */
+
+        detectMitre(record) {
+            const text =
+                this.getSearchText(record);
+
+            const matches = [];
+
+            this.mitreMap.forEach(
+                (technique) => {
+                    const matchedKeywords =
+                        technique.keywords.filter(
+                            (keyword) =>
+                                text.includes(
+                                    keyword
+                                )
+                        );
+
+                    if (
+                        matchedKeywords.length
+                    ) {
+                        matches.push({
+                            id: technique.id,
+                            name: technique.name,
+                            confidence:
+                                this.clamp(
+                                    45 +
+                                    matchedKeywords.length *
+                                        15,
+                                    0,
+                                    100
+                                ),
+                            matchedKeywords
+                        });
+                    }
+                }
+            );
+
+            return matches;
+        },
+
+        /* --------------------------------------------------------
+           Analyze one record
+        -------------------------------------------------------- */
+
+        analyzeRecord(record, index = 0) {
+            if (!record) {
+                return null;
+            }
+
+            const result =
+                this.calculateScore(record);
+
+            const severity =
+                this.classifySeverity(
+                    result.score
+                );
+
+            const mitre =
+                this.detectMitre(record);
+
+            return {
+                ...record,
+
+                signalId:
+                    record.id ||
+                    `signal-${index + 1}`,
+
+                threatScore:
+                    result.score,
+
+                threatSeverity:
+                    severity,
+
+                threatMatches:
+                    result.matches,
+
+                mitreTechniques:
+                    mitre,
+
+                isThreat:
+                    result.score >=
+                    this.config.elevatedThreshold,
+
+                analyzedAt:
+                    new Date().toISOString()
+            };
+        },
+
+        /* --------------------------------------------------------
+           Analyze collection
+        -------------------------------------------------------- */
+
+        analyze(records) {
+            const input =
+                Array.isArray(records)
+                    ? records
+                    : [];
+
+            const limited =
+                input.slice(
+                    0,
+                    this.config.maxSignals
+                );
+
+            const signals =
+                limited
+                    .map(
+                        (record, index) =>
+                            this.analyzeRecord(
+                                record,
+                                index
+                            )
+                    )
+                    .filter(Boolean);
+
+            return {
+                signals,
+                summary:
+                    this.summarize(signals)
+            };
+        },
+
+        /* --------------------------------------------------------
+           Incident clustering
+        -------------------------------------------------------- */
+
+        clusterSignals(signals) {
+            const input =
+                Array.isArray(signals)
+                    ? signals
+                    : [];
+
+            const threatSignals =
+                input.filter(
+                    (signal) =>
+                        signal.isThreat
+                );
+
+            const clusters = [];
+
+            threatSignals.forEach(
+                (signal) => {
+                    const timestamp =
+                        Date.parse(
+                            signal.timestamp
+                        );
+
+                    const source =
+                        signal.sourceIp ||
+                        "unknown";
+
+                    const technique =
+                        signal.mitreTechniques?.[0]?.id ||
+                        "unmapped";
+
+                    const existing =
+                        clusters.find(
+                            (cluster) => {
+                                const sameSource =
+                                    cluster.sourceIp ===
+                                    source;
+
+                                const sameTechnique =
+                                    cluster.techniqueId ===
+                                    technique;
+
+                                const timeMatch =
+                                    !Number.isNaN(
+                                        timestamp
+                                    ) &&
+                                    !Number.isNaN(
+                                        cluster.lastTimestamp
+                                    ) &&
+                                    Math.abs(
+                                        timestamp -
+                                        cluster.lastTimestamp
+                                    ) <=
+                                    this.config
+                                        .clusterWindowMs;
+
+                                return (
+                                    sameSource &&
+                                    (
+                                        sameTechnique ||
+                                        timeMatch
+                                    )
+                                );
+                            }
+                        );
+
+                    if (existing) {
+                        existing.signals.push(
+                            signal
+                        );
+
+                        existing.lastTimestamp =
+                            Number.isNaN(timestamp)
+                                ? existing.lastTimestamp
+                                : timestamp;
+
+                        existing.threatScore =
+                            Math.max(
+                                existing.threatScore,
+                                signal.threatScore
+                            );
+
+                        return;
+                    }
+
+                    clusters.push({
+                        id:
+                            `cluster-${clusters.length + 1}`,
+
+                        sourceIp:
+                            source,
+
+                        techniqueId:
+                            technique,
+
+                        techniqueName:
+                            signal.mitreTechniques?.[0]?.name ||
+                            "Unmapped Activity",
+
+                        firstTimestamp:
+                            Number.isNaN(timestamp)
+                                ? null
+                                : timestamp,
+
+                        lastTimestamp:
+                            Number.isNaN(timestamp)
+                                ? null
+                                : timestamp,
+
+                        threatScore:
+                            signal.threatScore,
+
+                        severity:
+                            signal.threatSeverity,
+
+                        signals: [
+                            signal
+                        ]
+                    });
+                }
+            );
+
+            return clusters.map(
+                (cluster) => ({
+                    ...cluster,
+
+                    signalCount:
+                        cluster.signals.length,
+
+                    confidence:
+                        this.calculateClusterConfidence(
+                            cluster
+                        )
+                })
+            );
+        },
+
+        /* --------------------------------------------------------
+           Cluster confidence
+        -------------------------------------------------------- */
+
+        calculateClusterConfidence(cluster) {
+            const signalCount =
+                cluster.signals?.length || 0;
+
+            const scores =
+                (cluster.signals || [])
+                    .map(
+                        (signal) =>
+                            this.safeNumber(
+                                signal.threatScore
+                            )
+                    );
+
+            const average =
+                scores.length
+                    ? scores.reduce(
+                        (sum, value) =>
+                            sum + value,
+                        0
+                    ) / scores.length
+                    : 0;
+
+            const volumeBonus =
+                Math.min(
+                    signalCount * 4,
+                    20
+                );
+
+            return Math.round(
+                this.clamp(
+                    average +
+                    volumeBonus,
+                    0,
+                    100
+                )
+            );
+        },
+
+        /* --------------------------------------------------------
+           Dashboard summary
+        -------------------------------------------------------- */
+
+        summarize(signals) {
+            const data =
+                Array.isArray(signals)
+                    ? signals
+                    : [];
+
+            const severity = {
+                Critical: 0,
+                High: 0,
+                Elevated: 0,
+                Notice: 0
+            };
+
+            const techniques = {};
+
+            let totalThreatScore = 0;
+            let threatSignals = 0;
+
+            data.forEach((signal) => {
+                const level =
+                    signal.threatSeverity ||
+                    "Notice";
+
+                if (
+                    Object.prototype.hasOwnProperty.call(
+                        severity,
+                        level
+                    )
+                ) {
+                    severity[level] += 1;
+                }
+
+                if (signal.isThreat) {
+                    threatSignals += 1;
+                }
+
+                totalThreatScore +=
+                    this.safeNumber(
+                        signal.threatScore
+                    );
+
+                (
+                    signal.mitreTechniques ||
+                    []
+                ).forEach(
+                    (technique) => {
+                        if (
+                            !techniques[
+                                technique.id
+                            ]
+                        ) {
+                            techniques[
+                                technique.id
+                            ] = {
+                                id:
+                                    technique.id,
+                                name:
+                                    technique.name,
+                                count: 0
+                            };
+                        }
+
+                        techniques[
+                            technique.id
+                        ].count += 1;
+                    }
+                );
+            });
+
+            const averageThreatIndex =
+                data.length
+                    ? Math.round(
+                        totalThreatScore /
+                        data.length
+                    )
+                    : 0;
+
+            return {
+                totalSignals:
+                    data.length,
+
+                threatSignals,
+
+                severity,
+
+                averageThreatIndex,
+
+                techniques:
+                    Object.values(
+                        techniques
+                    ),
+
+                criticalCount:
+                    severity.Critical,
+
+                highCount:
+                    severity.High,
+
+                elevatedCount:
+                    severity.Elevated,
+
+                noticeCount:
+                    severity.Notice
+            };
+        },
+
+        /* --------------------------------------------------------
+           Full forensic analysis
+        -------------------------------------------------------- */
+
+        run(records) {
+            const analysis =
+                this.analyze(records);
+
+            const clusters =
+                this.clusterSignals(
+                    analysis.signals
+                );
+
+            const summary = {
+                ...analysis.summary,
+
+                activeClusters:
+                    clusters.length,
+
+                criticalClusters:
+                    clusters.filter(
+                        (cluster) =>
+                            cluster.severity ===
+                            "Critical"
+                    ).length,
+
+                highClusters:
+                    clusters.filter(
+                        (cluster) =>
+                            cluster.severity ===
+                            "High"
+                    ).length
+            };
+
+            return {
+                signals:
+                    analysis.signals,
+
+                clusters,
+
+                summary,
+
+                generatedAt:
+                    new Date().toISOString()
+            };
+        }
     };
-  }
 
-  /**
-   * ML-Heuristic Scoring Function
-   */
-  computeRiskScore(findings, ipProfile, logEntry) {
-    let score = 10; // Baseline benign score
+    /* ------------------------------------------------------------
+       Global API
+       ------------------------------------------------------------ */
 
-    for (const f of findings) {
-      if (f.severity === 'critical') score += 55;
-      else if (f.severity === 'high') score += 35;
-      else if (f.severity === 'medium') score += 20;
-    }
+    window.ThreatEngine =
+        ThreatEngine;
 
-    // IP velocity weight
-    if (ipProfile.authFailures > 5) score += 25;
-    if (ipProfile.endpoints.size > 10) score += 15;
-
-    // HTTP status code impact
-    if (logEntry.status_code === 401 || logEntry.status_code === 403) score += 10;
-    if (logEntry.status_code >= 500) score += 15;
-
-    return Math.min(100, Math.max(5, score));
-  }
-
-  /**
-   * Calculate Trust / Quality Score for a Batch of Logs
-   * Formula factors in field completeness %, parse success rate, dedup ratio
-   */
-  computeBatchTrustQuality(totalProcessed, parseErrors, completedFieldsCount, maxPossibleFields, dedupDuplicates) {
-    if (totalProcessed === 0) return { qualityScore: 100, completeness: 100, errorRate: 0 };
-
-    const parseSuccessRate = Math.max(0, ((totalProcessed - parseErrors) / totalProcessed) * 100);
-    const fieldCompletenessRate = maxPossibleFields > 0 ? (completedFieldsCount / maxPossibleFields) * 100 : 100;
-    const uniquenessRate = Math.max(0, ((totalProcessed - dedupDuplicates) / totalProcessed) * 100);
-
-    // Weighted composite quality score (0 - 100)
-    const compositeQuality = Math.round(
-      (parseSuccessRate * 0.40) +
-      (fieldCompletenessRate * 0.40) +
-      (uniquenessRate * 0.20)
-    );
-
-    return {
-      qualityScore: compositeQuality,
-      parseSuccessRate: Math.round(parseSuccessRate),
-      fieldCompletenessRate: Math.round(fieldCompletenessRate),
-      uniquenessRate: Math.round(uniquenessRate),
-      errorCount: parseErrors
-    };
-  }
-}
-
-// Global Singleton
-window.threatEngine = new ThreatEngine();
+})();

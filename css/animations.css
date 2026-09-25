@@ -1,108 +1,570 @@
-﻿/* ==========================================================================
-   INTELLIGENT LOG FORENSIC - ANIMATION SYSTEM
-   Keyframes, pulsing scanners, flash highlights, transitions
-   ========================================================================== */
+﻿/* =========================================================
+   INTELLIGENT LOG FORENSICS
+   GLOBAL ANIMATIONS
+   ========================================================= */
 
-@keyframes pulse-ring {
-  0% {
-    transform: scale(0.95);
-    opacity: 0.8;
-  }
-  50% {
-    transform: scale(1.6);
-    opacity: 0.2;
-  }
-  100% {
-    transform: scale(2.2);
-    opacity: 0;
-  }
+/* ---------------------------------------------------------
+   BASE MOTION TOKENS
+--------------------------------------------------------- */
+
+:root {
+    --motion-fast: 140ms;
+    --motion-normal: 220ms;
+    --motion-slow: 420ms;
+    --ease-standard: cubic-bezier(0.2, 0.65, 0.3, 1);
+    --ease-smooth: cubic-bezier(0.4, 0, 0.2, 1);
+    --ease-spring: cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-@keyframes flashRed {
-  0% {
-    background-color: rgba(239, 68, 68, 0.45);
-    transform: translateX(-4px);
-  }
-  50% {
-    background-color: rgba(239, 68, 68, 0.2);
-    transform: translateX(0);
-  }
-  100% {
-    background-color: transparent;
-  }
+/* ---------------------------------------------------------
+   PAGE ENTRY
+--------------------------------------------------------- */
+
+@keyframes ilf-page-enter {
+    from {
+        opacity: 0;
+        transform: translateY(8px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
 }
 
-@keyframes scannerLine {
-  0% {
-    transform: translateY(-100%);
-    opacity: 0.2;
-  }
-  50% {
-    opacity: 0.7;
-  }
-  100% {
-    transform: translateY(1000%);
-    opacity: 0;
-  }
+.app-main {
+    animation: ilf-page-enter 420ms var(--ease-standard) both;
 }
 
-@keyframes floatSlow {
-  0%, 100% {
-    transform: translateY(0);
-  }
-  50% {
-    transform: translateY(-8px);
-  }
+/* ---------------------------------------------------------
+   FADE
+--------------------------------------------------------- */
+
+@keyframes ilf-fade-in {
+    from {
+        opacity: 0;
+    }
+
+    to {
+        opacity: 1;
+    }
 }
 
-@keyframes glowPulseIndigo {
-  0%, 100% {
-    box-shadow: 0 0 15px rgba(79, 70, 229, 0.3);
-  }
-  50% {
-    box-shadow: 0 0 30px rgba(79, 70, 229, 0.6);
-  }
+.animate-fade-in {
+    animation: ilf-fade-in 320ms var(--ease-standard) both;
 }
 
-@keyframes matrixTicker {
-  0% {
-    transform: translateX(0);
-  }
-  100% {
-    transform: translateX(-50%);
-  }
+/* ---------------------------------------------------------
+   SLIDE UP
+--------------------------------------------------------- */
+
+@keyframes ilf-slide-up {
+    from {
+        opacity: 0;
+        transform: translateY(18px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
 }
 
-/* Row entrance animation */
-@keyframes slideInFromBottom {
-  from {
-    opacity: 0;
-    transform: translateY(12px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+.animate-slide-up {
+    animation: ilf-slide-up 420ms var(--ease-spring) both;
 }
 
-.animate-slide-in {
-  animation: slideInFromBottom 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+/* ---------------------------------------------------------
+   SLIDE DOWN
+--------------------------------------------------------- */
+
+@keyframes ilf-slide-down {
+    from {
+        opacity: 0;
+        transform: translateY(-12px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
 }
 
-.float-ambient {
-  animation: floatSlow 5s ease-in-out infinite;
+.animate-slide-down {
+    animation: ilf-slide-down 360ms var(--ease-standard) both;
 }
 
-/* Glow effects */
-.glow-text-cyan {
-  text-shadow: 0 0 12px rgba(6, 182, 212, 0.5);
+/* ---------------------------------------------------------
+   SLIDE RIGHT
+--------------------------------------------------------- */
+
+@keyframes ilf-slide-right {
+    from {
+        opacity: 0;
+        transform: translateX(-16px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
 }
 
-.glow-text-indigo {
-  text-shadow: 0 0 12px rgba(79, 70, 229, 0.5);
+.animate-slide-right {
+    animation: ilf-slide-right 400ms var(--ease-spring) both;
 }
 
-.glow-text-critical {
-  text-shadow: 0 0 12px rgba(239, 68, 68, 0.6);
+/* ---------------------------------------------------------
+   SCALE IN
+--------------------------------------------------------- */
+
+@keyframes ilf-scale-in {
+    from {
+        opacity: 0;
+        transform: scale(0.96);
+    }
+
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
 }
 
+.animate-scale-in {
+    animation: ilf-scale-in 360ms var(--ease-spring) both;
+}
+
+/* ---------------------------------------------------------
+   STAGGERED CARDS
+--------------------------------------------------------- */
+
+.metrics-grid > *,
+.dashboard-grid > *,
+.quick-actions-grid > *,
+.incident-overview-grid > * {
+    animation: ilf-slide-up 420ms var(--ease-spring) both;
+}
+
+.metrics-grid > :nth-child(1),
+.dashboard-grid > :nth-child(1),
+.quick-actions-grid > :nth-child(1),
+.incident-overview-grid > :nth-child(1) {
+    animation-delay: 40ms;
+}
+
+.metrics-grid > :nth-child(2),
+.dashboard-grid > :nth-child(2),
+.quick-actions-grid > :nth-child(2),
+.incident-overview-grid > :nth-child(2) {
+    animation-delay: 80ms;
+}
+
+.metrics-grid > :nth-child(3),
+.dashboard-grid > :nth-child(3),
+.quick-actions-grid > :nth-child(3),
+.incident-overview-grid > :nth-child(3) {
+    animation-delay: 120ms;
+}
+
+.metrics-grid > :nth-child(4),
+.dashboard-grid > :nth-child(4),
+.quick-actions-grid > :nth-child(4),
+.incident-overview-grid > :nth-child(4) {
+    animation-delay: 160ms;
+}
+
+.metrics-grid > :nth-child(5),
+.dashboard-grid > :nth-child(5) {
+    animation-delay: 200ms;
+}
+
+.metrics-grid > :nth-child(6),
+.dashboard-grid > :nth-child(6) {
+    animation-delay: 240ms;
+}
+
+/* ---------------------------------------------------------
+   HOVER LIFT
+--------------------------------------------------------- */
+
+.metric-card,
+.dashboard-panel,
+.quick-action-card {
+    transition:
+        transform var(--motion-normal) var(--ease-standard),
+        border-color var(--motion-normal) var(--ease-standard),
+        box-shadow var(--motion-normal) var(--ease-standard);
+}
+
+.metric-card:hover,
+.quick-action-card:hover {
+    transform: translateY(-3px);
+}
+
+.dashboard-panel:hover {
+    border-color: var(--border-color-hover, rgba(120, 140, 170, 0.25));
+}
+
+/* ---------------------------------------------------------
+   BUTTON INTERACTION
+--------------------------------------------------------- */
+
+button,
+.btn,
+.header-action-button,
+.sidebar-nav-link,
+.logout-link {
+    transition:
+        color var(--motion-fast) var(--ease-standard),
+        background-color var(--motion-fast) var(--ease-standard),
+        border-color var(--motion-fast) var(--ease-standard),
+        transform var(--motion-fast) var(--ease-standard),
+        box-shadow var(--motion-fast) var(--ease-standard);
+}
+
+button:active,
+.btn:active,
+.header-action-button:active {
+    transform: translateY(1px);
+}
+
+/* ---------------------------------------------------------
+   SIDEBAR NAV
+--------------------------------------------------------- */
+
+.sidebar-nav-link {
+    position: relative;
+    overflow: hidden;
+}
+
+.sidebar-nav-link::before {
+    content: "";
+    position: absolute;
+    left: 0;
+    top: 50%;
+    width: 2px;
+    height: 0;
+    transform: translateY(-50%);
+    border-radius: 999px;
+    background: currentColor;
+    transition: height var(--motion-normal) var(--ease-standard);
+}
+
+.sidebar-nav-link:hover::before,
+.sidebar-nav-link.active::before {
+    height: 55%;
+}
+
+/* ---------------------------------------------------------
+   LIVE INDICATOR
+--------------------------------------------------------- */
+
+@keyframes ilf-live-pulse {
+    0%,
+    100% {
+        opacity: 1;
+        transform: scale(1);
+    }
+
+    50% {
+        opacity: 0.45;
+        transform: scale(0.72);
+    }
+}
+
+.live-badge > span,
+.status-indicator,
+.status-dot.online,
+.footer-status-dot {
+    animation: ilf-live-pulse 1.8s ease-in-out infinite;
+}
+
+/* ---------------------------------------------------------
+   STATUS GLOW
+--------------------------------------------------------- */
+
+@keyframes ilf-status-glow {
+    0%,
+    100% {
+        box-shadow: 0 0 0 0 currentColor;
+    }
+
+    50% {
+        box-shadow: 0 0 0 4px transparent;
+    }
+}
+
+.status-indicator {
+    animation:
+        ilf-live-pulse 1.8s ease-in-out infinite,
+        ilf-status-glow 2.2s ease-in-out infinite;
+}
+
+/* ---------------------------------------------------------
+   PROGRESS BARS
+--------------------------------------------------------- */
+
+@keyframes ilf-progress-grow {
+    from {
+        width: 0;
+    }
+
+    to {
+        width: var(--progress-width, 100%);
+    }
+}
+
+.telemetry-progress-fill,
+.telemetry-progress > span,
+.risk-meter-fill {
+    transform-origin: left center;
+    animation: ilf-progress-grow 900ms var(--ease-smooth) both;
+}
+
+/* ---------------------------------------------------------
+   RISK DONUT
+--------------------------------------------------------- */
+
+@keyframes ilf-donut-enter {
+    from {
+        opacity: 0;
+        transform: scale(0.88) rotate(-18deg);
+    }
+
+    to {
+        opacity: 1;
+        transform: scale(1) rotate(0);
+    }
+}
+
+.risk-donut {
+    animation: ilf-donut-enter 700ms var(--ease-spring) both;
+}
+
+/* ---------------------------------------------------------
+   CHART ENTRY
+--------------------------------------------------------- */
+
+.chart-container,
+#severity-chart,
+#risk-donut,
+.live-feed {
+    animation: ilf-fade-in 500ms var(--ease-standard) both;
+}
+
+/* ---------------------------------------------------------
+   FEED ITEMS
+--------------------------------------------------------- */
+
+.feed-item {
+    animation: ilf-slide-right 360ms var(--ease-spring) both;
+}
+
+.feed-item:nth-child(1) {
+    animation-delay: 40ms;
+}
+
+.feed-item:nth-child(2) {
+    animation-delay: 80ms;
+}
+
+.feed-item:nth-child(3) {
+    animation-delay: 120ms;
+}
+
+.feed-item:nth-child(4) {
+    animation-delay: 160ms;
+}
+
+.feed-item:nth-child(5) {
+    animation-delay: 200ms;
+}
+
+.feed-item:nth-child(n + 6) {
+    animation-delay: 240ms;
+}
+
+/* ---------------------------------------------------------
+   INCIDENT TIMELINE
+--------------------------------------------------------- */
+
+@keyframes ilf-timeline-marker {
+    from {
+        opacity: 0;
+        transform: scale(0);
+    }
+
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+.timeline-event {
+    animation: ilf-slide-right 420ms var(--ease-spring) both;
+}
+
+.timeline-marker span {
+    animation: ilf-timeline-marker 420ms var(--ease-spring) both;
+}
+
+/* ---------------------------------------------------------
+   QUICK ACTION ARROW
+--------------------------------------------------------- */
+
+.quick-action-arrow {
+    transition:
+        transform var(--motion-normal) var(--ease-spring),
+        opacity var(--motion-normal) var(--ease-standard);
+}
+
+.quick-action-card:hover .quick-action-arrow {
+    transform: translateX(5px);
+}
+
+/* ---------------------------------------------------------
+   INCIDENT ROW
+--------------------------------------------------------- */
+
+.incident-row {
+    transition:
+        background-color var(--motion-fast) var(--ease-standard),
+        transform var(--motion-fast) var(--ease-standard),
+        border-color var(--motion-fast) var(--ease-standard);
+}
+
+.incident-row:hover {
+    transform: translateX(3px);
+}
+
+.incident-arrow {
+    transition: transform var(--motion-normal) var(--ease-spring);
+}
+
+.incident-row:hover .incident-arrow {
+    transform: translateX(4px);
+}
+
+/* ---------------------------------------------------------
+   EMPTY STATE
+--------------------------------------------------------- */
+
+@keyframes ilf-empty-float {
+    0%,
+    100% {
+        transform: translateY(0);
+    }
+
+    50% {
+        transform: translateY(-4px);
+    }
+}
+
+.empty-state-icon {
+    animation: ilf-empty-float 3s ease-in-out infinite;
+}
+
+/* ---------------------------------------------------------
+   LOADING STATE
+--------------------------------------------------------- */
+
+@keyframes ilf-shimmer {
+    0% {
+        background-position: -600px 0;
+    }
+
+    100% {
+        background-position: 600px 0;
+    }
+}
+
+.loading-skeleton {
+    background-image: linear-gradient(
+        90deg,
+        transparent 0,
+        rgba(255, 255, 255, 0.05) 50%,
+        transparent 100%
+    );
+    background-size: 600px 100%;
+    animation: ilf-shimmer 1.5s linear infinite;
+}
+
+/* ---------------------------------------------------------
+   SPINNER
+--------------------------------------------------------- */
+
+@keyframes ilf-spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+.spinner {
+    animation: ilf-spin 800ms linear infinite;
+}
+
+/* ---------------------------------------------------------
+   REFRESH BUTTON
+--------------------------------------------------------- */
+
+.icon-button.is-refreshing svg {
+    animation: ilf-spin 800ms linear infinite;
+}
+
+/* ---------------------------------------------------------
+   NOTIFICATION / TOAST
+--------------------------------------------------------- */
+
+@keyframes ilf-toast-enter {
+    from {
+        opacity: 0;
+        transform: translateY(12px) scale(0.97);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+.toast,
+.notification {
+    animation: ilf-toast-enter 320ms var(--ease-spring) both;
+}
+
+/* ---------------------------------------------------------
+   FOCUS
+--------------------------------------------------------- */
+
+:focus-visible {
+    outline: 2px solid currentColor;
+    outline-offset: 3px;
+}
+
+/* ---------------------------------------------------------
+   REDUCED MOTION
+--------------------------------------------------------- */
+
+@media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+        scroll-behavior: auto !important;
+    }
+}
+
+/* ---------------------------------------------------------
+   MOBILE
+--------------------------------------------------------- */
+
+@media (max-width: 768px) {
+    .metrics-grid > *,
+    .dashboard-grid > *,
+    .quick-actions-grid > *,
+    .incident-overview-grid > * {
+        animation-delay: 0ms;
+    }
+}

@@ -1,108 +1,455 @@
-/**
- * INTELLIGENT LOG FORENSIC - ADMIN CONSOLE CONTROLLER
- * System health monitoring, audit trail, batch uploads tracking, and user privilege management
- */
+(function () {
+    "use strict";
 
-document.addEventListener('DOMContentLoaded', () => {
-  // 1. Users Tab Data
-  const users = [
-    { id: 'USR-01', name: 'Dr. Evelyn Vance', email: 'e.vance@soc-forensics.internal', role: 'Chief Forensics Officer', status: 'ACTIVE', lastLogin: '2 mins ago' },
-    { id: 'USR-02', name: 'Marcus Sterling', email: 'm.sterling@soc-forensics.internal', role: 'Senior Threat Hunter', status: 'ACTIVE', lastLogin: '45 mins ago' },
-    { id: 'USR-03', name: 'Sarah Chen', email: 's.chen@soc-forensics.internal', role: 'Security Analyst L2', status: 'ACTIVE', lastLogin: '3 hours ago' },
-    { id: 'USR-04', name: 'Auditor External', email: 'audit-read@external.cert', role: 'Read-Only Auditor', status: 'SUSPENDED', lastLogin: '4 days ago' }
-  ];
+    document.addEventListener("DOMContentLoaded", function () {
+        initializeAdminPage();
+    });
 
-  const userTableBody = document.getElementById('admin-users-table-body');
-  if (userTableBody) {
-    userTableBody.innerHTML = users.map(u => `
-      <tr>
-        <td class="forensic-mono">${u.id}</td>
-        <td style="font-weight:600;color:var(--text-primary);">${u.name}</td>
-        <td class="forensic-mono">${u.email}</td>
-        <td><span class="badge badge-indigo">${u.role}</span></td>
-        <td><span class="badge ${u.status === 'ACTIVE' ? 'badge-safe' : 'badge-high'}">${u.status}</span></td>
-        <td class="forensic-mono">${u.lastLogin}</td>
-      </tr>
-    `).join('');
-  }
-
-  // 2. Uploads Tab Data (Populated dynamically from AppState + static records)
-  function renderUploads() {
-    const uploadTableBody = document.getElementById('admin-uploads-table-body');
-    if (!uploadTableBody) return;
-
-    let batches = [];
-    if (window.appState && window.appState.state.batches.length > 0) {
-      batches = window.appState.state.batches;
-    } else {
-      batches = [
-        { batchId: 'BATCH-004', fileName: 'nginx_access_prod_dmz.log', entryCount: 1420, criticalCount: 18, timestamp: new Date(Date.now() - 7200000).toISOString() },
-        { batchId: 'BATCH-003', fileName: 'auth_audit_kerberos.json', entryCount: 890, criticalCount: 4, timestamp: new Date(Date.now() - 14400000).toISOString() },
-        { batchId: 'BATCH-002', fileName: 'firewall_netflow_exfil.csv', entryCount: 3200, criticalCount: 42, timestamp: new Date(Date.now() - 28800000).toISOString() }
-      ];
+    function initializeAdminPage() {
+        bindRefresh();
+        bindSearch();
+        bindFilters();
+        bindActionButtons();
+        loadAdminData();
     }
 
-    uploadTableBody.innerHTML = batches.map(b => `
-      <tr>
-        <td class="forensic-mono" style="color:var(--accent-data);font-weight:600;">${b.batchId}</td>
-        <td class="forensic-mono">${b.fileName}</td>
-        <td class="forensic-mono">${b.entryCount}</td>
-        <td><span class="badge ${b.criticalCount > 0 ? 'badge-critical' : 'badge-safe'}">${b.criticalCount} Flagged</span></td>
-        <td class="forensic-mono">${new Date(b.timestamp).toLocaleString()}</td>
-        <td><span class="badge badge-cyan">VERIFIED SHA-256</span></td>
-      </tr>
-    `).join('');
-  }
 
-  renderUploads();
-  if (window.eventBus) {
-    window.eventBus.on('batch:created', () => renderUploads());
-  }
+    /* =====================================================
+       REFRESH
+    ===================================================== */
 
-  // 3. System Health Telemetry Updates
-  function updateHealth() {
-    const memEl = document.getElementById('health-memory-val');
-    const logsEl = document.getElementById('health-total-processed');
-    const engineEl = document.getElementById('health-engine-status');
+    function bindRefresh() {
+        const button = document.getElementById("refresh-admin");
 
-    if (logsEl && window.appState) {
-      logsEl.textContent = `${window.appState.state.totalLogs.toLocaleString()} events`;
+        if (!button) {
+            return;
+        }
+
+        button.addEventListener("click", function () {
+            loadAdminData();
+        });
     }
-    if (memEl) {
-      // Simulating live browser heap metric
-      const simulatedMem = (45 + Math.random() * 8).toFixed(1);
-      memEl.textContent = `${simulatedMem} MB`;
+
+
+    /* =====================================================
+       SEARCH
+    ===================================================== */
+
+    function bindSearch() {
+        const input = document.getElementById("admin-search");
+
+        if (!input) {
+            return;
+        }
+
+        input.addEventListener("input", function () {
+            const query = input.value.trim().toLowerCase();
+
+            document
+                .querySelectorAll(
+                    "[data-admin-row], .operator-row, .user-row"
+                )
+                .forEach(function (row) {
+                    const text = row.textContent.toLowerCase();
+
+                    row.hidden = query !== "" && !text.includes(query);
+                });
+        });
     }
-    if (engineEl && window.appState) {
-      const active = window.appState.isGeneratorActive();
-      engineEl.textContent = active ? 'ONLINE · ThreatEngine Active' : 'PAUSED · Standby Mode';
-      engineEl.className = active ? 'badge badge-safe' : 'badge badge-medium';
+
+
+    /* =====================================================
+       FILTERS
+    ===================================================== */
+
+    function bindFilters() {
+        document
+            .querySelectorAll("[data-admin-filter]")
+            .forEach(function (filter) {
+                filter.addEventListener("change", function () {
+                    applyFilter(filter);
+                });
+            });
     }
-  }
 
-  setInterval(updateHealth, 2000);
-  updateHealth();
+    function applyFilter(filter) {
+        const value = filter.value.toLowerCase();
 
-  // 4. Audit Log Feed
-  const auditLogs = [
-    { time: '14:22:01', action: 'EVIDENCE_HASH_VERIFY', detail: 'SHA-256 integrity match confirmed for batch #004', user: 'SYSTEM' },
-    { time: '14:18:40', action: 'INCIDENT_ESCALATION', detail: 'Automated correlation created INC-7042 (T1041 Exfiltration)', user: 'ThreatEngine' },
-    { time: '13:50:12', action: 'AUTH_SESSION_START', detail: 'Investigator Dr. Evelyn Vance authenticated with MFA', user: 'USR-01' },
-    { time: '12:30:45', action: 'RULESET_UPDATE', detail: 'Applied updated MITRE ATT&CK signature vectors', user: 'SYSTEM' },
-    { time: '11:15:20', action: 'DATA_INGEST_COMPLETE', detail: 'Parsed 3,200 records with 99.4% field completeness', user: 'SYSTEM' }
-  ];
+        const rows = document.querySelectorAll(
+            "[data-admin-row], .operator-row, .user-row"
+        );
 
-  const auditFeedEl = document.getElementById('admin-audit-feed');
-  if (auditFeedEl) {
-    auditFeedEl.innerHTML = auditLogs.map(a => `
-      <div class="audit-item">
-        <div style="display:flex;align-items:center;gap:16px;">
-          <span class="forensic-mono" style="color:var(--text-muted);font-size:0.75rem;">${a.time}</span>
-          <span class="badge badge-indigo">${a.action}</span>
-          <span style="color:var(--text-secondary);">${a.detail}</span>
-        </div>
-        <span class="forensic-mono" style="color:var(--accent-data);">${a.user}</span>
-      </div>
-    `).join('');
-  }
-});
+        rows.forEach(function (row) {
+            if (!value || value === "all") {
+                row.hidden = false;
+                return;
+            }
+
+            const rowStatus = (
+                row.dataset.status ||
+                row.dataset.role ||
+                row.textContent ||
+                ""
+            ).toLowerCase();
+
+            row.hidden = !rowStatus.includes(value);
+        });
+    }
+
+
+    /* =====================================================
+       ACTION BUTTONS
+    ===================================================== */
+
+    function bindActionButtons() {
+        document.addEventListener("click", function (event) {
+            const button = event.target.closest(
+                "[data-admin-action]"
+            );
+
+            if (!button) {
+                return;
+            }
+
+            const action = button.dataset.adminAction;
+
+            if (action === "refresh") {
+                loadAdminData();
+            }
+
+            if (action === "toggle") {
+                toggleOperator(button);
+            }
+
+            if (action === "delete") {
+                confirmDelete(button);
+            }
+        });
+    }
+
+
+    /* =====================================================
+       TOGGLE OPERATOR
+    ===================================================== */
+
+    async function toggleOperator(button) {
+        const operatorId = button.dataset.operatorId;
+
+        if (!operatorId) {
+            return;
+        }
+
+        const currentState =
+            button.dataset.active === "true";
+
+        button.disabled = true;
+
+        try {
+            const response = await fetch(
+                `/api/v1/admin/operators/${encodeURIComponent(operatorId)}/status`,
+                {
+                    method: "PATCH",
+                    credentials: "include",
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify({
+                        active: !currentState
+                    })
+                }
+            );
+
+            if (!response.ok) {
+                throw new Error(
+                    `Request failed with status ${response.status}`
+                );
+            }
+
+            button.dataset.active = String(!currentState);
+
+            updateToggleLabel(
+                button,
+                !currentState
+            );
+
+        } catch (error) {
+            console.error(
+                "Unable to update operator status:",
+                error
+            );
+
+            showAdminMessage(
+                "Unable to update operator status.",
+                "error"
+            );
+
+        } finally {
+            button.disabled = false;
+        }
+    }
+
+
+    function updateToggleLabel(button, active) {
+        const label = button.querySelector(
+            "[data-action-label]"
+        );
+
+        if (label) {
+            label.textContent = active
+                ? "Disable"
+                : "Enable";
+        }
+
+        button.classList.toggle(
+            "is-active",
+            active
+        );
+    }
+
+
+    /* =====================================================
+       DELETE / REMOVE
+    ===================================================== */
+
+    function confirmDelete(button) {
+        const operatorId = button.dataset.operatorId;
+
+        if (!operatorId) {
+            return;
+        }
+
+        const confirmed = window.confirm(
+            "Remove this operator account?"
+        );
+
+        if (!confirmed) {
+            return;
+        }
+
+        removeOperator(
+            operatorId,
+            button
+        );
+    }
+
+
+    async function removeOperator(operatorId, button) {
+        button.disabled = true;
+
+        try {
+            const response = await fetch(
+                `/api/v1/admin/operators/${encodeURIComponent(operatorId)}`,
+                {
+                    method: "DELETE",
+                    credentials: "include"
+                }
+            );
+
+            if (!response.ok) {
+                throw new Error(
+                    `Request failed with status ${response.status}`
+                );
+            }
+
+            const row = button.closest(
+                "[data-admin-row], .operator-row, .user-row"
+            );
+
+            if (row) {
+                row.remove();
+            }
+
+            showAdminMessage(
+                "Operator removed successfully.",
+                "success"
+            );
+
+        } catch (error) {
+            console.error(
+                "Unable to remove operator:",
+                error
+            );
+
+            showAdminMessage(
+                "Unable to remove operator.",
+                "error"
+            );
+
+            button.disabled = false;
+        }
+    }
+
+
+    /* =====================================================
+       ADMIN DATA
+    ===================================================== */
+
+    async function loadAdminData() {
+        const refreshButton =
+            document.getElementById("refresh-admin");
+
+        if (refreshButton) {
+            refreshButton.classList.add("is-loading");
+            refreshButton.disabled = true;
+        }
+
+        try {
+            const response = await fetch(
+                "/api/v1/admin",
+                {
+                    method: "GET",
+                    credentials: "include",
+                    headers: {
+                        "Accept": "application/json"
+                    }
+                }
+            );
+
+            if (!response.ok) {
+                throw new Error(
+                    `Admin request failed: ${response.status}`
+                );
+            }
+
+            const data = await response.json();
+
+            updateAdminMetrics(data);
+            updateAdminRows(data);
+
+        } catch (error) {
+            /*
+             * The page can still work using server-rendered
+             * Jinja data when the optional admin endpoint
+             * is unavailable.
+             */
+            console.warn(
+                "Admin API unavailable:",
+                error
+            );
+
+        } finally {
+            if (refreshButton) {
+                refreshButton.classList.remove(
+                    "is-loading"
+                );
+
+                refreshButton.disabled = false;
+            }
+        }
+    }
+
+
+    /* =====================================================
+       METRICS
+    ===================================================== */
+
+    function updateAdminMetrics(data) {
+        const metrics = data.metrics || data;
+
+        setText(
+            "admin-total-operators",
+            metrics.total_operators
+        );
+
+        setText(
+            "admin-active-operators",
+            metrics.active_operators
+        );
+
+        setText(
+            "admin-pending-operators",
+            metrics.pending_operators
+        );
+
+        setText(
+            "admin-total-incidents",
+            metrics.total_incidents
+        );
+    }
+
+
+    /* =====================================================
+       ROW DATA
+    ===================================================== */
+
+    function updateAdminRows(data) {
+        if (!Array.isArray(data.operators)) {
+            return;
+        }
+
+        const container =
+            document.querySelector(
+                "[data-admin-operators]"
+            );
+
+        if (!container) {
+            return;
+        }
+
+        /*
+         * Server-rendered rows are intentionally preserved.
+         * This prevents the JS layer from inventing markup
+         * that may not match the backend template.
+         */
+        if (data.operators.length === 0) {
+            const emptyState =
+                container.querySelector(
+                    ".empty-state"
+                );
+
+            if (emptyState) {
+                emptyState.hidden = false;
+            }
+        }
+    }
+
+
+    /* =====================================================
+       HELPERS
+    ===================================================== */
+
+    function setText(id, value) {
+        const element =
+            document.getElementById(id);
+
+        if (!element || value === undefined || value === null) {
+            return;
+        }
+
+        element.textContent = value;
+    }
+
+
+    function showAdminMessage(message, type) {
+        let element =
+            document.getElementById(
+                "admin-message"
+            );
+
+        if (!element) {
+            element = document.createElement("div");
+
+            element.id = "admin-message";
+            element.className = "admin-message";
+
+            document.body.appendChild(element);
+        }
+
+        element.textContent = message;
+        element.dataset.type = type || "info";
+
+        element.classList.add("is-visible");
+
+        window.clearTimeout(
+            element._hideTimer
+        );
+
+        element._hideTimer =
+            window.setTimeout(function () {
+                element.classList.remove(
+                    "is-visible"
+                );
+            }, 3500);
+    }
+
+})();
