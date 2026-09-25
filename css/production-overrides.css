@@ -1,0 +1,14 @@
+html,body{background:#f5f8fc!important;color:#172033!important}
+body{font-family:var(--font-sans)!important}
+.app-shell,.page-shell,.landing-page,.auth-page{background:#f5f8fc!important}
+.app-sidebar{background:#fff!important;border-right:1px solid #dbe4ee!important;box-shadow:4px 0 18px rgba(15,23,42,.04)!important}
+.brand-copy strong,.sidebar-nav-link,.sidebar-nav-link span,.section-title,.page-title,.panel-header h2,.dashboard-panel h2{color:#172033!important}
+.sidebar-nav-link:hover,.sidebar-nav-link.active{background:#eff6ff!important;color:#1d4ed8!important}
+.dashboard-panel,.card,.panel,.admin-table-container,.auth-form-panel{background:#fff!important;border-color:#dbe4ee!important;box-shadow:0 8px 24px rgba(15,23,42,.06)!important}
+.site-nav,.topbar,.app-header{background:rgba(255,255,255,.94)!important;border-color:#dbe4ee!important}
+.hero-visual,.hero-3d-wrapper{background:#f8fafc!important;border-color:#dbe4ee!important}
+.forensic-3d-canvas{display:block;width:100%;height:100%;min-height:420px;cursor:grab}
+.forensic-3d-canvas:active{cursor:grabbing}
+.auth-visual-panel{background:#f8fbff!important;color:#172033!important}
+input,select,textarea{background:#fff!important;color:#172033!important;border-color:#cbd5e1!important}
+table th{background:#f8fafc!important;color:#475569!important}
