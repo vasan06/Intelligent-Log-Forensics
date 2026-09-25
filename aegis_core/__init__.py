@@ -21,6 +21,7 @@ from aegis_core.web.controllers import (
     render_login_view,
     render_mitre_matrix,
     render_recovery_view,
+    render_reset_password_view,
     render_registration_view,
     render_remediation_playbooks,
     render_vault_archive,
@@ -294,6 +295,7 @@ def initialize_sentinel_platform(
     app.add_url_rule("/sign-in","sign_in",render_login_view,methods=["GET","POST"])
     app.add_url_rule("/sign-up","sign_up",render_registration_view,methods=["GET","POST"])
     app.add_url_rule("/forgot-password","forgot_password_public",render_recovery_view,methods=["GET","POST"])
+    app.add_url_rule("/reset-password","reset_password_public",render_reset_password_view,methods=["GET","POST"])
     app.add_url_rule("/sign-out","sign_out",terminate_session)
     app.add_url_rule("/evidence","evidence",render_ingest_station,methods=["GET","POST"])
     app.add_url_rule("/analysis","analysis",render_ingest_station,methods=["GET","POST"])
