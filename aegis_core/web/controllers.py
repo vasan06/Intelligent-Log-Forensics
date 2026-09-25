@@ -787,3 +787,54 @@ def api_telemetry_network_graph():
             edges.append({"source": ip, "target": dom, "weight": 2})
 
     return jsonify({"nodes": nodes, "edges": edges})
+
+
+@api_blueprint.route("/dashboard")
+@require_clearance("Analyst")
+def api_dashboard():
+    return jsonify(gather_platform_telemetry())
+
+@api_blueprint.route("/evidence", methods=["POST"])
+@require_clearance("Analyst")
+def api_evidence():
+    return api_ingest_evidence()
+
+@api_blueprint.route("/notifications")
+@require_clearance("Analyst")
+def api_notifications():
+    return api_telemetry_announcements()
+
+@api_blueprint.route("/system/health")
+@require_clearance("Analyst")
+def api_system_health():
+    return jsonify({
+        "status":"operational",
+        "database":"operational",
+        "analysis_engine":"operational",
+        "timestamp_utc":SentinelSettings.get_current_utc_timestamp(),
+    })
+
+@api_blueprint.route("/mitre")
+@require_clearance("Analyst")
+def api_mitre():
+    return jsonify({
+        key:{
+            "id":spec.technique_id,
+            "name":spec.technique_label,
+            "tactic":spec.tactic_domain,
+            "markers":spec.behavioral_markers,
+            "remediation":spec.remediation_playbook,
+        } for key,spec in MITRE_ENTERPRISE_TAXONOMY.items()
+    })
+
+@api_blueprint.route("/incidents")
+@require_clearance("Analyst")
+def api_incidents():
+    with acquire_connection() as conn:
+        rows=conn.execute("""
+            SELECT cluster_id AS id,cluster_headline AS title,triage_severity AS severity,
+                   attribution_confidence AS confidence,cluster_disposition AS status,
+                   associated_technique AS technique_id,opened_at AS created_at
+            FROM incident_clusters ORDER BY opened_at DESC LIMIT 100
+        """).fetchall()
+    return jsonify([dict(row) for row in rows])
