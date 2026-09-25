@@ -4,6 +4,18 @@ services:
     ports:
       - "5000:5000"
     env_file:
-      - .env
+      - path: .env
+        required: false
+    environment:
+      SECRET_KEY: ${SECRET_KEY:-}
+      JWT_SECRET_KEY: ${JWT_SECRET_KEY:-}
+      DATABASE_URL: ${DATABASE_URL:-sqlite:///instance/forensics.db}
+      UPLOAD_FOLDER: ${UPLOAD_FOLDER:-instance/uploads}
+      REPORT_FOLDER: ${REPORT_FOLDER:-instance/reports}
+      MODEL_FOLDER: ${MODEL_FOLDER:-instance/models}
+      MAX_CONTENT_LENGTH: ${MAX_CONTENT_LENGTH:-104857600}
+      COOKIE_SECURE: ${COOKIE_SECURE:-false}
+      APP_ORIGIN: ${APP_ORIGIN:-http://localhost:5000}
     volumes:
       - ./instance:/app/instance
+    restart: unless-stopped
