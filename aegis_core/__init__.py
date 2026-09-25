@@ -39,7 +39,7 @@ def initialize_sentinel_platform(
     root_dir = Path(SentinelSettings.ROOT_DIR)
 
     templates_dir = root_dir / "templates"
-    css_dir = root_dir / "CSS"
+    css_dir = root_dir / "css"
     js_dir = root_dir / "js"
 
     # =========================================================
@@ -55,6 +55,9 @@ def initialize_sentinel_platform(
     # =========================================================
     # APPLICATION CONFIGURATION
     # =========================================================
+
+    if not SentinelSettings.SECRET_KEY or not SentinelSettings.TOKEN_SIGNING_KEY:
+        raise RuntimeError("SECRET_KEY and JWT_SECRET_KEY must be configured through the environment.")
 
     app.config.update(
         SECRET_KEY=SentinelSettings.SECRET_KEY,
@@ -285,6 +288,20 @@ def initialize_sentinel_platform(
         endpoint="security_report",
         view_func=download_forensic_dossier,
     )
+
+    # Production-facing resource names. Legacy operation URLs remain available
+    # only as compatibility aliases while clients migrate.
+    app.add_url_rule("/sign-in","sign_in",render_login_view,methods=["GET","POST"])
+    app.add_url_rule("/sign-up","sign_up",render_registration_view,methods=["GET","POST"])
+    app.add_url_rule("/forgot-password","forgot_password_public",render_recovery_view,methods=["GET","POST"])
+    app.add_url_rule("/sign-out","sign_out",terminate_session)
+    app.add_url_rule("/evidence","evidence",render_ingest_station,methods=["GET","POST"])
+    app.add_url_rule("/analysis","analysis",render_ingest_station,methods=["GET","POST"])
+    app.add_url_rule("/incidents","incidents_public",render_dockets_queue)
+    app.add_url_rule("/mitre","mitre_public",render_mitre_matrix)
+    app.add_url_rule("/reports","reports",download_forensic_dossier)
+    app.add_url_rule("/admin","admin_public",render_commander_console)
+
 
     # =========================================================
     # RETURN FLASK APP
