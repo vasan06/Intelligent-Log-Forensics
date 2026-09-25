@@ -6,7 +6,7 @@ Intelligent Log Forensics
 (function () {
 "use strict";
 
-```
+
 /*
  * Prevent duplicate initialization if Landing.js
  * accidentally gets included more than once.
@@ -500,6 +500,6 @@ window.ILFLanding = {
         return window.landingMitreScene || null;
     }
 };
-```
+
 
 })();
