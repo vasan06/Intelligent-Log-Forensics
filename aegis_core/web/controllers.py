@@ -1,5 +1,9 @@
 import hashlib
 import json
+import secrets
+import smtplib
+import time
+from email.message import EmailMessage
 from pathlib import Path
 from typing import Any
 import sqlite3
@@ -25,6 +29,27 @@ from aegis_core.config import SentinelSettings
 from aegis_core.dossiers.generator import compile_forensic_dossier_pdf
 from aegis_core.parsers.tokenizers import LogStreamTokenizer
 from aegis_core.persistence.engine import acquire_connection
+def _audit(conn, operator_id, event_type, resource_type=None, resource_id=None, metadata=None):
+    conn.execute("INSERT INTO audit_events(operator_ref,event_type,resource_type,resource_id,metadata_json,created_at) VALUES(?,?,?,?,?,?)",
+                 (operator_id,event_type,resource_type,resource_id,json.dumps(metadata or {}, separators=(",",":")),SentinelSettings.get_current_utc_timestamp()))
+
+def _send_reset_email(recipient, token):
+    if not (SentinelSettings.SMTP_HOST and SentinelSettings.SMTP_FROM):
+        raise RuntimeError("SMTP is not configured")
+    message=EmailMessage()
+    message["Subject"]="Reset your Intelligent Log Forensics password"
+    message["From"]=SentinelSettings.SMTP_FROM
+    message["To"]=recipient
+    message.set_content("Use this secure password reset link within 30 minutes:\n" + SentinelSettings.APP_ORIGIN.rstrip("/") + "/reset-password?token=" + token + "\n\nIf you did not request this, no action is required.")
+    with smtplib.SMTP(SentinelSettings.SMTP_HOST,SentinelSettings.SMTP_PORT,timeout=15) as smtp:
+        smtp.starttls()
+        if SentinelSettings.SMTP_USERNAME:
+            smtp.login(SentinelSettings.SMTP_USERNAME,SentinelSettings.SMTP_PASSWORD or "")
+        smtp.send_message(message)
+
+def _password_is_valid(password):
+    return len(password)>=10 and any(ch.isupper() for ch in password) and any(ch.islower() for ch in password) and any(ch.isdigit() for ch in password)
+
 from aegis_core.security.identity import (
     issue_access_ticket,
     require_clearance,
@@ -101,9 +126,13 @@ def render_login_view():
                 (email_cand,)
             ).fetchone()
 
-        if operator and check_password_hash(operator["credential_hash"], pwd_cand):
+        if operator and operator["account_status"] == "active" and check_password_hash(operator["credential_hash"], pwd_cand):
             session.clear()
             session["active_operator_id"] = operator["operator_id"]
+            with acquire_connection() as conn:
+                now=SentinelSettings.get_current_utc_timestamp()
+                conn.execute("UPDATE operators SET last_login_at=? WHERE operator_id=?",(now,operator["operator_id"]))
+                _audit(conn,operator["operator_id"],"sign_in","operator",str(operator["operator_id"]))
             
             ticket = issue_access_ticket(operator["operator_id"], operator["clearance_tier"])
             resp = redirect(url_for("ops_views.render_command_deck"))
@@ -138,8 +167,8 @@ def render_registration_view():
         if not email or "@" not in email or "." not in email.rsplit("@", 1)[-1]:
             errors.append("Enter a valid email address.")
 
-        if len(password) < 8:
-            errors.append("Password must contain at least 8 characters.")
+        if not _password_is_valid(password):
+            errors.append("Password must be at least 10 characters and include uppercase, lowercase, and a number.")
 
         if password != confirm_password:
             errors.append("Passwords do not match.")
@@ -212,13 +241,51 @@ def render_registration_view():
 
 @auth_blueprint.route("/auth/recovery", methods=["GET", "POST"])
 def render_recovery_view():
-    recovery_logged = False
     if request.method == "POST":
-        email = request.form.get("work_email", "").strip().lower() or request.form.get("email", "").strip().lower()
+        email=request.form.get("work_email","").strip().lower() or request.form.get("email","").strip().lower()
+        generic="If an account matches that address, a password reset message has been requested."
+        try:
+            with acquire_connection() as conn:
+                operator=conn.execute("SELECT operator_id,work_email FROM operators WHERE work_email=? AND account_status='active'",(email,)).fetchone()
+                if operator:
+                    raw_token=secrets.token_urlsafe(32)
+                    token_hash=hashlib.sha256(raw_token.encode()).hexdigest()
+                    conn.execute("INSERT INTO password_reset_tokens(token_hash,operator_ref,expires_at,created_at) VALUES(?,?,?,?)",
+                                 (token_hash,operator["operator_id"],int(time.time())+1800,SentinelSettings.get_current_utc_timestamp()))
+                    _audit(conn,operator["operator_id"],"password_reset_requested","operator",str(operator["operator_id"]))
+                    _send_reset_email(operator["work_email"],raw_token)
+        except Exception:
+            current_app.logger.exception("Password reset dispatch failed")
+        flash(generic,"success")
+    return render_template("auth.html", mode="recovery")
+
+@auth_blueprint.route("/auth/reset-password", methods=["GET","POST"])
+def render_reset_password_view():
+    token=request.args.get("token","").strip() or request.form.get("token","").strip()
+    if request.method=="GET":
+        return render_template("auth.html",mode="reset",reset_token=token)
+    password=request.form.get("password","")
+    confirm=request.form.get("confirm_password","")
+    if not _password_is_valid(password) or password!=confirm:
+        flash("Choose a valid password and make sure both entries match.","danger")
+        return render_template("auth.html",mode="reset",reset_token=token)
+    token_hash=hashlib.sha256(token.encode()).hexdigest()
+    try:
         with acquire_connection() as conn:
-            recovery_logged = conn.execute("SELECT operator_id FROM operators WHERE work_email = ?", (email,)).fetchone() is not None
-        flash("Recovery dispatch registered. Commander audit will verify clearance.", "success")
-    return render_template("auth.html", mode="recovery", recovery_ready=recovery_logged)
+            row=conn.execute("SELECT operator_ref FROM password_reset_tokens WHERE token_hash=? AND used_at IS NULL AND expires_at>?",
+                             (token_hash,int(time.time()))).fetchone()
+            if not row:
+                flash("This password reset link is invalid or expired.","danger")
+                return render_template("auth.html",mode="reset",reset_token="")
+            conn.execute("UPDATE operators SET credential_hash=? WHERE operator_id=?",(generate_password_hash(password),row["operator_ref"]))
+            conn.execute("UPDATE password_reset_tokens SET used_at=? WHERE token_hash=?",(int(time.time()),token_hash))
+            _audit(conn,row["operator_ref"],"password_reset_completed","operator",str(row["operator_ref"]))
+        flash("Password updated. Please sign in.","success")
+        return redirect(url_for("auth_views.render_login_view"))
+    except Exception:
+        current_app.logger.exception("Password reset failed")
+        flash("Unable to complete password reset.","danger")
+        return render_template("auth.html",mode="reset",reset_token=token)
 
 
 @auth_blueprint.route("/auth/terminate")
@@ -623,7 +690,7 @@ def api_ingest_evidence():
             )
     except Exception as exc:
         current_app.logger.exception("Evidence API ingestion failed for %s", clean_name)
-        return jsonify({"error": f"Forensic ingestion failed: {exc}"}), 500
+        return jsonify({"error": "Forensic ingestion failed. Review the upload status and server diagnostics."}), 500
 
     return jsonify(
         {
