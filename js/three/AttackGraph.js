@@ -1,197 +1,580 @@
-/**
- * INTELLIGENT LOG FORENSIC - 3D ATTACK PATH RECONSTRUCTION GRAPH
- * Low-poly 3D node objects (Attacker, Perimeter Server, Auth Server, Database)
- * Animated energy beam paths showing multi-stage attack direction and progression
- */
+/* ============================================================
+   ATTACK GRAPH
+   Intelligent Log Forensics
+   ============================================================ */
 
-class AttackGraphScene {
-  constructor(containerId) {
-    this.container = document.getElementById(containerId);
-    if (!this.container) return;
+(function () {
+    "use strict";
 
-    this.scene = null;
-    this.camera = null;
-    this.renderer = null;
-    this.nodes = [];
-    this.beams = [];
-    this.currentTimeStep = 1.0;
-    this.animationFrameId = null;
+    class AttackGraph {
+        constructor(container, options = {}) {
+            this.container =
+                typeof container === "string"
+                    ? document.querySelector(container)
+                    : container;
 
-    this.init();
-  }
+            this.options = {
+                autoRotate: true,
+                rotationSpeed: 0.002,
+                nodeCount: 14,
+                ...options
+            };
 
-  init() {
-    const width = this.container.clientWidth || 900;
-    const height = this.container.clientHeight || 400;
+            this.scene = null;
+            this.camera = null;
+            this.renderer = null;
+            this.graphGroup = null;
+            this.nodes = [];
+            this.edges = [];
+            this.animationFrame = null;
 
-    this.scene = new THREE.Scene();
-    this.camera = new THREE.PerspectiveCamera(45, width / height, 0.1, 1000);
-    this.camera.position.set(0, 10, 26);
-    this.camera.lookAt(0, 0, 0);
+            this.isDragging = false;
+            this.previousPointer = {
+                x: 0,
+                y: 0
+            };
 
-    try {
-      this.renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
-      this.renderer.setSize(width, height);
-      this.renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-      this.container.appendChild(this.renderer.domElement);
-    } catch (e) {
-      console.warn('[AttackGraph] WebGL fallback active');
-      return;
+            this.rotation = {
+                x: 0,
+                y: 0
+            };
+
+            if (!this.container) {
+                return;
+            }
+
+            this.init();
+        }
+
+        init() {
+            if (typeof THREE === "undefined") {
+                console.error(
+                    "AttackGraph: THREE.js is not loaded. Load Three.js before AttackGraph.js."
+                );
+                return;
+            }
+
+            this.createScene();
+            this.createCamera();
+            this.createRenderer();
+            this.createLights();
+            this.createGraph();
+            this.bindEvents();
+            this.resize();
+
+            this.animate();
+        }
+
+        createScene() {
+            this.scene = new THREE.Scene();
+
+            this.scene.background = new THREE.Color(0x070b12);
+
+            this.graphGroup = new THREE.Group();
+
+            this.scene.add(this.graphGroup);
+        }
+
+        createCamera() {
+            const width = this.container.clientWidth || 800;
+            const height = this.container.clientHeight || 500;
+
+            this.camera = new THREE.PerspectiveCamera(
+                45,
+                width / height,
+                0.1,
+                1000
+            );
+
+            this.camera.position.set(0, 1.5, 13);
+            this.camera.lookAt(0, 0, 0);
+        }
+
+        createRenderer() {
+            this.renderer = new THREE.WebGLRenderer({
+                antialias: true,
+                alpha: true
+            });
+
+            this.renderer.setPixelRatio(
+                Math.min(window.devicePixelRatio || 1, 2)
+            );
+
+            this.renderer.setSize(
+                this.container.clientWidth || 800,
+                this.container.clientHeight || 500
+            );
+
+            this.renderer.outputColorSpace =
+                THREE.SRGBColorSpace;
+
+            this.renderer.domElement.className =
+                "attack-graph-canvas";
+
+            this.container.innerHTML = "";
+            this.container.appendChild(this.renderer.domElement);
+        }
+
+        createLights() {
+            const ambientLight = new THREE.AmbientLight(
+                0xffffff,
+                0.7
+            );
+
+            this.scene.add(ambientLight);
+
+            const pointLight = new THREE.PointLight(
+                0x5b8cff,
+                2.2,
+                30
+            );
+
+            pointLight.position.set(4, 6, 8);
+
+            this.scene.add(pointLight);
+
+            const secondaryLight = new THREE.PointLight(
+                0x8a5cff,
+                1.5,
+                25
+            );
+
+            secondaryLight.position.set(-5, -2, 5);
+
+            this.scene.add(secondaryLight);
+        }
+
+        createGraph() {
+            this.createNodes();
+            this.createConnections();
+        }
+
+        createNodes() {
+            const nodeGeometry = new THREE.SphereGeometry(
+                0.16,
+                20,
+                20
+            );
+
+            const glowGeometry = new THREE.SphereGeometry(
+                0.28,
+                16,
+                16
+            );
+
+            const positions = [
+                [0, 0, 0],
+
+                [-3, 1.8, 0],
+                [-2.8, -1.6, 0.5],
+
+                [3, 1.7, -0.4],
+                [3, -1.8, 0.2],
+
+                [-1.3, 3.2, -0.7],
+                [1.5, 3.1, 0.4],
+
+                [-1.5, -3, -0.4],
+                [1.6, -3, 0.6],
+
+                [-4.2, 0, -1],
+                [4.2, 0, -1],
+
+                [-2, 0.3, -2.5],
+                [2.1, -0.5, -2.2],
+
+                [0, 2, -2.8],
+                [0, -2, -2.7]
+            ];
+
+            positions
+                .slice(0, this.options.nodeCount)
+                .forEach((position, index) => {
+                    const isPrimary = index === 0;
+
+                    const material = new THREE.MeshStandardMaterial({
+                        color: isPrimary
+                            ? 0xffffff
+                            : 0x67a7ff,
+
+                        emissive: isPrimary
+                            ? 0x4d7cff
+                            : 0x164c9c,
+
+                        emissiveIntensity: isPrimary
+                            ? 2.2
+                            : 1.4,
+
+                        metalness: 0.25,
+                        roughness: 0.35
+                    });
+
+                    const node =
+                        new THREE.Mesh(
+                            nodeGeometry,
+                            material
+                        );
+
+                    node.position.set(
+                        position[0],
+                        position[1],
+                        position[2]
+                    );
+
+                    node.userData = {
+                        id: `attack-node-${index}`,
+                        type: isPrimary
+                            ? "root"
+                            : "technique"
+                    };
+
+                    this.graphGroup.add(node);
+
+                    const glowMaterial =
+                        new THREE.MeshBasicMaterial({
+                            color: isPrimary
+                                ? 0x5c82ff
+                                : 0x287dff,
+
+                            transparent: true,
+                            opacity: 0.12
+                        });
+
+                    const glow =
+                        new THREE.Mesh(
+                            glowGeometry,
+                            glowMaterial
+                        );
+
+                    glow.position.copy(node.position);
+
+                    this.graphGroup.add(glow);
+
+                    this.nodes.push({
+                        mesh: node,
+                        glow
+                    });
+                });
+        }
+
+        createConnections() {
+            const connectionPairs = [
+                [0, 1],
+                [0, 2],
+                [0, 3],
+                [0, 4],
+
+                [1, 5],
+                [1, 9],
+
+                [2, 7],
+                [2, 9],
+
+                [3, 6],
+                [3, 10],
+
+                [4, 8],
+                [4, 10],
+
+                [5, 6],
+                [5, 13],
+
+                [6, 13],
+
+                [7, 8],
+                [7, 14],
+
+                [8, 14],
+
+                [9, 11],
+                [10, 12],
+
+                [11, 12],
+                [11, 13],
+                [12, 14]
+            ];
+
+            connectionPairs.forEach(
+                ([from, to], index) => {
+                    if (
+                        !this.nodes[from] ||
+                        !this.nodes[to]
+                    ) {
+                        return;
+                    }
+
+                    const start =
+                        this.nodes[from].mesh.position;
+
+                    const end =
+                        this.nodes[to].mesh.position;
+
+                    const points = [
+                        start.clone(),
+                        end.clone()
+                    ];
+
+                    const geometry =
+                        new THREE.BufferGeometry()
+                            .setFromPoints(points);
+
+                    const material =
+                        new THREE.LineBasicMaterial({
+                            color:
+                                index % 3 === 0
+                                    ? 0x4f7cff
+                                    : 0x284b82,
+
+                            transparent: true,
+                            opacity: 0.55
+                        });
+
+                    const line =
+                        new THREE.Line(
+                            geometry,
+                            material
+                        );
+
+                    this.graphGroup.add(line);
+
+                    this.edges.push(line);
+                }
+            );
+        }
+
+        bindEvents() {
+            this.onPointerDown =
+                this.handlePointerDown.bind(this);
+
+            this.onPointerMove =
+                this.handlePointerMove.bind(this);
+
+            this.onPointerUp =
+                this.handlePointerUp.bind(this);
+
+            this.onWheel =
+                this.handleWheel.bind(this);
+
+            this.onResize =
+                this.resize.bind(this);
+
+            this.renderer.domElement.addEventListener(
+                "pointerdown",
+                this.onPointerDown
+            );
+
+            window.addEventListener(
+                "pointermove",
+                this.onPointerMove
+            );
+
+            window.addEventListener(
+                "pointerup",
+                this.onPointerUp
+            );
+
+            this.renderer.domElement.addEventListener(
+                "wheel",
+                this.onWheel,
+                {
+                    passive: true
+                }
+            );
+
+            window.addEventListener(
+                "resize",
+                this.onResize
+            );
+        }
+
+        handlePointerDown(event) {
+            this.isDragging = true;
+
+            this.previousPointer.x =
+                event.clientX;
+
+            this.previousPointer.y =
+                event.clientY;
+
+            this.renderer.domElement.style.cursor =
+                "grabbing";
+        }
+
+        handlePointerMove(event) {
+            if (!this.isDragging) {
+                return;
+            }
+
+            const deltaX =
+                event.clientX -
+                this.previousPointer.x;
+
+            const deltaY =
+                event.clientY -
+                this.previousPointer.y;
+
+            this.rotation.y +=
+                deltaX * 0.008;
+
+            this.rotation.x +=
+                deltaY * 0.008;
+
+            this.rotation.x = Math.max(
+                -0.9,
+                Math.min(0.9, this.rotation.x)
+            );
+
+            this.previousPointer.x =
+                event.clientX;
+
+            this.previousPointer.y =
+                event.clientY;
+        }
+
+        handlePointerUp() {
+            this.isDragging = false;
+
+            if (this.renderer) {
+                this.renderer.domElement.style.cursor =
+                    "grab";
+            }
+        }
+
+        handleWheel(event) {
+            if (!this.camera) {
+                return;
+            }
+
+            this.camera.position.z +=
+                event.deltaY * 0.005;
+
+            this.camera.position.z = Math.max(
+                7,
+                Math.min(20, this.camera.position.z)
+            );
+        }
+
+        resize() {
+            if (
+                !this.container ||
+                !this.camera ||
+                !this.renderer
+            ) {
+                return;
+            }
+
+            const width =
+                this.container.clientWidth || 800;
+
+            const height =
+                this.container.clientHeight || 500;
+
+            this.camera.aspect =
+                width / height;
+
+            this.camera.updateProjectionMatrix();
+
+            this.renderer.setSize(
+                width,
+                height
+            );
+        }
+
+        updateNodes(time) {
+            this.nodes.forEach(
+                (node, index) => {
+                    const pulse =
+                        1 +
+                        Math.sin(
+                            time * 0.002 +
+                            index * 0.65
+                        ) *
+                        0.12;
+
+                    node.glow.scale.setScalar(
+                        pulse
+                    );
+                }
+            );
+        }
+
+        animate() {
+            this.animationFrame =
+                requestAnimationFrame(
+                    () => this.animate()
+                );
+
+            const time =
+                performance.now();
+
+            if (
+                this.options.autoRotate &&
+                !this.isDragging
+            ) {
+                this.rotation.y +=
+                    this.options.rotationSpeed;
+            }
+
+            this.graphGroup.rotation.x =
+                this.rotation.x;
+
+            this.graphGroup.rotation.y =
+                this.rotation.y;
+
+            this.updateNodes(time);
+
+            this.renderer.render(
+                this.scene,
+                this.camera
+            );
+        }
+
+        setAutoRotate(enabled) {
+            this.options.autoRotate =
+                Boolean(enabled);
+        }
+
+        destroy() {
+            if (this.animationFrame) {
+                cancelAnimationFrame(
+                    this.animationFrame
+                );
+            }
+
+            window.removeEventListener(
+                "resize",
+                this.onResize
+            );
+
+            if (this.renderer) {
+                this.renderer.domElement.removeEventListener(
+                    "pointerdown",
+                    this.onPointerDown
+                );
+
+                this.renderer.domElement.removeEventListener(
+                    "pointermove",
+                    this.onPointerMove
+                );
+
+                this.renderer.domElement.removeEventListener(
+                    "pointerup",
+                    this.onPointerUp
+                );
+
+                this.renderer.domElement.removeEventListener(
+                    "wheel",
+                    this.onWheel
+                );
+
+                this.renderer.dispose();
+            }
+
+            this.nodes = [];
+            this.edges = [];
+        }
     }
 
-    const ambientLight = new THREE.AmbientLight(0xffffff, 1.2);
-    this.scene.add(ambientLight);
+    window.AttackGraph = AttackGraph;
 
-    const dirLight = new THREE.DirectionalLight(0x06B6D4, 2.5);
-    dirLight.position.set(10, 20, 15);
-    this.scene.add(dirLight);
-
-    // 1. Build 3D Attack Topology Nodes
-    this.buildGraphTopology();
-
-    // 2. Build Energy Beams connecting them
-    this.buildAnimatedBeams();
-
-    window.addEventListener('resize', () => this.onResize());
-    this.animate();
-  }
-
-  buildGraphTopology() {
-    const nodeDefs = [
-      { id: 'adversary', type: 'user', name: 'External Adversary (185.220.101.5)', pos: [-12, 0, 0], color: 0xEF4444 },
-      { id: 'gateway', type: 'server', name: 'DMZ Ingress Gateway / Nginx', pos: [-5, 2, 2], color: 0xF97316 },
-      { id: 'app', type: 'server', name: 'Core Application Service', pos: [2, -1, -1], color: 0xEAB308 },
-      { id: 'auth', type: 'server', name: 'Active Directory / IAM', pos: [3, 4, 3], color: 0x4F46E5 },
-      { id: 'db', type: 'database', name: 'Production Database Vault', pos: [11, 0, 0], color: 0x06B6D4 }
-    ];
-
-    nodeDefs.forEach(def => {
-      const nodeGroup = new THREE.Group();
-      nodeGroup.position.set(...def.pos);
-
-      let mesh = null;
-      if (def.type === 'server') {
-        // Low-poly Server rack node
-        const geo = new THREE.BoxBufferGeometry(2.0, 2.8, 2.0);
-        const mat = new THREE.MeshStandardMaterial({ color: 0x111A2E, emissive: def.color, emissiveIntensity: 0.35, roughness: 0.3 });
-        mesh = new THREE.Mesh(geo, mat);
-      } else if (def.type === 'database') {
-        // Low-poly Cylinder database node
-        const geo = new THREE.CylinderBufferGeometry(1.4, 1.4, 2.6, 16);
-        const mat = new THREE.MeshStandardMaterial({ color: 0x0C1220, emissive: def.color, emissiveIntensity: 0.45, roughness: 0.2 });
-        mesh = new THREE.Mesh(geo, mat);
-      } else {
-        // Attacker / Terminal node (octahedron)
-        const geo = new THREE.OctahedronBufferGeometry(1.6);
-        const mat = new THREE.MeshStandardMaterial({ color: 0x2A1116, emissive: def.color, emissiveIntensity: 0.6, roughness: 0.2 });
-        mesh = new THREE.Mesh(geo, mat);
-      }
-
-      nodeGroup.add(mesh);
-
-      // Orbital glow ring
-      const ringGeo = new THREE.RingBufferGeometry(1.8, 2.0, 24);
-      const ringMat = new THREE.MeshBasicMaterial({ color: def.color, side: THREE.DoubleSide, transparent: true, opacity: 0.4 });
-      const ring = new THREE.Mesh(ringGeo, ringMat);
-      ring.rotation.x = Math.PI / 2;
-      nodeGroup.add(ring);
-
-      nodeGroup.userData = { def, basePos: [...def.pos], ring };
-      this.scene.add(nodeGroup);
-      this.nodes.push(nodeGroup);
-    });
-  }
-
-  buildAnimatedBeams() {
-    const paths = [
-      { from: 0, to: 1, step: 0.25, label: 'Initial Access (T1190)' },
-      { from: 1, to: 2, step: 0.50, label: 'Exploitation (T1059)' },
-      { from: 2, to: 3, step: 0.75, label: 'Credential Theft (T1003)' },
-      { from: 3, to: 4, step: 1.00, label: 'Data Exfiltration (T1041)' }
-    ];
-
-    paths.forEach(p => {
-      const start = this.nodes[p.from].position;
-      const end = this.nodes[p.to].position;
-
-      // Curve
-      const mid = new THREE.Vector3().addVectors(start, end).multiplyScalar(0.5);
-      mid.y += 2.0;
-      const curve = new THREE.QuadraticBezierCurve3(start, mid, end);
-
-      const points = curve.getPoints(30);
-      const geo = new THREE.BufferGeometry().setFromPoints(points);
-      const mat = new THREE.LineBasicMaterial({
-        color: 0x4F46E5,
-        transparent: true,
-        opacity: 0.8,
-        linewidth: 2
-      });
-
-      const line = new THREE.Line(geo, mat);
-      this.scene.add(line);
-
-      // Energy pulse bead
-      const beadGeo = new THREE.SphereBufferGeometry(0.28, 8, 8);
-      const beadMat = new THREE.MeshBasicMaterial({ color: 0x06B6D4 });
-      const bead = new THREE.Mesh(beadGeo, beadMat);
-      this.scene.add(bead);
-
-      this.beams.push({
-        line,
-        bead,
-        curve,
-        step: p.step,
-        progress: 0
-      });
-    });
-  }
-
-  setTimeStep(val) {
-    this.currentTimeStep = Math.max(0, Math.min(1.0, val));
-    this.beams.forEach(beam => {
-      if (beam.step <= this.currentTimeStep + 0.1) {
-        beam.line.material.opacity = 0.9;
-        beam.bead.visible = true;
-      } else {
-        beam.line.material.opacity = 0.15;
-        beam.bead.visible = false;
-      }
-    });
-  }
-
-  onResize() {
-    if (!this.container || !this.renderer || !this.camera) return;
-    const width = this.container.clientWidth;
-    const height = this.container.clientHeight;
-    this.camera.aspect = width / height;
-    this.camera.updateProjectionMatrix();
-    this.renderer.setSize(width, height);
-  }
-
-  animate() {
-    this.animationFrameId = requestAnimationFrame(() => this.animate());
-
-    const time = Date.now() * 0.002;
-
-    // Pulse node rings and animate beads along curves
-    this.nodes.forEach(node => {
-      node.rotation.y += 0.01;
-      if (node.userData.ring) {
-        node.userData.ring.scale.setScalar(1 + 0.08 * Math.sin(time * 2));
-      }
-    });
-
-    this.beams.forEach(beam => {
-      if (beam.bead.visible) {
-        beam.progress = (beam.progress + 0.01) % 1.0;
-        const pos = beam.curve.getPointAt(beam.progress);
-        beam.bead.position.copy(pos);
-      }
-    });
-
-    this.renderer.render(this.scene, this.camera);
-  }
-}
-
-window.AttackGraphScene = AttackGraphScene;
+})();

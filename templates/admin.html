@@ -1,235 +1,997 @@
 ﻿<!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Admin & System Health</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-  <!-- Google Fonts -->
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <title>Commander Console | Intelligent Log Forensic</title>
 
-  <!-- Core Stylesheets -->
-  <link rel="stylesheet" href="/static/css/tokens.css">
-  <link rel="stylesheet" href="/static/css/layout.css">
-  <link rel="stylesheet" href="/static/css/components.css">
-  <link rel="stylesheet" href="/static/css/animations.css">
-  <link rel="stylesheet" href="/static/css/pages/admin.css">
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&family=Space+Grotesk:wght@500;600;700&display=swap"
+        rel="stylesheet"
+    >
+
+    <!-- Core Styles -->
+    <link
+        rel="stylesheet"
+        href="{{ url_for('static', filename='css/tokens.css') }}"
+    >
+
+    <link
+        rel="stylesheet"
+        href="{{ url_for('static', filename='css/layout.css') }}"
+    >
+
+    <link
+        rel="stylesheet"
+        href="{{ url_for('static', filename='css/components.css') }}"
+    >
+
+    <link
+        rel="stylesheet"
+        href="{{ url_for('static', filename='css/animations.css') }}"
+    >
+
+    <!-- Page Styles -->
+    <link
+        rel="stylesheet"
+        href="{{ url_for('static', filename='css/pages/admin.css') }}"
+    >
 </head>
-<body>
 
-  <div class="app-shell">
-    <!-- Collapsible 64px to 240px Left Sidebar -->
-    <aside class="app-sidebar">
-      <div class="sidebar-header">
-        <div class="brand-logo-icon">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="2.2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
-        </div>
-        <span class="brand-title">LOG FORENSIC</span>
-      </div>
+<body class="admin-page">
 
-      <nav class="sidebar-nav">
-        <a href="/dashboard" class="sidebar-item">
-          <div class="sidebar-icon">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
-          </div>
-          <span class="sidebar-label">Dashboard</span>
+    <!-- =========================================================
+         APPLICATION BACKGROUND
+    ========================================================== -->
+
+    <div class="admin-background" aria-hidden="true">
+        <div class="admin-grid"></div>
+        <div class="admin-glow admin-glow-primary"></div>
+        <div class="admin-glow admin-glow-secondary"></div>
+    </div>
+
+
+    <!-- =========================================================
+         TOP NAVIGATION
+    ========================================================== -->
+
+    <header class="site-nav admin-nav">
+
+        <!-- Brand -->
+
+        <a
+            href="{{ url_for('ops_views.render_command_deck') }}"
+            class="brand-wrapper"
+        >
+
+            <div class="brand-logo-icon">
+
+                <svg
+                    width="20"
+                    height="20"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    aria-hidden="true"
+                >
+                    <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
+                    <path d="M9 12l2 2 4-4"></path>
+                </svg>
+
+            </div>
+
+            <div class="brand-copy">
+
+                <span class="brand-title">
+                    INTELLIGENT LOG FORENSIC
+                </span>
+
+                <span class="brand-subtitle">
+                    COMMANDER CONSOLE
+                </span>
+
+            </div>
+
         </a>
 
-        <a href="/analyze" class="sidebar-item">
-          <div class="sidebar-icon">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
-          </div>
-          <span class="sidebar-label">Upload & Analyze</span>
-        </a>
 
-        <a href="/incidents" class="sidebar-item">
-          <div class="sidebar-icon">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 2 7 12 12 22 7 12 2"/><polyline points="2 17 12 22 22 17"/><polyline points="2 12 12 17 22 12"/></svg>
-          </div>
-          <span class="sidebar-label">Attack Incidents</span>
-        </a>
+        <!-- Navigation -->
 
-        <a href="/mitre" class="sidebar-item">
-          <div class="sidebar-icon">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="m4.93 4.93 4.24 4.24"/><path d="m14.83 9.17 4.24-4.24"/><path d="m14.83 14.83 4.24 4.24"/><path d="m9.17 14.83-4.24 4.24"/></svg>
-          </div>
-          <span class="sidebar-label">MITRE ATT&CK</span>
-        </a>
+        <nav class="nav-links" aria-label="Primary navigation">
 
-        <a href="/admin" class="sidebar-item active">
-          <div class="sidebar-icon">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2a10 10 0 1 0 10 10A10 10 0 0 0 12 2zm1 14.93V17a1 1 0 0 1-2 0v-.07A7.003 7.003 0 0 1 5.07 11H5a1 1 0 0 1 0-2h.07A7.003 7.003 0 0 1 11 5.07V5a1 1 0 0 1 2 0v.07A7.003 7.003 0 0 1 18.93 11H19a1 1 0 0 1 0 2h-.07A7.003 7.003 0 0 1 13 16.93z"/></svg>
-          </div>
-          <span class="sidebar-label">Admin Console</span>
-        </a>
-      </nav>
+            <a
+                href="{{ url_for('ops_views.render_command_deck') }}"
+                class="nav-link"
+            >
+                Dashboard
+            </a>
 
-      <div class="sidebar-footer">
-        <a href="/" style="color:var(--text-muted);text-decoration:none;display:flex;align-items:center;gap:10px;">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
-          <span class="sidebar-label">Exit to Home</span>
-        </a>
-      </div>
-    </aside>
+            <a
+                href="{{ url_for('ops_views.render_ingest_station') }}"
+                class="nav-link"
+            >
+                Analyze
+            </a>
 
-    <!-- Main Content Area -->
-    <main class="app-main">
-      <header class="app-topbar">
-        <div class="page-title-group">
-          <h1 class="page-title">Administrative & System Health Console</h1>
-          <span class="page-breadcrumb">/ admin / governance-audit</span>
-        </div>
-        <div class="topbar-actions">
-          <span class="badge badge-safe">SYSTEM OPERATIONAL</span>
-        </div>
-      </header>
+            <a
+                href="{{ url_for('ops_views.render_dockets_queue') }}"
+                class="nav-link"
+            >
+                Incidents
+            </a>
 
-      <div class="page-container tabs-wrapper">
-        <!-- 4 Tab Navigation Controls -->
-        <div class="tabs-nav">
-          <button class="tab-btn active" data-tab="tab-health">System Health</button>
-          <button class="tab-btn" data-tab="tab-uploads">Evidence Batches</button>
-          <button class="tab-btn" data-tab="tab-users">Investigator Directory</button>
-          <button class="tab-btn" data-tab="tab-audit">Security Audit Log</button>
-        </div>
+            <a
+                href="{{ url_for('ops_views.render_mitre_matrix') }}"
+                class="nav-link"
+            >
+                MITRE ATT&CK
+            </a>
 
-        <!-- TAB 1: System Health -->
-        <div class="tab-panel active" id="tab-health">
-          <div class="health-grid">
-            <div class="health-node-card">
-              <div class="health-status-row">
-                <span style="font-weight:600;font-size:0.95rem;">Detection Engine</span>
-                <span class="badge badge-safe" id="health-engine-status">ONLINE</span>
-              </div>
-              <div style="font-size:0.85rem;color:var(--text-secondary);">ThreatEngine v3.2 Heuristics</div>
-              <div class="health-metric-bar"><div class="health-metric-fill" style="width: 100%;"></div></div>
-              <div style="display:flex;justify-content:space-between;margin-top:8px;font-size:0.75rem;color:var(--text-muted);font-family:var(--font-mono);">
-                <span>Signatures: 10 MITRE Vectors</span>
-                <span>Latency: &lt;1ms</span>
-              </div>
-            </div>
+            <a
+                href="{{ url_for('ops_views.render_commander_console') }}"
+                class="nav-link active"
+            >
+                Admin
+            </a>
 
-            <div class="health-node-card">
-              <div class="health-status-row">
-                <span style="font-weight:600;font-size:0.95rem;">Telemetry Ingest Pipeline</span>
-                <span class="badge badge-cyan">STREAMING</span>
-              </div>
-              <div style="font-size:0.85rem;color:var(--text-secondary);">Processed Event Counter</div>
-              <div class="health-metric-bar"><div class="health-metric-fill" style="width: 82%;"></div></div>
-              <div style="display:flex;justify-content:space-between;margin-top:8px;font-size:0.75rem;color:var(--text-muted);font-family:var(--font-mono);">
-                <span>Processed: <b id="health-total-processed" style="color:#67E8F9;">0</b></span>
-                <span>Throughput: ~1.2s</span>
-              </div>
-            </div>
+        </nav>
 
-            <div class="health-node-card">
-              <div class="health-status-row">
-                <span style="font-weight:600;font-size:0.95rem;">Client Execution Memory</span>
-                <span class="badge badge-indigo">OPTIMAL</span>
-              </div>
-              <div style="font-size:0.85rem;color:var(--text-secondary);">Browser Heap & Three.js Buffers</div>
-              <div class="health-metric-bar"><div class="health-metric-fill" style="width: 48%;"></div></div>
-              <div style="display:flex;justify-content:space-between;margin-top:8px;font-size:0.75rem;color:var(--text-muted);font-family:var(--font-mono);">
-                <span>Used Heap: <b id="health-memory-val" style="color:#A5B4FC;">48.2 MB</b></span>
-                <span>Cap: &lt;2000 Particles</span>
-              </div>
-            </div>
-          </div>
 
-          <div class="forensic-card">
-            <h3 class="card-title" style="margin-bottom: 12px;">Architecture & Pipeline Governance</h3>
-            <p style="color:var(--text-secondary);font-size:0.9rem;line-height:1.6;">
-              Intelligent Log Forensic operates as an ultra-fast client-orchestrated SOC analysis system. Ingestion pipelines execute line-level recovery on malformed entries without halting batches, while ThreatEngine calculates composite anomaly risk indices (0â€“100) mapped dynamically to the MITRE ATT&CK taxonomy.
-            </p>
-          </div>
+        <!-- Session Actions -->
+
+        <div class="nav-actions">
+
+            <a
+                href="{{ url_for('ops_views.render_command_deck') }}"
+                class="btn btn-outline btn-sm"
+            >
+                Command Deck
+            </a>
+
+            <a
+                href="{{ url_for('auth_views.terminate_session') }}"
+                class="btn btn-primary btn-sm"
+            >
+                Terminate Session
+            </a>
+
         </div>
 
-        <!-- TAB 2: Uploads / Batches -->
-        <div class="tab-panel" id="tab-uploads">
-          <div class="forensic-card">
-            <div class="card-header">
-              <div>
-                <h3 class="card-title">Evidence Upload Records</h3>
-                <span class="card-subtitle">Cryptographic batch verification ledger</span>
-              </div>
-            </div>
-            <div class="table-wrapper">
-              <table class="forensic-table">
-                <thead>
-                  <tr>
-                    <th>Batch ID</th>
-                    <th>File / Stream Name</th>
-                    <th>Records</th>
-                    <th>Threat Flags</th>
-                    <th>Ingestion Timestamp</th>
-                    <th>Integrity Hash</th>
-                  </tr>
-                </thead>
-                <tbody id="admin-uploads-table-body">
-                  <!-- Populated via Admin.js -->
-                </tbody>
-              </table>
-            </div>
-          </div>
-        </div>
+    </header>
 
-        <!-- TAB 3: Users Directory -->
-        <div class="tab-panel" id="tab-users">
-          <div class="forensic-card">
-            <div class="card-header">
-              <div>
-                <h3 class="card-title">Authorized Forensic Investigators</h3>
-                <span class="card-subtitle">Role-based access control (RBAC) directory</span>
-              </div>
-            </div>
-            <div class="table-wrapper">
-              <table class="forensic-table">
-                <thead>
-                  <tr>
-                    <th>User ID</th>
-                    <th>Investigator</th>
-                    <th>Internal Email</th>
-                    <th>Operational Role</th>
-                    <th>Status</th>
-                    <th>Last Active</th>
-                  </tr>
-                </thead>
-                <tbody id="admin-users-table-body">
-                  <!-- Populated via Admin.js -->
-                </tbody>
-              </table>
-            </div>
-          </div>
-        </div>
 
-        <!-- TAB 4: Audit Log -->
-        <div class="tab-panel" id="tab-audit">
-          <div class="forensic-card">
-            <div class="card-header">
-              <div>
-                <h3 class="card-title">System Audit Chronology</h3>
-                <span class="card-subtitle">Immutable operational event ledger</span>
-              </div>
-            </div>
-            <div class="audit-feed" id="admin-audit-feed">
-              <!-- Populated via Admin.js -->
-            </div>
-          </div>
-        </div>
+    <!-- =========================================================
+         MAIN COMMANDER CONSOLE
+    ========================================================== -->
 
-      </div>
+    <main class="admin-main">
+
+        <!-- =====================================================
+             PAGE HEADER
+        ====================================================== -->
+
+        <section class="admin-page-header">
+
+            <div>
+
+                <div class="section-label">
+                    PRIVILEGED OPERATIONS
+                </div>
+
+                <h1 class="admin-title">
+                    Commander Console
+                </h1>
+
+                <p class="admin-description">
+                    Manage operator identities, inspect evidence activity,
+                    and monitor privileged forensic operations.
+                </p>
+
+            </div>
+
+
+            <div class="admin-security-state">
+
+                <div class="security-state-indicator">
+                    <span class="status-dot"></span>
+                    PRIVILEGED ACCESS
+                </div>
+
+                <div class="security-state-meta">
+                    COMMANDER CLEARANCE
+                </div>
+
+            </div>
+
+        </section>
+
+
+        <!-- =====================================================
+             COMMANDER METRICS
+        ====================================================== -->
+
+        <section class="admin-metrics-grid">
+
+            <!-- Operators -->
+
+            <article class="admin-metric-card">
+
+                <div class="metric-card-top">
+
+                    <span class="metric-label">
+                        REGISTERED OPERATORS
+                    </span>
+
+                    <span class="metric-icon">
+
+                        <svg
+                            width="20"
+                            height="20"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            stroke-width="1.8"
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                        >
+                            <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"></path>
+                            <circle cx="9" cy="7" r="4"></circle>
+                            <path d="M22 21v-2a4 4 0 0 0-3-3.87"></path>
+                            <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+                        </svg>
+
+                    </span>
+
+                </div>
+
+                <div class="metric-value">
+                    {{ users|length }}
+                </div>
+
+                <div class="metric-caption">
+                    identities registered
+                </div>
+
+            </article>
+
+
+            <!-- Evidence -->
+
+            <article class="admin-metric-card">
+
+                <div class="metric-card-top">
+
+                    <span class="metric-label">
+                        EVIDENCE BUNDLES
+                    </span>
+
+                    <span class="metric-icon">
+
+                        <svg
+                            width="20"
+                            height="20"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            stroke-width="1.8"
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                        >
+                            <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path>
+                            <polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline>
+                            <line x1="12" y1="22.08" x2="12" y2="12"></line>
+                        </svg>
+
+                    </span>
+
+                </div>
+
+                <div class="metric-value">
+                    {{ uploads|length }}
+                </div>
+
+                <div class="metric-caption">
+                    recent evidence records
+                </div>
+
+            </article>
+
+
+            <!-- Clearance -->
+
+            <article class="admin-metric-card">
+
+                <div class="metric-card-top">
+
+                    <span class="metric-label">
+                        CLEARANCE MODEL
+                    </span>
+
+                    <span class="metric-icon">
+
+                        <svg
+                            width="20"
+                            height="20"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            stroke-width="1.8"
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                        >
+                            <rect x="3" y="11" width="18" height="10" rx="2"></rect>
+                            <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+                        </svg>
+
+                    </span>
+
+                </div>
+
+                <div class="metric-value metric-value-text">
+                    RBAC
+                </div>
+
+                <div class="metric-caption">
+                    role-based access control
+                </div>
+
+            </article>
+
+
+            <!-- System -->
+
+            <article class="admin-metric-card">
+
+                <div class="metric-card-top">
+
+                    <span class="metric-label">
+                        COMMAND SYSTEM
+                    </span>
+
+                    <span class="metric-icon">
+
+                        <svg
+                            width="20"
+                            height="20"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            stroke-width="1.8"
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                        >
+                            <polyline points="4 17 10 11 4 5"></polyline>
+                            <line x1="12" y1="19" x2="20" y2="19"></line>
+                        </svg>
+
+                    </span>
+
+                </div>
+
+                <div class="metric-value metric-online">
+                    ONLINE
+                </div>
+
+                <div class="metric-caption">
+                    commander subsystem
+                </div>
+
+            </article>
+
+        </section>
+
+
+        <!-- =====================================================
+             OPERATOR DIRECTORY
+        ====================================================== -->
+
+        <section class="admin-section">
+
+            <div class="section-heading-row">
+
+                <div>
+
+                    <div class="section-label">
+                        IDENTITY REGISTRY
+                    </div>
+
+                    <h2 class="section-title">
+                        Operator Directory
+                    </h2>
+
+                    <p class="section-description">
+                        Registered identities and their assigned clearance
+                        levels.
+                    </p>
+
+                </div>
+
+                <div class="section-counter">
+                    {{ users|length }} OPERATORS
+                </div>
+
+            </div>
+
+
+            <div class="admin-table-container">
+
+                {% if users %}
+
+                    <table class="admin-table">
+
+                        <thead>
+
+                            <tr>
+                                <th>ID</th>
+                                <th>OPERATOR</th>
+                                <th>WORK EMAIL</th>
+                                <th>CLEARANCE</th>
+                                <th>REGISTERED</th>
+                                <th>STATUS</th>
+                            </tr>
+
+                        </thead>
+
+                        <tbody>
+
+                            {% for user in users %}
+
+                                <tr>
+
+                                    <!-- ID -->
+
+                                    <td>
+                                        <span class="table-id">
+                                            #{{ user.id }}
+                                        </span>
+                                    </td>
+
+
+                                    <!-- Name -->
+
+                                    <td>
+
+                                        <div class="operator-cell">
+
+                                            <div class="operator-avatar">
+                                                {{ user.name[:1]|upper }}
+                                            </div>
+
+                                            <div class="operator-identity">
+
+                                                <strong>
+                                                    {{ user.name }}
+                                                </strong>
+
+                                                <span>
+                                                    Operator Identity
+                                                </span>
+
+                                            </div>
+
+                                        </div>
+
+                                    </td>
+
+
+                                    <!-- Email -->
+
+                                    <td>
+
+                                        <span class="mono-value">
+                                            {{ user.email }}
+                                        </span>
+
+                                    </td>
+
+
+                                    <!-- Role -->
+
+                                    <td>
+
+                                        {% if user.role == "Commander" %}
+
+                                            <span class="role-badge role-commander">
+                                                COMMANDER
+                                            </span>
+
+                                        {% elif user.role == "Analyst" %}
+
+                                            <span class="role-badge role-analyst">
+                                                ANALYST
+                                            </span>
+
+                                        {% else %}
+
+                                            <span class="role-badge">
+                                                {{ user.role }}
+                                            </span>
+
+                                        {% endif %}
+
+                                    </td>
+
+
+                                    <!-- Registration -->
+
+                                    <td>
+
+                                        <span class="timestamp-value">
+                                            {{ user.created_at or "—" }}
+                                        </span>
+
+                                    </td>
+
+
+                                    <!-- Status -->
+
+                                    <td>
+
+                                        <span class="operator-status">
+                                            <span class="status-dot"></span>
+                                            REGISTERED
+                                        </span>
+
+                                    </td>
+
+                                </tr>
+
+                            {% endfor %}
+
+                        </tbody>
+
+                    </table>
+
+                {% else %}
+
+                    <div class="empty-state">
+
+                        <div class="empty-state-icon">
+
+                            <svg
+                                width="30"
+                                height="30"
+                                viewBox="0 0 24 24"
+                                fill="none"
+                                stroke="currentColor"
+                                stroke-width="1.6"
+                                stroke-linecap="round"
+                                stroke-linejoin="round"
+                            >
+                                <circle cx="12" cy="7" r="4"></circle>
+                                <path d="M5.5 21a6.5 6.5 0 0 1 13 0"></path>
+                            </svg>
+
+                        </div>
+
+                        <h3>
+                            No Operators Registered
+                        </h3>
+
+                        <p>
+                            The operator registry currently contains no
+                            identities.
+                        </p>
+
+                    </div>
+
+                {% endif %}
+
+            </div>
+
+        </section>
+
+
+        <!-- =====================================================
+             RECENT EVIDENCE ACTIVITY
+        ====================================================== -->
+
+        <section class="admin-section">
+
+            <div class="section-heading-row">
+
+                <div>
+
+                    <div class="section-label">
+                        EVIDENCE OPERATIONS
+                    </div>
+
+                    <h2 class="section-title">
+                        Recent Evidence Activity
+                    </h2>
+
+                    <p class="section-description">
+                        Latest evidence bundles submitted to the forensic
+                        vault.
+                    </p>
+
+                </div>
+
+                <a
+                    href="{{ url_for('ops_views.render_vault_archive') }}"
+                    class="btn btn-outline btn-sm"
+                >
+                    Open Evidence Vault
+                </a>
+
+            </div>
+
+
+            <div class="admin-table-container">
+
+                {% if uploads %}
+
+                    <table class="admin-table evidence-table">
+
+                        <thead>
+
+                            <tr>
+                                <th>FILE</th>
+                                <th>OPERATOR</th>
+                                <th>RECORDS</th>
+                                <th>STATUS</th>
+                                <th>RECEIVED</th>
+                            </tr>
+
+                        </thead>
+
+                        <tbody>
+
+                            {% for upload in uploads %}
+
+                                <tr>
+
+                                    <!-- File -->
+
+                                    <td>
+
+                                        <div class="file-cell">
+
+                                            <div class="file-icon">
+
+                                                <svg
+                                                    width="18"
+                                                    height="18"
+                                                    viewBox="0 0 24 24"
+                                                    fill="none"
+                                                    stroke="currentColor"
+                                                    stroke-width="1.8"
+                                                    stroke-linecap="round"
+                                                    stroke-linejoin="round"
+                                                >
+                                                    <path d="M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"></path>
+                                                    <polyline points="13 2 13 9 20 9"></polyline>
+                                                </svg>
+
+                                            </div>
+
+                                            <div class="file-identity">
+
+                                                <strong>
+                                                    {{ upload.filename }}
+                                                </strong>
+
+                                                <span>
+                                                    Evidence Bundle
+                                                </span>
+
+                                            </div>
+
+                                        </div>
+
+                                    </td>
+
+
+                                    <!-- Operator -->
+
+                                    <td>
+
+                                        <span class="mono-value">
+                                            {{ upload.email }}
+                                        </span>
+
+                                    </td>
+
+
+                                    <!-- Records -->
+
+                                    <td>
+
+                                        <span class="record-count">
+                                            {{ upload.records_count or 0 }}
+                                        </span>
+
+                                    </td>
+
+
+                                    <!-- Status -->
+
+                                    <td>
+
+                                        {% if upload.status == "Indexed" %}
+
+                                            <span class="status-badge status-indexed">
+                                                <span class="status-dot"></span>
+                                                INDEXED
+                                            </span>
+
+                                        {% elif upload.status == "Processing" %}
+
+                                            <span class="status-badge status-processing">
+                                                <span class="status-dot"></span>
+                                                PROCESSING
+                                            </span>
+
+                                        {% elif upload.status == "Failed" %}
+
+                                            <span class="status-badge status-failed">
+                                                <span class="status-dot"></span>
+                                                FAILED
+                                            </span>
+
+                                        {% else %}
+
+                                            <span class="status-badge">
+                                                {{ upload.status }}
+                                            </span>
+
+                                        {% endif %}
+
+                                    </td>
+
+
+                                    <!-- Timestamp -->
+
+                                    <td>
+
+                                        <span class="timestamp-value">
+                                            {{ upload.created_at or "—" }}
+                                        </span>
+
+                                    </td>
+
+                                </tr>
+
+                            {% endfor %}
+
+                        </tbody>
+
+                    </table>
+
+                {% else %}
+
+                    <div class="empty-state">
+
+                        <div class="empty-state-icon">
+
+                            <svg
+                                width="30"
+                                height="30"
+                                viewBox="0 0 24 24"
+                                fill="none"
+                                stroke="currentColor"
+                                stroke-width="1.6"
+                                stroke-linecap="round"
+                                stroke-linejoin="round"
+                            >
+                                <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path>
+                                <polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline>
+                                <line x1="12" y1="22.08" x2="12" y2="12"></line>
+                            </svg>
+
+                        </div>
+
+                        <h3>
+                            No Evidence Activity
+                        </h3>
+
+                        <p>
+                            No evidence bundles have been submitted to the
+                            forensic vault yet.
+                        </p>
+
+                    </div>
+
+                {% endif %}
+
+            </div>
+
+        </section>
+
+
+        <!-- =====================================================
+             COMMANDER INFORMATION PANEL
+        ====================================================== -->
+
+        <section class="commander-info-grid">
+
+            <article class="commander-info-card">
+
+                <div class="info-card-icon">
+
+                    <svg
+                        width="22"
+                        height="22"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="1.7"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                    >
+                        <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
+                        <path d="M12 8v4"></path>
+                        <circle cx="12" cy="16" r=".5"></circle>
+                    </svg>
+
+                </div>
+
+                <div>
+
+                    <h3>
+                        Privileged Environment
+                    </h3>
+
+                    <p>
+                        This console is restricted to operators with
+                        Commander clearance.
+                    </p>
+
+                </div>
+
+            </article>
+
+
+            <article class="commander-info-card">
+
+                <div class="info-card-icon">
+
+                    <svg
+                        width="22"
+                        height="22"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="1.7"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                    >
+                        <circle cx="12" cy="12" r="9"></circle>
+                        <polyline points="12 7 12 12 15 14"></polyline>
+                    </svg>
+
+                </div>
+
+                <div>
+
+                    <h3>
+                        Audit Visibility
+                    </h3>
+
+                    <p>
+                        Operator registration and recent evidence activity
+                        remain visible for administrative review.
+                    </p>
+
+                </div>
+
+            </article>
+
+
+            <article class="commander-info-card">
+
+                <div class="info-card-icon">
+
+                    <svg
+                        width="22"
+                        height="22"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="1.7"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                    >
+                        <path d="M4 12a8 8 0 0 1 16 0"></path>
+                        <path d="M4 12v5a2 2 0 0 0 2 2h2"></path>
+                        <path d="M20 12v5a2 2 0 0 1-2 2h-2"></path>
+                        <circle cx="12" cy="12" r="2"></circle>
+                    </svg>
+
+                </div>
+
+                <div>
+
+                    <h3>
+                        Forensic Core
+                    </h3>
+
+                    <p>
+                        Evidence processing, telemetry correlation and
+                        incident analysis remain connected to the core
+                        forensic pipeline.
+                    </p>
+
+                </div>
+
+            </article>
+
+        </section>
+
     </main>
-  </div>
 
-  <!-- Core Scripts -->
-  <script src="/static/js/core/EventBus.js"></script>
-  <script src="/static/js/core/AppState.js"></script>
-  <script src="/static/js/core/Router.js"></script>
-  <script src="/static/js/pages/Admin.js"></script>
+
+    <!-- =========================================================
+         FOOTER
+    ========================================================== -->
+
+    <footer class="admin-footer">
+
+        <div class="admin-footer-inner">
+
+            <div class="footer-brand">
+
+                <div class="brand-logo-icon small">
+
+                    <svg
+                        width="15"
+                        height="15"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="2"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                    >
+                        <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
+                    </svg>
+
+                </div>
+
+                <span>
+                    INTELLIGENT LOG FORENSIC
+                </span>
+
+            </div>
+
+
+            <div class="footer-meta">
+
+                <span>
+                    COMMANDER CONSOLE
+                </span>
+
+                <span>
+                    PRIVILEGED ACCESS
+                </span>
+
+                <span>
+                    AEGIS FORENSIC CORE
+                </span>
+
+            </div>
+
+        </div>
+
+    </footer>
+
+
+    <!-- =========================================================
+         JAVASCRIPT
+    ========================================================== -->
+
+    <script src="{{ url_for('static', filename='js/core/EventBus.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/core/AppState.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/core/Router.js') }}"></script>
+
+    <script src="{{ url_for('static', filename='js/pages/Admin.js') }}"></script>
+
 </body>
 </html>
-
-
-

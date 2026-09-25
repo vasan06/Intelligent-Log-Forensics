@@ -1,168 +1,271 @@
-/**
- * INTELLIGENT LOG FORENSIC - DASHBOARD PAGE CONTROLLER
- * Orchestrates live telemetry, KPI animations, charts, table feed, and 3D visualizers
- */
+(function () {
+    "use strict";
 
-document.addEventListener('DOMContentLoaded', () => {
-  // 1. Initialize Top Right 3D Visualizer (Floating Server Model)
-  if (document.getElementById('dashboard-server-canvas')) {
-    new ExplodedServerScene('dashboard-server-canvas', {
-      exploded: true,
-      interactive: true
+    document.addEventListener("DOMContentLoaded", function () {
+        initializeDashboard();
     });
-  }
 
-  // 2. Initialize Charts & Tables
-  const severityChart = new SeverityBarChart('severity-bar-canvas');
-  const riskDonut = new RiskDonutChart('risk-donut-container');
-  const liveFeed = new LiveFeedTable('live-log-table-body');
 
-  // 3. Connect Live Generator Controls
-  const toggleBtn = document.getElementById('generator-toggle-btn');
-  const statusIndicator = document.getElementById('generator-pulse-dot');
-  const statusText = document.getElementById('generator-status-text');
+    /* =====================================================
+       INITIALIZATION
+    ===================================================== */
 
-  if (toggleBtn) {
-    toggleBtn.addEventListener('click', () => {
-      const isRunning = window.liveGenerator.toggle();
-      updateGeneratorUI(isRunning);
-    });
-  }
-
-  function updateGeneratorUI(isRunning) {
-    if (toggleBtn) {
-      toggleBtn.textContent = isRunning ? 'Pause Feed' : 'Resume Feed';
-      toggleBtn.className = isRunning ? 'btn btn-secondary btn-sm' : 'btn btn-primary btn-sm';
-    }
-    if (statusIndicator) {
-      if (isRunning) {
-        statusIndicator.classList.remove('paused');
-      } else {
-        statusIndicator.classList.add('paused');
-      }
-    }
-    if (statusText) {
-      statusText.textContent = isRunning ? 'Live · Generating Multi-Vector Threats' : 'Generator Paused';
-    }
-  }
-
-  // 4. KPI Counters with smooth numeric roll
-  function animateValue(id, start, end, duration = 600) {
-    const obj = document.getElementById(id);
-    if (!obj) return;
-    if (start === end) {
-      obj.textContent = end.toLocaleString();
-      return;
-    }
-    const range = end - start;
-    const minTimer = 50;
-    let stepTime = Math.abs(Math.floor(duration / range));
-    stepTime = Math.max(stepTime, minTimer);
-    const startTime = new Date().getTime();
-    const endTime = startTime + duration;
-
-    function run() {
-      const now = new Date().getTime();
-      const remaining = Math.max((endTime - now) / duration, 0);
-      const value = Math.round(end - (remaining * range));
-      obj.textContent = value.toLocaleString();
-      if (value !== end) {
-        requestAnimationFrame(run);
-      }
-    }
-    requestAnimationFrame(run);
-  }
-
-  // 5. Update KPI Display from AppState
-  let prevStats = { totalLogs: 0, riskEvents: 0, activeIncidents: 0, avgRiskScore: 0 };
-
-  function renderKPIs(stats) {
-    animateValue('kpi-total-logs', prevStats.totalLogs, stats.totalLogs);
-    animateValue('kpi-risk-events', prevStats.riskEvents, stats.riskEvents);
-    animateValue('kpi-active-incidents', prevStats.activeIncidents, stats.activeIncidents);
-    animateValue('kpi-avg-risk', prevStats.avgRiskScore, stats.avgRiskScore);
-    prevStats = { ...stats };
-  }
-
-  async function hydrateFromBackend() {
-    try {
-      const response = await fetch('/api/v1/telemetry/overview', {
-        headers: { Accept: 'application/json' }
-      });
-      if (!response.ok) {
-        throw new Error(`Telemetry request failed (${response.status})`);
-      }
-      const data = await response.json();
-      renderKPIs({
-        totalLogs: Number(data.total_logs || 0),
-        riskEvents: Number(data.risk_events || 0),
-        activeIncidents: Number(data.incidents || 0),
-        avgRiskScore: Number(data.average_risk || 0)
-      });
-    } catch (error) {
-      console.error('[Dashboard] Unable to load backend telemetry:', error);
-    }
-  }
-
-  // 6. Recent Incidents List Handler
-  const incidentsListContainer = document.getElementById('recent-incidents-container');
-
-  function renderIncidentsList() {
-    if (!incidentsListContainer || !window.appState) return;
-    const incidents = window.appState.state.incidents.slice(0, 5);
-
-    if (incidents.length === 0) {
-      incidentsListContainer.innerHTML = `
-        <div style="padding: 24px; text-align: center; color: var(--text-muted); font-size: 0.85rem;">
-          No critical incidents flagged yet. Telemetry running...
-        </div>
-      `;
-      return;
+    function initializeDashboard() {
+        initializeClock();
+        initializeRefresh();
+        initializeCounters();
+        initializePanels();
+        initializeLiveUpdates();
     }
 
-    incidentsListContainer.innerHTML = incidents.map(inc => `
-      <div class="incident-mini-card" onclick="window.location.href='incidents.html'">
-        <div>
-          <div class="incident-mini-title">${escapeHTML(inc.title)}</div>
-          <div class="incident-mini-meta">
-            <span>${inc.id}</span>
-            <span>·</span>
-            <span style="color: #67E8F9;">${inc.mitreTechnique}</span>
-            <span>·</span>
-            <span>${new Date(inc.created).toLocaleTimeString()}</span>
-          </div>
-        </div>
-        <span class="badge ${inc.severity === 'critical' ? 'badge-critical' : 'badge-high'}">
-          ${inc.severity.toUpperCase()}
-        </span>
-      </div>
-    `).join('');
-  }
 
-  function escapeHTML(str) {
-    if (!str) return '';
-    return String(str).replace(/[&<>'"]/g, tag => ({
-      '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;'
-    }[tag] || tag));
-  }
+    /* =====================================================
+       UTC CLOCK
+    ===================================================== */
 
-  // Listen to state changes
-  if (window.eventBus) {
-    window.eventBus.on('stats:updated', (stats) => renderKPIs(stats));
-    window.eventBus.on('incident:created', () => renderIncidentsList());
-    window.eventBus.on('incident:updated', () => renderIncidentsList());
-  }
+    function initializeClock() {
+        const clock =
+            document.getElementById("dashboard-clock");
 
-  // Initial load
-  if (window.appState) {
-    renderKPIs(window.appState.getStats());
-    renderIncidentsList();
-  }
-  hydrateFromBackend();
+        if (!clock) {
+            return;
+        }
 
-  // Start live generator automatically
-  if (window.liveGenerator) {
-    window.liveGenerator.start();
-    updateGeneratorUI(true);
-  }
-});
+        function updateClock() {
+            const now = new Date();
+
+            clock.textContent =
+                now.toISOString().slice(11, 19);
+        }
+
+        updateClock();
+
+        window.setInterval(
+            updateClock,
+            1000
+        );
+    }
+
+
+    /* =====================================================
+       REFRESH
+    ===================================================== */
+
+    function initializeRefresh() {
+        const button =
+            document.getElementById(
+                "refresh-dashboard"
+            );
+
+        if (!button) {
+            return;
+        }
+
+        button.addEventListener(
+            "click",
+            async function () {
+                await refreshDashboard(button);
+            }
+        );
+    }
+
+
+    async function refreshDashboard(button) {
+        button.disabled = true;
+        button.classList.add("is-loading");
+
+        try {
+            /*
+             * Reloading the page keeps all server-rendered
+             * Jinja telemetry as the source of truth.
+             */
+            window.location.reload();
+
+        } catch (error) {
+            console.error(
+                "Dashboard refresh failed:",
+                error
+            );
+
+            button.disabled = false;
+            button.classList.remove(
+                "is-loading"
+            );
+        }
+    }
+
+
+    /* =====================================================
+       KPI COUNTERS
+    ===================================================== */
+
+    function initializeCounters() {
+        document
+            .querySelectorAll(
+                ".metric-value[id]"
+            )
+            .forEach(function (element) {
+                const rawValue =
+                    element.textContent.trim();
+
+                const numericValue =
+                    parseFloat(
+                        rawValue.replace(
+                            /[^0-9.-]/g,
+                            ""
+                        )
+                    );
+
+                if (
+                    Number.isFinite(
+                        numericValue
+                    )
+                ) {
+                    animateNumber(
+                        element,
+                        numericValue
+                    );
+                }
+            });
+    }
+
+
+    function animateNumber(element, target) {
+        const duration = 700;
+        const startTime = performance.now();
+
+        function frame(currentTime) {
+            const progress =
+                Math.min(
+                    (currentTime - startTime) /
+                    duration,
+                    1
+                );
+
+            const eased =
+                1 -
+                Math.pow(
+                    1 - progress,
+                    3
+                );
+
+            const value =
+                target * eased;
+
+            if (
+                Number.isInteger(target)
+            ) {
+                element.textContent =
+                    Math.round(value);
+            } else {
+                element.textContent =
+                    value.toFixed(1);
+            }
+
+            if (progress < 1) {
+                requestAnimationFrame(
+                    frame
+                );
+            } else {
+                element.textContent =
+                    Number.isInteger(target)
+                        ? String(target)
+                        : target.toFixed(1);
+            }
+        }
+
+        requestAnimationFrame(frame);
+    }
+
+
+    /* =====================================================
+       PANEL INTERACTION
+    ===================================================== */
+
+    function initializePanels() {
+        document
+            .querySelectorAll(
+                ".dashboard-panel"
+            )
+            .forEach(function (panel) {
+                panel.addEventListener(
+                    "mouseenter",
+                    function () {
+                        panel.classList.add(
+                            "is-hovered"
+                        );
+                    }
+                );
+
+                panel.addEventListener(
+                    "mouseleave",
+                    function () {
+                        panel.classList.remove(
+                            "is-hovered"
+                        );
+                    }
+                );
+            });
+    }
+
+
+    /* =====================================================
+       LIVE STATUS
+    ===================================================== */
+
+    function initializeLiveUpdates() {
+        const liveFeed =
+            document.getElementById(
+                "live-feed"
+            );
+
+        if (!liveFeed) {
+            return;
+        }
+
+        /*
+         * We do not invent telemetry events here.
+         * Backend-rendered events remain the source of truth.
+         *
+         * This only provides a visual live indicator.
+         */
+        document
+            .querySelectorAll(
+                ".live-badge"
+            )
+            .forEach(function (badge) {
+                badge.classList.add(
+                    "is-active"
+                );
+            });
+    }
+
+
+    /* =====================================================
+       OPTIONAL APPSTATE INTEGRATION
+    ===================================================== */
+
+    if (
+        typeof window.EventBus !== "undefined"
+    ) {
+        try {
+            if (
+                typeof window.EventBus.on ===
+                "function"
+            ) {
+                window.EventBus.on(
+                    "dashboard:refresh",
+                    function () {
+                        window.location.reload();
+                    }
+                );
+            }
+        } catch (error) {
+            console.debug(
+                "EventBus dashboard integration unavailable.",
+                error
+            );
+        }
+    }
+
+})();

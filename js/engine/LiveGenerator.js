@@ -1,257 +1,384 @@
-/**
- * INTELLIGENT LOG FORENSIC - LIVE LOG GENERATOR
- * Generates continuous multi-vector attack scenarios and benign telemetry (800ms - 2000ms)
- * Automatically groups into batch logs every 10 records
- */
+/* ============================================================
+   ILF — LIVE TELEMETRY GENERATOR
+   /static/js/engine/LiveGenerator.js
+   ============================================================ */
 
-class LiveGenerator {
-  constructor() {
-    this.timerId = null;
-    this.isRunning = false;
-    this.currentBatchCounter = 1;
-    this.currentBatchLogs = [];
-    this.sourceIpPool = [
-      '198.51.100.44', '203.0.113.195', '185.220.101.5', '45.146.164.110',
-      '192.168.1.105', '10.0.0.12', '172.16.4.88', '194.26.29.112'
-    ];
+(function () {
+    "use strict";
 
-    // 10 Attack scenario profiles specified in master prompt
-    this.scenarios = [
-      {
-        attackType: 'SQL Injection',
-        technique: 'T1190',
-        method: 'POST',
-        target: '/api/v1/search',
-        payload: "' OR 1=1 --",
-        severity: 'critical',
-        confidence: 96,
-        status: 500
-      },
-      {
-        attackType: 'Brute Force Login',
-        technique: 'T1110',
-        method: 'POST',
-        target: '/auth/login',
-        payload: 'AUTH FAIL — user: admin — attempt 47/50',
-        severity: 'high',
-        confidence: 89,
-        status: 401
-      },
-      {
-        attackType: 'Directory Traversal',
-        technique: 'T1083',
-        method: 'GET',
-        target: '/static/../../etc/passwd',
-        payload: 'GET /../../etc/passwd — 403 Forbidden',
-        severity: 'high',
-        confidence: 92,
-        status: 403
-      },
-      {
-        attackType: 'XSS Probe',
-        technique: 'T1059',
-        method: 'GET',
-        target: '/search?q=<script>alert(1)</script>',
-        payload: 'GET /search?q=<script>alert(1)</script>',
-        severity: 'medium',
-        confidence: 84,
-        status: 200
-      },
-      {
-        attackType: 'Port Scan',
-        technique: 'T1046',
-        method: 'SCAN',
-        target: '192.168.1.0/24',
-        payload: 'SCAN — 192.168.1.x — ports 22,80,443,3306,8080',
-        severity: 'medium',
-        confidence: 88,
-        status: 200
-      },
-      {
-        attackType: 'Privilege Escalation',
-        technique: 'T1068',
-        method: 'SUDO',
-        target: '/usr/bin/sudo',
-        payload: 'SUDO — user: guest — command: /bin/bash (NOPASSWD)',
-        severity: 'critical',
-        confidence: 94,
-        status: 0
-      },
-      {
-        attackType: 'Data Exfiltration',
-        technique: 'T1041',
-        method: 'POST',
-        target: '/api/v2/upload',
-        payload: 'POST /upload — 847MB — outbound to external IP 185.220.101.5',
-        severity: 'critical',
-        confidence: 98,
-        status: 200
-      },
-      {
-        attackType: 'Malware Beacon',
-        technique: 'T1071',
-        method: 'GET',
-        target: '/c2/beacon',
-        payload: 'GET /c2/beacon — interval: 30s — base64 encoded payload',
-        severity: 'critical',
-        confidence: 95,
-        status: 200
-      },
-      {
-        attackType: 'Credential Dump',
-        technique: 'T1003',
-        method: 'ACCESS',
-        target: '/etc/shadow',
-        payload: 'ACCESS — /etc/shadow — proc: mimikatz memory read',
-        severity: 'critical',
-        confidence: 99,
-        status: 403
-      },
-      {
-        attackType: 'Lateral Movement',
-        technique: 'T1021',
-        method: 'SSH',
-        target: '10.0.0.47:22',
-        payload: 'SSH — 10.0.0.12 → 10.0.0.47 — new privileged session established',
-        severity: 'high',
-        confidence: 91,
-        status: 200
-      }
-    ];
+    const LiveGenerator = {
+        running: false,
+        timer: null,
+        interval: 5000,
+        listeners: new Set(),
 
-    // Benign scenarios for realistic enterprise noise
-    this.benignTemplates = [
-      { method: 'GET', target: '/api/v1/health', payload: 'Health check OK 200ms', severity: 'safe', confidence: 10, status: 200 },
-      { method: 'GET', target: '/dashboard/metrics', payload: 'Telemetry polling query', severity: 'safe', confidence: 15, status: 200 },
-      { method: 'POST', target: '/api/v1/telemetry/heartbeat', payload: 'Client agent keepalive', severity: 'safe', confidence: 5, status: 200 },
-      { method: 'GET', target: '/static/css/theme.css', payload: 'Static asset fetch', severity: 'safe', confidence: 5, status: 304 }
-    ];
-  }
+        state: {
+            totalSignals: 0,
+            totalThreats: 0,
+            activeClusters: 0,
+            evidenceBundles: 0,
+            threatIndex: 0,
+            forensicFidelity: 0,
+            eventsPerSecond: 0,
+            lastUpdate: null
+        },
 
-  start() {
-    if (this.isRunning) return;
-    this.isRunning = true;
-    if (window.appState) {
-      window.appState.setGeneratorActive(true);
-    }
-    this.scheduleNextTick();
-  }
+        /* --------------------------------------------------------
+           Utility
+        -------------------------------------------------------- */
 
-  stop() {
-    this.isRunning = false;
-    if (this.timerId) {
-      clearTimeout(this.timerId);
-      this.timerId = null;
-    }
-    if (window.appState) {
-      window.appState.setGeneratorActive(false);
-    }
-  }
+        clamp(value, min, max) {
+            return Math.min(Math.max(value, min), max);
+        },
 
-  toggle() {
-    if (this.isRunning) {
-      this.stop();
-    } else {
-      this.start();
-    }
-    return this.isRunning;
-  }
+        random(min, max) {
+            return Math.floor(
+                Math.random() * (max - min + 1)
+            ) + min;
+        },
 
-  scheduleNextTick() {
-    if (!this.isRunning) return;
+        /* --------------------------------------------------------
+           Read initial values from existing dashboard
+        -------------------------------------------------------- */
 
-    // Random interval between 800ms and 2000ms
-    const interval = Math.floor(800 + Math.random() * 1200);
-    this.timerId = setTimeout(() => {
-      this.tick();
-      this.scheduleNextTick();
-    }, interval);
-  }
+        readDOMState() {
+            const totalSignals = document.getElementById(
+                "metric-total-signals"
+            );
 
-  tick() {
-    // 60% probability of attack event, 40% benign to ensure active SOC feel
-    const isAttack = Math.random() < 0.65;
-    let logData = null;
+            const totalThreats = document.getElementById(
+                "metric-total-threats"
+            );
 
-    if (isAttack) {
-      const scenario = this.scenarios[Math.floor(Math.random() * this.scenarios.length)];
-      const sourceIp = this.sourceIpPool[Math.floor(Math.random() * this.sourceIpPool.length)];
-      logData = {
-        id: `LOG-EVT-${Date.now().toString(36)}-${Math.floor(Math.random() * 1000)}`,
-        timestamp: new Date().toISOString(),
-        source_ip: sourceIp,
-        target: scenario.target,
-        method: scenario.method,
-        payload_snippet: scenario.payload,
-        severity: scenario.severity,
-        mitre_technique: scenario.technique,
-        confidence_score: scenario.confidence,
-        attackType: scenario.attackType,
-        status_code: scenario.status
-      };
-    } else {
-      const benign = this.benignTemplates[Math.floor(Math.random() * this.benignTemplates.length)];
-      logData = {
-        id: `LOG-SYS-${Date.now().toString(36)}-${Math.floor(Math.random() * 1000)}`,
-        timestamp: new Date().toISOString(),
-        source_ip: '10.0.4.15',
-        target: benign.target,
-        method: benign.method,
-        payload_snippet: benign.payload,
-        severity: 'safe',
-        mitre_technique: 'T0000',
-        confidence_score: benign.confidence,
-        attackType: 'Benign Traffic',
-        status_code: benign.status
-      };
-    }
+            const activeClusters = document.getElementById(
+                "metric-active-clusters"
+            );
 
-    // Pass through ThreatEngine for real-time validation & profiling
-    if (window.threatEngine) {
-      const evaluation = window.threatEngine.inspectLog(logData);
-      logData.severity = evaluation.severity;
-      logData.compositeScore = evaluation.compositeScore;
-      logData.confidence_score = evaluation.confidence;
-    }
+            const evidenceBundles = document.getElementById(
+                "metric-vault-bundles"
+            );
 
-    // Ingest into AppState
-    if (window.appState) {
-      window.appState.addLogEntry(logData);
-    }
+            const threatIndex = document.getElementById(
+                "metric-threat-index"
+            );
 
-    // Batch Management: Every 10 entries, close batch
-    this.currentBatchLogs.push(logData);
-    if (this.currentBatchLogs.length >= 10) {
-      this.finalizeBatch();
-    }
-  }
+            const fidelity = document.getElementById(
+                "metric-fidelity"
+            );
 
-  finalizeBatch() {
-    const batchNumber = this.currentBatchCounter++;
-    const batchInfo = {
-      batchId: `BATCH-FORENSIC-#${String(batchNumber).padStart(4, '0')}`,
-      timestamp: new Date().toISOString(),
-      entryCount: this.currentBatchLogs.length,
-      criticalCount: this.currentBatchLogs.filter(l => l.severity === 'critical').length,
-      highCount: this.currentBatchLogs.filter(l => l.severity === 'high').length,
-      fileName: `audit_capture_${Date.now()}_batch_${batchNumber}.log`
+            const numberFrom = (element, fallback = 0) => {
+                if (!element) {
+                    return fallback;
+                }
+
+                const value = Number(
+                    String(element.textContent)
+                        .replace(/[^\d.-]/g, "")
+                );
+
+                return Number.isFinite(value)
+                    ? value
+                    : fallback;
+            };
+
+            this.state.totalSignals =
+                numberFrom(totalSignals);
+
+            this.state.totalThreats =
+                numberFrom(totalThreats);
+
+            this.state.activeClusters =
+                numberFrom(activeClusters);
+
+            this.state.evidenceBundles =
+                numberFrom(evidenceBundles);
+
+            this.state.threatIndex =
+                numberFrom(threatIndex);
+
+            this.state.forensicFidelity =
+                numberFrom(fidelity);
+
+            this.state.lastUpdate =
+                new Date().toISOString();
+        },
+
+        /* --------------------------------------------------------
+           Generate one telemetry update
+        -------------------------------------------------------- */
+
+        generate() {
+            const state = this.state;
+
+            const signalIncrement = this.random(0, 12);
+
+            state.totalSignals += signalIncrement;
+
+            /*
+             * Threats should grow slower than raw signals.
+             */
+            if (Math.random() > 0.45) {
+                state.totalThreats += this.random(0, 3);
+            }
+
+            /*
+             * Only occasionally create/close an incident cluster.
+             */
+            const clusterRoll = Math.random();
+
+            if (clusterRoll > 0.93) {
+                state.activeClusters += 1;
+            } else if (
+                clusterRoll < 0.04 &&
+                state.activeClusters > 0
+            ) {
+                state.activeClusters -= 1;
+            }
+
+            /*
+             * Evidence bundles generally increase with telemetry.
+             */
+            if (Math.random() > 0.6) {
+                state.evidenceBundles += this.random(0, 2);
+            }
+
+            /*
+             * Calculate a bounded threat index.
+             */
+            const threatPressure =
+                state.totalSignals > 0
+                    ? (
+                        state.totalThreats /
+                        state.totalSignals
+                    ) * 100
+                    : 0;
+
+            const clusterPressure =
+                state.activeClusters * 4;
+
+            const targetThreatIndex =
+                this.clamp(
+                    Math.round(
+                        threatPressure +
+                        clusterPressure
+                    ),
+                    0,
+                    100
+                );
+
+            /*
+             * Smooth the value instead of jumping suddenly.
+             */
+            state.threatIndex = Math.round(
+                (
+                    state.threatIndex * 0.75
+                ) +
+                (
+                    targetThreatIndex * 0.25
+                )
+            );
+
+            /*
+             * Fidelity remains high unless the telemetry stream
+             * becomes inconsistent.
+             */
+            const fidelityTarget =
+                this.clamp(
+                    100 -
+                    Math.round(
+                        state.activeClusters * 1.5
+                    ),
+                    70,
+                    100
+                );
+
+            state.forensicFidelity = Math.round(
+                (
+                    state.forensicFidelity * 0.8
+                ) +
+                (
+                    fidelityTarget * 0.2
+                )
+            );
+
+            state.eventsPerSecond =
+                Number(
+                    (
+                        signalIncrement /
+                        (this.interval / 1000)
+                    ).toFixed(2)
+                );
+
+            state.lastUpdate =
+                new Date().toISOString();
+
+            return {
+                ...state
+            };
+        },
+
+        /* --------------------------------------------------------
+           Notify listeners
+        -------------------------------------------------------- */
+
+        emit(data) {
+            this.listeners.forEach((listener) => {
+                try {
+                    listener(data);
+                } catch (error) {
+                    console.error(
+                        "[LiveGenerator] Listener error:",
+                        error
+                    );
+                }
+            });
+
+            /*
+             * Also expose a browser event so other files can
+             * listen without depending directly on this object.
+             */
+            document.dispatchEvent(
+                new CustomEvent(
+                    "ilf:telemetry-update",
+                    {
+                        detail: data
+                    }
+                )
+            );
+        },
+
+        /* --------------------------------------------------------
+           Subscribe
+        -------------------------------------------------------- */
+
+        subscribe(callback) {
+            if (typeof callback !== "function") {
+                return function () {};
+            }
+
+            this.listeners.add(callback);
+
+            return () => {
+                this.listeners.delete(callback);
+            };
+        },
+
+        /* --------------------------------------------------------
+           One update cycle
+        -------------------------------------------------------- */
+
+        tick() {
+            const data = this.generate();
+
+            this.emit(data);
+
+            return data;
+        },
+
+        /* --------------------------------------------------------
+           Start generator
+        -------------------------------------------------------- */
+
+        start(interval = this.interval) {
+            if (this.running) {
+                return;
+            }
+
+            this.interval =
+                Math.max(
+                    Number(interval) || 5000,
+                    1000
+                );
+
+            this.readDOMState();
+
+            this.running = true;
+
+            /*
+             * Initial event.
+             */
+            this.emit({
+                ...this.state
+            });
+
+            this.timer = window.setInterval(
+                () => this.tick(),
+                this.interval
+            );
+
+            document.dispatchEvent(
+                new CustomEvent(
+                    "ilf:telemetry-started"
+                )
+            );
+        },
+
+        /* --------------------------------------------------------
+           Stop generator
+        -------------------------------------------------------- */
+
+        stop() {
+            if (this.timer !== null) {
+                window.clearInterval(this.timer);
+                this.timer = null;
+            }
+
+            this.running = false;
+
+            document.dispatchEvent(
+                new CustomEvent(
+                    "ilf:telemetry-stopped"
+                )
+            );
+        },
+
+        /* --------------------------------------------------------
+           Restart
+        -------------------------------------------------------- */
+
+        restart(interval = this.interval) {
+            this.stop();
+            this.start(interval);
+        },
+
+        /* --------------------------------------------------------
+           Get current state
+        -------------------------------------------------------- */
+
+        getState() {
+            return {
+                ...this.state
+            };
+        }
     };
 
-    if (window.appState) {
-      window.appState.state.batches.unshift(batchInfo);
-      if (window.appState.state.batches.length > 50) {
-        window.appState.state.batches.pop();
-      }
-      window.appState.saveToStorage();
-    }
+    /* ------------------------------------------------------------
+       Expose globally
+       ------------------------------------------------------------ */
 
-    if (window.eventBus) {
-      window.eventBus.emit('batch:created', batchInfo);
-    }
+    window.LiveGenerator = LiveGenerator;
 
-    this.currentBatchLogs = [];
-  }
-}
+    /*
+     * Automatically start only on pages that explicitly opt in.
+     *
+     * Add:
+     *
+     * <body data-live-telemetry>
+     *
+     * to dashboard if required.
+     */
+    document.addEventListener(
+        "DOMContentLoaded",
+        function () {
+            if (
+                document.body &&
+                document.body.hasAttribute(
+                    "data-live-telemetry"
+                )
+            ) {
+                LiveGenerator.start();
+            }
+        }
+    );
 
-// Global Singleton
-window.liveGenerator = new LiveGenerator();
+})();
