@@ -58,7 +58,7 @@ from aegis_core.security.identity import (
 
 auth_blueprint = Blueprint("auth_views", __name__)
 ops_blueprint = Blueprint("ops_views", __name__)
-api_blueprint = Blueprint("api_views", __name__, url_prefix="/api/v1")
+api_blueprint = Blueprint("api_views", __name__, url_prefix="/api")
 
 
 def gather_platform_telemetry() -> dict[str, Any]:
@@ -595,7 +595,7 @@ def api_telemetry_overview():
 @ops_blueprint.route("/api/dashboard")
 @require_clearance("Analyst")
 def legacy_api_dashboard():
-    return redirect(url_for("api_views.api_telemetry_overview"))
+    return jsonify(gather_platform_telemetry())
 
 
 @api_blueprint.route("/telemetry/announcements")
