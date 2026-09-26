@@ -1,0 +1,511 @@
+{% extends "base.html" %}
+
+{% block title %}Sign In — intelligent-log-forensics{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="../../static/css/login.css">
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script src="../../static/js/login.js"></script>
+{% endblock %}
+
+{% block body %}
+
+<main class="ilf-auth-page" id="signin-page">
+
+    <!-- =====================================================
+         HEADER
+    ====================================================== -->
+    <header class="ilf-auth-header">
+
+        <a
+            href="{{ url_for('app.index') }}"
+            class="ilf-brand"
+            aria-label="intelligent-log-forensics home"
+        >
+            intelligent-log-forensics
+        </a>
+
+        <a
+            href="{{ url_for('app.index') }}"
+            class="ilf-back-link"
+        >
+            <span aria-hidden="true">←</span>
+            Back to home
+        </a>
+
+    </header>
+
+
+    <!-- =====================================================
+         MAIN AUTHENTICATION LAYOUT
+    ====================================================== -->
+    <section class="ilf-auth-layout">
+
+        <!-- =================================================
+             LEFT — 3D DIGITAL GATEWAY
+        ================================================== -->
+        <section
+            class="ilf-auth-visual"
+            aria-label="Secure system gateway"
+        >
+
+            <div class="ilf-visual-copy">
+
+                <span class="ilf-visual-eyebrow">
+                    Secure access
+                </span>
+
+                <h2 class="ilf-visual-title">
+                    Enter the
+                    intelligence layer.
+                </h2>
+
+                <p class="ilf-visual-description">
+                    Connect securely to your forensic workspace and
+                    continue investigating your log intelligence.
+                </p>
+
+            </div>
+
+
+            <!-- =============================================
+                 THREE.JS SCENE
+                 JavaScript mounts the actual 3D gateway here.
+            ============================================== -->
+            <div
+                class="ilf-gateway-stage"
+                id="signin-gateway"
+                aria-hidden="true"
+            >
+
+                <!-- Three.js canvas will be inserted here -->
+                <div
+                    class="ilf-three-container"
+                    id="gateway-canvas"
+                ></div>
+
+
+                <!-- Atmospheric glow -->
+                <div
+                    class="ilf-gateway-atmosphere"
+                    aria-hidden="true"
+                ></div>
+
+
+                <!--
+                    Fallback structural layers.
+                    JS can activate/use these if WebGL
+                    initialization is unavailable.
+                -->
+                <div class="ilf-gateway-fallback">
+
+                    <div class="ilf-gateway-ring ilf-gateway-ring--outer"></div>
+
+                    <div class="ilf-gateway-ring ilf-gateway-ring--middle"></div>
+
+                    <div class="ilf-gateway-ring ilf-gateway-ring--inner"></div>
+
+                    <div class="ilf-gateway-aperture">
+
+                        <div class="ilf-gateway-core">
+
+                            <span class="ilf-core-pulse"></span>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+                <!-- Dynamic tracking markers -->
+                <div class="ilf-gateway-trackers">
+
+                    <span class="ilf-tracker" data-tracker="1"></span>
+                    <span class="ilf-tracker" data-tracker="2"></span>
+                    <span class="ilf-tracker" data-tracker="3"></span>
+                    <span class="ilf-tracker" data-tracker="4"></span>
+
+                </div>
+
+
+                <!-- Particle field -->
+                <div
+                    class="ilf-particle-field"
+                    id="gateway-particles"
+                ></div>
+
+
+                <!-- System status -->
+                <div class="ilf-system-status">
+
+                    <span class="ilf-status-dot"></span>
+
+                    <span class="ilf-status-text">
+                        Intelligence system operational
+                    </span>
+
+                </div>
+
+            </div>
+
+        </section>
+
+
+        <!-- =================================================
+             RIGHT — SIGN IN FORM
+        ================================================== -->
+        <section class="ilf-auth-panel">
+
+            <div class="ilf-auth-heading">
+
+                <span class="ilf-form-eyebrow">
+                    Secure authentication
+                </span>
+
+                <h1>
+                    Welcome back
+                </h1>
+
+                <p>
+                    Sign in to continue to your forensic workspace.
+                </p>
+
+            </div>
+
+
+            <!-- =============================================
+                 FLASH MESSAGES
+            ============================================== -->
+            {% with messages = get_flashed_messages(with_categories=true) %}
+
+                {% if messages %}
+
+                    <div
+                        class="ilf-auth-alerts"
+                        aria-live="polite"
+                    >
+
+                        {% for cat, msg in messages %}
+
+                            <div
+                                class="ilf-alert ilf-alert--{{ 'error' if cat == 'error' else cat }}"
+                                role="alert"
+                            >
+                                <span class="ilf-alert-icon" aria-hidden="true"></span>
+
+                                <span class="ilf-alert-message">
+                                    {{ msg }}
+                                </span>
+
+                                <button
+                                    type="button"
+                                    class="ilf-alert-close"
+                                    aria-label="Dismiss message"
+                                >
+                                    ×
+                                </button>
+
+                            </div>
+
+                        {% endfor %}
+
+                    </div>
+
+                {% endif %}
+
+            {% endwith %}
+
+
+            <!-- =============================================
+                 AUTH CARD
+            ============================================== -->
+            <div class="ilf-form-card">
+
+                <form
+                    method="POST"
+                    action="{{ url_for('auth.login') }}"
+                    class="ilf-signin-form"
+                    id="signin-form"
+                    novalidate
+                >
+
+                    <!-- -------------------------------------
+                         EMAIL
+                    -------------------------------------- -->
+                    <div class="ilf-field">
+
+                        <label
+                            for="email"
+                            class="ilf-field-label"
+                        >
+                            Email address
+                        </label>
+
+                        <div class="ilf-input-wrap">
+
+                            <span
+                                class="ilf-input-icon"
+                                aria-hidden="true"
+                            >
+                                @
+                            </span>
+
+                            <input
+                                type="email"
+                                id="email"
+                                name="email"
+                                class="ilf-input"
+                                placeholder="you@company.com"
+                                autocomplete="email"
+                                inputmode="email"
+                                required
+                            />
+
+                        </div>
+
+                        <span
+                            class="ilf-field-error"
+                            data-error-for="email"
+                            role="alert"
+                        ></span>
+
+                    </div>
+
+
+                    <!-- -------------------------------------
+                         PASSWORD
+                    -------------------------------------- -->
+                    <div class="ilf-field">
+
+                        <div class="ilf-field-heading">
+
+                            <label
+                                for="password"
+                                class="ilf-field-label"
+                            >
+                                Password
+                            </label>
+
+                            <a
+                                href="{{ url_for('auth.forgot_password') }}"
+                                class="ilf-forgot-link"
+                            >
+                                Forgot password?
+                            </a>
+
+                        </div>
+
+
+                        <div class="ilf-input-wrap">
+
+                            <span
+                                class="ilf-input-icon"
+                                aria-hidden="true"
+                            >
+                                •
+                            </span>
+
+                            <input
+                                type="password"
+                                id="password"
+                                name="password"
+                                class="ilf-input"
+                                placeholder="Enter your password"
+                                autocomplete="current-password"
+                                required
+                            />
+
+                            <button
+                                type="button"
+                                class="ilf-password-toggle"
+                                id="password-toggle"
+                                aria-label="Show password"
+                                aria-pressed="false"
+                            >
+                                <span class="ilf-eye-icon"></span>
+                            </button>
+
+                        </div>
+
+                        <span
+                            class="ilf-field-error"
+                            data-error-for="password"
+                            role="alert"
+                        ></span>
+
+                    </div>
+
+
+                    <!-- -------------------------------------
+                         REMEMBER ME
+                    -------------------------------------- -->
+                    <div class="ilf-form-options">
+
+                        <label class="ilf-checkbox">
+
+                            <input
+                                type="checkbox"
+                                id="remember"
+                                name="remember"
+                            />
+
+                            <span class="ilf-checkbox-box"></span>
+
+                            <span class="ilf-checkbox-label">
+                                Keep me signed in
+                            </span>
+
+                        </label>
+
+                    </div>
+
+
+                    <!-- -------------------------------------
+                         SIGN IN BUTTON
+                    -------------------------------------- -->
+                    <button
+                        type="submit"
+                        class="ilf-submit-button"
+                        id="signin-submit"
+                    >
+
+                        <span class="ilf-submit-content">
+
+                            <span class="ilf-submit-label">
+                                Sign in
+                            </span>
+
+                            <span
+                                class="ilf-submit-arrow"
+                                aria-hidden="true"
+                            >
+                                →
+                            </span>
+
+                        </span>
+
+                        <span
+                            class="ilf-submit-loader"
+                            aria-hidden="true"
+                        ></span>
+
+                    </button>
+
+
+                    <!-- -------------------------------------
+                         AUTHENTICATION STATE
+                    -------------------------------------- -->
+                    <div
+                        class="ilf-auth-progress"
+                        id="auth-progress"
+                        aria-live="polite"
+                        hidden
+                    >
+
+                        <div class="ilf-progress-orb">
+                            <span></span>
+                        </div>
+
+                        <div class="ilf-progress-content">
+
+                            <strong id="auth-progress-title">
+                                Authenticating
+                            </strong>
+
+                            <span id="auth-progress-message">
+                                Establishing a secure connection...
+                            </span>
+
+                        </div>
+
+                    </div>
+
+                </form>
+
+
+                <!-- =========================================
+                     CREATE ACCOUNT
+                ========================================== -->
+                <div class="ilf-create-account">
+
+                    <span>
+                        Don't have an account?
+                    </span>
+
+                    <a href="{{ url_for('auth.register') }}">
+                        Create account
+                    </a>
+
+                </div>
+
+            </div>
+
+
+            <!-- =============================================
+                 SECURITY NOTE
+            ============================================== -->
+            <div class="ilf-security-note">
+
+                <span class="ilf-security-icon" aria-hidden="true">
+                    ✓
+                </span>
+
+                <span>
+                    Your authentication is handled through
+                    a secure connection.
+                </span>
+
+            </div>
+
+        </section>
+
+    </section>
+
+
+    <!-- =====================================================
+         GATEWAY TRANSITION
+         Activated after successful authentication.
+    ====================================================== -->
+    <div
+        class="ilf-gateway-transition"
+        id="gateway-transition"
+        aria-hidden="true"
+    >
+
+        <div class="ilf-transition-scene">
+
+            <div class="ilf-transition-core"></div>
+
+            <div class="ilf-transition-ring transition-ring-1"></div>
+            <div class="ilf-transition-ring transition-ring-2"></div>
+            <div class="ilf-transition-ring transition-ring-3"></div>
+
+            <div
+                class="ilf-transition-particles"
+                id="transition-particles"
+            ></div>
+
+        </div>
+
+
+        <div class="ilf-transition-message">
+
+            <span class="ilf-transition-label">
+                ACCESS VERIFIED
+            </span>
+
+            <strong>
+                Entering intelligence layer
+            </strong>
+
+        </div>
+
+    </div>
+
+</main>
+
+{% endblock %}

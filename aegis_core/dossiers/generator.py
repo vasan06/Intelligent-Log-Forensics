@@ -1,162 +1,163 @@
-import io
-from typing import Any
+"""PDF forensic report generator"""
+from datetime import datetime, timezone
+from io import BytesIO
 from reportlab.lib import colors
-from reportlab.lib.pagesizes import letter
-from reportlab.lib.styles import ParagraphStyle, getSampleStyleSheet
-from reportlab.platypus import HRFlowable, Paragraph, SimpleDocTemplate, Spacer, Table, TableStyle
+from reportlab.lib.pagesizes import A4
+from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
+from reportlab.lib.units import mm
+from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle, HRFlowable
 
-from aegis_core.config import SentinelSettings
+from aegis_core.config import Settings
 
 
-def compile_forensic_dossier_pdf(telemetry_summary: dict[str, Any]) -> bytes:
-    buffer = io.BytesIO()
+def compile_forensic_dossier_pdf(stats: dict) -> bytes:
+    buf = BytesIO()
     doc = SimpleDocTemplate(
-        buffer,
-        pagesize=letter,
-        rightMargin=36,
-        leftMargin=36,
-        topMargin=36,
-        bottomMargin=36,
+        buf, pagesize=A4,
+        leftMargin=20*mm, rightMargin=20*mm,
+        topMargin=20*mm, bottomMargin=20*mm,
     )
-    
+
     styles = getSampleStyleSheet()
-    
-    header_style = ParagraphStyle(
-        "AegisHeader",
-        parent=styles["Heading1"],
-        fontName="Helvetica-Bold",
-        fontSize=20,
-        leading=24,
-        textColor=colors.HexColor("#0f172a"),
-    )
-    subhead_style = ParagraphStyle(
-        "AegisSubhead",
-        parent=styles["Normal"],
-        fontName="Helvetica",
-        fontSize=10,
-        leading=14,
-        textColor=colors.HexColor("#475569"),
-    )
-    section_style = ParagraphStyle(
-        "AegisSection",
-        parent=styles["Heading2"],
-        fontName="Helvetica-Bold",
-        fontSize=13,
-        leading=18,
-        textColor=colors.HexColor("#1e293b"),
-        spaceBefore=14,
-        spaceAfter=8,
-    )
-    body_style = ParagraphStyle(
-        "AegisBody",
-        parent=styles["Normal"],
-        fontName="Helvetica",
-        fontSize=9,
-        leading=13,
-        textColor=colors.HexColor("#334155"),
-    )
+    BLUE = colors.HexColor('#2563eb')
+    RED  = colors.HexColor('#dc2626')
+    SLATE = colors.HexColor('#475569')
+    LIGHT = colors.HexColor('#f1f5f9')
+
+    title_style = ParagraphStyle('ILFTitle', parent=styles['Heading1'], textColor=BLUE, fontSize=20, spaceAfter=4)
+    h2_style    = ParagraphStyle('ILFH2',    parent=styles['Heading2'], textColor=BLUE, fontSize=13, spaceAfter=4, spaceBefore=12)
+    normal_style = ParagraphStyle('ILFNormal', parent=styles['Normal'], textColor=SLATE, fontSize=9, leading=14)
+    label_style  = ParagraphStyle('ILFLabel', parent=styles['Normal'], textColor=SLATE, fontSize=8, fontName='Helvetica-Bold')
 
     story = []
 
-    story.append(Paragraph("AEGIS CYBER-FORENSIC INCIDENT DOSSIER", header_style))
-    meta_text = (
-        f"Generated: {SentinelSettings.get_current_utc_timestamp()} UTC | "
-        f"Security Operations Classification: CONFIDENTIAL TACTICAL | "
-        f"Platform: {SentinelSettings.SYSTEM_RELEASE}"
-    )
-    story.append(Paragraph(meta_text, subhead_style))
-    story.append(Spacer(1, 10))
-    story.append(HRFlowable(width="100%", thickness=1.5, color=colors.HexColor("#0284c7"), spaceAfter=14))
+    # ── Cover ─────────────────────────────────────────────────────────
+    story.append(Paragraph("INTELLIGENT LOG FORENSICS", title_style))
+    story.append(Paragraph("Security Investigation Report", ParagraphStyle('sub', parent=styles['Normal'], fontSize=12, textColor=SLATE)))
+    story.append(HRFlowable(width='100%', thickness=2, color=BLUE, spaceAfter=12))
 
-    story.append(Paragraph("I. EXECUTIVE TELEMETRY OVERVIEW", section_style))
-    kpi_data = [
-        ["Total Normalized Signals", "Correlated Threats", "Active Threat Clusters", "Mean Threat Index"],
-        [
-            str(telemetry_summary.get("total_signals", 0)),
-            str(telemetry_summary.get("total_threats", 0)),
-            str(telemetry_summary.get("active_clusters", 0)),
-            f"{telemetry_summary.get('average_threat_index', 0.0)} / 100",
+    meta = [
+        ['Generated:', Settings.now_display()],
+        ['Platform:', f'{Settings.APP_NAME} v{Settings.APP_VERSION}'],
+        ['Report Type:', 'Full Forensic Investigation'],
+    ]
+    if stats.get('file'):
+        f = stats['file']
+        meta += [
+            ['File Analyzed:', f.get('filename','—')],
+            ['File Size:', f'{(f.get("file_size",0)/1024):.1f} KB'],
+            ['Records:', str(f.get('record_count',0))],
+            ['Threats:', str(f.get('threat_count',0))],
         ]
-    ]
-    kpi_table = Table(kpi_data, colWidths=[130, 130, 130, 150])
-    kpi_table.setStyle(TableStyle([
-        ("BACKGROUND", (0, 0), (-1, 0), colors.HexColor("#f1f5f9")),
-        ("TEXTCOLOR", (0, 0), (-1, 0), colors.HexColor("#0f172a")),
-        ("FONTNAME", (0, 0), (-1, 0), "Helvetica-Bold"),
-        ("FONTSIZE", (0, 0), (-1, -1), 9),
-        ("ALIGN", (0, 0), (-1, -1), "CENTER"),
-        ("GRID", (0, 0), (-1, -1), 0.5, colors.HexColor("#cbd5e1")),
-        ("TOPPADDING", (0, 0), (-1, -1), 6),
-        ("BOTTOMPADDING", (0, 0), (-1, -1), 6),
-        ("FONTNAME", (0, 1), (-1, 1), "Helvetica-Bold"),
-        ("TEXTCOLOR", (0, 1), (-1, 1), colors.HexColor("#0284c7")),
+
+    meta_tbl = Table([[Paragraph(k, label_style), Paragraph(v, normal_style)] for k,v in meta],
+                     colWidths=[45*mm, 120*mm])
+    meta_tbl.setStyle(TableStyle([
+        ('BACKGROUND', (0,0), (0,-1), LIGHT),
+        ('TEXTCOLOR', (0,0), (0,-1), SLATE),
+        ('ROWBACKGROUNDS', (0,0), (-1,-1), [colors.white, LIGHT]),
+        ('GRID', (0,0), (-1,-1), 0.3, colors.HexColor('#e2e8f0')),
+        ('TOPPADDING', (0,0), (-1,-1), 4), ('BOTTOMPADDING', (0,0), (-1,-1), 4),
+        ('LEFTPADDING', (0,0), (-1,-1), 8), ('RIGHTPADDING', (0,0), (-1,-1), 8),
     ]))
-    story.append(kpi_table)
+    story.append(meta_tbl)
     story.append(Spacer(1, 12))
 
-    story.append(Paragraph("II. THREAT MAGNITUDE DISTRIBUTION", section_style))
-    sev_counts = telemetry_summary.get("urgency_breakdown", {})
-    sev_data = [
-        ["Urgency Tier", "Detection Volume", "Response Protocol"],
-        ["Critical (85-100)", str(sev_counts.get("Critical", 0)), "Immediate Automated Containment & Subnet Quarantine"],
-        ["High (70-84)", str(sev_counts.get("High", 0)), "Analyst Triage & Session Invalidation Within 15 Min"],
-        ["Elevated (50-69)", str(sev_counts.get("Elevated", 0)), "Enhanced Logging & Monitored Egress Tracking"],
-        ["Notice (<50)", str(sev_counts.get("Notice", 0)), "Routine Telemetry Retention for Audit Trail"],
-    ]
-    sev_table = Table(sev_data, colWidths=[120, 100, 320])
-    sev_table.setStyle(TableStyle([
-        ("BACKGROUND", (0, 0), (-1, 0), colors.HexColor("#0f172a")),
-        ("TEXTCOLOR", (0, 0), (-1, 0), colors.white),
-        ("FONTNAME", (0, 0), (-1, 0), "Helvetica-Bold"),
-        ("FONTSIZE", (0, 0), (-1, -1), 8.5),
-        ("GRID", (0, 0), (-1, -1), 0.5, colors.HexColor("#e2e8f0")),
-        ("ROWBACKGROUNDS", (0, 1), (-1, -1), [colors.white, colors.HexColor("#f8fafc")]),
-        ("TOPPADDING", (0, 0), (-1, -1), 5),
-        ("BOTTOMPADDING", (0, 0), (-1, -1), 5),
-    ]))
-    story.append(sev_table)
-    story.append(Spacer(1, 12))
+    # ── Summary ───────────────────────────────────────────────────────
+    story.append(Paragraph("Executive Summary", h2_style))
+    story.append(Paragraph(
+        f"This report documents the automated forensic analysis performed by {Settings.APP_NAME}. "
+        f"The investigation identified {stats.get('total_threats',0)} threat signals across "
+        f"{stats.get('total_files',0)} analyzed log file(s), resulting in "
+        f"{stats.get('active_incidents',0)} active security incidents requiring investigation. "
+        f"Critical severity events: {stats.get('critical_count',0)}. "
+        f"Average threat score: {stats.get('avg_threat_score',0)}/100.",
+        normal_style))
+    story.append(Spacer(1, 8))
 
-    story.append(Paragraph("III. CORRELATED THREAT DOCKETS", section_style))
-    clusters = telemetry_summary.get("recent_dockets", [])
-    if clusters:
-        cluster_rows = [["Docket Headline", "Severity", "Attribution Confidence", "Technique ID"]]
-        for cl in clusters[:6]:
-            cluster_rows.append([
-                cl.get("cluster_headline", "Incident"),
-                cl.get("triage_severity", "Elevated"),
-                f"{cl.get('attribution_confidence', 0)}%",
-                cl.get("associated_technique") or "General",
-            ])
-        cluster_table = Table(cluster_rows, colWidths=[240, 90, 120, 90])
-        cluster_table.setStyle(TableStyle([
-            ("BACKGROUND", (0, 0), (-1, 0), colors.HexColor("#1e293b")),
-            ("TEXTCOLOR", (0, 0), (-1, 0), colors.white),
-            ("FONTNAME", (0, 0), (-1, 0), "Helvetica-Bold"),
-            ("FONTSIZE", (0, 0), (-1, -1), 8.5),
-            ("GRID", (0, 0), (-1, -1), 0.5, colors.HexColor("#cbd5e1")),
-            ("TOPPADDING", (0, 0), (-1, -1), 5),
-            ("BOTTOMPADDING", (0, 0), (-1, -1), 5),
+    # ── Severity Distribution ─────────────────────────────────────────
+    sev_map = stats.get('severity_map', {})
+    if sev_map:
+        story.append(Paragraph("Severity Distribution", h2_style))
+        sev_data = [['Severity', 'Count', 'Risk Level']]
+        for sev, cnt in sev_map.items():
+            sev_data.append([sev, str(cnt), 'Critical' if sev == 'Critical' else 'Elevated' if sev == 'High' else 'Moderate'])
+        sev_tbl = Table(sev_data, colWidths=[50*mm, 40*mm, 60*mm])
+        sev_tbl.setStyle(TableStyle([
+            ('BACKGROUND', (0,0), (-1,0), BLUE),
+            ('TEXTCOLOR', (0,0), (-1,0), colors.white),
+            ('FONTNAME', (0,0), (-1,0), 'Helvetica-Bold'),
+            ('ROWBACKGROUNDS', (0,1), (-1,-1), [colors.white, LIGHT]),
+            ('GRID', (0,0), (-1,-1), 0.3, colors.HexColor('#e2e8f0')),
+            ('TOPPADDING', (0,0), (-1,-1), 4), ('BOTTOMPADDING', (0,0), (-1,-1), 4),
+            ('LEFTPADDING', (0,0), (-1,-1), 8), ('RIGHTPADDING', (0,0), (-1,-1), 8),
         ]))
-        story.append(cluster_table)
-    else:
-        story.append(Paragraph("No active threat dockets recorded in the target evidence bundle.", body_style))
+        story.append(sev_tbl)
+        story.append(Spacer(1, 8))
 
-    story.append(Spacer(1, 14))
+    # ── Threat Details ────────────────────────────────────────────────
+    threats_detail = stats.get('threats_detail', [])
+    if threats_detail:
+        story.append(Paragraph("Top Threat Detections", h2_style))
+        tbl_data = [['Severity', 'Score', 'Category', 'Technique', 'Finding']]
+        for t in threats_detail[:20]:
+            finding = str(t.get('finding',''))[:80]
+            tbl_data.append([
+                t.get('severity','—'), str(t.get('score','—')),
+                str(t.get('category','—'))[:20], str(t.get('technique_id','—')),
+                Paragraph(finding, ParagraphStyle('sm', parent=styles['Normal'], fontSize=7))
+            ])
+        threat_tbl = Table(tbl_data, colWidths=[20*mm, 15*mm, 35*mm, 18*mm, 72*mm])
+        threat_tbl.setStyle(TableStyle([
+            ('BACKGROUND', (0,0), (-1,0), RED),
+            ('TEXTCOLOR', (0,0), (-1,0), colors.white),
+            ('FONTNAME', (0,0), (-1,0), 'Helvetica-Bold'),
+            ('FONTSIZE', (0,0), (-1,-1), 7),
+            ('ROWBACKGROUNDS', (0,1), (-1,-1), [colors.white, LIGHT]),
+            ('GRID', (0,0), (-1,-1), 0.3, colors.HexColor('#e2e8f0')),
+            ('TOPPADDING', (0,0), (-1,-1), 3), ('BOTTOMPADDING', (0,0), (-1,-1), 3),
+            ('LEFTPADDING', (0,0), (-1,-1), 4), ('RIGHTPADDING', (0,0), (-1,-1), 4),
+        ]))
+        story.append(threat_tbl)
+        story.append(Spacer(1, 8))
 
-    story.append(Paragraph("IV. FORENSIC FIDELITY & EVIDENCE CUSTODY", section_style))
-    fidelity_rating = telemetry_summary.get("fidelity_rating", 95.0)
-    fidelity_summary = (
-        f"Evidence Bundle Fidelity Rating: <b>{fidelity_rating}%</b>. "
-        f"Ingestion verified via SHA-256 cryptographic digest. "
-        f"All signals preserved in tamper-evident relational vault storage."
-    )
-    story.append(Paragraph(fidelity_summary, body_style))
-    story.append(Spacer(1, 20))
+    # ── Incidents ─────────────────────────────────────────────────────
+    incidents = stats.get('recent_incidents', [])
+    if incidents:
+        story.append(Paragraph("Active Incidents", h2_style))
+        inc_data = [['#', 'Title', 'Severity', 'Status', 'Created']]
+        for inc in incidents:
+            inc_data.append([
+                str(inc.get('incident_id','')),
+                Paragraph(str(inc.get('title',''))[:60], ParagraphStyle('sm', parent=styles['Normal'], fontSize=7)),
+                inc.get('severity','—'), inc.get('status','—').title(),
+                str(inc.get('created_at',''))[:10]
+            ])
+        inc_tbl = Table(inc_data, colWidths=[12*mm, 75*mm, 22*mm, 22*mm, 24*mm])
+        inc_tbl.setStyle(TableStyle([
+            ('BACKGROUND', (0,0), (-1,0), BLUE),
+            ('TEXTCOLOR', (0,0), (-1,0), colors.white),
+            ('FONTNAME', (0,0), (-1,0), 'Helvetica-Bold'),
+            ('FONTSIZE', (0,0), (-1,-1), 7),
+            ('ROWBACKGROUNDS', (0,1), (-1,-1), [colors.white, LIGHT]),
+            ('GRID', (0,0), (-1,-1), 0.3, colors.HexColor('#e2e8f0')),
+            ('TOPPADDING', (0,0), (-1,-1), 3), ('BOTTOMPADDING', (0,0), (-1,-1), 3),
+            ('LEFTPADDING', (0,0), (-1,-1), 4),
+        ]))
+        story.append(inc_tbl)
+        story.append(Spacer(1, 8))
 
-    story.append(HRFlowable(width="100%", thickness=0.5, color=colors.HexColor("#94a3b8"), spaceAfter=10))
-    story.append(Paragraph("Aegis Security Operations Center // Forensic Investigation Division", subhead_style))
+    # ── Footer ────────────────────────────────────────────────────────
+    story.append(Spacer(1, 16))
+    story.append(HRFlowable(width='100%', thickness=0.5, color=LIGHT))
+    story.append(Paragraph(
+        f"{Settings.APP_NAME} · Automated Forensic Report · {Settings.now_display()} · CONFIDENTIAL",
+        ParagraphStyle('footer', parent=styles['Normal'], fontSize=7, textColor=colors.HexColor('#94a3b8'))
+    ))
 
     doc.build(story)
-    return buffer.getvalue()
+    return buf.getvalue()
 
+
+# Backward compat alias
+produce_investigation_dossier = compile_forensic_dossier_pdf

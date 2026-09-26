@@ -5,137 +5,109 @@ from typing import Any
 
 from aegis_core.analytics.anomaly import MultiModelAnomalyEngine
 from aegis_core.analytics.signatures import BehavioralSignatureScanner
-from aegis_core.config import SentinelSettings
+from aegis_core.config import Settings
+
+SEVERITY_ORDER = {"Notice": 1, "Elevated": 2, "High": 3, "Critical": 4}
 
 
-SEVERITY_HIERARCHY = {"Notice": 1, "Elevated": 2, "High": 3, "Critical": 4}
+def correlate_and_persist_telemetry(conn: sqlite3.Connection, file_id: int) -> tuple[int, int]:
+    rows = [dict(r) for r in conn.execute(
+        "SELECT * FROM log_records WHERE file_id = ? ORDER BY record_id ASC", (file_id,)
+    ).fetchall()]
 
-
-def correlate_and_persist_telemetry(conn: sqlite3.Connection, vault_id: int) -> tuple[int, int]:
-    # 1. Fetch ingested records for this vault
-    cursor = conn.execute(
-        "SELECT * FROM telemetry_records WHERE vault_ref = ? ORDER BY record_id ASC",
-        (vault_id,)
-    )
-    raw_rows = [dict(row) for row in cursor.fetchall()]
-    if not raw_rows:
+    if not rows:
         return 0, 0
 
-    # 2. Extract IP frequency distribution
-    ip_counter = Counter(r["origin_address"] for r in raw_rows if r["origin_address"])
-
-    # 3. Execute ML anomaly ensemble
+    ip_counter = Counter(r.get("source_ip") for r in rows if r.get("source_ip"))
     ml_engine = MultiModelAnomalyEngine(contamination=0.1)
-    ml_results = ml_engine.fit_and_score_ensemble(raw_rows)
+    ml_results = ml_engine.fit_and_score_ensemble(rows)
 
-    threat_signals: list[dict[str, Any]] = []
+    threat_count = 0
+    incidents_created = set()
 
-    # 4. Fused Detection Execution
-    for idx, record in enumerate(raw_rows):
+    for idx, record in enumerate(rows):
         ml_eval = ml_results[idx]
-        ip = record.get("origin_address")
+        ip = record.get("source_ip")
         freq = ip_counter[ip] if ip else 0
 
-        rule_finding = BehavioralSignatureScanner.evaluate_record(record, freq)
+        # Map new column names to what the scanner expects
+        scanner_record = {
+            "log_excerpt": record.get("message"),
+            "payload_blob": record.get("raw_line", ""),
+            "signal_classification": record.get("event_type", ""),
+            "response_code": record.get("status_code"),
+            "origin_address": ip,
+        }
+
+        rule_finding = BehavioralSignatureScanner.evaluate_record(scanner_record, freq)
 
         rule_score = rule_finding.rule_score if rule_finding else 0
         rule_urgency = rule_finding.urgency_level if rule_finding else "Notice"
-        rule_domain = rule_finding.threat_domain if rule_finding else "Anomalous Variance"
+        rule_domain = rule_finding.threat_domain if rule_finding else "Anomaly"
         technique = rule_finding.technique_id if rule_finding else None
-        rule_desc = rule_finding.rationale if rule_finding else "Machine learning baseline deviation detected."
+        rule_desc = rule_finding.rationale if rule_finding else "ML baseline deviation."
         rule_conf = rule_finding.confidence if rule_finding else 60
 
-        # Fusion: Take max magnitude and highest urgency
-        composite_magnitude = max(rule_score, ml_eval.composite_ml_score)
-        
-        # Derive urgency level
-        if composite_magnitude >= 85:
+        composite = max(rule_score, ml_eval.composite_ml_score)
+
+        if composite >= 85:
             urgency = "Critical"
-        elif composite_magnitude >= 70:
+        elif composite >= 70:
             urgency = "High"
-        elif composite_magnitude >= 50:
+        elif composite >= 50:
             urgency = "Elevated"
         else:
             urgency = "Notice"
 
-        if SEVERITY_HIERARCHY.get(rule_urgency, 1) > SEVERITY_HIERARCHY.get(urgency, 1):
+        if SEVERITY_ORDER.get(rule_urgency, 1) > SEVERITY_ORDER.get(urgency, 1):
             urgency = rule_urgency
 
-        # Explainability & Hypothesis assembly
-        ml_breakdown_json = json.dumps(ml_eval.model_breakdown)
-        top_dev_text = ", ".join(
-            f"{f['feature']}: {f['deviation_percentage']:+0.1f}%"
+        ml_breakdown = json.dumps(ml_eval.model_breakdown)
+        top_dev = ", ".join(
+            f"{f['feature']}: {f['deviation_percentage']:+.1f}%"
             for f in ml_eval.prominent_features[:2]
-        ) if ml_eval.prominent_features else "Nominal variance"
+        ) if ml_eval.prominent_features else "nominal"
 
-        hypothesis = f"{rule_desc} [Ensemble ML Score: {ml_eval.composite_ml_score}/100 | Shifts: {top_dev_text}]"
-        confidence = max(rule_conf, min(95, 50 + composite_magnitude // 2))
+        finding = f"{rule_desc} [ML Score: {ml_eval.composite_ml_score}/100 | Shifts: {top_dev}]"
+        confidence = max(rule_conf, min(95, 50 + composite // 2))
 
-        # Filter: Persist threat signal if composite magnitude is actionable (>= 48)
-        if composite_magnitude >= 48 or rule_finding is not None:
+        if composite >= 48 or rule_finding is not None:
             conn.execute(
-                """
-                INSERT INTO threat_signals (
-                    record_ref, vault_ref, urgency_level, threat_magnitude,
-                    ml_anomaly_score, ml_model_breakdown, threat_domain,
-                    matrix_technique_ref, forensic_hypothesis, fidelity_percentage, recorded_at
-                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-                """,
-                (
-                    record["record_id"],
-                    vault_id,
-                    urgency,
-                    composite_magnitude,
-                    ml_eval.composite_ml_score,
-                    ml_breakdown_json,
-                    rule_domain,
-                    technique,
-                    hypothesis,
-                    confidence,
-                    SentinelSettings.get_current_utc_timestamp(),
-                )
+                """INSERT INTO threats
+                   (record_id, file_id, severity, score, ml_score, category,
+                    technique_id, finding, confidence, detected_at)
+                   VALUES (?,?,?,?,?,?,?,?,?,?)""",
+                (record.get("record_id"), file_id, urgency, composite,
+                 ml_eval.composite_ml_score, rule_domain, technique,
+                 finding, confidence, Settings.now_utc())
             )
-            threat_signals.append({
-                "urgency": urgency,
-                "domain": rule_domain,
-                "technique": technique,
-                "confidence": confidence,
-            })
+            threat_count += 1
 
-    # 5. Incident Clustering into Threat Dockets
-    clusters_opened = 0
-    grouped_clusters = Counter((t["domain"], t["technique"]) for t in threat_signals)
+    # Create incidents for critical/high threats
+    cluster_count = 0
+    critical_threats = conn.execute(
+        """SELECT category, technique_id, MAX(score) score, COUNT(*) c
+           FROM threats WHERE file_id = ? AND severity IN ('Critical','High')
+           GROUP BY category, technique_id""",
+        (file_id,)
+    ).fetchall()
 
-    for (domain, tech), count in grouped_clusters.items():
-        highest_severity = "Critical" if any(t["urgency"] == "Critical" and t["domain"] == domain for t in threat_signals) else (
-            "High" if any(t["urgency"] == "High" and t["domain"] == domain for t in threat_signals) else "Elevated"
-        )
-        max_conf = max((t["confidence"] for t in threat_signals if t["domain"] == domain), default=75)
-        
-        headline = f"{domain} Incident Cluster"
-        causal = (
-            f"Correlated {count} anomalous signal(s) exhibiting consistent {domain} characteristics. "
-            f"Cross-referenced against MITRE technique {tech or 'ATT&CK Generic'}. Immediate triage recommended."
-        )
-
-        conn.execute(
-            """
-            INSERT INTO incident_clusters (
-                vault_ref, cluster_headline, triage_severity, attribution_confidence,
-                cluster_disposition, causal_assessment, associated_technique, opened_at
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)
-            """,
-            (
-                vault_id,
-                headline,
-                highest_severity,
-                max_conf,
-                "Active",
-                causal,
-                tech,
-                SentinelSettings.get_current_utc_timestamp(),
+    for ct in critical_threats:
+        key = (ct["category"], ct["technique_id"])
+        if key not in incidents_created:
+            incidents_created.add(key)
+            title = f"{ct['category']} — {ct['c']} event(s) detected"
+            severity = "Critical" if ct["score"] >= 85 else "High"
+            conn.execute(
+                """INSERT INTO incidents
+                   (file_id, title, severity, confidence, status, category,
+                    technique_id, root_cause, created_at)
+                   VALUES (?,?,?,?,?,?,?,?,?)""",
+                (file_id, title, severity, min(95, 50 + ct["score"] // 2),
+                 "new", ct["category"], ct["technique_id"],
+                 f"Pattern analysis identified {ct['c']} events matching {ct['category']} behavior.",
+                 Settings.now_utc())
             )
-        )
-        clusters_opened += 1
+            cluster_count += 1
 
-    return len(threat_signals), clusters_opened
+    return threat_count, cluster_count

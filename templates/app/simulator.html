@@ -1,0 +1,326 @@
+{% extends "app_shell.html" %}
+
+{% block title %}Live Simulator — Intelligent Log Forensics{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="../../static/css/simulator.css">
+{% endblock %}
+
+{% block page_title %}Live Attack Simulator{% endblock %}
+
+{% block content %}
+
+<div class="page-header">
+  <h1 class="page-title">Live Attack Simulator</h1>
+  <p class="page-subtitle">
+    Generate synthetic security events for testing the full detection pipeline
+  </p>
+</div>
+
+<!-- Simulation Warning -->
+
+<div class="simulator-warning"
+     style="
+       padding:var(--space-3) var(--space-4);
+       background:var(--color-warning-bg);
+       border:1px solid var(--color-warning-border);
+       border-radius:var(--radius-md);
+       margin-bottom:var(--space-5);
+     ">
+
+<svg
+width="16"
+height="16"
+viewBox="0 0 24 24"
+fill="none"
+stroke="var(--color-warning)"
+stroke-width="2"
+aria-hidden="true"
+
+>
+
+
+<path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
+
+
+
+<line x1="12" y1="9" x2="12" y2="13"/>
+<line x1="12" y1="17" x2="12.01" y2="17"/>
+
+
+  </svg>
+
+<span style="
+ font-size:var(--text-sm);
+ color:var(--color-warning);
+"> <strong>Simulation Mode</strong>
+— These are synthetic events for demonstration and testing purposes only.
+No real attacks are performed. </span>
+
+</div>
+
+<!-- Main Simulator -->
+
+<div class="content-grid" style="align-items:start">
+
+  <!-- Event Generators -->
+
+  <div class="card">
+
+
+<div class="card-header">
+  <span class="card-title">Event Generators</span>
+  <span class="live-dot">Simulation Active</span>
+</div>
+
+<div class="card-body simulator-generators">
+
+  {% set events = [
+    (
+      'brute_force',
+      'Brute Force',
+      'T1110',
+      'Critical',
+      'Simulates repeated authentication failures from a single source'
+    ),
+    (
+      'sql_injection',
+      'SQL Injection',
+      'T1190',
+      'Critical',
+      'Simulates SQL injection payloads in HTTP requests'
+    ),
+    (
+      'suspicious_login',
+      'Suspicious Login',
+      'T1078',
+      'High',
+      'Simulates login from anomalous geographic location'
+    ),
+    (
+      'privilege_escalation',
+      'Privilege Escalation',
+      'T1055',
+      'Critical',
+      'Simulates process injection and sudo abuse'
+    ),
+    (
+      'port_scan',
+      'Port Scan',
+      'T1046',
+      'High',
+      'Simulates network reconnaissance and port probing'
+    ),
+    (
+      'command_injection',
+      'Command Injection',
+      'T1059',
+      'Critical',
+      'Simulates OS command injection via web parameters'
+    ),
+    (
+      'malware_detection',
+      'Malware Detection',
+      'T1005',
+      'Critical',
+      'Simulates malware signature and ransomware behavior'
+    ),
+    (
+      'suspicious_file_access',
+      'File Access Anomaly',
+      'T1083',
+      'High',
+      'Simulates unauthorized access to sensitive system files'
+    ),
+    (
+      'data_exfiltration',
+      'Data Exfiltration',
+      'T1071',
+      'Critical',
+      'Simulates large data transfer to external endpoints'
+    ),
+    (
+      'account_anomaly',
+      'Account Anomaly',
+      'T1078',
+      'High',
+      'Simulates multi-session account abuse patterns'
+    )
+  ] %}
+
+  {% for evt_type, label, tid, sev, desc in events %}
+
+  <div
+    class="simulator-event-card"
+    data-event-type="{{ evt_type }}"
+    tabindex="0"
+    role="button"
+    aria-label="Generate {{ label }} event"
+    onclick="generateEvent('{{ evt_type }}', this)"
+  >
+
+    <div style="
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      gap:var(--space-2);
+      margin-bottom:4px;
+    ">
+
+      <span style="
+        font-size:var(--text-sm);
+        font-weight:var(--weight-semibold);
+        color:var(--color-text);
+      ">
+        {{ label }}
+      </span>
+
+      <span class="badge badge-{{ sev.lower() }}"
+            style="font-size:10px">
+        {{ sev }}
+      </span>
+
+    </div>
+
+    <div style="
+      font-family:var(--font-mono);
+      font-size:10px;
+      color:var(--color-text-muted);
+      margin-bottom:4px;
+    ">
+      {{ tid }}
+    </div>
+
+    <div style="
+      font-size:11px;
+      color:var(--color-text-secondary);
+      line-height:1.5;
+    ">
+      {{ desc }}
+    </div>
+
+  </div>
+
+  {% endfor %}
+
+</div>
+
+
+  </div>
+
+  <!-- Generated Event Log -->
+
+  <div class="card">
+
+
+<div class="card-header">
+
+  <span class="card-title">Generated Events</span>
+
+  <div style="
+    display:flex;
+    gap:var(--space-2);
+    align-items:center;
+  ">
+
+    <span id="event-count"
+          class="badge badge-neutral">
+      0 events
+    </span>
+
+    <button
+      type="button"
+      class="btn btn-ghost btn-sm"
+      onclick="clearEvents()"
+    >
+      Clear
+    </button>
+
+  </div>
+
+</div>
+
+<!-- Event Stream -->
+<div
+  id="event-log"
+  style="
+    height:480px;
+    overflow-y:auto;
+    padding:var(--space-3);
+  "
+>
+
+  <div
+    id="empty-log"
+    style="
+      display:flex;
+      flex-direction:column;
+      align-items:center;
+      justify-content:center;
+      height:100%;
+      color:var(--color-text-muted);
+      text-align:center;
+    "
+  >
+
+    <svg
+      width="40"
+      height="40"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      stroke-width="1.5"
+      style="margin-bottom:var(--space-3)"
+      aria-hidden="true"
+    >
+      <polygon points="5 3 19 12 5 21 5 3"/>
+    </svg>
+
+    <p style="
+      font-size:var(--text-sm);
+      margin:0;
+    ">
+      Click an event generator to create synthetic attack events
+    </p>
+
+  </div>
+
+</div>
+
+<!-- Footer -->
+<div
+  class="card-footer"
+  style="
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    gap:var(--space-3);
+  "
+>
+
+  <span style="
+    font-size:var(--text-xs);
+    color:var(--color-text-muted);
+  ">
+    Events are stored in a simulation log file in your account
+  </span>
+
+  <a
+    href="{{ url_for('app.analyze') }}"
+    class="btn btn-primary btn-sm"
+  >
+    Analyze Events →
+  </a>
+
+</div>
+
+
+  </div>
+
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script src="../../static/js/simulator.js"></script>
+{% endblock %}

@@ -1,0 +1,206 @@
+/* =========================================================
+   FILE ARCHIVE / UPLOADS PAGE
+   Intelligent Log Forensics
+========================================================= */
+
+.uploads-page {
+    animation: fadeInUp 0.3s ease both;
+}
+
+/* ---------------------------------------------------------
+   PAGE HEADER
+--------------------------------------------------------- */
+
+.uploads-page .page-header {
+    position: relative;
+}
+
+.uploads-page .page-actions {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+}
+
+/* ---------------------------------------------------------
+   ARCHIVE CARD
+--------------------------------------------------------- */
+
+.uploads-page .archive-card {
+    overflow: hidden;
+}
+
+.uploads-page .table-container {
+    overflow-x: auto;
+    scrollbar-width: thin;
+}
+
+.uploads-page table {
+    min-width: 1000px;
+}
+
+/* ---------------------------------------------------------
+   FILE NAME
+--------------------------------------------------------- */
+
+.uploads-page .file-name {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+    min-width: 180px;
+    max-width: 280px;
+}
+
+.uploads-page .file-name-text {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    color: var(--color-text);
+    font-weight: var(--weight-medium);
+}
+
+/* ---------------------------------------------------------
+   FILE TYPE
+--------------------------------------------------------- */
+
+.uploads-page .file-type {
+    font-family: var(--font-mono);
+    font-size: 11px;
+}
+
+/* ---------------------------------------------------------
+   STATUS
+--------------------------------------------------------- */
+
+.uploads-page .status-badge {
+    white-space: nowrap;
+}
+
+/* ---------------------------------------------------------
+   SCORE BAR
+--------------------------------------------------------- */
+
+.uploads-page .score-bar {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+    min-width: 90px;
+}
+
+.uploads-page .score-bar-track {
+    width: 60px;
+    height: 5px;
+    overflow: hidden;
+    border-radius: var(--radius-full);
+    background: var(--color-border);
+}
+
+.uploads-page .score-bar-fill {
+    height: 100%;
+    border-radius: inherit;
+    transition: width 0.4s ease;
+}
+
+.uploads-page .score-label {
+    min-width: 24px;
+    font-family: var(--font-mono);
+    font-size: 10px;
+    color: var(--color-text-secondary);
+    text-align: right;
+}
+
+/* ---------------------------------------------------------
+   THREAT COUNT
+--------------------------------------------------------- */
+
+.uploads-page .threat-count {
+    font-weight: var(--weight-semibold);
+}
+
+.uploads-page .threat-count.has-threats {
+    color: var(--color-critical);
+}
+
+/* ---------------------------------------------------------
+   ACTIONS
+--------------------------------------------------------- */
+
+.uploads-page .file-actions {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    white-space: nowrap;
+}
+
+.uploads-page .file-actions .btn {
+    transition:
+        transform var(--transition-fast),
+        background var(--transition-fast),
+        color var(--transition-fast);
+}
+
+.uploads-page .file-actions .btn:hover {
+    transform: translateY(-1px);
+}
+
+/* ---------------------------------------------------------
+   EMPTY STATE
+--------------------------------------------------------- */
+
+.uploads-page .empty-state {
+    min-height: 300px;
+    padding: var(--space-12);
+}
+
+/* ---------------------------------------------------------
+   ROW HOVER
+--------------------------------------------------------- */
+
+.uploads-page tbody tr {
+    transition:
+        background var(--transition-fast),
+        transform var(--transition-fast);
+}
+
+.uploads-page tbody tr:hover {
+    background: var(--color-primary-light);
+}
+
+/* ---------------------------------------------------------
+   RESPONSIVE
+--------------------------------------------------------- */
+
+@media (max-width: 900px) {
+
+    .uploads-page .page-header {
+        gap: var(--space-3);
+    }
+
+    .uploads-page .page-actions {
+        width: 100%;
+    }
+
+    .uploads-page .page-actions .btn {
+        width: 100%;
+        justify-content: center;
+    }
+}
+
+@media (max-width: 640px) {
+
+    .uploads-page .page-title {
+        font-size: var(--text-2xl);
+    }
+
+    .uploads-page .page-subtitle {
+        font-size: var(--text-xs);
+    }
+
+    .uploads-page .card {
+        border-radius: var(--radius-md);
+    }
+
+    .uploads-page .empty-state {
+        min-height: 240px;
+        padding: var(--space-8);
+    }
+}

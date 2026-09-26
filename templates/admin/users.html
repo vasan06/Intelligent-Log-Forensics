@@ -1,0 +1,77 @@
+{% extends "app_shell.html" %}
+{% block title %}User Management — Intelligent Log Forensics{% endblock %}
+{% block page_title %}User Management{% endblock %}
+{% block content %}
+<div class="page-header">
+  <h1 class="page-title">User Management</h1>
+</div>
+{% with messages = get_flashed_messages(with_categories=true) %}
+{% for cat, msg in messages %}
+<div class="alert alert-{{ cat }}">{{ msg }}</div>
+{% endfor %}
+{% endwith %}
+<div class="card" style="margin-bottom:var(--space-5)">
+  <div class="card-body" style="padding:var(--space-4)">
+    <form method="GET" style="display:flex;gap:var(--space-3);flex-wrap:wrap;align-items:flex-end">
+      <div class="form-group" style="flex:1;min-width:200px">
+        <label class="form-label">Search</label>
+        <div class="search-input-wrap">
+          <svg class="search-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+          <input class="form-input" type="text" name="q" value="{{ search }}" placeholder="Search name or email...">
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Role</label>
+        <select class="form-select" name="role">
+          <option value="">All Roles</option>
+          <option value="analyst" {% if role_filter=='analyst' %}selected{% endif %}>Analyst</option>
+          <option value="admin" {% if role_filter=='admin' %}selected{% endif %}>Admin</option>
+        </select>
+      </div>
+      <button type="submit" class="btn btn-primary">Search</button>
+    </form>
+  </div>
+</div>
+<div class="card">
+  {% if users %}
+  <div class="table-container" style="border:none;border-radius:0">
+    <table>
+      <thead><tr><th>User</th><th>Email</th><th>Role</th><th>Status</th><th>Created</th><th>Last Login</th><th>Actions</th></tr></thead>
+      <tbody>
+        {% for u in users %}
+        <tr>
+          <td>
+            <div style="display:flex;align-items:center;gap:var(--space-2)">
+              <div style="width:28px;height:28px;border-radius:50%;background:var(--color-primary-muted);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:600;color:var(--color-primary);flex-shrink:0">{{ u.name[:1] }}</div>
+              <span class="td-primary">{{ u.name }}</span>
+            </div>
+          </td>
+          <td style="color:var(--color-text-muted)">{{ u.email }}</td>
+          <td><span class="badge {% if u.role=='admin' %}badge-critical{% else %}badge-info{% endif %}">{{ u.role.title() }}</span></td>
+          <td><span class="badge {% if u.is_active %}badge-success{% else %}badge-neutral{% endif %}">{{ 'Active' if u.is_active else 'Inactive' }}</span></td>
+          <td class="td-mono" style="color:var(--color-text-muted)">{{ u.created_at[:10] }}</td>
+          <td class="td-mono" style="color:var(--color-text-muted)">{{ u.last_login[:10] if u.last_login else '—' }}</td>
+          <td>
+            <div style="display:flex;gap:var(--space-2);align-items:center">
+              <form method="POST" action="{{ url_for('admin.toggle_user', target_id=u.user_id) }}" style="display:inline">
+                <button type="submit" class="btn btn-ghost btn-sm" onclick="return confirm('Toggle account status for {{ u.email }}?')">{{ 'Deactivate' if u.is_active else 'Activate' }}</button>
+              </form>
+              <form method="POST" action="{{ url_for('admin.change_role', target_id=u.user_id) }}" style="display:inline;display:flex;gap:4px;align-items:center">
+                <select class="form-select" name="role" style="padding:2px 6px;font-size:11px;height:28px">
+                  <option value="analyst" {% if u.role=='analyst' %}selected{% endif %}>Analyst</option>
+                  <option value="admin" {% if u.role=='admin' %}selected{% endif %}>Admin</option>
+                </select>
+                <button type="submit" class="btn btn-ghost btn-sm" onclick="return confirm('Change role for {{ u.email }}?')">Set</button>
+              </form>
+            </div>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+  <div class="empty-state"><p class="empty-state-desc">No users match your search.</p></div>
+  {% endif %}
+</div>
+{% endblock %}

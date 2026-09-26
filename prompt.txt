@@ -1,0 +1,33 @@
+in this website wise ok but the 3d models are not that much expected and also someofthem were not even related to this website and it sitll seems to be 2d not feeling live.
+and some areas were not working like upload, forgot password, ml, and mainly this donesent have any chart representations that drawback. and also the live log generato is not working, and i wanrt forlder naming firstof all whjat is aegis, dorries, persistance, app_shell these are rthe not naming format for a product.
+and the navbar is not in leftside i want top header and contains active state hignlighting, and then i want more ui implementation in both sign in and up pages awith no default credentails make it like how the real product conatins.
+and moost of the err were appeared in the console but i want it should be inside the network tab for every button events.
+and the dashboard can be do even better like styling each components to show more worth.
+i want more minute detailing must appear sand complete dynamic. first we do the frontend then check and do the backenmd okiee
+
+ref for impletemnt in webistes
+upload animation models
+https://dribbble.com/shots/26379775-3d-Illustrations-for-Mythos-Crypto-Banking
+
+landing pages
+https://everest.suraj.work/?ref=refs.gallery
+https://dribbble.com/shots/23794518-3D-Animation-for-Uplinq-com
+
+use reference from anywhere like printrest, other online sources i want complete website ans i want add glassmorphism, and other morphisms required places complete webiste must make stun the viewers and remove the complet analyset and other roles keep user and admin simple one thats enough for make
+now current state is 30% good but iwant bal 70% to fulfill
+
+
+option 1
+https://www.istockphoto.com/photos/internet-cyber-security-3d-concept
+https://www.cyberdb.co/how-3d-visualization-tools-can-enhance-your-cybersecurity-strategy/
+
+option 5
+https://stockcake.com/i/digital-data-cube_3773624_1713728
+https://stockcake.com/i/digital-data-cube_3773624_1713728
+
+option 8
+https://www.dreamstime.com/copy-business-image444231126
+https://www.alamy.com/3d-rendering-big-data-visualization-digital-data-threads-plot-network-image465120817.html
+
+signup
+https://www.google.com/imgres?q=3D%20abstract%20data%20crystal%20hologram&imgurl=https%3A%2F%2Fimages.stockcake.com%2Fpublic%2F8%2F9%2Fd%2F89d29c32-5e21-4249-9a7b-3785dde31209%2Ffloating-holographic-cubes-stockcake.jpg&imgrefurl=https%3A%2F%2Fstockcake.com%2Fi%2Ffloating-geometric-holograms_2085348_1300655&docid=fypQhI5mnII8SM&tbnid=hfeaq5HqgkwN-M&vet=12ahUKEwjWpuqQ9YuXAxXBR2wGHaZbHnAQnPAOegQIIhAA..i&w=768&h=1344&hcb=2&itg=1&ved=2ahUKEwjWpuqQ9YuXAxXBR2wGHaZbHnAQnPAOegQIIhAA

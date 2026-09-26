@@ -1,0 +1,334 @@
+
+{% extends "app_shell.html" %}
+
+{% block title %}MITRE ATT&CK — Intelligent Log Forensics{% endblock %}
+
+{% block page_title %}MITRE ATT&CK Mapping{% endblock %}
+
+{% block extra_css %}
+<link
+  rel="stylesheet"
+  href="../../static/css/mitre.css"
+>
+{% endblock %}
+
+{% block content %}
+
+<div class="page-header">
+  <div>
+    <h1 class="page-title">MITRE ATT&CK Mapping</h1>
+    <p class="page-subtitle">
+      Techniques detected across your analyzed log files mapped to the
+      ATT&CK framework
+    </p>
+  </div>
+</div>
+
+
+<!-- =====================================================
+     TACTIC SUMMARY
+===================================================== -->
+
+<div class="stats-grid mitre-tactic-grid stagger">
+
+  {% for tactic in tactics %}
+
+  {% set tactic_count = namespace(n=0) %}
+
+  {% for tid, tech in mitre_techniques.items() %}
+
+    {% if tech.tactic == tactic and counts.get(tid, 0) > 0 %}
+      {% set tactic_count.n = tactic_count.n + counts.get(tid, 0) %}
+    {% endif %}
+
+  {% endfor %}
+
+  <button
+    type="button"
+    class="stat-card mitre-tactic-card"
+    data-tactic-filter="{{ tactic }}"
+  >
+
+    <div class="stat-label">
+      {{ tactic }}
+    </div>
+
+    <div
+      class="stat-value {% if tactic_count.n > 0 %}has-detections{% endif %}"
+    >
+      {{ tactic_count.n }}
+    </div>
+
+    <div class="stat-sub">
+      detections
+    </div>
+
+  </button>
+
+  {% endfor %}
+
+</div>
+
+
+<!-- =====================================================
+     TECHNIQUE MATRIX
+===================================================== -->
+
+<div class="card mitre-matrix-card">
+
+  <div class="card-header">
+
+    <span class="card-title">
+      Technique Matrix
+    </span>
+
+    <div class="mitre-header-actions">
+
+      <span class="badge badge-critical">
+        {{ counts.values()|sum }} total detections
+      </span>
+
+      <button
+        type="button"
+        class="btn btn-ghost btn-sm"
+        id="show-all-techniques"
+      >
+        Show All
+      </button>
+
+    </div>
+
+  </div>
+
+
+  <div class="card-body">
+
+    <div id="mitre-grid" class="mitre-grid">
+
+      {% for tid, tech in mitre_techniques.items() %}
+
+      {% set detection_count = counts.get(tid, 0) %}
+
+      <article
+        class="mitre-card {% if detection_count > 0 %}has-detections{% endif %}"
+        data-tactic="{{ tech.tactic }}"
+        data-technique-id="{{ tid }}"
+        tabindex="0"
+        role="button"
+        aria-label="View details for {{ tid }} {{ tech.name }}"
+      >
+
+        <div class="mitre-card-top">
+
+          <span
+            class="tag {% if detection_count > 0 %}mitre-detected-tag{% endif %}"
+          >
+            {{ tid }}
+          </span>
+
+          {% if detection_count > 0 %}
+
+          <span class="badge badge-critical">
+            {{ detection_count }}
+            hit{% if detection_count != 1 %}s{% endif %}
+          </span>
+
+          {% endif %}
+
+        </div>
+
+
+        <div class="mitre-card-name">
+          {{ tech.name }}
+        </div>
+
+
+        <div class="mitre-card-tactic">
+          {{ tech.tactic }}
+        </div>
+
+
+        <div class="mitre-card-description">
+          {{ tech.description[:100] }}...
+        </div>
+
+      </article>
+
+      {% endfor %}
+
+    </div>
+
+  </div>
+
+</div>
+
+
+<!-- =====================================================
+     TECHNIQUE DETAIL MODAL
+===================================================== -->
+
+<div
+  id="technique-modal"
+  class="technique-modal"
+  aria-hidden="true"
+  role="dialog"
+  aria-modal="true"
+  aria-labelledby="modal-name"
+>
+
+  <div class="technique-modal-panel">
+
+    <!-- Modal Header -->
+
+    <div class="technique-modal-header">
+
+      <div>
+
+        <div
+          id="modal-tid"
+          class="modal-technique-id"
+        ></div>
+
+        <div
+          id="modal-name"
+          class="modal-technique-name"
+        ></div>
+
+      </div>
+
+      <button
+        type="button"
+        id="close-technique-modal"
+        class="btn btn-ghost modal-close-btn"
+        aria-label="Close technique details"
+      >
+        <svg
+          width="18"
+          height="18"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+        >
+          <line x1="18" y1="6" x2="6" y2="18"></line>
+          <line x1="6" y1="6" x2="18" y2="18"></line>
+        </svg>
+      </button>
+
+    </div>
+
+
+    <!-- Modal Body -->
+
+    <div class="technique-modal-body">
+
+
+      <!-- Tactic -->
+
+      <div class="modal-section">
+
+        <div class="modal-section-label">
+          Tactic
+        </div>
+
+        <div
+          id="modal-tactic"
+          class="badge badge-info modal-tactic"
+        ></div>
+
+      </div>
+
+
+      <!-- Description -->
+
+      <div class="modal-section">
+
+        <div class="modal-section-label">
+          Description
+        </div>
+
+        <p
+          id="modal-desc"
+          class="modal-section-text"
+        ></p>
+
+      </div>
+
+
+      <!-- Indicators -->
+
+      <div class="modal-section">
+
+        <div class="modal-section-label">
+          Indicators
+        </div>
+
+        <p
+          id="modal-indicators"
+          class="modal-section-text"
+        ></p>
+
+      </div>
+
+
+      <!-- Remediation -->
+
+      <div class="modal-section">
+
+        <div class="modal-section-label">
+          Remediation
+        </div>
+
+        <p
+          id="modal-remediation"
+          class="modal-section-text"
+        ></p>
+
+      </div>
+
+
+      <!-- Detection Count -->
+
+      <div
+        id="modal-detections"
+        class="modal-detection-section"
+        hidden
+      >
+
+        <div class="modal-section-label detection-label">
+          Detected in Your Logs
+        </div>
+
+        <div
+          id="modal-detection-count"
+          class="badge badge-critical modal-detection-count"
+        ></div>
+
+      </div>
+
+    </div>
+
+  </div>
+
+</div>
+
+{% endblock %}
+
+
+{% block extra_js %}
+
+<div
+  id="mitre-page-data"
+  hidden
+  data-techniques="{{ mitre_techniques | tojson | forceescape }}"
+  data-counts="{{ counts | tojson | forceescape }}"
+></div>
+
+<script
+  src="../../static/js/mitre.js"
+  defer
+></script>
+
+{% endblock %}

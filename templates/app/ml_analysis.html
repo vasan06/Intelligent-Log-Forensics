@@ -1,0 +1,535 @@
+{% extends "app_shell.html" %}
+
+{% block title %}ML Analysis — Intelligent Log Forensics{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="../../static/css/ml_analysis.css">
+{% endblock %}
+
+{% block page_title %}ML Analysis{% endblock %}
+
+{% block content %}
+
+<div class="page-header">
+    <h1 class="page-title">Machine Learning Analysis</h1>
+    <p class="page-subtitle">
+        Ensemble anomaly detection using Isolation Forest, Local Outlier Factor,
+        and One-Class SVM
+    </p>
+</div>
+
+<!-- File Selector -->
+<div class="card ml-file-selector">
+    <div class="card-body">
+        <form method="GET" class="ml-file-form">
+            <div class="form-group ml-file-field">
+                <label class="form-label">Select Log File</label>
+
+                <select
+                    class="form-select"
+                    name="file_id"
+                    onchange="this.form.submit()"
+                >
+                    <option value="">-- Choose an analyzed file --</option>
+
+                    {% for f in user_files %}
+                    <option
+                        value="{{ f.file_id }}"
+                        {% if file_id == f.file_id %}selected{% endif %}
+                    >
+                        {{ f.filename }}
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+        </form>
+    </div>
+</div>
+
+{% if ml_data %}
+
+{% set stats = ml_data.stats %}
+
+<!-- ML Score Summary -->
+<div class="stats-grid-4 ml-stats-grid stagger">
+
+    <!-- Average Threat Score -->
+    <div class="stat-card ml-stat-card">
+        <div class="stat-icon
+            {% if (stats.avg_score or 0) >= 80 %}
+                red
+            {% elif (stats.avg_score or 0) >= 60 %}
+                orange
+            {% else %}
+                green
+            {% endif %}
+        ">
+            <svg
+                width="20"
+                height="20"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+            >
+                <circle cx="12" cy="12" r="10"/>
+                <line x1="12" y1="8" x2="12" y2="12"/>
+                <line x1="12" y1="16" x2="12.01" y2="16"/>
+            </svg>
+        </div>
+
+        <div class="stat-label">Avg Threat Score</div>
+
+        <div
+            class="stat-value ml-threat-score
+                {% if (stats.avg_score or 0) >= 80 %}
+                    ml-threat-score-critical
+                {% elif (stats.avg_score or 0) >= 60 %}
+                    ml-threat-score-high
+                {% else %}
+                    ml-threat-score-success
+                {% endif %}"
+        >
+            {{ "%.0f"|format(stats.avg_score or 0) }}
+        </div>
+
+        <div class="stat-sub">out of 100</div>
+    </div>
+
+    <!-- Average ML Score -->
+    <div class="stat-card ml-stat-card">
+
+        <div class="stat-icon blue">
+            <svg
+                width="20"
+                height="20"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+            >
+                <path d="M12 2a10 10 0 0 0-9.95 9h11.64L9.74 7.05a1 1 0 0 1 1.41-1.41l5.66 5.65a1 1 0 0 1 0 1.42l-5.66 5.65a1 1 0 0 1-1.41-1.41L13.69 13H2.05A10 10 0 1 0 12 2z"/>
+            </svg>
+        </div>
+
+        <div class="stat-label">Avg ML Score</div>
+
+        <div class="stat-value">
+            {{ "%.0f"|format(stats.avg_ml or 0) }}
+        </div>
+
+        <div class="stat-sub">anomaly detection</div>
+    </div>
+
+    <!-- Peak Score -->
+    <div class="stat-card ml-stat-card">
+
+        <div class="stat-icon purple">
+            <svg
+                width="20"
+                height="20"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+            >
+                <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>
+            </svg>
+        </div>
+
+        <div class="stat-label">Peak Score</div>
+
+        <div
+            class="stat-value"
+            style="color:var(--color-critical)"
+        >
+            {{ stats.max_score or 0 }}
+        </div>
+
+        <div class="stat-sub">highest threat signal</div>
+    </div>
+
+    <!-- Total Detections -->
+    <div class="stat-card ml-stat-card">
+
+        <div class="stat-icon amber">
+            <svg
+                width="20"
+                height="20"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+            >
+                <circle cx="12" cy="12" r="10"/>
+                <path d="M12 8v4l3 3"/>
+            </svg>
+        </div>
+
+        <div class="stat-label">Total Detections</div>
+
+        <div class="stat-value">
+            {{ stats.total or 0 }}
+        </div>
+
+        <div class="stat-sub">
+            Avg confidence:
+            {{ "%.0f"|format(stats.avg_conf or 0) }}%
+        </div>
+    </div>
+
+</div>
+
+<!-- Model + Severity -->
+<div class="content-grid ml-main-grid">
+
+    <!-- Ensemble Models -->
+    <div class="card">
+
+        <div class="card-header">
+            <span class="card-title">
+                Ensemble Model Components
+            </span>
+        </div>
+
+        <div class="card-body ml-model-body">
+
+            {% for model, label, desc, weight in [
+                (
+                    'iso',
+                    'Isolation Forest',
+                    'Detects outliers by randomly isolating points in feature space',
+                    '40%'
+                ),
+                (
+                    'lof',
+                    'Local Outlier Factor',
+                    'Compares local density of data points to identify anomalies',
+                    '35%'
+                ),
+                (
+                    'svm',
+                    'One-Class SVM',
+                    'Learns a decision boundary around normal behavior using RBF kernel',
+                    '25%'
+                )
+            ] %}
+
+            <div class="ml-model-card">
+
+                <div class="ml-model-header">
+
+                    <span class="ml-model-name">
+                        {{ label }}
+                    </span>
+
+                    <span class="tag">
+                        {{ weight }} weight
+                    </span>
+
+                </div>
+
+                <p class="ml-model-description">
+                    {{ desc }}
+                </p>
+
+            </div>
+
+            {% endfor %}
+
+            <!-- Feature Vectors -->
+            <div class="ml-feature-box">
+
+                <div class="ml-feature-title">
+                    FEATURE VECTORS
+                </div>
+
+                <div class="ml-feature-list">
+
+                    {% for f in [
+                        'IP Frequency',
+                        'Status Weight',
+                        'Suspicious Tokens',
+                        'Path Depth',
+                        'Param Count',
+                        'Payload Length'
+                    ] %}
+
+                    <span class="tag ml-feature-tag">
+                        {{ f }}
+                    </span>
+
+                    {% endfor %}
+
+                </div>
+
+            </div>
+
+        </div>
+    </div>
+
+    <!-- Severity Distribution -->
+    <div class="card">
+
+        <div class="card-header">
+            <span class="card-title">
+                Severity Distribution
+            </span>
+        </div>
+
+        <div class="card-body">
+
+            {% set total_t = ml_data.stats.total if ml_data.stats.total else 1 %}
+
+            {% for sev, color in [
+                ('Critical','var(--color-critical)'),
+                ('High','var(--color-high)'),
+                ('Elevated','var(--color-warning)'),
+                ('Notice','var(--color-success)')
+            ] %}
+
+            {% set cnt = ml_data.severity_dist.get(sev, 0) %}
+
+            <div class="ml-severity-item">
+
+                <div class="ml-severity-header">
+
+                    <span class="badge badge-{{ sev.lower() }}">
+                        {{ sev }}
+                    </span>
+
+                    <span class="ml-severity-count">
+                        {{ cnt }}
+                        ({{ "%.0f"|format(cnt / total_t * 100) }}%)
+                    </span>
+
+                </div>
+
+                <div class="progress-bar">
+                    <div
+                        class="progress-fill"
+                        data-width="{{ (cnt / total_t * 100)|int }}"
+                        data-color="{{ color }}"
+                    ></div>
+                </div>
+
+            </div>
+
+            {% endfor %}
+
+        </div>
+    </div>
+
+</div>
+
+<!-- Top Threats -->
+<div class="card ml-threats-card">
+
+    <div class="card-header">
+
+        <span class="card-title">
+            Top Scored Detections
+        </span>
+
+        <span class="badge badge-neutral">
+            {{ ml_data.top_threats|length }} shown
+        </span>
+
+    </div>
+
+    {% if ml_data.top_threats %}
+
+    <div class="table-container ml-table-container">
+
+        <table>
+
+            <thead>
+                <tr>
+                    <th>Severity</th>
+                    <th>Score</th>
+                    <th>ML Score</th>
+                    <th>Category</th>
+                    <th>Technique</th>
+                    <th>Confidence</th>
+                    <th>Source IP</th>
+                </tr>
+            </thead>
+
+            <tbody>
+
+                {% for t in ml_data.top_threats %}
+
+                <tr>
+
+                    <!-- Severity -->
+                    <td>
+                        <span class="badge badge-{{ t.severity.lower() }}">
+                            {{ t.severity }}
+                        </span>
+                    </td>
+
+                    <!-- Threat Score -->
+                    <td>
+
+                        <div class="score-bar ml-score-bar">
+
+                            <div class="score-bar-track">
+
+                                <div
+                                    class="score-bar-fill
+                                    {% if t.score >= 80 %}
+                                        critical
+                                    {% elif t.score >= 60 %}
+                                        high
+                                    {% else %}
+                                        warning
+                                    {% endif %}
+                                    "
+                                    data-width="{{ t.score }}"
+                                ></div>
+
+                            </div>
+
+                            <span class="score-label">
+                                {{ t.score }}
+                            </span>
+
+                        </div>
+
+                    </td>
+
+                    <!-- ML Score -->
+                    <td>
+
+                        <div class="score-bar ml-score-bar">
+
+                            <div class="score-bar-track">
+
+                                <div
+                                    class="score-bar-fill primary"
+                                    data-width="{{ t.ml_score }}"
+                                ></div>
+
+                            </div>
+
+                            <span class="score-label">
+                                {{ t.ml_score }}
+                            </span>
+
+                        </div>
+
+                    </td>
+
+                    <!-- Category -->
+                    <td>
+                        <span class="tag">
+                            {{ t.category }}
+                        </span>
+                    </td>
+
+                    <!-- Technique -->
+                    <td>
+
+                        {% if t.technique_id %}
+
+                        <span class="tag">
+                            {{ t.technique_id }}
+                        </span>
+
+                        {% else %}
+
+                        <span class="text-muted">
+                            —
+                        </span>
+
+                        {% endif %}
+
+                    </td>
+
+                    <!-- Confidence -->
+                    <td>
+
+                        <span
+                            class="ml-confidence
+                            {% if t.confidence >= 80 %}
+                                critical
+                            {% elif t.confidence >= 60 %}
+                                warning
+                            {% else %}
+                                normal
+                            {% endif %}
+                            "
+                        >
+                            {{ t.confidence }}%
+                        </span>
+
+                    </td>
+
+                    <!-- Source IP -->
+                    <td class="td-mono">
+                        {{ t.source_ip or '—' }}
+                    </td>
+
+                </tr>
+
+                {% endfor %}
+
+            </tbody>
+
+        </table>
+
+    </div>
+
+    {% else %}
+
+    <div class="empty-state">
+        <p class="empty-state-desc">
+            No detections found for this file.
+        </p>
+    </div>
+
+    {% endif %}
+
+</div>
+
+{% else %}
+
+<!-- No File Selected -->
+<div class="card ml-empty-card">
+
+    <div class="empty-state">
+
+        <div class="empty-state-icon">
+
+            <svg
+                width="32"
+                height="32"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="1.5"
+            >
+                <path d="M12 2a10 10 0 0 0-9.95 9h11.64L9.74 7.05a1 1 0 0 1 1.41-1.41l5.66 5.65a1 1 0 0 1 0 1.42l-5.66 5.65a1 1 0 0 1-1.41-1.41L13.69 13H2.05A10 10 0 1 0 12 2z"/>
+            </svg>
+
+        </div>
+
+        <p class="empty-state-title">
+            Select a file to view ML analysis
+        </p>
+
+        <p class="empty-state-desc">
+            ML scores are computed automatically during log analysis.
+        </p>
+
+    </div>
+
+</div>
+
+{% endif %}
+
+{% endblock %}
+
+{% block extra_js %}
+<script src="../../static/js/ml_analysis.js"></script>
+{% endblock %}
