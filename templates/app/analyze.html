@@ -1,0 +1,948 @@
+{% extends "app_shell.html" %}
+
+{% block title %}Log Analysis — Intelligent Log Forensics{% endblock %}
+{% block page_title %}Log Analysis{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="../../static/css/analyze.css">
+{% endblock %}
+
+{% block content %}
+
+<div class="analysis-page" id="analysis-page">
+
+  <!-- =========================================================
+       PAGE HEADER
+  ========================================================== -->
+  <section class="analysis-hero">
+
+    <div class="analysis-hero-copy">
+      <div class="analysis-eyebrow">
+        <span class="status-pulse"></span>
+        FORENSIC ANALYSIS
+      </div>
+
+      <h1 class="analysis-title">
+        Investigate.
+        <span>Correlate.</span>
+        Understand.
+      </h1>
+
+      <p class="analysis-subtitle">
+        Trace suspicious activity across your log records,
+        correlate behavioral signals and surface forensic evidence
+        from a single analysis view.
+      </p>
+    </div>
+
+    <!-- Floating forensic visualization -->
+    <div class="analysis-visual" id="analysis-visual">
+
+      <div class="visual-orbit visual-orbit-one"></div>
+      <div class="visual-orbit visual-orbit-two"></div>
+      <div class="visual-orbit visual-orbit-three"></div>
+
+      <div class="visual-core">
+
+        <div class="core-ring core-ring-one"></div>
+        <div class="core-ring core-ring-two"></div>
+
+        <div class="core-document">
+          <div class="document-line document-line-wide"></div>
+          <div class="document-line"></div>
+          <div class="document-line document-line-short"></div>
+          <div class="document-line"></div>
+          <div class="document-line document-line-medium"></div>
+        </div>
+
+        <div class="core-signal signal-one"></div>
+        <div class="core-signal signal-two"></div>
+        <div class="core-signal signal-three"></div>
+
+      </div>
+
+      <div class="visual-node node-threat">
+        <span class="node-dot"></span>
+        <span>Threat</span>
+      </div>
+
+      <div class="visual-node node-records">
+        <span class="node-dot"></span>
+        <span>Records</span>
+      </div>
+
+      <div class="visual-node node-correlation">
+        <span class="node-dot"></span>
+        <span>Correlation</span>
+      </div>
+
+    </div>
+
+  </section>
+
+
+  <!-- =========================================================
+       FILE SELECTION / CONTROL BAR
+  ========================================================== -->
+  <section class="analysis-control-panel">
+
+    <div class="control-panel-heading">
+      <div class="control-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
+             stroke-width="1.8">
+          <path d="M4 4h16v16H4z"/>
+          <path d="M8 8h8M8 12h5M8 16h7"/>
+        </svg>
+      </div>
+
+      <div>
+        <span class="control-kicker">ANALYSIS SOURCE</span>
+        <h2>Select evidence</h2>
+      </div>
+    </div>
+
+    <form
+      method="GET"
+      class="analysis-filter-form"
+      id="analysis-filter-form"
+    >
+
+      <div class="analysis-field analysis-file-field">
+
+        <label for="analysis-file-select">
+          Log File
+        </label>
+
+        <div class="select-shell">
+          <select
+            id="analysis-file-select"
+            class="analysis-select"
+            name="file_id"
+            onchange="this.form.submit()"
+          >
+            <option value="">Choose an analyzed file</option>
+
+            {% for f in user_files %}
+            <option
+              value="{{ f.file_id }}"
+              {% if file_id == f.file_id %}selected{% endif %}
+            >
+              {{ f.filename }} · {{ f.record_count }} records
+            </option>
+            {% endfor %}
+
+          </select>
+
+          <svg viewBox="0 0 24 24" fill="none"
+               stroke="currentColor" stroke-width="1.8">
+            <path d="m6 9 6 6 6-6"/>
+          </svg>
+        </div>
+
+      </div>
+
+
+      {% if file_id %}
+
+      <div class="analysis-field analysis-search-field">
+
+        <label for="analysis-search">
+          Search Evidence
+        </label>
+
+        <div class="analysis-search-box">
+
+          <svg viewBox="0 0 24 24" fill="none"
+               stroke="currentColor" stroke-width="1.8">
+            <circle cx="11" cy="11" r="7"></circle>
+            <path d="m20 20-4-4"></path>
+          </svg>
+
+          <input
+            id="analysis-search"
+            class="analysis-input"
+            type="text"
+            name="q"
+            value="{{ search }}"
+            placeholder="IP address, event, message..."
+          >
+
+        </div>
+
+      </div>
+
+
+      <div class="analysis-field analysis-severity-field">
+
+        <label for="analysis-severity">
+          Severity
+        </label>
+
+        <div class="select-shell">
+
+          <select
+            id="analysis-severity"
+            class="analysis-select"
+            name="severity"
+          >
+            <option value="">All severity</option>
+
+            {% for s in ['Critical','High','Elevated','Notice'] %}
+            <option
+              value="{{ s }}"
+              {% if severity_filter == s %}selected{% endif %}
+            >
+              {{ s }}
+            </option>
+            {% endfor %}
+
+          </select>
+
+          <svg viewBox="0 0 24 24" fill="none"
+               stroke="currentColor" stroke-width="1.8">
+            <path d="m6 9 6 6 6-6"/>
+          </svg>
+
+        </div>
+
+      </div>
+
+      <input
+        type="hidden"
+        name="file_id"
+        value="{{ file_id }}"
+      >
+
+      <button
+        type="submit"
+        class="analysis-filter-button"
+        data-network-action="apply-analysis-filters"
+      >
+        <span>Apply filters</span>
+
+        <svg viewBox="0 0 24 24" fill="none"
+             stroke="currentColor" stroke-width="1.8">
+          <path d="M5 12h14"/>
+          <path d="m13 6 6 6-6 6"/>
+        </svg>
+      </button>
+
+      {% endif %}
+
+    </form>
+
+  </section>
+
+
+  {% if selected_file %}
+
+  <!-- =========================================================
+       ANALYSIS STATUS
+  ========================================================== -->
+  <section class="analysis-status-strip">
+
+    <div class="status-file">
+
+      <div class="status-file-icon">
+        <svg viewBox="0 0 24 24" fill="none"
+             stroke="currentColor" stroke-width="1.7">
+          <path d="M6 3h8l4 4v14H6z"/>
+          <path d="M14 3v5h5"/>
+          <path d="M9 13h6M9 17h4"/>
+        </svg>
+      </div>
+
+      <div>
+        <span class="status-label">ACTIVE EVIDENCE</span>
+        <strong>{{ selected_file.filename }}</strong>
+      </div>
+
+    </div>
+
+    <div class="status-divider"></div>
+
+    <div class="status-state">
+      <span class="live-indicator"></span>
+      <span>Analysis available</span>
+    </div>
+
+  </section>
+
+
+  <!-- =========================================================
+       FORENSIC METRICS
+  ========================================================== -->
+  <section class="forensic-metrics">
+
+    <article class="metric-card metric-records">
+
+      <div class="metric-top">
+        <span class="metric-label">LOG RECORDS</span>
+
+        <div class="metric-icon">
+          <svg viewBox="0 0 24 24" fill="none"
+               stroke="currentColor" stroke-width="1.7">
+            <path d="M5 4h14v16H5z"/>
+            <path d="M8 8h8M8 12h5M8 16h7"/>
+          </svg>
+        </div>
+      </div>
+
+      <div class="metric-value">
+        {{ selected_file.record_count }}
+      </div>
+
+      <div class="metric-foot">
+        <span>Processed records</span>
+        <span class="metric-accent">DATA</span>
+      </div>
+
+    </article>
+
+
+    <article class="metric-card metric-threats">
+
+      <div class="metric-top">
+        <span class="metric-label">THREATS FOUND</span>
+
+        <div class="metric-icon">
+          <svg viewBox="0 0 24 24" fill="none"
+               stroke="currentColor" stroke-width="1.7">
+            <path d="M12 3 3.5 18h17z"/>
+            <path d="M12 9v4"/>
+            <circle cx="12" cy="16" r=".7" fill="currentColor"/>
+          </svg>
+        </div>
+      </div>
+
+      <div class="metric-value metric-danger">
+        {{ selected_file.threat_count }}
+      </div>
+
+      <div class="metric-foot">
+        <span>Detected signals</span>
+        <span class="metric-accent">RISK</span>
+      </div>
+
+    </article>
+
+
+    <article class="metric-card metric-incidents">
+
+      <div class="metric-top">
+        <span class="metric-label">INCIDENTS</span>
+
+        <div class="metric-icon">
+          <svg viewBox="0 0 24 24" fill="none"
+               stroke="currentColor" stroke-width="1.7">
+            <circle cx="12" cy="12" r="8"/>
+            <path d="M12 8v4l3 2"/>
+          </svg>
+        </div>
+      </div>
+
+      <div class="metric-value">
+        {{ selected_file.incident_count }}
+      </div>
+
+      <div class="metric-foot">
+        <span>Correlated events</span>
+        <span class="metric-accent">EVENTS</span>
+      </div>
+
+    </article>
+
+
+    <article class="metric-card metric-quality">
+
+      <div class="metric-top">
+        <span class="metric-label">QUALITY SCORE</span>
+
+        <div class="metric-icon">
+          <svg viewBox="0 0 24 24" fill="none"
+               stroke="currentColor" stroke-width="1.7">
+            <circle cx="12" cy="12" r="8"/>
+            <path d="M8.5 12.5 11 15l4.5-5"/>
+          </svg>
+        </div>
+      </div>
+
+      <div class="metric-value">
+        {{ "%.0f"|format(selected_file.quality_score or 0) }}
+        <small>/100</small>
+      </div>
+
+      <div class="metric-quality-track">
+        <span
+          data-width="{{ selected_file.quality_score or 0 }}"
+        ></span>
+      </div>
+
+      <div class="metric-foot">
+        <span>Evidence quality</span>
+        <span class="metric-accent">SCORE</span>
+      </div>
+
+    </article>
+
+  </section>
+
+
+  <!-- =========================================================
+       LIVE ANALYSIS GRAPH AREA
+  ========================================================== -->
+  <section class="analysis-intelligence-panel">
+
+    <div class="panel-heading">
+
+      <div>
+        <span class="panel-kicker">FORENSIC TELEMETRY</span>
+        <h2>Analysis intelligence</h2>
+        <p>
+          A visual representation of the evidence discovered inside
+          the selected log source.
+        </p>
+      </div>
+
+      <div class="telemetry-status">
+        <span class="telemetry-dot"></span>
+        LIVE DATA
+      </div>
+
+    </div>
+
+
+    <div class="intelligence-layout">
+
+      <div class="analysis-chart-card">
+
+        <div class="chart-card-header">
+
+          <div>
+            <span class="chart-label">EVENT DISTRIBUTION</span>
+            <strong>Threat activity</strong>
+          </div>
+
+          <span class="chart-live-label">
+            REAL-TIME
+          </span>
+
+        </div>
+
+        <div class="analysis-chart-container">
+          <canvas id="analysis-threat-chart"></canvas>
+
+          <div
+            class="chart-empty"
+            id="analysis-chart-empty"
+            hidden
+          >
+            No telemetry available
+          </div>
+        </div>
+
+      </div>
+
+
+      <div class="analysis-signal-card">
+
+        <div class="chart-card-header">
+
+          <div>
+            <span class="chart-label">SIGNAL PROFILE</span>
+            <strong>Detection composition</strong>
+          </div>
+
+        </div>
+
+        <div class="signal-visual">
+
+          <div class="signal-donut">
+
+            <div class="signal-donut-inner">
+              <strong id="signal-total">
+                {{ selected_file.threat_count }}
+              </strong>
+              <span>signals</span>
+            </div>
+
+          </div>
+
+          <div class="signal-legend">
+
+            <div class="legend-item">
+              <span class="legend-dot legend-critical"></span>
+              <div>
+                <strong>Critical</strong>
+                <small>Priority threats</small>
+              </div>
+            </div>
+
+            <div class="legend-item">
+              <span class="legend-dot legend-high"></span>
+              <div>
+                <strong>High</strong>
+                <small>Elevated activity</small>
+              </div>
+            </div>
+
+            <div class="legend-item">
+              <span class="legend-dot legend-other"></span>
+              <div>
+                <strong>Other</strong>
+                <small>Additional signals</small>
+              </div>
+            </div>
+
+          </div>
+
+        </div>
+
+      </div>
+
+    </div>
+
+  </section>
+
+
+  <!-- =========================================================
+       MAIN FORENSIC EVIDENCE
+  ========================================================== -->
+  <section class="evidence-grid">
+
+    <!-- Threat intelligence -->
+    <article class="evidence-card threats-card">
+
+      <div class="evidence-card-header">
+
+        <div class="evidence-heading">
+
+          <div class="evidence-icon evidence-icon-danger">
+            <svg viewBox="0 0 24 24" fill="none"
+                 stroke="currentColor" stroke-width="1.7">
+              <path d="M12 3 3.5 18h17z"/>
+              <path d="M12 9v4"/>
+              <circle cx="12" cy="16" r=".7"
+                      fill="currentColor"/>
+            </svg>
+          </div>
+
+          <div>
+            <span class="evidence-kicker">DETECTION ENGINE</span>
+            <h2>Detected threats</h2>
+          </div>
+
+        </div>
+
+        <span class="evidence-count evidence-count-danger">
+          {{ threats|length }} found
+        </span>
+
+      </div>
+
+
+      {% if threats %}
+
+      <div class="threat-list">
+
+        {% for t in threats %}
+
+        <article
+          class="threat-item"
+          data-threat-severity="{{ t.severity|lower }}"
+        >
+
+          <div class="threat-severity-bar"></div>
+
+          <div class="threat-main">
+
+            <div class="threat-meta">
+
+              <span class="severity-badge severity-{{ t.severity|lower }}">
+                {{ t.severity }}
+              </span>
+
+              {% if t.technique_id %}
+              <span class="technique-tag">
+                {{ t.technique_id }}
+              </span>
+              {% endif %}
+
+              <span class="threat-score">
+                Score {{ t.score }}
+              </span>
+
+            </div>
+
+            <p class="threat-description">
+              {{ t.finding[:180] }}
+              {% if t.finding|length > 180 %}...{% endif %}
+            </p>
+
+            {% if t.source_ip %}
+            <div class="threat-source">
+              <span>Source</span>
+              <code>{{ t.source_ip }}</code>
+            </div>
+            {% endif %}
+
+          </div>
+
+          <div class="threat-index">
+            {{ "%02d"|format(loop.index) }}
+          </div>
+
+        </article>
+
+        {% endfor %}
+
+      </div>
+
+      {% else %}
+
+      <div class="analysis-empty-state">
+
+        <div class="empty-visual clean-state">
+
+          <div class="clean-ring"></div>
+
+          <svg viewBox="0 0 24 24" fill="none"
+               stroke="currentColor" stroke-width="1.5">
+            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+            <path d="m9 12 2 2 4-4"/>
+          </svg>
+
+        </div>
+
+        <h3>No threats detected</h3>
+
+        <p>
+          No known threat signals were identified in this
+          evidence set using the current detection rules.
+        </p>
+
+      </div>
+
+      {% endif %}
+
+    </article>
+
+
+    <!-- Log records -->
+    <article class="evidence-card records-card">
+
+      <div class="evidence-card-header">
+
+        <div class="evidence-heading">
+
+          <div class="evidence-icon evidence-icon-data">
+            <svg viewBox="0 0 24 24" fill="none"
+                 stroke="currentColor" stroke-width="1.7">
+              <path d="M5 4h14v16H5z"/>
+              <path d="M8 8h8M8 12h8M8 16h5"/>
+            </svg>
+          </div>
+
+          <div>
+            <span class="evidence-kicker">RAW TELEMETRY</span>
+            <h2>Log records</h2>
+          </div>
+
+        </div>
+
+        <span class="evidence-count">
+          {{ records|length }} shown
+        </span>
+
+      </div>
+
+
+      {% if records %}
+
+      <div class="record-stream">
+
+        {% for r in records %}
+
+        <article
+          class="record-item
+          {% if r.event_type in ['Credential Access','Exploit Payload','Command and Control'] %}
+            record-critical
+          {% elif r.event_type in ['Reconnaissance','Privilege Escalation'] %}
+            record-high
+          {% elif r.event_type in ['Anomaly'] %}
+            record-warning
+          {% endif %}"
+        >
+
+          <div class="record-timeline">
+            <span class="record-dot"></span>
+            {% if not loop.last %}
+            <span class="record-line"></span>
+            {% endif %}
+          </div>
+
+          <div class="record-content">
+
+            <div class="record-header">
+
+              <div class="record-identifiers">
+
+                {% if r.source_ip %}
+                <code class="record-ip">
+                  {{ r.source_ip }}
+                </code>
+                {% endif %}
+
+                {% if r.event_type %}
+                <span class="record-type">
+                  {{ r.event_type }}
+                </span>
+                {% endif %}
+
+                {% if r.status_code %}
+                <span class="record-status">
+                  HTTP {{ r.status_code }}
+                </span>
+                {% endif %}
+
+              </div>
+
+              <span class="record-index">
+                #{{ loop.index }}
+              </span>
+
+            </div>
+
+            <div class="record-message">
+              {{ r.raw_line[:240] if r.raw_line else r.message }}
+            </div>
+
+          </div>
+
+        </article>
+
+        {% endfor %}
+
+      </div>
+
+      {% else %}
+
+      <div class="analysis-empty-state compact">
+
+        <div class="empty-visual">
+          <svg viewBox="0 0 24 24" fill="none"
+               stroke="currentColor" stroke-width="1.5">
+            <circle cx="11" cy="11" r="7"/>
+            <path d="m20 20-4-4"/>
+          </svg>
+        </div>
+
+        <h3>No matching records</h3>
+
+        <p>
+          No records match the current analysis filters.
+        </p>
+
+      </div>
+
+      {% endif %}
+
+    </article>
+
+  </section>
+
+
+  <!-- =========================================================
+       NEXT ANALYSIS ACTIONS
+  ========================================================== -->
+  <section class="analysis-actions">
+
+    <div class="actions-heading">
+      <span class="panel-kicker">CONTINUE INVESTIGATION</span>
+      <h2>Explore the evidence further</h2>
+    </div>
+
+    <div class="action-grid">
+
+      <a
+        href="{{ url_for('app.mitre', file_id=selected_file.file_id) }}"
+        class="analysis-action-card action-mitre"
+        data-network-action="open-mitre"
+      >
+
+        <div class="action-card-visual">
+          <div class="action-orbit"></div>
+
+          <svg viewBox="0 0 24 24" fill="none"
+               stroke="currentColor" stroke-width="1.6">
+            <polygon points="12 2 2 7 12 12 22 7 12 2"/>
+            <polyline points="2 17 12 22 22 17"/>
+            <polyline points="2 12 12 17 22 12"/>
+          </svg>
+        </div>
+
+        <div class="action-card-content">
+          <span>ATT&CK INTELLIGENCE</span>
+          <h3>MITRE Mapping</h3>
+          <p>
+            Trace detected behavior to tactics and techniques.
+          </p>
+        </div>
+
+        <svg class="action-arrow" viewBox="0 0 24 24"
+             fill="none" stroke="currentColor"
+             stroke-width="1.7">
+          <path d="M5 12h14"/>
+          <path d="m13 6 6 6-6 6"/>
+        </svg>
+
+      </a>
+
+
+      <a
+        href="{{ url_for('app.ml_analysis', file_id=selected_file.file_id) }}"
+        class="analysis-action-card action-ml"
+        data-network-action="open-ml"
+      >
+
+        <div class="action-card-visual">
+          <div class="action-orbit"></div>
+
+          <svg viewBox="0 0 24 24" fill="none"
+               stroke="currentColor" stroke-width="1.6">
+            <path d="M12 2a10 10 0 0 0-9.95 9h11.64"/>
+            <path d="m9.74 7.05 5.66 5.65"/>
+            <path d="m15.4 12.7-5.66 5.65"/>
+            <path d="M12 22a10 10 0 1 0 0-20"/>
+          </svg>
+        </div>
+
+        <div class="action-card-content">
+          <span>MACHINE INTELLIGENCE</span>
+          <h3>ML Analysis</h3>
+          <p>
+            Inspect anomaly scores and behavioral deviations.
+          </p>
+        </div>
+
+        <svg class="action-arrow" viewBox="0 0 24 24"
+             fill="none" stroke="currentColor"
+             stroke-width="1.7">
+          <path d="M5 12h14"/>
+          <path d="m13 6 6 6-6 6"/>
+        </svg>
+
+      </a>
+
+
+      <a
+        href="{{ url_for('app.incidents') }}"
+        class="analysis-action-card action-incidents"
+        data-network-action="open-incidents"
+      >
+
+        <div class="action-card-visual">
+          <div class="action-orbit"></div>
+
+          <svg viewBox="0 0 24 24" fill="none"
+               stroke="currentColor" stroke-width="1.6">
+            <path d="M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3l-8.5-14.1a2 2 0 0 0-3.4 0Z"/>
+            <path d="M12 9v4"/>
+            <circle cx="12" cy="17" r=".7"
+                    fill="currentColor"/>
+          </svg>
+        </div>
+
+        <div class="action-card-content">
+          <span>CASE MANAGEMENT</span>
+          <h3>View Incidents</h3>
+          <p>
+            Review correlated security events and investigations.
+          </p>
+        </div>
+
+        <svg class="action-arrow" viewBox="0 0 24 24"
+             fill="none" stroke="currentColor"
+             stroke-width="1.7">
+          <path d="M5 12h14"/>
+          <path d="m13 6 6 6-6 6"/>
+        </svg>
+
+      </a>
+
+    </div>
+
+  </section>
+
+
+  {% else %}
+
+  <!-- =========================================================
+       NO FILE SELECTED
+  ========================================================== -->
+  <section class="analysis-empty-page">
+
+    <div class="empty-analysis-visual">
+
+      <div class="empty-analysis-orbit orbit-a"></div>
+      <div class="empty-analysis-orbit orbit-b"></div>
+
+      <div class="empty-analysis-core">
+
+        <div class="empty-core-document">
+          <span></span>
+          <span></span>
+          <span></span>
+          <span></span>
+        </div>
+
+        <div class="empty-core-scan"></div>
+
+      </div>
+
+      <div class="floating-data-chip chip-a">LOG</div>
+      <div class="floating-data-chip chip-b">SCAN</div>
+      <div class="floating-data-chip chip-c">ML</div>
+
+    </div>
+
+    <div class="empty-analysis-copy">
+
+      <span class="panel-kicker">ANALYSIS STATION</span>
+
+      <h2>Select a log source to begin</h2>
+
+      <p>
+        Choose an analyzed log file from the source selector above.
+        Once selected, this workspace will reveal its telemetry,
+        threat signals, correlations and forensic evidence.
+      </p>
+
+      <a
+        href="{{ url_for('app.upload') }}"
+        class="analysis-primary-action"
+        data-network-action="upload-log"
+      >
+        <span>Upload a log file</span>
+
+        <svg viewBox="0 0 24 24" fill="none"
+             stroke="currentColor" stroke-width="1.8">
+          <path d="M12 16V4"/>
+          <path d="m7 9 5-5 5 5"/>
+          <path d="M5 20h14"/>
+        </svg>
+      </a>
+
+    </div>
+
+  </section>
+
+  {% endif %}
+
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script src="../../static/js/analyze.js"></script>
+{% endblock %}

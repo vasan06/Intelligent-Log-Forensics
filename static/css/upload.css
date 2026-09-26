@@ -1,0 +1,175 @@
+/* =========================================================
+   UPLOAD PAGE
+   Intelligent Log Forensics
+========================================================= */
+
+.upload-zone {
+    position: relative;
+    border: 2px dashed var(--color-border);
+    border-radius: var(--radius-xl);
+    padding: var(--space-16) var(--space-8);
+    text-align: center;
+    cursor: pointer;
+    transition:
+        border-color var(--transition-normal),
+        background var(--transition-normal),
+        transform var(--transition-normal),
+        box-shadow var(--transition-normal);
+    background: var(--color-surface);
+    overflow: hidden;
+}
+
+.upload-zone::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background:
+        radial-gradient(
+            circle at center,
+            var(--color-primary-light),
+            transparent 65%
+        );
+    opacity: 0;
+    transition: opacity var(--transition-normal);
+}
+
+.upload-zone:hover,
+.upload-zone.drag-over {
+    border-color: var(--color-primary);
+    background: var(--color-primary-light);
+    box-shadow: var(--shadow-md);
+}
+
+.upload-zone:hover::before,
+.upload-zone.drag-over::before {
+    opacity: 1;
+}
+
+.upload-zone.drag-over {
+    transform: scale(1.01);
+}
+
+.upload-zone > * {
+    position: relative;
+    z-index: 1;
+}
+
+/* Upload icon */
+
+#upload-icon {
+    transition:
+        transform var(--transition-normal),
+        opacity var(--transition-normal);
+}
+
+.upload-zone:hover #upload-icon {
+    transform: translateY(-4px);
+}
+
+/* File preview */
+
+#file-preview {
+    animation: uploadPreviewIn 0.2s ease both;
+}
+
+@keyframes uploadPreviewIn {
+    from {
+        opacity: 0;
+        transform: translateY(6px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Progress */
+
+#progress-wrap {
+    animation: uploadProgressIn 0.2s ease both;
+}
+
+@keyframes uploadProgressIn {
+    from {
+        opacity: 0;
+    }
+
+    to {
+        opacity: 1;
+    }
+}
+
+#progress-fill {
+    transition: width 0.2s ease;
+}
+
+/* Submit button */
+
+#submit-btn {
+    transition:
+        opacity var(--transition-fast),
+        transform var(--transition-fast),
+        background var(--transition-fast);
+}
+
+#submit-btn:not(:disabled):hover {
+    transform: translateY(-1px);
+}
+
+#submit-btn:disabled {
+    cursor: not-allowed;
+    opacity: 0.55;
+}
+
+/* Recent upload rows */
+
+.upload-recent-row {
+    transition:
+        background var(--transition-fast),
+        transform var(--transition-fast);
+}
+
+.upload-recent-row:hover {
+    background: var(--color-bg);
+}
+
+/* Upload information cards */
+
+.upload-info-item {
+    transition:
+        transform var(--transition-fast),
+        background var(--transition-fast);
+    border-radius: var(--radius-md);
+    padding: var(--space-2);
+}
+
+.upload-info-item:hover {
+    background: var(--color-bg);
+    transform: translateX(2px);
+}
+
+/* Format tags */
+
+.upload-format-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-2);
+}
+
+/* Mobile */
+
+@media (max-width: 768px) {
+    .upload-zone {
+        padding: var(--space-10) var(--space-4);
+    }
+
+    .upload-zone p {
+        max-width: 100%;
+    }
+
+    #submit-btn {
+        width: 100%;
+    }
+}

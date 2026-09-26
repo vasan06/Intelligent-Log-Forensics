@@ -1,0 +1,539 @@
+{% extends "app_shell.html" %}
+
+{% block title %}Upload Logs — Intelligent Log Forensics{% endblock %}
+
+{% block page_title %}Upload Log File{% endblock %}
+
+{% block extra_css %}
+
+<link rel="stylesheet" href="../../static/css/upload.css">
+{% endblock %}
+
+{% block content %}
+
+<div class="page-header">
+  <h1 class="page-title">Upload Log File</h1>
+  <p class="page-subtitle">
+    Upload log files for automated threat detection and forensic analysis
+  </p>
+</div>
+
+{% with messages = get_flashed_messages(with_categories=true) %}
+{% for cat, msg in messages %} <div class="alert alert-{{ 'error' if cat == 'error' else cat }}">
+{{ msg }} </div>
+{% endfor %}
+{% endwith %}
+
+<div class="content-grid" style="align-items:start">
+
+  <!-- =====================================================
+       UPLOAD FORM
+  ====================================================== -->
+
+  <div class="card">
+
+
+<div class="card-header">
+  <span class="card-title">Select File</span>
+</div>
+
+<div class="card-body">
+
+  <form
+    method="POST"
+    enctype="multipart/form-data"
+    id="upload-form"
+  >
+
+    <!-- Upload Zone -->
+
+    <div
+      class="upload-zone"
+      id="upload-zone"
+      role="button"
+      tabindex="0"
+      aria-label="Upload log file"
+      onclick="document.getElementById('file-input').click()"
+    >
+
+      <div id="upload-icon" style="margin-bottom:var(--space-4)">
+        <svg
+          width="48"
+          height="48"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="var(--color-text-muted)"
+          stroke-width="1.5"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          style="margin:0 auto"
+        >
+          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+          <polyline points="17 8 12 3 7 8"/>
+          <line x1="12" y1="3" x2="12" y2="15"/>
+        </svg>
+      </div>
+
+      <p
+        style="
+          font-weight:var(--weight-semibold);
+          color:var(--color-text);
+          margin-bottom:4px
+        "
+      >
+        Drop log file here or click to browse
+      </p>
+
+      <p
+        style="
+          font-size:var(--text-xs);
+          color:var(--color-text-muted)
+        "
+      >
+        Supports: CSV, JSON, JSONL, TXT, LOG · Max 100MB
+      </p>
+
+      <input
+        type="file"
+        id="file-input"
+        name="log_file"
+        accept=".csv,.json,.jsonl,.txt,.log"
+        style="display:none"
+        onchange="handleFileSelect(this)"
+      >
+
+    </div>
+
+    <!-- =================================================
+         FILE PREVIEW
+    ================================================== -->
+
+    <div
+      id="file-preview"
+      style="
+        display:none;
+        margin-top:var(--space-4);
+        padding:var(--space-3);
+        background:var(--color-bg);
+        border-radius:var(--radius-md);
+        border:1px solid var(--color-border)
+      "
+    >
+
+      <div
+        style="
+          display:flex;
+          align-items:center;
+          gap:var(--space-3)
+        "
+      >
+
+        <div
+          style="
+            width:36px;
+            height:36px;
+            background:var(--color-primary-light);
+            border-radius:var(--radius-md);
+            display:flex;
+            align-items:center;
+            justify-content:center;
+            color:var(--color-primary);
+            flex-shrink:0
+          "
+        >
+          <svg
+            width="18"
+            height="18"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+          >
+            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+            <polyline points="14 2 14 8 20 8"/>
+          </svg>
+        </div>
+
+        <div style="flex:1;min-width:0">
+
+          <div
+            id="file-name"
+            style="
+              font-weight:var(--weight-medium);
+              color:var(--color-text);
+              overflow:hidden;
+              text-overflow:ellipsis;
+              white-space:nowrap
+            "
+          ></div>
+
+          <div
+            id="file-size"
+            style="
+              font-size:var(--text-xs);
+              color:var(--color-text-muted)
+            "
+          ></div>
+
+        </div>
+
+        <button
+          type="button"
+          onclick="clearFile()"
+          class="btn btn-ghost btn-sm"
+        >
+          Remove
+        </button>
+
+      </div>
+
+    </div>
+
+    <!-- =================================================
+         PROGRESS
+    ================================================== -->
+
+    <div
+      id="progress-wrap"
+      style="
+        display:none;
+        margin-top:var(--space-4)
+      "
+    >
+
+      <div
+        style="
+          display:flex;
+          justify-content:space-between;
+          font-size:var(--text-xs);
+          color:var(--color-text-secondary);
+          margin-bottom:6px
+        "
+      >
+        <span>Uploading and analyzing...</span>
+        <span id="progress-pct">0%</span>
+      </div>
+
+      <div
+        class="progress-bar"
+        style="height:6px"
+      >
+        <div
+          class="progress-fill"
+          id="progress-fill"
+          style="width:0%"
+        ></div>
+      </div>
+
+    </div>
+
+    <!-- Submit -->
+
+    <button
+      type="submit"
+      class="btn btn-primary btn-lg"
+      id="submit-btn"
+      style="
+        width:100%;
+        margin-top:var(--space-5)
+      "
+      disabled
+    >
+      <svg
+        width="16"
+        height="16"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="2"
+      >
+        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+        <polyline points="17 8 12 3 7 8"/>
+        <line x1="12" y1="3" x2="12" y2="15"/>
+      </svg>
+
+      Analyze Log File
+    </button>
+
+  </form>
+
+</div>
+
+
+  </div>
+
+  <!-- =====================================================
+       INFORMATION PANEL
+  ====================================================== -->
+
+  <div
+    style="
+      display:flex;
+      flex-direction:column;
+      gap:var(--space-4)
+    "
+  >
+
+
+<!-- Analysis Information -->
+
+<div class="card">
+
+  <div class="card-header">
+    <span class="card-title">What gets analyzed?</span>
+  </div>
+
+  <div
+    class="card-body"
+    style="
+      display:flex;
+      flex-direction:column;
+      gap:var(--space-3)
+    "
+  >
+
+    {% for label, desc in [
+      ('Threat Detection', 'Rule-based and ML detection of attack patterns'),
+      ('MITRE Mapping', 'Techniques mapped to the ATT&CK framework'),
+      ('ML Anomaly Score', 'Ensemble model scoring: Isolation Forest, LOF, SVM'),
+      ('Incident Creation', 'Automatic incident generation for critical findings'),
+      ('Evidence Correlation', 'Related events grouped and cross-referenced')
+    ] %}
+
+    <div class="upload-info-item">
+
+      <div
+        style="
+          display:flex;
+          align-items:start;
+          gap:var(--space-3)
+        "
+      >
+
+        <div
+          style="
+            width:8px;
+            height:8px;
+            border-radius:50%;
+            background:var(--color-primary);
+            margin-top:6px;
+            flex-shrink:0
+          "
+        ></div>
+
+        <div>
+
+          <div
+            style="
+              font-size:var(--text-sm);
+              font-weight:var(--weight-medium);
+              color:var(--color-text)
+            "
+          >
+            {{ label }}
+          </div>
+
+          <div
+            style="
+              font-size:var(--text-xs);
+              color:var(--color-text-muted)
+            "
+          >
+            {{ desc }}
+          </div>
+
+        </div>
+
+      </div>
+
+    </div>
+
+    {% endfor %}
+
+  </div>
+</div>
+
+<!-- Supported Formats -->
+
+<div class="card">
+
+  <div class="card-header">
+    <span class="card-title">Supported Formats</span>
+  </div>
+
+  <div class="card-body">
+
+    <div class="upload-format-tags">
+
+      {% for fmt in [
+        'Apache Access Log',
+        'Nginx Log',
+        'Auth Log',
+        'Syslog',
+        'JSON Events',
+        'CSV Records',
+        'JSONL Streams'
+      ] %}
+
+      <span class="tag">
+        {{ fmt }}
+      </span>
+
+      {% endfor %}
+
+    </div>
+
+  </div>
+
+</div>
+
+
+  </div>
+
+</div>
+
+<!-- =====================================================
+     RECENT UPLOADS
+====================================================== -->
+
+{% if recent_files %}
+
+<div
+  class="card"
+  style="margin-top:var(--space-5)"
+>
+
+  <div class="card-header">
+
+
+<span class="card-title">
+  Recent Uploads
+</span>
+
+<a
+  href="{{ url_for('app.uploads') }}"
+  class="btn btn-ghost btn-sm"
+>
+  View all files
+</a>
+
+
+  </div>
+
+  <div
+    class="table-container"
+    style="border:none;border-radius:0"
+  >
+
+
+<table>
+
+  <thead>
+    <tr>
+      <th>Filename</th>
+      <th>Size</th>
+      <th>Status</th>
+      <th>Records</th>
+      <th>Threats</th>
+      <th>Uploaded</th>
+      <th></th>
+    </tr>
+  </thead>
+
+  <tbody>
+
+    {% for f in recent_files %}
+
+    <tr class="upload-recent-row">
+
+      <td class="td-primary">
+        {{ f.filename }}
+      </td>
+
+      <td style="color:var(--color-text-muted)">
+        {{ (f.file_size / 1024)|round(1) }} KB
+      </td>
+
+      <td>
+
+        <span
+          class="badge
+            {% if f.status == 'indexed' %}
+              badge-success
+            {% elif f.status == 'failed' %}
+              badge-critical
+            {% else %}
+              badge-neutral
+            {% endif %}
+          "
+        >
+          {{ f.status.title() }}
+        </span>
+
+      </td>
+
+      <td>
+        {{ f.record_count }}
+      </td>
+
+      <td>
+
+        {% if f.threat_count %}
+
+        <span
+          style="
+            color:var(--color-critical);
+            font-weight:600
+          "
+        >
+          {{ f.threat_count }}
+        </span>
+
+        {% else %}
+
+        0
+
+        {% endif %}
+
+      </td>
+
+      <td
+        class="td-mono"
+        style="color:var(--color-text-muted)"
+      >
+        {{ f.uploaded_at[:16] }}
+      </td>
+
+      <td>
+
+        <a
+          href="{{ url_for('app.analyze', file_id=f.file_id) }}"
+          class="btn btn-ghost btn-sm"
+        >
+          Analyze
+        </a>
+
+      </td>
+
+    </tr>
+
+    {% endfor %}
+
+  </tbody>
+
+</table>
+
+
+  </div>
+
+</div>
+
+{% endif %}
+
+{% endblock %}
+
+{% block extra_js %}
+
+<script src="../../static/js/upload.js"></script>
+
+{% endblock %}

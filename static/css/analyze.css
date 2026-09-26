@@ -1,0 +1,478 @@
+/* =========================================================
+   ANALYZE PAGE
+   Intelligent Log Forensics
+   Light Forensic Console
+========================================================= */
+
+.analyze-page {
+  width: 100%;
+  max-width: 1480px;
+  margin: 0 auto;
+}
+
+/* ---------------------------------------------------------
+   HEADER
+--------------------------------------------------------- */
+
+.analyze-page .page-header {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 24px;
+  margin-bottom: 28px;
+}
+
+.analyze-page .page-title {
+  margin: 0;
+  font-size: clamp(24px, 3vw, 34px);
+  line-height: 1.15;
+  font-weight: 750;
+  letter-spacing: -0.035em;
+  color: var(--color-text);
+}
+
+.analyze-page .page-subtitle {
+  margin: 8px 0 0;
+  color: var(--color-text-secondary);
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+/* ---------------------------------------------------------
+   FILE SELECTOR
+--------------------------------------------------------- */
+
+.analyze-page .analysis-selector {
+  position: relative;
+  overflow: hidden;
+  margin-bottom: 22px;
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 16px;
+  box-shadow: 0 8px 30px rgba(15, 23, 42, 0.045);
+}
+
+.analyze-page .analysis-selector::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 3px;
+  background: var(--color-primary);
+}
+
+.analyze-page .analysis-selector .card-body {
+  padding: 20px 22px;
+}
+
+.analyze-page .analysis-selector form {
+  align-items: flex-end;
+}
+
+.analyze-page .form-group {
+  margin: 0;
+}
+
+.analyze-page .form-label {
+  display: block;
+  margin-bottom: 7px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.055em;
+  text-transform: uppercase;
+  color: #64748b;
+}
+
+.analyze-page .form-input,
+.analyze-page .form-select {
+  min-height: 42px;
+  border: 1px solid #dbe2ea;
+  border-radius: 9px;
+  background: #ffffff;
+  color: #0f172a;
+  transition:
+    border-color 160ms ease,
+    box-shadow 160ms ease,
+    background 160ms ease;
+}
+
+.analyze-page .form-input:focus,
+.analyze-page .form-select:focus {
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.09);
+  outline: none;
+}
+
+/* Search */
+
+.analyze-page .search-input-wrap {
+  position: relative;
+}
+
+.analyze-page .search-input-wrap .search-icon {
+  position: absolute;
+  left: 13px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #94a3b8;
+  pointer-events: none;
+}
+
+.analyze-page .search-input-wrap .form-input {
+  padding-left: 38px;
+}
+
+/* ---------------------------------------------------------
+   STAT CARDS
+--------------------------------------------------------- */
+
+.analyze-page .stats-grid-4 {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 16px;
+}
+
+.analyze-page .stat-card {
+  position: relative;
+  min-height: 118px;
+  padding: 21px 22px;
+  overflow: hidden;
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 15px;
+  box-shadow: 0 6px 24px rgba(15, 23, 42, 0.04);
+}
+
+.analyze-page .stat-card::after {
+  content: "";
+  position: absolute;
+  right: -22px;
+  bottom: -28px;
+  width: 90px;
+  height: 90px;
+  border: 1px solid rgba(37, 99, 235, 0.08);
+  border-radius: 50%;
+}
+
+.analyze-page .stat-label {
+  position: relative;
+  z-index: 1;
+  color: #64748b;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.analyze-page .stat-value {
+  position: relative;
+  z-index: 1;
+  margin-top: 10px;
+  color: #0f172a;
+  font-size: 30px;
+  line-height: 1;
+  font-weight: 750;
+  letter-spacing: -0.035em;
+}
+
+/* ---------------------------------------------------------
+   MAIN ANALYSIS GRID
+--------------------------------------------------------- */
+
+.analyze-page .content-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 0.95fr) minmax(0, 1.05fr);
+  gap: 18px;
+  align-items: stretch;
+}
+
+/* ---------------------------------------------------------
+   PANELS
+--------------------------------------------------------- */
+
+.analyze-page .card {
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 16px;
+  box-shadow: 0 7px 28px rgba(15, 23, 42, 0.045);
+  overflow: hidden;
+}
+
+.analyze-page .card-header {
+  min-height: 58px;
+  padding: 0 18px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  border-bottom: 1px solid #edf1f5;
+}
+
+.analyze-page .card-title {
+  color: #172033;
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+}
+
+/* ---------------------------------------------------------
+   THREAT LIST
+--------------------------------------------------------- */
+
+.analyze-page .threat-list {
+  scrollbar-width: thin;
+  scrollbar-color: #cbd5e1 transparent;
+}
+
+.analyze-page .threat-item {
+  padding: 15px 18px;
+  border-bottom: 1px solid #eef2f6;
+  transition: background 160ms ease;
+}
+
+.analyze-page .threat-item:hover {
+  background: #f8fafc;
+}
+
+.analyze-page .threat-item:last-child {
+  border-bottom: 0;
+}
+
+.analyze-page .threat-item-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 8px;
+}
+
+.analyze-page .threat-finding {
+  color: #475569;
+  font-size: 12px;
+  line-height: 1.6;
+}
+
+.analyze-page .threat-ip {
+  margin-top: 6px;
+  color: #94a3b8;
+  font-family: var(--font-mono);
+  font-size: 10px;
+}
+
+/* ---------------------------------------------------------
+   LOG RECORDS
+--------------------------------------------------------- */
+
+.analyze-page .log-records {
+  scrollbar-width: thin;
+  scrollbar-color: #cbd5e1 transparent;
+}
+
+.analyze-page .log-line {
+  position: relative;
+  padding: 11px 13px;
+  border: 1px solid #edf1f5;
+  border-radius: 9px;
+  background: #fafbfd;
+  color: #475569;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  line-height: 1.55;
+  transition:
+    background 160ms ease,
+    border-color 160ms ease,
+    transform 160ms ease;
+}
+
+.analyze-page .log-line:hover {
+  background: #f5f8fc;
+  border-color: #dce4ee;
+  transform: translateX(2px);
+}
+
+.analyze-page .log-line.critical {
+  border-left: 3px solid #ef4444;
+}
+
+.analyze-page .log-line.high {
+  border-left: 3px solid #f97316;
+}
+
+.analyze-page .log-line.warning {
+  border-left: 3px solid #eab308;
+}
+
+/* ---------------------------------------------------------
+   TAGS / BADGES
+--------------------------------------------------------- */
+
+.analyze-page .tag {
+  display: inline-flex;
+  align-items: center;
+  min-height: 20px;
+  padding: 2px 7px;
+  border-radius: 5px;
+  background: #f1f5f9;
+  color: #64748b;
+  font-family: var(--font-mono);
+  font-size: 9px;
+  font-weight: 600;
+}
+
+.analyze-page .badge {
+  white-space: nowrap;
+}
+
+/* ---------------------------------------------------------
+   EMPTY STATE
+--------------------------------------------------------- */
+
+.analyze-page .empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+}
+
+.analyze-page .empty-state-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 14px;
+  border: 1px solid #e2e8f0;
+  border-radius: 14px;
+  background: #f8fafc;
+  color: #94a3b8;
+}
+
+.analyze-page .empty-state-title {
+  margin: 0 0 6px;
+  color: #334155;
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.analyze-page .empty-state-desc {
+  max-width: 420px;
+  margin: 0 0 18px;
+  color: #94a3b8;
+  font-size: 12px;
+  line-height: 1.6;
+}
+
+/* ---------------------------------------------------------
+   ACTION BAR
+--------------------------------------------------------- */
+
+.analyze-page .analysis-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-top: 18px;
+}
+
+.analyze-page .analysis-actions .btn {
+  min-height: 40px;
+  border-radius: 9px;
+}
+
+/* ---------------------------------------------------------
+   BUTTON MICRO INTERACTION
+--------------------------------------------------------- */
+
+.analyze-page .btn {
+  transition:
+    transform 150ms ease,
+    box-shadow 150ms ease,
+    background 150ms ease;
+}
+
+.analyze-page .btn:hover {
+  transform: translateY(-1px);
+}
+
+/* ---------------------------------------------------------
+   SCROLLBARS
+--------------------------------------------------------- */
+
+.analyze-page ::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+.analyze-page ::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.analyze-page ::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 999px;
+}
+
+.analyze-page ::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}
+
+/* ---------------------------------------------------------
+   RESPONSIVE
+--------------------------------------------------------- */
+
+@media (max-width: 1100px) {
+  .analyze-page .content-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .analyze-page .stats-grid-4 {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 720px) {
+  .analyze-page .page-header {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .analyze-page .stats-grid-4 {
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+  }
+
+  .analyze-page .stat-card {
+    min-height: 100px;
+    padding: 16px;
+  }
+
+  .analyze-page .stat-value {
+    font-size: 25px;
+  }
+}
+
+@media (max-width: 520px) {
+  .analyze-page .stats-grid-4 {
+    grid-template-columns: 1fr;
+  }
+
+  .analyze-page .analysis-actions .btn {
+    width: 100%;
+    justify-content: center;
+  }
+}
+
+/* ---------------------------------------------------------
+   REDUCED MOTION
+--------------------------------------------------------- */
+
+@media (prefers-reduced-motion: reduce) {
+  .analyze-page *,
+  .analyze-page *::before,
+  .analyze-page *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}

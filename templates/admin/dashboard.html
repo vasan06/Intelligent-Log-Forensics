@@ -1,0 +1,108 @@
+{% extends "app_shell.html" %}
+{% block title %}Admin Dashboard — Intelligent Log Forensics{% endblock %}
+{% block page_title %}Admin Dashboard{% endblock %}
+{% block content %}
+<div class="page-header">
+  <h1 class="page-title">Admin Dashboard</h1>
+  <p class="page-subtitle">System-wide oversight and administrative controls</p>
+</div>
+
+<div class="stats-grid stagger" style="margin-bottom:var(--space-6)">
+  <div class="stat-card">
+    <div class="stat-icon blue"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg></div>
+    <div class="stat-label">Total Users</div>
+    <div class="stat-value">{{ stats.total_users }}</div>
+    <div class="stat-sub">{{ stats.active_users }} active</div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-icon green"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg></div>
+    <div class="stat-label">Log Files</div>
+    <div class="stat-value">{{ stats.total_files }}</div>
+    <div class="stat-sub">{{ stats.total_records }} records</div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-icon red"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg></div>
+    <div class="stat-label">Threats Detected</div>
+    <div class="stat-value" style="color:var(--color-critical)">{{ stats.total_threats }}</div>
+    <div class="stat-sub">{{ stats.critical_incidents }} critical incidents</div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-icon orange"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg></div>
+    <div class="stat-label">Active Incidents</div>
+    <div class="stat-value" style="color:var(--color-high)">{{ stats.total_incidents }}</div>
+    <div class="stat-sub">{{ stats.processing_failures }} processing failures</div>
+  </div>
+</div>
+
+<div class="content-grid" style="margin-bottom:var(--space-5)">
+  <!-- Recent Users -->
+  <div class="card">
+    <div class="card-header">
+      <span class="card-title">Recent Users</span>
+      <a href="{{ url_for('admin.users') }}" class="btn btn-ghost btn-sm">Manage</a>
+    </div>
+    {% if recent_users %}
+    {% for u in recent_users %}
+    <div style="display:flex;align-items:center;gap:var(--space-3);padding:var(--space-3) var(--space-4);border-bottom:1px solid var(--color-border)">
+      <div style="width:32px;height:32px;border-radius:50%;background:var(--color-primary-muted);display:flex;align-items:center;justify-content:center;font-size:var(--text-sm);font-weight:600;color:var(--color-primary);flex-shrink:0">{{ u.name[:1] }}</div>
+      <div style="flex:1;min-width:0">
+        <div style="font-size:var(--text-sm);font-weight:500;color:var(--color-text);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ u.name }}</div>
+        <div style="font-size:11px;color:var(--color-text-muted)">{{ u.email }}</div>
+      </div>
+      <span class="badge {% if u.role=='admin' %}badge-critical{% else %}badge-info{% endif %}">{{ u.role }}</span>
+      <span class="badge {% if u.is_active %}badge-success{% else %}badge-neutral{% endif %}">{{ 'Active' if u.is_active else 'Inactive' }}</span>
+    </div>
+    {% endfor %}
+    {% else %}
+    <div class="empty-state"><p class="empty-state-desc">No users found.</p></div>
+    {% endif %}
+  </div>
+
+  <!-- Recent Audit Log -->
+  <div class="card">
+    <div class="card-header">
+      <span class="card-title">Recent Audit Events</span>
+      <a href="{{ url_for('admin.audit_log') }}" class="btn btn-ghost btn-sm">View All</a>
+    </div>
+    {% if recent_audit %}
+    {% for a in recent_audit %}
+    <div style="padding:var(--space-3) var(--space-4);border-bottom:1px solid var(--color-border)">
+      <div style="display:flex;justify-content:space-between">
+        <span style="font-size:var(--text-sm);font-weight:500;color:var(--color-text)">{{ a.action.replace('_',' ').title() }}</span>
+        <span style="font-size:10px;color:var(--color-text-muted)">{{ a.created_at[:16] }}</span>
+      </div>
+      <div style="font-size:11px;color:var(--color-text-muted)">{{ a.email or 'System' }}{% if a.detail %} — {{ a.detail[:60] }}{% endif %}</div>
+    </div>
+    {% endfor %}
+    {% else %}
+    <div class="empty-state"><p class="empty-state-desc">No audit events yet.</p></div>
+    {% endif %}
+  </div>
+</div>
+
+<!-- Recent Files -->
+<div class="card">
+  <div class="card-header"><span class="card-title">Recent Log Processing</span></div>
+  {% if recent_files %}
+  <div class="table-container" style="border:none;border-radius:0">
+    <table>
+      <thead><tr><th>Filename</th><th>User</th><th>Status</th><th>Records</th><th>Threats</th><th>Uploaded</th></tr></thead>
+      <tbody>
+        {% for f in recent_files %}
+        <tr>
+          <td class="td-primary">{{ f.filename }}</td>
+          <td style="color:var(--color-text-muted)">{{ f.email }}</td>
+          <td><span class="badge {% if f.status=='indexed' %}badge-success{% elif f.status=='failed' %}badge-critical{% else %}badge-neutral{% endif %}">{{ f.status.title() }}</span></td>
+          <td>{{ f.record_count }}</td>
+          <td>{% if f.threat_count %}<span style="color:var(--color-critical);font-weight:600">{{ f.threat_count }}</span>{% else %}0{% endif %}</td>
+          <td class="td-mono" style="color:var(--color-text-muted)">{{ f.uploaded_at[:16] }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+  <div class="empty-state"><p class="empty-state-desc">No files processed yet.</p></div>
+  {% endif %}
+</div>
+{% endblock %}

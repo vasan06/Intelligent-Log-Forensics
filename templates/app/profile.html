@@ -1,0 +1,219 @@
+{% extends "app_shell.html" %}
+
+{% block title %}Profile — Intelligent Log Forensics{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="../../static/css/profile.css">
+{% endblock %}
+
+{% block page_title %}Profile{% endblock %}
+
+{% block content %}
+
+<div class="profile-page">
+
+  <div class="page-header">
+    <h1 class="page-title">Profile</h1>
+    <p class="page-subtitle">
+      Manage your account information and view recent activity
+    </p>
+  </div>
+
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% for cat, msg in messages %}
+      <div class="alert alert-{{ cat }}">
+        {{ msg }}
+      </div>
+    {% endfor %}
+  {% endwith %}
+
+  <div class="content-grid profile-grid">
+
+    <!-- Account Information -->
+    <div class="card profile-account-card">
+
+      <div class="card-header">
+        <span class="card-title">Account Information</span>
+      </div>
+
+      <div class="card-body">
+
+        <div class="profile-identity">
+
+          <div class="profile-avatar">
+            {{ current_user.name[:1]|upper }}
+          </div>
+
+          <div class="profile-identity-info">
+
+            <div class="profile-name">
+              {{ current_user.name }}
+            </div>
+
+            <div class="profile-email">
+              {{ current_user.email }}
+            </div>
+
+            <span class="badge profile-role
+              {% if current_user.is_admin %}
+                badge-critical
+              {% else %}
+                badge-info
+              {% endif %}
+            ">
+              {{ current_user.display_role }}
+            </span>
+
+          </div>
+
+        </div>
+
+        <form
+          method="POST"
+          action="{{ url_for('app.update_profile') }}"
+          class="profile-form"
+        >
+
+          <div class="form-group">
+
+            <label class="form-label" for="profile-name">
+              Full Name
+            </label>
+
+            <input
+              id="profile-name"
+              class="form-input"
+              type="text"
+              name="name"
+              value="{{ current_user.name }}"
+              autocomplete="name"
+              required
+            >
+
+          </div>
+
+          <div class="form-group">
+
+            <label class="form-label" for="profile-email">
+              Email Address
+            </label>
+
+            <input
+              id="profile-email"
+              class="form-input"
+              type="email"
+              value="{{ current_user.email }}"
+              autocomplete="email"
+              disabled
+            >
+
+            <p class="form-hint">
+              Contact an administrator to change your email.
+            </p>
+
+          </div>
+
+          <button
+            type="submit"
+            class="btn btn-primary profile-save-btn"
+          >
+            Save Changes
+          </button>
+
+        </form>
+
+      </div>
+
+    </div>
+
+    <!-- Recent Activity -->
+    <div class="card profile-activity-card">
+
+      <div class="card-header">
+
+        <span class="card-title">
+          Recent Activity
+        </span>
+
+        {% if activity %}
+          <span class="badge badge-neutral">
+            {{ activity|length }}
+          </span>
+        {% endif %}
+
+      </div>
+
+      {% if activity %}
+
+        <div class="profile-activity-list">
+
+          {% for a in activity %}
+
+          <div class="profile-activity-item">
+
+            <div class="profile-activity-main">
+
+              <div class="profile-activity-action">
+                {{ a.action.replace('_', ' ').title() }}
+              </div>
+
+              {% if a.detail %}
+                <div class="profile-activity-detail">
+                  {{ a.detail }}
+                </div>
+              {% endif %}
+
+            </div>
+
+            <time class="profile-activity-time">
+              {{ a.created_at[:16] }}
+            </time>
+
+          </div>
+
+          {% endfor %}
+
+        </div>
+
+      {% else %}
+
+        <div class="empty-state profile-empty-state">
+
+          <div class="empty-state-icon">
+            <svg
+              width="28"
+              height="28"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.5"
+            >
+              <circle cx="12" cy="12" r="9"/>
+              <path d="M12 8v4"/>
+              <circle cx="12" cy="16" r="0.5" fill="currentColor"/>
+            </svg>
+          </div>
+
+          <p class="empty-state-title">
+            No recent activity
+          </p>
+
+          <p class="empty-state-desc">
+            Your account activity will appear here.
+          </p>
+
+        </div>
+
+      {% endif %}
+
+    </div>
+
+  </div>
+
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script src="../../static/js/profile.js"></script>
+{% endblock %}

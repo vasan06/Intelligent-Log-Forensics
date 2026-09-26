@@ -1,0 +1,232 @@
+/* =========================================================
+LIVE ATTACK SIMULATOR
+Intelligent Log Forensics
+========================================================= */
+
+/* Simulator layout */
+.simulator-page {
+width: 100%;
+}
+
+/* Generator grid */
+.simulator-generators {
+display: grid;
+grid-template-columns: repeat(2, minmax(0, 1fr));
+gap: var(--space-3);
+}
+
+/* Generator cards */
+.simulator-event-card {
+position: relative;
+border: 1px solid var(--color-border);
+border-radius: var(--radius-md);
+padding: var(--space-3);
+background: var(--color-surface);
+cursor: pointer;
+transition:
+border-color var(--transition-fast),
+background var(--transition-fast),
+transform var(--transition-fast),
+box-shadow var(--transition-fast);
+}
+
+.simulator-event-card:hover {
+border-color: var(--color-primary);
+background: var(--color-primary-light);
+transform: translateY(-2px);
+box-shadow: var(--shadow-sm);
+}
+
+.simulator-event-card:active {
+transform: translateY(0);
+}
+
+.simulator-event-card.is-generating {
+opacity: 0.6;
+pointer-events: none;
+}
+
+/* Event log */
+#event-log {
+scrollbar-width: thin;
+scrollbar-color: var(--color-border-strong) transparent;
+}
+
+#event-log::-webkit-scrollbar {
+width: 6px;
+}
+
+#event-log::-webkit-scrollbar-track {
+background: transparent;
+}
+
+#event-log::-webkit-scrollbar-thumb {
+background: var(--color-border-strong);
+border-radius: 999px;
+}
+
+#event-log::-webkit-scrollbar-thumb:hover {
+background: var(--color-text-muted);
+}
+
+/* Generated event */
+.simulator-generated-event {
+border-left: 3px solid var(--color-primary);
+padding: var(--space-2) var(--space-3);
+background: var(--color-bg);
+border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+margin-bottom: 6px;
+animation: fadeInUp 0.2s ease;
+}
+
+.simulator-generated-event.critical {
+border-left-color: var(--color-critical);
+}
+
+.simulator-generated-event.high {
+border-left-color: var(--color-high);
+}
+
+.simulator-generated-event.warning {
+border-left-color: var(--color-warning);
+}
+
+/* Empty event state */
+#empty-log {
+min-height: 280px;
+opacity: 0.8;
+}
+
+#empty-log svg {
+opacity: 0.45;
+}
+
+/* Event timestamp */
+.simulator-event-time {
+font-family: var(--font-mono);
+font-size: 10px;
+color: var(--color-text-muted);
+}
+
+/* Event message */
+.simulator-event-message {
+font-family: var(--font-mono);
+font-size: 10px;
+line-height: 1.5;
+color: var(--color-text-secondary);
+word-break: break-word;
+}
+
+/* Event metadata */
+.simulator-event-meta {
+display: flex;
+flex-wrap: wrap;
+gap: var(--space-2);
+margin-top: 4px;
+font-size: 10px;
+color: var(--color-text-muted);
+}
+
+/* Simulation warning */
+.simulator-warning {
+display: flex;
+align-items: center;
+gap: var(--space-3);
+}
+
+/* Event count pulse */
+#event-count.pulse {
+animation: simulatorCountPulse 0.3s ease;
+}
+
+@keyframes simulatorCountPulse {
+0% {
+transform: scale(1);
+}
+
+
+50% {
+    transform: scale(1.12);
+}
+
+100% {
+    transform: scale(1);
+}
+
+
+}
+
+/* Loading indicator */
+.simulator-loading {
+display: inline-flex;
+align-items: center;
+gap: 5px;
+}
+
+.simulator-loading::before,
+.simulator-loading::after {
+content: "";
+width: 4px;
+height: 4px;
+border-radius: 50%;
+background: currentColor;
+animation: simulatorDot 0.9s infinite ease-in-out;
+}
+
+.simulator-loading::after {
+animation-delay: 0.15s;
+}
+
+@keyframes simulatorDot {
+0%,
+80%,
+100% {
+opacity: 0.3;
+transform: translateY(0);
+}
+
+
+40% {
+    opacity: 1;
+    transform: translateY(-3px);
+}
+
+
+}
+
+/* Responsive */
+@media (max-width: 1100px) {
+.content-grid {
+grid-template-columns: 1fr;
+}
+}
+
+@media (max-width: 700px) {
+.simulator-generators {
+grid-template-columns: 1fr;
+}
+
+
+.simulator-warning {
+    align-items: flex-start;
+}
+
+#event-log {
+    height: 400px !important;
+}
+
+
+}
+
+@media (max-width: 480px) {
+#event-log {
+height: 340px !important;
+}
+
+
+.simulator-event-card {
+    padding: var(--space-3);
+}
+
+
+}

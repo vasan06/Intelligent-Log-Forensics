@@ -1,0 +1,2813 @@
+/* =========================================================
+   INTELLIGENT LOG FORENSICS
+   LOGIN PAGE — LIGHT PREMIUM AUTH
+   File: app/static/css/login.css
+========================================================= */
+
+/* =========================================================
+   01. PAGE FOUNDATION
+========================================================= */
+
+.ilf-auth-page {
+    --auth-bg: #f7f9fc;
+    --auth-surface: rgba(255, 255, 255, 0.82);
+    --auth-surface-solid: #ffffff;
+
+    --auth-text: #111827;
+    --auth-text-soft: #475467;
+    --auth-text-muted: #667085;
+
+    --auth-border: rgba(15, 23, 42, 0.09);
+    --auth-border-focus: rgba(37, 99, 235, 0.35);
+
+    --auth-primary: #2563eb;
+    --auth-primary-dark: #1d4ed8;
+    --auth-cyan: #06b6d4;
+    --auth-violet: #7c3aed;
+
+    --auth-success: #16a34a;
+    --auth-danger: #dc2626;
+    --auth-warning: #d97706;
+
+    --auth-shadow-sm:
+        0 8px 24px rgba(15, 23, 42, 0.05);
+
+    --auth-shadow-md:
+        0 18px 50px rgba(15, 23, 42, 0.07);
+
+    --auth-shadow-lg:
+        0 35px 90px rgba(15, 23, 42, 0.09);
+
+    --auth-radius-xl: 30px;
+    --auth-radius-lg: 20px;
+    --auth-radius-md: 13px;
+    --auth-radius-sm: 9px;
+
+    position: relative;
+
+    min-height: 100vh;
+    width: 100%;
+
+    overflow: hidden;
+
+    background:
+        radial-gradient(
+            circle at 8% 18%,
+            rgba(37, 99, 235, 0.075),
+            transparent 30%
+        ),
+        radial-gradient(
+            circle at 90% 78%,
+            rgba(124, 58, 237, 0.055),
+            transparent 32%
+        ),
+        linear-gradient(
+            135deg,
+            #fbfdff 0%,
+            #f7f9fc 48%,
+            #f8faff 100%
+        );
+
+    color: var(--auth-text);
+
+    isolation: isolate;
+}
+
+
+/* Soft atmospheric light */
+
+.ilf-auth-page::before {
+    content: "";
+
+    position: absolute;
+    inset: -20%;
+
+    pointer-events: none;
+
+    background:
+        radial-gradient(
+            ellipse at 50% 45%,
+            rgba(255, 255, 255, 0.95),
+            transparent 52%
+        );
+
+    z-index: -2;
+}
+
+
+/* Extremely subtle texture */
+
+.ilf-auth-page::after {
+    content: "";
+
+    position: absolute;
+    inset: 0;
+
+    pointer-events: none;
+
+    opacity: 0.16;
+
+    background-image:
+        radial-gradient(
+            rgba(15, 23, 42, 0.08) 0.5px,
+            transparent 0.5px
+        );
+
+    background-size: 26px 26px;
+
+    mask-image:
+        linear-gradient(
+            to bottom,
+            transparent,
+            black 18%,
+            black 82%,
+            transparent
+        );
+
+    z-index: -1;
+}
+
+
+/* =========================================================
+   02. HEADER
+========================================================= */
+
+.ilf-auth-header {
+    position: absolute;
+
+    top: 0;
+    left: 0;
+    right: 0;
+
+    height: 82px;
+
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    padding:
+        0 clamp(24px, 5vw, 76px);
+
+    z-index: 50;
+}
+
+
+/* Product name */
+
+.ilf-brand {
+    position: relative;
+
+    color: var(--auth-text);
+
+    text-decoration: none;
+
+    font-size: 15px;
+    font-weight: 750;
+
+    letter-spacing: -0.025em;
+
+    transition:
+        opacity 180ms ease,
+        transform 180ms ease;
+}
+
+.ilf-brand:hover {
+    opacity: 0.72;
+
+    transform:
+        translateY(-1px);
+}
+
+
+/* Back link */
+
+.ilf-back-link {
+    display: inline-flex;
+
+    align-items: center;
+    gap: 8px;
+
+    padding: 9px 12px;
+
+    color: var(--auth-text-muted);
+
+    text-decoration: none;
+
+    font-size: 12px;
+    font-weight: 650;
+
+    border-radius: 999px;
+
+    transition:
+        color 180ms ease,
+        background 180ms ease,
+        transform 180ms ease;
+}
+
+.ilf-back-link span {
+    font-size: 16px;
+
+    line-height: 1;
+
+    transition:
+        transform 180ms ease;
+}
+
+.ilf-back-link:hover {
+    color: var(--auth-text);
+
+    background:
+        rgba(255, 255, 255, 0.7);
+
+    transform:
+        translateX(-2px);
+}
+
+.ilf-back-link:hover span {
+    transform:
+        translateX(-3px);
+}
+
+
+/* =========================================================
+   03. MAIN LAYOUT
+========================================================= */
+
+.ilf-auth-layout {
+    position: relative;
+
+    width: min(
+        1380px,
+        calc(100% - 48px)
+    );
+
+    min-height: 100vh;
+
+    margin: 0 auto;
+
+    display: grid;
+
+    grid-template-columns:
+        minmax(0, 1.12fr)
+        minmax(390px, 0.88fr);
+
+    align-items: center;
+
+    gap: clamp(
+        50px,
+        7vw,
+        115px
+    );
+
+    padding:
+        108px 0 64px;
+}
+
+
+/* =========================================================
+   04. LEFT VISUAL AREA
+========================================================= */
+
+.ilf-auth-visual {
+    position: relative;
+
+    min-height: 650px;
+
+    display: flex;
+
+    align-items: center;
+    justify-content: center;
+
+    overflow: visible;
+}
+
+
+/* Visual copy */
+
+.ilf-visual-copy {
+    position: absolute;
+
+    top: 30px;
+    left: 0;
+
+    max-width: 460px;
+
+    z-index: 10;
+
+    animation:
+        auth-copy-enter
+        800ms
+        cubic-bezier(.2,.8,.2,1)
+        both;
+}
+
+
+/* Eyebrow */
+
+.ilf-visual-eyebrow {
+    display: inline-flex;
+
+    align-items: center;
+
+    gap: 9px;
+
+    margin-bottom: 17px;
+
+    color: var(--auth-primary);
+
+    font-size: 10px;
+    font-weight: 800;
+
+    letter-spacing: 0.15em;
+
+    text-transform: uppercase;
+}
+
+.ilf-visual-eyebrow::before {
+    content: "";
+
+    width: 7px;
+    height: 7px;
+
+    flex: 0 0 auto;
+
+    border-radius: 50%;
+
+    background:
+        var(--auth-success);
+
+    box-shadow:
+        0 0 0 5px rgba(22, 163, 74, 0.08),
+        0 0 16px rgba(22, 163, 74, 0.32);
+
+    animation:
+        status-breathe
+        2.6s
+        ease-in-out
+        infinite;
+}
+
+
+/* Main visual heading */
+
+.ilf-visual-title {
+    margin: 0;
+
+    max-width: 520px;
+
+    font-size:
+        clamp(
+            38px,
+            4.2vw,
+            62px
+        );
+
+    line-height: 0.98;
+
+    letter-spacing: -0.06em;
+
+    font-weight: 780;
+
+    color: var(--auth-text);
+}
+
+
+/* Visual description */
+
+.ilf-visual-description {
+    max-width: 430px;
+
+    margin:
+        21px 0 0;
+
+    color: var(--auth-text-muted);
+
+    font-size: 14px;
+
+    line-height: 1.75;
+}
+
+
+/* =========================================================
+   05. GATEWAY STAGE
+========================================================= */
+
+.ilf-gateway-stage {
+    position: relative;
+
+    width: min(
+        620px,
+        100%
+    );
+
+    aspect-ratio: 1 / 1;
+
+    margin-top: 92px;
+
+    perspective: 1500px;
+
+    transform-style: preserve-3d;
+
+    --mouse-x: 0;
+    --mouse-y: 0;
+
+    animation:
+        gateway-stage-enter
+        1100ms
+        cubic-bezier(.16,1,.3,1)
+        100ms
+        both;
+}
+
+
+/* =========================================================
+   06. THREE.JS CONTAINER
+========================================================= */
+
+.ilf-three-container {
+    position: absolute;
+
+    inset: 0;
+
+    z-index: 5;
+
+    pointer-events: none;
+
+    overflow: visible;
+}
+
+.ilf-three-container canvas {
+    display: block;
+
+    width: 100% !important;
+    height: 100% !important;
+
+    outline: none;
+}
+
+
+/* =========================================================
+   07. ATMOSPHERE
+========================================================= */
+
+.ilf-gateway-atmosphere {
+    position: absolute;
+
+    width: 78%;
+    height: 78%;
+
+    top: 11%;
+    left: 11%;
+
+    border-radius: 50%;
+
+    background:
+        radial-gradient(
+            circle,
+            rgba(37, 99, 235, 0.105),
+            rgba(6, 182, 212, 0.055) 35%,
+            rgba(124, 58, 237, 0.025) 54%,
+            transparent 72%
+        );
+
+    filter: blur(28px);
+
+    transform:
+        translate3d(
+            calc(var(--mouse-x) * -13px),
+            calc(var(--mouse-y) * -13px),
+            -100px
+        );
+
+    transition:
+        transform 240ms ease-out;
+
+    z-index: 1;
+
+    animation:
+        atmosphere-breathe
+        5s
+        ease-in-out
+        infinite;
+}
+
+
+/* =========================================================
+   08. CSS FALLBACK GATEWAY
+========================================================= */
+
+.ilf-gateway-fallback {
+    position: absolute;
+
+    inset: 8%;
+
+    z-index: 2;
+
+    transform-style: preserve-3d;
+
+    pointer-events: none;
+
+    transition:
+        opacity 400ms ease;
+}
+
+
+/* When Three.js successfully loads */
+
+.ilf-gateway-stage.is-webgl .ilf-gateway-fallback {
+    opacity: 0;
+}
+
+
+/* Gateway rings */
+
+.ilf-gateway-ring {
+    position: absolute;
+
+    border-radius: 50%;
+
+    transform-style: preserve-3d;
+
+    border: 1px solid;
+
+    pointer-events: none;
+}
+
+
+/* Outer */
+
+.ilf-gateway-ring--outer {
+    inset: 3%;
+
+    border-color:
+        rgba(37, 99, 235, 0.16);
+
+    box-shadow:
+        0 0 70px rgba(37, 99, 235, 0.07),
+        inset 0 0 60px rgba(37, 99, 235, 0.025);
+
+    animation:
+        outer-ring-drift
+        9s
+        ease-in-out
+        infinite;
+}
+
+
+/* Middle */
+
+.ilf-gateway-ring--middle {
+    inset: 15%;
+
+    border-color:
+        rgba(6, 182, 212, 0.25);
+
+    transform:
+        rotateX(67deg);
+
+    animation:
+        middle-ring-scan
+        5.5s
+        ease-in-out
+        infinite;
+}
+
+
+/* Inner */
+
+.ilf-gateway-ring--inner {
+    inset: 27%;
+
+    border:
+        1.5px solid
+        rgba(124, 58, 237, 0.18);
+
+    transform:
+        rotateY(62deg);
+
+    animation:
+        inner-ring-orbit
+        7s
+        ease-in-out
+        infinite
+        reverse;
+}
+
+
+/* =========================================================
+   09. GATEWAY APERTURE
+========================================================= */
+
+.ilf-gateway-aperture {
+    position: absolute;
+
+    inset: 25%;
+
+    border-radius: 50%;
+
+    display: flex;
+
+    align-items: center;
+    justify-content: center;
+
+    background:
+        radial-gradient(
+            circle at 36% 30%,
+            rgba(255, 255, 255, 0.98),
+            rgba(239, 246, 255, 0.86) 34%,
+            rgba(191, 219, 254, 0.18) 68%,
+            transparent 76%
+        );
+
+    border:
+        1px solid
+        rgba(37, 99, 235, 0.12);
+
+    box-shadow:
+        0 25px 80px
+        rgba(37, 99, 235, 0.12),
+
+        inset 0 0 50px
+        rgba(255, 255, 255, 0.95);
+
+    transform:
+        translateZ(70px);
+
+    overflow: hidden;
+}
+
+
+/* Aperture internal layer */
+
+.ilf-gateway-aperture::before {
+    content: "";
+
+    position: absolute;
+
+    inset: 19%;
+
+    border-radius: 50%;
+
+    border:
+        1px solid
+        rgba(6, 182, 212, 0.22);
+
+    box-shadow:
+        0 0 35px
+        rgba(6, 182, 212, 0.1);
+
+    animation:
+        aperture-pulse
+        3s
+        ease-in-out
+        infinite;
+}
+
+
+/* Scanning beam */
+
+.ilf-gateway-aperture::after {
+    content: "";
+
+    position: absolute;
+
+    width: 150%;
+    height: 18%;
+
+    left: -25%;
+    top: 42%;
+
+    background:
+        linear-gradient(
+            90deg,
+            transparent,
+            rgba(6, 182, 212, 0.04),
+            rgba(37, 99, 235, 0.18),
+            rgba(6, 182, 212, 0.05),
+            transparent
+        );
+
+    filter: blur(6px);
+
+    transform:
+        translateY(-180%);
+
+    animation:
+        gateway-scan-beam
+        3.7s
+        cubic-bezier(.45,.05,.55,.95)
+        infinite;
+}
+
+
+/* =========================================================
+   10. GATEWAY CORE
+========================================================= */
+
+.ilf-gateway-core {
+    position: relative;
+
+    width: 45%;
+    height: 45%;
+
+    border-radius: 50%;
+
+    background:
+        radial-gradient(
+            circle at 34% 27%,
+            #ffffff 0%,
+            rgba(239, 246, 255, 0.95) 34%,
+            rgba(219, 234, 254, 0.5) 65%,
+            rgba(255, 255, 255, 0.05) 100%
+        );
+
+    border:
+        1px solid
+        rgba(37, 99, 235, 0.16);
+
+    box-shadow:
+        0 20px 65px
+        rgba(37, 99, 235, 0.14),
+
+        inset 0 0 35px
+        rgba(255, 255, 255, 0.95);
+
+    transform:
+        translateZ(80px);
+
+    z-index: 4;
+
+    animation:
+        core-float
+        4.5s
+        ease-in-out
+        infinite;
+}
+
+
+/* Core internal pulse */
+
+.ilf-core-pulse {
+    position: absolute;
+
+    inset: 22%;
+
+    border-radius: 50%;
+
+    border:
+        1px solid
+        rgba(37, 99, 235, 0.25);
+
+    box-shadow:
+        0 0 25px
+        rgba(37, 99, 235, 0.12);
+
+    animation:
+        core-pulse
+        2.8s
+        ease-in-out
+        infinite;
+}
+
+
+/* =========================================================
+   11. PARTICLE FIELD
+========================================================= */
+
+.ilf-particle-field {
+    position: absolute;
+
+    inset: -8%;
+
+    z-index: 7;
+
+    pointer-events: none;
+
+    transform-style: preserve-3d;
+}
+
+
+/* JS-created particles */
+
+.ilf-particle {
+    position: absolute;
+
+    width: var(--particle-size, 4px);
+    height: var(--particle-size, 4px);
+
+    border-radius: 50%;
+
+    background:
+        var(
+            --particle-color,
+            #2563eb
+        );
+
+    opacity:
+        var(
+            --particle-opacity,
+            0.65
+        );
+
+    box-shadow:
+        0 0 14px
+        var(
+            --particle-color,
+            #2563eb
+        );
+
+    pointer-events: none;
+}
+
+
+/* =========================================================
+   12. TRACKING MARKERS
+========================================================= */
+
+.ilf-gateway-trackers {
+    position: absolute;
+
+    inset: 0;
+
+    z-index: 9;
+
+    pointer-events: none;
+}
+
+.ilf-tracker {
+    position: absolute;
+
+    width: 30px;
+    height: 30px;
+
+    border:
+        1px solid
+        rgba(37, 99, 235, 0.2);
+
+    border-radius: 8px;
+
+    opacity: 0.55;
+
+    transform:
+        translate3d(
+            var(--tracker-x, 0),
+            var(--tracker-y, 0),
+            100px
+        )
+        rotate(45deg);
+
+    animation:
+        tracker-breathe
+        3.5s
+        ease-in-out
+        infinite;
+}
+
+
+/* Tracker crosshair */
+
+.ilf-tracker::before,
+.ilf-tracker::after {
+    content: "";
+
+    position: absolute;
+
+    background:
+        rgba(37, 99, 235, 0.48);
+}
+
+.ilf-tracker::before {
+    width: 9px;
+    height: 1px;
+
+    left: -6px;
+    top: 50%;
+}
+
+.ilf-tracker::after {
+    width: 1px;
+    height: 9px;
+
+    top: -6px;
+    left: 50%;
+}
+
+
+/* =========================================================
+   13. SYSTEM STATUS
+========================================================= */
+
+.ilf-system-status {
+    position: absolute;
+
+    right: 2%;
+    bottom: 7%;
+
+    display: inline-flex;
+
+    align-items: center;
+
+    gap: 9px;
+
+    padding:
+        10px 14px;
+
+    border:
+        1px solid
+        rgba(15, 23, 42, 0.07);
+
+    border-radius: 999px;
+
+    background:
+        rgba(255, 255, 255, 0.74);
+
+    backdrop-filter:
+        blur(18px);
+
+    -webkit-backdrop-filter:
+        blur(18px);
+
+    box-shadow:
+        var(--auth-shadow-sm);
+
+    color:
+        var(--auth-text-muted);
+
+    font-size: 10px;
+    font-weight: 700;
+
+    z-index: 15;
+}
+
+.ilf-status-dot {
+    width: 7px;
+    height: 7px;
+
+    flex: 0 0 auto;
+
+    border-radius: 50%;
+
+    background:
+        var(--auth-success);
+
+    box-shadow:
+        0 0 0 5px
+        rgba(22, 163, 74, 0.08),
+
+        0 0 14px
+        rgba(22, 163, 74, 0.3);
+
+    animation:
+        status-breathe
+        2.6s
+        ease-in-out
+        infinite;
+}
+
+
+/* =========================================================
+   14. RIGHT AUTH PANEL
+========================================================= */
+
+.ilf-auth-panel {
+    width: 100%;
+
+    max-width: 480px;
+
+    margin-left: auto;
+
+    animation:
+        form-panel-enter
+        850ms
+        cubic-bezier(.16,1,.3,1)
+        180ms
+        both;
+}
+
+
+/* Heading */
+
+.ilf-auth-heading {
+    margin-bottom: 28px;
+}
+
+.ilf-form-eyebrow {
+    display: block;
+
+    margin-bottom: 12px;
+
+    color:
+        var(--auth-primary);
+
+    font-size: 10px;
+    font-weight: 800;
+
+    letter-spacing: 0.13em;
+
+    text-transform: uppercase;
+}
+
+.ilf-auth-heading h1 {
+    margin: 0 0 9px;
+
+    font-size:
+        clamp(
+            31px,
+            3vw,
+            42px
+        );
+
+    line-height: 1.04;
+
+    letter-spacing: -0.05em;
+
+    font-weight: 780;
+
+    color:
+        var(--auth-text);
+}
+
+.ilf-auth-heading p {
+    margin: 0;
+
+    color:
+        var(--auth-text-muted);
+
+    font-size: 13px;
+
+    line-height: 1.65;
+}
+
+
+/* =========================================================
+   15. FORM CARD
+========================================================= */
+
+.ilf-form-card {
+    position: relative;
+
+    padding:
+        clamp(25px, 3vw, 34px);
+
+    border:
+        1px solid
+        var(--auth-border);
+
+    border-radius:
+        var(--auth-radius-xl);
+
+    background:
+        linear-gradient(
+            145deg,
+            rgba(255,255,255,0.9),
+            rgba(255,255,255,0.72)
+        );
+
+    backdrop-filter:
+        blur(22px);
+
+    -webkit-backdrop-filter:
+        blur(22px);
+
+    box-shadow:
+        var(--auth-shadow-lg);
+
+    overflow: hidden;
+}
+
+
+/* Card highlight */
+
+.ilf-form-card::before {
+    content: "";
+
+    position: absolute;
+
+    top: 0;
+    left: 12%;
+    right: 12%;
+
+    height: 1px;
+
+    background:
+        linear-gradient(
+            90deg,
+            transparent,
+            rgba(37, 99, 235, 0.22),
+            rgba(6, 182, 212, 0.2),
+            transparent
+        );
+}
+
+
+/* =========================================================
+   16. FLASH ALERTS
+========================================================= */
+
+.ilf-auth-alerts {
+    display: flex;
+
+    flex-direction: column;
+
+    gap: 10px;
+
+    margin-bottom: 16px;
+}
+
+.ilf-alert {
+    position: relative;
+
+    display: flex;
+
+    align-items: flex-start;
+
+    gap: 10px;
+
+    padding:
+        12px 13px;
+
+    border-radius:
+        var(--auth-radius-md);
+
+    font-size: 12px;
+
+    line-height: 1.5;
+
+    border: 1px solid transparent;
+}
+
+.ilf-alert--error {
+    color: #991b1b;
+
+    background:
+        rgba(254, 226, 226, 0.65);
+
+    border-color:
+        rgba(220, 38, 38, 0.13);
+}
+
+.ilf-alert--success {
+    color: #166534;
+
+    background:
+        rgba(220, 252, 231, 0.7);
+
+    border-color:
+        rgba(22, 163, 74, 0.13);
+}
+
+.ilf-alert--warning {
+    color: #92400e;
+
+    background:
+        rgba(254, 243, 199, 0.72);
+
+    border-color:
+        rgba(217, 119, 6, 0.13);
+}
+
+.ilf-alert-icon {
+    width: 7px;
+    height: 7px;
+
+    margin-top: 5px;
+
+    flex: 0 0 auto;
+
+    border-radius: 50%;
+
+    background: currentColor;
+}
+
+.ilf-alert-message {
+    flex: 1;
+}
+
+.ilf-alert-close {
+    appearance: none;
+
+    border: 0;
+
+    background: transparent;
+
+    color: currentColor;
+
+    opacity: 0.55;
+
+    cursor: pointer;
+
+    font-size: 17px;
+
+    line-height: 1;
+
+    padding: 0;
+
+    transition:
+        opacity 160ms ease;
+}
+
+.ilf-alert-close:hover {
+    opacity: 1;
+}
+
+
+/* =========================================================
+   17. FORM
+========================================================= */
+
+.ilf-signin-form {
+    display: flex;
+
+    flex-direction: column;
+
+    gap: 20px;
+}
+
+
+/* Field */
+
+.ilf-field {
+    display: flex;
+
+    flex-direction: column;
+
+    gap: 8px;
+}
+
+
+/* Field heading */
+
+.ilf-field-heading {
+    display: flex;
+
+    align-items: center;
+
+    justify-content: space-between;
+
+    gap: 12px;
+}
+
+
+/* Label */
+
+.ilf-field-label {
+    display: block;
+
+    color:
+        var(--auth-text);
+
+    font-size: 12px;
+
+    font-weight: 700;
+}
+
+
+/* Forgot */
+
+.ilf-forgot-link {
+    color:
+        var(--auth-primary);
+
+    text-decoration: none;
+
+    font-size: 11px;
+
+    font-weight: 650;
+
+    transition:
+        color 160ms ease;
+}
+
+.ilf-forgot-link:hover {
+    color:
+        var(--auth-primary-dark);
+
+    text-decoration: underline;
+}
+
+
+/* =========================================================
+   18. INPUT
+========================================================= */
+
+.ilf-input-wrap {
+    position: relative;
+
+    display: flex;
+
+    align-items: center;
+
+    min-height: 50px;
+
+    border:
+        1px solid
+        rgba(15, 23, 42, 0.11);
+
+    border-radius:
+        var(--auth-radius-md);
+
+    background:
+        rgba(255, 255, 255, 0.72);
+
+    transition:
+        border-color 180ms ease,
+        box-shadow 180ms ease,
+        background 180ms ease,
+        transform 180ms ease;
+}
+
+.ilf-input-wrap:focus-within {
+    border-color:
+        var(--auth-border-focus);
+
+    background:
+        rgba(255, 255, 255, 0.95);
+
+    box-shadow:
+        0 0 0 4px
+        rgba(37, 99, 235, 0.06);
+
+    transform:
+        translateY(-1px);
+}
+
+
+/* Input icon */
+
+.ilf-input-icon {
+    width: 46px;
+
+    display: flex;
+
+    align-items: center;
+    justify-content: center;
+
+    color:
+        #98a2b3;
+
+    font-size: 14px;
+
+    user-select: none;
+}
+
+
+/* Input */
+
+.ilf-input {
+    width: 100%;
+
+    min-width: 0;
+
+    height: 48px;
+
+    padding:
+        0 14px 0 0;
+
+    border: 0;
+
+    outline: 0;
+
+    background: transparent;
+
+    color:
+        var(--auth-text);
+
+    font-family: inherit;
+
+    font-size: 13px;
+
+    font-weight: 500;
+}
+
+.ilf-input::placeholder {
+    color:
+        #98a2b3;
+
+    font-weight: 400;
+}
+
+.ilf-input:-webkit-autofill,
+.ilf-input:-webkit-autofill:hover,
+.ilf-input:-webkit-autofill:focus {
+    -webkit-text-fill-color:
+        var(--auth-text);
+
+    box-shadow:
+        0 0 0 1000px
+        rgba(255,255,255,0.96)
+        inset;
+
+    transition:
+        background-color
+        9999s
+        ease-in-out
+        0s;
+}
+
+
+/* =========================================================
+   19. PASSWORD TOGGLE
+========================================================= */
+
+.ilf-password-toggle {
+    width: 46px;
+    height: 48px;
+
+    flex: 0 0 auto;
+
+    display: flex;
+
+    align-items: center;
+    justify-content: center;
+
+    border: 0;
+
+    background: transparent;
+
+    color:
+        #98a2b3;
+
+    cursor: pointer;
+
+    transition:
+        color 160ms ease;
+}
+
+.ilf-password-toggle:hover {
+    color:
+        var(--auth-text);
+}
+
+
+/* Eye */
+
+.ilf-eye-icon {
+    position: relative;
+
+    width: 17px;
+    height: 11px;
+
+    border:
+        1.5px solid currentColor;
+
+    border-radius:
+        70% 10% 70% 10%;
+
+    transform:
+        rotate(45deg);
+}
+
+.ilf-eye-icon::after {
+    content: "";
+
+    position: absolute;
+
+    width: 4px;
+    height: 4px;
+
+    top: 50%;
+    left: 50%;
+
+    border-radius: 50%;
+
+    background:
+        currentColor;
+
+    transform:
+        translate(-50%, -50%);
+}
+
+
+/* =========================================================
+   20. FIELD ERRORS
+========================================================= */
+
+.ilf-field-error {
+    min-height: 0;
+
+    color:
+        var(--auth-danger);
+
+    font-size: 10px;
+
+    line-height: 1.4;
+}
+
+.ilf-field.has-error .ilf-input-wrap {
+    border-color:
+        rgba(220, 38, 38, 0.4);
+
+    box-shadow:
+        0 0 0 4px
+        rgba(220, 38, 38, 0.05);
+}
+
+
+/* =========================================================
+   21. REMEMBER ME
+========================================================= */
+
+.ilf-form-options {
+    display: flex;
+
+    align-items: center;
+
+    justify-content: space-between;
+}
+
+.ilf-checkbox {
+    display: inline-flex;
+
+    align-items: center;
+
+    gap: 9px;
+
+    cursor: pointer;
+
+    color:
+        var(--auth-text-muted);
+
+    font-size: 11px;
+
+    user-select: none;
+}
+
+.ilf-checkbox input {
+    position: absolute;
+
+    opacity: 0;
+
+    pointer-events: none;
+}
+
+.ilf-checkbox-box {
+    position: relative;
+
+    width: 16px;
+    height: 16px;
+
+    flex: 0 0 auto;
+
+    border:
+        1px solid
+        rgba(15, 23, 42, 0.15);
+
+    border-radius: 5px;
+
+    background:
+        #ffffff;
+
+    transition:
+        background 160ms ease,
+        border-color 160ms ease,
+        transform 160ms ease;
+}
+
+.ilf-checkbox input:checked + .ilf-checkbox-box {
+    border-color:
+        var(--auth-primary);
+
+    background:
+        var(--auth-primary);
+}
+
+.ilf-checkbox input:checked + .ilf-checkbox-box::after {
+    content: "";
+
+    position: absolute;
+
+    width: 4px;
+    height: 7px;
+
+    left: 5px;
+    top: 2px;
+
+    border:
+        solid white;
+
+    border-width:
+        0 1.5px 1.5px 0;
+
+    transform:
+        rotate(45deg);
+}
+
+
+/* =========================================================
+   22. SUBMIT BUTTON
+========================================================= */
+
+.ilf-submit-button {
+    position: relative;
+
+    width: 100%;
+
+    height: 52px;
+
+    display: flex;
+
+    align-items: center;
+    justify-content: center;
+
+    border: 0;
+
+    border-radius:
+        var(--auth-radius-md);
+
+    background:
+        linear-gradient(
+            110deg,
+            #2563eb,
+            #315ee8 48%,
+            #0ea5e9
+        );
+
+    color: #ffffff;
+
+    cursor: pointer;
+
+    overflow: hidden;
+
+    box-shadow:
+        0 12px 28px
+        rgba(37, 99, 235, 0.18);
+
+    font-family: inherit;
+
+    transition:
+        transform 180ms ease,
+        box-shadow 180ms ease,
+        filter 180ms ease;
+}
+
+.ilf-submit-button::before {
+    content: "";
+
+    position: absolute;
+
+    inset: 0;
+
+    background:
+        linear-gradient(
+            105deg,
+            transparent 20%,
+            rgba(255,255,255,0.22) 50%,
+            transparent 80%
+        );
+
+    transform:
+        translateX(-120%);
+
+    transition:
+        transform 600ms ease;
+}
+
+.ilf-submit-button:hover {
+    transform:
+        translateY(-2px);
+
+    box-shadow:
+        0 16px 35px
+        rgba(37, 99, 235, 0.24);
+
+    filter:
+        saturate(1.05);
+}
+
+.ilf-submit-button:hover::before {
+    transform:
+        translateX(120%);
+}
+
+.ilf-submit-button:active {
+    transform:
+        translateY(0);
+}
+
+.ilf-submit-button:disabled {
+    cursor:
+        wait;
+
+    opacity:
+        0.78;
+
+    transform:
+        none;
+
+    box-shadow:
+        none;
+}
+
+
+/* Submit content */
+
+.ilf-submit-content {
+    position: relative;
+
+    z-index: 2;
+
+    width: 100%;
+
+    padding:
+        0 18px;
+
+    display: flex;
+
+    align-items: center;
+    justify-content: center;
+}
+
+.ilf-submit-label {
+    font-size: 13px;
+
+    font-weight: 750;
+
+    letter-spacing: -0.01em;
+}
+
+.ilf-submit-arrow {
+    position: absolute;
+
+    right: 18px;
+
+    font-size: 18px;
+
+    line-height: 1;
+
+    transition:
+        transform 180ms ease;
+}
+
+.ilf-submit-button:hover .ilf-submit-arrow {
+    transform:
+        translateX(4px);
+}
+
+
+/* Loader */
+
+.ilf-submit-loader {
+    position: absolute;
+
+    width: 17px;
+    height: 17px;
+
+    border:
+        2px solid
+        rgba(255,255,255,0.3);
+
+    border-top-color:
+        #ffffff;
+
+    border-radius: 50%;
+
+    opacity: 0;
+
+    animation:
+        submit-spin
+        700ms
+        linear
+        infinite;
+}
+
+.ilf-submit-button.is-loading .ilf-submit-content {
+    opacity: 0;
+}
+
+.ilf-submit-button.is-loading .ilf-submit-loader {
+    opacity: 1;
+}
+
+
+/* =========================================================
+   23. AUTH PROGRESS
+========================================================= */
+
+.ilf-auth-progress {
+    display: flex;
+
+    align-items: center;
+
+    gap: 13px;
+
+    margin-top: 16px;
+
+    padding:
+        13px;
+
+    border:
+        1px solid
+        rgba(37, 99, 235, 0.1);
+
+    border-radius:
+        var(--auth-radius-md);
+
+    background:
+        rgba(239, 246, 255, 0.6);
+
+    animation:
+        progress-enter
+        400ms
+        cubic-bezier(.2,.8,.2,1)
+        both;
+}
+
+.ilf-progress-orb {
+    position: relative;
+
+    width: 32px;
+    height: 32px;
+
+    flex: 0 0 auto;
+
+    display: flex;
+
+    align-items: center;
+    justify-content: center;
+
+    border-radius: 50%;
+
+    background:
+        rgba(255,255,255,0.9);
+
+    border:
+        1px solid
+        rgba(37, 99, 235, 0.13);
+}
+
+.ilf-progress-orb::before {
+    content: "";
+
+    width: 13px;
+    height: 13px;
+
+    border:
+        2px solid
+        rgba(37, 99, 235, 0.18);
+
+    border-top-color:
+        var(--auth-primary);
+
+    border-radius: 50%;
+
+    animation:
+        submit-spin
+        700ms
+        linear
+        infinite;
+}
+
+.ilf-progress-content {
+    display: flex;
+
+    flex-direction: column;
+
+    gap: 2px;
+
+    min-width: 0;
+}
+
+.ilf-progress-content strong {
+    color:
+        var(--auth-text);
+
+    font-size: 11px;
+
+    font-weight: 750;
+}
+
+.ilf-progress-content span {
+    color:
+        var(--auth-text-muted);
+
+    font-size: 10px;
+
+    line-height: 1.4;
+}
+
+
+/* =========================================================
+   24. CREATE ACCOUNT
+========================================================= */
+
+.ilf-create-account {
+    display: flex;
+
+    align-items: center;
+    justify-content: center;
+
+    flex-wrap: wrap;
+
+    gap: 5px;
+
+    margin-top: 23px;
+
+    color:
+        var(--auth-text-muted);
+
+    font-size: 11px;
+}
+
+.ilf-create-account a {
+    color:
+        var(--auth-primary);
+
+    text-decoration: none;
+
+    font-weight: 700;
+
+    transition:
+        color 160ms ease;
+}
+
+.ilf-create-account a:hover {
+    color:
+        var(--auth-primary-dark);
+
+    text-decoration: underline;
+}
+
+
+/* =========================================================
+   25. SECURITY NOTE
+========================================================= */
+
+.ilf-security-note {
+    display: flex;
+
+    align-items: center;
+    justify-content: center;
+
+    gap: 7px;
+
+    margin-top: 18px;
+
+    color:
+        #98a2b3;
+
+    font-size: 9px;
+
+    line-height: 1.5;
+
+    text-align: center;
+}
+
+.ilf-security-icon {
+    width: 15px;
+    height: 15px;
+
+    display: inline-flex;
+
+    align-items: center;
+    justify-content: center;
+
+    border-radius: 50%;
+
+    color:
+        var(--auth-success);
+
+    background:
+        rgba(22, 163, 74, 0.08);
+
+    font-size: 9px;
+
+    font-weight: 800;
+}
+
+
+/* =========================================================
+   26. GATEWAY TRANSITION
+========================================================= */
+
+.ilf-gateway-transition {
+    position: fixed;
+
+    inset: 0;
+
+    display: flex;
+
+    align-items: center;
+    justify-content: center;
+
+    background:
+        radial-gradient(
+            circle at center,
+            rgba(255,255,255,0.98),
+            rgba(246,249,252,0.99)
+        );
+
+    opacity: 0;
+
+    visibility: hidden;
+
+    pointer-events: none;
+
+    z-index: 9999;
+
+    transition:
+        opacity 500ms ease,
+        visibility 500ms ease;
+}
+
+.ilf-gateway-transition.is-active {
+    opacity: 1;
+
+    visibility: visible;
+
+    pointer-events: auto;
+}
+
+
+/* Transition scene */
+
+.ilf-transition-scene {
+    position: relative;
+
+    width: min(520px, 70vw);
+
+    aspect-ratio: 1;
+
+    perspective: 1200px;
+
+    transform-style: preserve-3d;
+}
+
+
+/* Transition core */
+
+.ilf-transition-core {
+    position: absolute;
+
+    inset: 34%;
+
+    border-radius: 50%;
+
+    background:
+        radial-gradient(
+            circle at 35% 30%,
+            #ffffff,
+            #dbeafe 42%,
+            #93c5fd 70%,
+            rgba(37,99,235,0.2)
+        );
+
+    box-shadow:
+        0 0 80px
+        rgba(37,99,235,0.2);
+
+    animation:
+        transition-core-expand
+        3s
+        cubic-bezier(.16,1,.3,1)
+        forwards;
+}
+
+
+/* Transition rings */
+
+.ilf-transition-ring {
+    position: absolute;
+
+    border-radius: 50%;
+
+    border:
+        1px solid
+        rgba(37,99,235,0.25);
+
+    inset: 20%;
+
+    transform-style: preserve-3d;
+}
+
+.transition-ring-1 {
+    animation:
+        transition-ring-expand
+        2.4s
+        ease-out
+        forwards;
+}
+
+.transition-ring-2 {
+    inset: 28%;
+
+    border-color:
+        rgba(6,182,212,0.25);
+
+    animation:
+        transition-ring-expand
+        2.8s
+        ease-out
+        250ms
+        forwards;
+}
+
+.transition-ring-3 {
+    inset: 36%;
+
+    border-color:
+        rgba(124,58,237,0.2);
+
+    animation:
+        transition-ring-expand
+        3.1s
+        ease-out
+        450ms
+        forwards;
+}
+
+
+/* Transition particles */
+
+.ilf-transition-particles {
+    position: absolute;
+
+    inset: 0;
+}
+
+
+/* Transition text */
+
+.ilf-transition-message {
+    position: absolute;
+
+    bottom: 15%;
+
+    display: flex;
+
+    flex-direction: column;
+
+    align-items: center;
+
+    gap: 7px;
+
+    text-align: center;
+
+    opacity: 0;
+
+    animation:
+        transition-message
+        900ms
+        ease
+        700ms
+        forwards;
+}
+
+.ilf-transition-label {
+    color:
+        var(--auth-primary);
+
+    font-size: 9px;
+
+    font-weight: 800;
+
+    letter-spacing: 0.16em;
+}
+
+.ilf-transition-message strong {
+    color:
+        var(--auth-text);
+
+    font-size: 15px;
+
+    font-weight: 750;
+}
+
+
+/* =========================================================
+   27. ANIMATIONS
+========================================================= */
+
+@keyframes auth-copy-enter {
+    from {
+        opacity: 0;
+
+        transform:
+            translateY(22px);
+    }
+
+    to {
+        opacity: 1;
+
+        transform:
+            translateY(0);
+    }
+}
+
+
+@keyframes form-panel-enter {
+    from {
+        opacity: 0;
+
+        transform:
+            translateY(24px);
+    }
+
+    to {
+        opacity: 1;
+
+        transform:
+            translateY(0);
+    }
+}
+
+
+@keyframes gateway-stage-enter {
+    from {
+        opacity: 0;
+
+        transform:
+            scale(0.94)
+            translateY(20px);
+    }
+
+    to {
+        opacity: 1;
+
+        transform:
+            scale(1)
+            translateY(0);
+    }
+}
+
+
+@keyframes atmosphere-breathe {
+    0%,
+    100% {
+        transform:
+            scale(0.96)
+            translate3d(
+                calc(var(--mouse-x) * -13px),
+                calc(var(--mouse-y) * -13px),
+                -100px
+            );
+        opacity: 0.7;
+    }
+
+    50% {
+        transform:
+            scale(1.04)
+            translate3d(
+                calc(var(--mouse-x) * -13px),
+                calc(var(--mouse-y) * -13px),
+                -100px
+            );
+        opacity: 1;
+    }
+}
+
+
+@keyframes outer-ring-drift {
+    0%,
+    100% {
+        transform:
+            rotateX(3deg)
+            rotateY(-5deg)
+            scale(0.98);
+    }
+
+    50% {
+        transform:
+            rotateX(-5deg)
+            rotateY(6deg)
+            scale(1.015);
+    }
+}
+
+
+@keyframes middle-ring-scan {
+    0%,
+    100% {
+        transform:
+            rotateX(67deg)
+            rotateZ(-5deg);
+    }
+
+    50% {
+        transform:
+            rotateX(72deg)
+            rotateZ(7deg);
+    }
+}
+
+
+@keyframes inner-ring-orbit {
+    0%,
+    100% {
+        transform:
+            rotateY(62deg)
+            rotateZ(0deg);
+    }
+
+    50% {
+        transform:
+            rotateY(70deg)
+            rotateZ(18deg);
+    }
+}
+
+
+@keyframes aperture-pulse {
+    0%,
+    100% {
+        transform:
+            scale(0.94);
+
+        opacity: 0.55;
+    }
+
+    50% {
+        transform:
+            scale(1.05);
+
+        opacity: 1;
+    }
+}
+
+
+@keyframes gateway-scan-beam {
+    0% {
+        transform:
+            translateY(-220%);
+    }
+
+    50% {
+        transform:
+            translateY(0);
+    }
+
+    100% {
+        transform:
+            translateY(220%);
+    }
+}
+
+
+@keyframes core-float {
+    0%,
+    100% {
+        transform:
+            translateZ(80px)
+            translateY(-3px);
+    }
+
+    50% {
+        transform:
+            translateZ(80px)
+            translateY(5px);
+    }
+}
+
+
+@keyframes core-pulse {
+    0%,
+    100% {
+        transform:
+            scale(0.86);
+
+        opacity: 0.35;
+    }
+
+    50% {
+        transform:
+            scale(1.12);
+
+        opacity: 0.9;
+    }
+}
+
+
+@keyframes tracker-breathe {
+    0%,
+    100% {
+        opacity: 0.25;
+
+        transform:
+            translate3d(
+                var(--tracker-x, 0),
+                var(--tracker-y, 0),
+                100px
+            )
+            rotate(45deg)
+            scale(0.92);
+    }
+
+    50% {
+        opacity: 0.7;
+
+        transform:
+            translate3d(
+                var(--tracker-x, 0),
+                var(--tracker-y, 0),
+                100px
+            )
+            rotate(45deg)
+            scale(1);
+    }
+}
+
+
+@keyframes status-breathe {
+    0%,
+    100% {
+        opacity: 0.55;
+
+        transform:
+            scale(0.9);
+    }
+
+    50% {
+        opacity: 1;
+
+        transform:
+            scale(1.05);
+    }
+}
+
+
+@keyframes submit-spin {
+    to {
+        transform:
+            rotate(360deg);
+    }
+}
+
+
+@keyframes progress-enter {
+    from {
+        opacity: 0;
+
+        transform:
+            translateY(-5px);
+    }
+
+    to {
+        opacity: 1;
+
+        transform:
+            translateY(0);
+    }
+}
+
+
+@keyframes transition-core-expand {
+    0% {
+        transform:
+            scale(0.4);
+
+        opacity: 0;
+    }
+
+    30% {
+        opacity: 1;
+    }
+
+    100% {
+        transform:
+            scale(2.8);
+
+        opacity: 0.2;
+    }
+}
+
+
+@keyframes transition-ring-expand {
+    0% {
+        opacity: 0;
+
+        transform:
+            scale(0.55)
+            rotateX(20deg);
+    }
+
+    30% {
+        opacity: 1;
+    }
+
+    100% {
+        opacity: 0;
+
+        transform:
+            scale(2.2)
+            rotateX(70deg);
+    }
+}
+
+
+@keyframes transition-message {
+    from {
+        opacity: 0;
+
+        transform:
+            translateY(10px);
+    }
+
+    to {
+        opacity: 1;
+
+        transform:
+            translateY(0);
+    }
+}
+
+
+/* =========================================================
+   28. RESPONSIVE — TABLET
+========================================================= */
+
+@media (max-width: 1100px) {
+
+    .ilf-auth-layout {
+        grid-template-columns:
+            minmax(0, 1fr)
+            minmax(360px, 0.9fr);
+
+        gap: 45px;
+    }
+
+    .ilf-visual-title {
+        font-size: 45px;
+    }
+
+    .ilf-gateway-stage {
+        width: 530px;
+
+        margin-top: 105px;
+    }
+
+    .ilf-auth-visual {
+        min-height: 590px;
+    }
+}
+
+
+/* =========================================================
+   29. RESPONSIVE — MOBILE
+========================================================= */
+
+@media (max-width: 820px) {
+
+    .ilf-auth-page {
+        overflow-y: auto;
+    }
+
+    .ilf-auth-header {
+        position: relative;
+
+        height: 72px;
+
+        padding:
+            0 22px;
+    }
+
+    .ilf-auth-layout {
+        width:
+            min(
+                100% - 36px,
+                560px
+            );
+
+        min-height: auto;
+
+        display: flex;
+
+        flex-direction: column;
+
+        gap: 0;
+
+        padding:
+            32px 0 50px;
+    }
+
+    .ilf-auth-visual {
+        width: 100%;
+
+        min-height: 430px;
+
+        order: 1;
+    }
+
+    .ilf-visual-copy {
+        position: relative;
+
+        top: auto;
+        left: auto;
+
+        width: 100%;
+
+        max-width: 520px;
+
+        margin-bottom: -50px;
+
+        text-align: center;
+    }
+
+    .ilf-visual-copy .ilf-visual-eyebrow {
+        justify-content: center;
+    }
+
+    .ilf-visual-title {
+        font-size:
+            clamp(34px, 10vw, 46px);
+
+        max-width: 100%;
+    }
+
+    .ilf-visual-description {
+        margin-left: auto;
+        margin-right: auto;
+
+        max-width: 450px;
+    }
+
+    .ilf-gateway-stage {
+        width:
+            min(
+                500px,
+                100%
+            );
+
+        margin-top: 90px;
+    }
+
+    .ilf-system-status {
+        right: 4%;
+        bottom: 5%;
+    }
+
+    .ilf-auth-panel {
+        order: 2;
+
+        max-width: 100%;
+
+        margin: 0;
+    }
+}
+
+
+/* =========================================================
+   30. RESPONSIVE — SMALL MOBILE
+========================================================= */
+
+@media (max-width: 480px) {
+
+    .ilf-auth-header {
+        height: 66px;
+
+        padding:
+            0 18px;
+    }
+
+    .ilf-brand {
+        font-size: 13px;
+    }
+
+    .ilf-back-link {
+        font-size: 11px;
+    }
+
+    .ilf-auth-layout {
+        width:
+            calc(100% - 28px);
+
+        padding-top: 22px;
+    }
+
+    .ilf-auth-visual {
+        min-height: 355px;
+    }
+
+    .ilf-visual-copy {
+        margin-bottom: -20px;
+    }
+
+    .ilf-visual-description {
+        font-size: 12px;
+
+        line-height: 1.6;
+    }
+
+    .ilf-gateway-stage {
+        margin-top: 72px;
+    }
+
+    .ilf-system-status {
+        font-size: 9px;
+
+        padding:
+            8px 11px;
+    }
+
+    .ilf-form-card {
+        padding:
+            21px 17px;
+
+        border-radius:
+            22px;
+    }
+
+    .ilf-auth-heading h1 {
+        font-size: 30px;
+    }
+
+    .ilf-auth-heading p {
+        font-size: 12px;
+    }
+
+    .ilf-submit-button {
+        height: 50px;
+    }
+
+    .ilf-security-note {
+        padding:
+            0 10px;
+    }
+}
+
+
+/* =========================================================
+   31. ACCESSIBILITY / REDUCED MOTION
+========================================================= */
+
+@media (prefers-reduced-motion: reduce) {
+
+    .ilf-auth-page *,
+    .ilf-auth-page *::before,
+    .ilf-auth-page *::after {
+        animation-duration: 0.001ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.001ms !important;
+    }
+
+    .ilf-gateway-atmosphere,
+    .ilf-gateway {
+        transform: none !important;
+    }
+}
+
+
+/* =========================================================
+   32. WEBGL FAILURE FALLBACK
+========================================================= */
+
+.ilf-gateway-stage.webgl-failed
+.ilf-gateway-fallback {
+    opacity: 1;
+}
+
+.ilf-gateway-stage.webgl-failed
+.ilf-three-container {
+    display: none;
+}
+
+
+/* =========================================================
+   33. AUTH TRANSITION STATE
+========================================================= */
+
+.ilf-auth-page.is-authenticating
+.ilf-auth-layout {
+    pointer-events: none;
+}
+
+.ilf-auth-page.is-authenticating
+.ilf-gateway-stage {
+    transform:
+        scale(1.04);
+}
+
+.ilf-auth-page.is-authenticating
+.ilf-gateway-atmosphere {
+    opacity: 1;
+
+    filter:
+        blur(18px);
+}
+
+
+/* =========================================================
+   34. PRINT
+========================================================= */
+
+@media print {
+
+    .ilf-auth-page {
+        background: #ffffff !important;
+    }
+
+    .ilf-gateway-stage,
+    .ilf-auth-visual {
+        display: none !important;
+    }
+
+    .ilf-auth-layout {
+        display: block;
+
+        min-height: auto;
+    }
+
+    .ilf-auth-panel {
+        max-width: 480px;
+
+        margin: 0 auto;
+    }
+}
