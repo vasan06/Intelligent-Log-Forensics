@@ -1,147 +1,109 @@
-# Intelligent Log Forensics
+# Intelligent Log Forensic (ILF) v2.0
 
-A professional security analytics platform for log-based threat detection, forensic investigation and incident response.
+> ML-powered log forensics. MITRE ATT&CK mapping. Real-time threat detection.
 
-## Features
+---
 
-- **Log Analysis** — Parse Apache, Nginx, Syslog, Auth, JSON, CSV and custom log formats
-- **Threat Detection** — Behavioral signature scanning for injection, brute force, scanning, C2
-- **ML Anomaly Engine** — Ensemble: Isolation Forest + Local Outlier Factor + One-Class SVM
-- **MITRE ATT&CK Mapping** — Every detection mapped to ATT&CK tactics and techniques
-- **Incident Management** — Auto-created incidents with full investigation workflow
-- **Forensic Reports** — PDF report generation with evidence, timelines and MITRE maps
-- **Live Simulator** — Synthetic attack event generator for pipeline testing
-- **Admin Console** — User management, audit logging, system monitoring
-- **3D Visualization** — Interactive Three.js pipeline model on the landing page
-- **SMTP Password Reset** — Secure token-based password reset via email
+## Quick Start
 
-## Quick Start with Docker
+### 1. Backend
 
-bash
-# Clone / extract the project
-cd intelligent-log-forensics
-
-# Copy and edit environment variables
-cp .env.example .env
-# Edit .env with your settings
-
-# Build and start
-docker-compose up --build
-
-# Open http://localhost:5000
-# Default admin: admin@ilf.security / ILFAdmin2026!
-
-
-## Local Development
-
-bash
-python -m venv venv
-source venv/bin/activate   # Windows: venv\Scripts\activate
+```bash
+cd backend
 pip install -r requirements.txt
+python -m backend.app
+```
 
-# Copy env
-cp .env.example .env
+Backend runs at **http://localhost:5000**
 
-python app.py
-# Open http://localhost:5000
+### 2. Frontend
 
+Open `frontend/landing.html` in any browser (or `frontend/index.html` to go straight to login).
 
-## Default Credentials
+**Demo login:** `admin@ilf.io` / `ilf2026`
 
-| Role | Email | Password |
-|------|-------|----------|
-| Admin | admin@ilf.security | ILFAdmin2026! |
+---
 
-**Change these immediately in production via the `.env` file.**
+## Pages
 
-## Environment Variables
+| Page | File | Description |
+|------|------|-------------|
+| Landing | `landing.html` | Product page with live demo terminal |
+| Login | `index.html` | Auth with 3D helix scene |
+| Signup | `signup.html` | Registration with OTP email verify |
+| Forgot PW | `forgot-password.html` | OTP-based password reset |
+| Dashboard | `dashboard.html` | KPIs, charts, ML summary ribbon |
+| Live Monitor | `live-monitor.html` | 8 simulation modes, start/stop stream |
+| Log Explorer | `log-explorer.html` | File upload + 3D pipeline workflow |
+| ML Analysis | `ml-analysis.html` | Ensemble (all 4 algos), file/stream |
+| MITRE Tracker | `mitre-tracker.html` | Auto-map logs to ATT&CK |
+| ATT&CK Catalog | `mitre-catalog.html` | 100+ techniques, search, filter |
+| Reports | `reports.html` | PDF report generator |
+| Admin | `admin.html` | Users, system health, settings |
+| Profile | `profile.html` | Editable profile, activity feed |
 
-| Variable | Description | Default |
-|----------|-------------|---------|
-| `ILF_SECRET_KEY` | Flask session secret | dev key |
-| `ILF_TOKEN_KEY` | JWT signing key | dev key |
-| `ILF_ADMIN_EMAIL` | Default admin email | admin@ilf.security |
-| `ILF_ADMIN_PASSWORD` | Default admin password | ILFAdmin2026! |
-| `ILF_SECURE_COOKIES` | HTTPS-only cookies | false |
-| `ILF_DB_PATH` | SQLite database path | instance/ilf.db |
-| `SMTP_HOST` | SMTP server host | smtp.gmail.com |
-| `SMTP_PORT` | SMTP server port | 587 |
-| `SMTP_USER` | SMTP username | — |
-| `SMTP_PASS` | SMTP password/app key | — |
-| `SMTP_FROM` | From email address | noreply@ilf.security |
+---
 
-## Supported Log Formats
+## API Endpoints (all visible in DevTools → Network)
 
-- Apache/Nginx Combined Access Log
-- Linux Auth Log (syslog, auth.log)
-- JSON Events (one object per line)
-- JSONL streams
-- CSV with standard fields
-- Plain text log lines
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| POST | `/api/auth/login` | Login → JWT token |
+| POST | `/api/auth/signup` | Register → OTP email |
+| POST | `/api/auth/verify-otp` | Verify OTP (never in logs) |
+| POST | `/api/auth/forgot-password` | Send reset OTP |
+| POST | `/api/auth/reset-password` | Reset with OTP |
+| GET  | `/api/dashboard/stats` | All dashboard data |
+| GET  | `/api/dashboard/ml-summary` | Ensemble ML summary |
+| GET  | `/api/logs/stream` | Simulated log stream |
+| GET  | `/api/logs/modes` | Simulation mode list |
+| POST | `/api/logs/upload` | Upload log file |
+| POST | `/api/ml/analyze` | Run ML ensemble |
+| GET  | `/api/mitre/catalog` | ATT&CK technique list |
+| GET  | `/api/mitre/tactics` | ATT&CK tactic list |
+| GET  | `/api/mitre/technique/:id` | Single technique |
+| POST | `/api/mitre/map` | Map logs to ATT&CK |
+| POST | `/api/reports/generate` | Generate PDF |
+| GET  | `/api/admin/stats` | System health |
+| GET  | `/api/admin/users` | User list |
+| PUT  | `/api/user/profile` | Update profile |
 
-## Architecture
+---
 
+## OTP Security
 
-app.py                          Flask entry point
-aegis_core/
-  __init__.py                   App factory
-  config.py                     Settings
-  persistence/
-    schema.sql                  SQLite schema (8 tables)
-    engine.py                   DB connection manager
-  security/
-    identity.py                 Auth, sessions, decorators
-  analytics/
-    signatures.py               Behavioral rule engine
-    anomaly.py                  ML ensemble (IF + LOF + SVM)
-    correlator.py               Event correlation + incident creation
-    mitre_matrix.py             ATT&CK technique definitions
-    trust_engine.py             Log quality scoring
-  parsers/
-    tokenizers.py               Multi-format log parser
-    sanitizers.py               Field extractors/validators
-  dossiers/
-    generator.py                PDF report generator
-  web/
-    routes_auth.py              /login /register /logout /forgot-password /reset-password
-    routes_app.py               /dashboard /upload /analyze /mitre /ml-analysis etc.
-    routes_admin.py             /admin/* routes
-    routes_api.py               /api/* REST endpoints
-static/
-  css/
-    tokens.css                  Design tokens
-    base.css                    Layout system
-    components.css              UI components
-    animations.css              Animations + transitions
-  js/
-    app.js                      Core JS (toasts, sidebar, counters)
-    landing3d.js                Three.js 3D visualization engine
-templates/
-  base.html                     Base HTML template
-  app_shell.html                Authenticated shell with sidebar
-  index.html                    Landing page with 3D scene
-  auth/                         Login, register, forgot/reset password
-  app/                          Dashboard, upload, analyze, MITRE, ML, reports, etc.
-  admin/                        Admin dashboard, users, audit log, incidents
+- OTP values are **never** logged, **never** returned in API responses
+- OTPs are delivered via email only (SMTP configured in `.env`)
+- Dev mode prints OTP to stdout only (not to log files)
+- Expiry: 30 minutes
+- Max attempts: 5 before lockout
 
+---
 
-## Technology Stack
+## Design System
 
-- **Backend**: Python 3.12, Flask 3.0
-- **ML**: scikit-learn (Isolation Forest, LOF, One-Class SVM), NumPy
-- **Database**: SQLite (WAL mode, foreign keys)
-- **Reports**: ReportLab PDF
-- **Frontend**: Vanilla HTML/CSS/JavaScript (no framework)
-- **3D**: Three.js r128
-- **Container**: Docker + Docker Compose
+- **Theme**: Warm professional light (not dark/neon)
+- **Primary**: Deep indigo `#2D2B6B`
+- **Accent**: Warm amber `#E8903A`
+- **Fonts**: DM Sans (display) + Space Grotesk (body) + Fira Code (mono)
+- **3D**: Three.js — DNA helix (login), neural threat graph (dashboard), pipeline nodes (explorer)
+- **No emoji** — all iconography via inline SVG
 
-## Security Notes
+---
 
-- Passwords hashed with Werkzeug (PBKDF2-SHA256)
-- Session tokens: HMAC-SHA256 signed, 8-hour expiry
-- Password reset: SHA-256 hashed tokens, 1-hour expiry, single-use
-- Role-based access: backend-enforced (admin/analyst)
-- SQL: parameterized queries only, no string interpolation
-- File uploads: extension allowlist, size limit (100MB)
-- CSRF: Flask session-based protection
-- Cookies: HttpOnly, SameSite=Lax, optional Secure flag
+## SMTP Setup (optional)
+
+Create a `.env` file in `backend/`:
+```
+ILF_SMTP_HOST=smtp.gmail.com
+ILF_SMTP_PORT=587
+ILF_SMTP_USER=your@gmail.com
+ILF_SMTP_PASS=your-app-password
+ILF_SMTP_FROM=noreply@ilf.io
+```
+
+Without SMTP, OTPs print to the terminal (dev mode).
+
+---
+
+Built for security analysts — Intelligent Log Forensic 2026

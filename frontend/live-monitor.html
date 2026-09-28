@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Live Monitor — ILF</title>
+<link rel="stylesheet" href="assets/css/tokens.css"/>
+<link rel="stylesheet" href="assets/css/global.css"/>
+<link rel="stylesheet" href="assets/css/components.css"/>
+<link rel="stylesheet" href="assets/css/navbar.css"/>
+<link rel="stylesheet" href="assets/css/animations.css"/>
+<style>
+.monitor-layout { display: flex; gap: var(--sp-5); height: calc(100vh - 140px); min-height: 500px; }
+.monitor-sidebar { width: 260px; flex-shrink: 0; display: flex; flex-direction: column; gap: var(--sp-4); }
+.monitor-main   { flex: 1; display: flex; flex-direction: column; min-width: 0; }
+
+/* Mode buttons */
+.mode-btn {
+  width: 100%; display: flex; align-items: center; gap: var(--sp-3);
+  padding: 10px 12px; border-radius: var(--r-md);
+  font-size: var(--text-sm); font-weight: 500; color: var(--ink-1);
+  cursor: pointer; text-align: left; transition: all var(--t-fast);
+  border: 1.5px solid transparent; background: var(--surface-1);
+}
+.mode-btn:hover { background: var(--surface-0); border-color: var(--surface-3); }
+.mode-btn.active { background: var(--brand-dim); border-color: rgba(45,43,107,0.3); color: var(--brand-primary); font-weight: 600; }
+.mode-btn.active.danger-mode { background: var(--danger-light); border-color: rgba(192,57,43,0.3); color: var(--danger); }
+.mode-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+
+/* Controls */
+.controls-row { display: flex; align-items: center; gap: var(--sp-3); flex-wrap: wrap; padding: var(--sp-4) var(--sp-5); background: var(--surface-0); border: 1px solid var(--surface-3); border-radius: var(--r-lg); margin-bottom: var(--sp-4); }
+.start-btn {
+  display: flex; align-items: center; gap: var(--sp-2);
+  padding: 9px 20px; border-radius: var(--r-md);
+  font-size: var(--text-sm); font-weight: 700; cursor: pointer;
+  background: var(--success); color: #fff;
+  transition: all var(--t-base) var(--ease-out);
+  box-shadow: 0 2px 8px rgba(46,139,110,0.3);
+}
+.start-btn.running { background: var(--danger); box-shadow: 0 2px 8px rgba(192,57,43,0.3); }
+.start-btn:hover { filter: brightness(1.07); transform: translateY(-1px); }
+.start-btn svg { width: 14px; height: 14px; }
+
+.live-indicator { display: flex; align-items: center; gap: var(--sp-2); font-size: var(--text-sm); font-weight: 600; }
+.live-label { color: var(--ink-3); }
+.live-label.active { color: var(--danger); }
+
+/* Severity counters */
+.sev-counters { display: flex; gap: var(--sp-4); flex-wrap: wrap; }
+.sev-counter { display: flex; flex-direction: column; align-items: center; }
+.sev-counter-val { font-family: var(--font-display); font-weight: 700; font-size: var(--text-md); }
+.sev-counter-lbl { font-size: 9px; font-weight: 600; letter-spacing: 0.06em; }
+
+/* Terminal */
+.log-terminal { flex: 1; overflow-y: auto; }
+.log-row { display: grid; grid-template-columns: 80px 76px 92px 108px 1fr; gap: 10px; padding: 3px 0; border-bottom: 1px solid rgba(0,0,0,0.04); animation: termFade 0.18s ease both; align-items: start; font-size: 11.5px; }
+.log-row:hover { background: rgba(45,43,107,0.04); }
+.log-row.row-CRITICAL { background: rgba(123,45,139,0.04); }
+.log-row.row-ERROR    { background: rgba(192,57,43,0.04); }
+
+/* Speed slider */
+.speed-wrap { display: flex; align-items: center; gap: var(--sp-2); font-size: var(--text-xs); color: var(--ink-2); }
+.speed-wrap input[type=range] { accent-color: var(--brand-primary); width: 80px; }
+</style>
+</head>
+<body>
+<div class="page-wrap with-nav">
+  <main class="content-area" style="padding-bottom:0;">
+    <nav id="navMount"></nav>
+    <div class="page-header mb-4">
+      <div>
+        <div class="breadcrumb" id="breadcrumb"></div>
+        <div class="page-title">Live Monitor</div>
+        <div class="page-subtitle">Real-time log streaming with 8 simulation modes</div>
+      </div>
+      <div class="page-actions">
+        <span class="t-mono text-muted text-sm" id="captureCount">0 logs captured</span>
+        <button class="btn btn-ghost btn-sm" onclick="clearLogs()">Clear</button>
+      </div>
+    </div>
+
+    <div class="monitor-layout">
+      <!-- Sidebar: mode selector -->
+      <aside class="monitor-sidebar">
+        <div class="card" style="padding:var(--sp-4);">
+          <div class="section-label">Simulation Mode</div>
+          <div style="display:flex;flex-direction:column;gap:4px;" id="modeList"></div>
+        </div>
+
+        <div class="card" style="padding:var(--sp-4);">
+          <div class="section-label">Filters</div>
+          <div style="display:flex;flex-direction:column;gap:var(--sp-3);">
+            <div class="form-group">
+              <label class="form-label">Source</label>
+              <select class="select" id="filterSrc">
+                <option value="all">All Sources</option>
+                <option value="nginx">nginx</option>
+                <option value="auth">auth</option>
+                <option value="iptables">iptables</option>
+                <option value="kernel">kernel</option>
+                <option value="syslog">syslog</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Severity</label>
+              <select class="select" id="filterSev">
+                <option value="all">All Levels</option>
+                <option value="INFO">INFO</option>
+                <option value="WARN">WARN</option>
+                <option value="ERROR">ERROR</option>
+                <option value="CRITICAL">CRITICAL</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <div class="card" style="padding:var(--sp-4);">
+          <div class="section-label">Severity Counts</div>
+          <div class="sev-counters">
+            <div class="sev-counter"><div class="sev-counter-val" id="sc-INFO"  style="color:var(--slate);">0</div><div class="sev-counter-lbl" style="color:var(--slate);">INFO</div></div>
+            <div class="sev-counter"><div class="sev-counter-val" id="sc-WARN"  style="color:var(--warn);">0</div><div class="sev-counter-lbl" style="color:var(--warn);">WARN</div></div>
+            <div class="sev-counter"><div class="sev-counter-val" id="sc-ERROR" style="color:var(--danger);">0</div><div class="sev-counter-lbl" style="color:var(--danger);">ERROR</div></div>
+            <div class="sev-counter"><div class="sev-counter-val" id="sc-CRIT"  style="color:var(--critical);">0</div><div class="sev-counter-lbl" style="color:var(--critical);">CRIT</div></div>
+          </div>
+        </div>
+      </aside>
+
+      <!-- Main: terminal -->
+      <div class="monitor-main">
+        <!-- Controls bar -->
+        <div class="controls-row">
+          <button class="start-btn" id="streamBtn" onclick="toggleStream()">
+            <svg id="btnIcon" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+            <span id="btnLabel">Start Stream</span>
+          </button>
+
+          <span class="live-indicator">
+            <span class="status-dot" id="liveDot"></span>
+            <span class="live-label" id="liveLabel">Stopped</span>
+          </span>
+
+          <div style="width:1px;height:20px;background:var(--surface-3);"></div>
+
+          <div class="speed-wrap">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
+            Speed
+            <input type="range" id="speedSlider" min="1" max="5" value="2" oninput="updateSpeed(this.value)"/>
+            <span id="speedLabel" class="t-mono" style="font-size:10px;">Normal</span>
+          </div>
+
+          <div style="width:1px;height:20px;background:var(--surface-3);"></div>
+
+          <span class="t-mono text-xs text-muted" id="currentMode">Mode: Random</span>
+        </div>
+
+        <!-- Log terminal -->
+        <div class="card log-terminal" id="terminal" style="padding:var(--sp-4);">
+          <div id="emptyMsg" style="display:flex;flex-direction:column;align-items:center;justify-content:center;height:200px;color:var(--ink-3);text-align:center;">
+            <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="margin-bottom:12px;opacity:0.4;"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+            <p>Hit Start Stream to begin capturing logs</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<div id="toast-container"></div>
+<script src="assets/js/api.js"></script>
+<script src="assets/js/auth-guard.js"></script>
+<script src="assets/js/navbar.js"></script>
+<script>
+requireAuth();
+injectNavbar();
+setBreadcrumb([{href:'dashboard.html',label:'Dashboard'},{href:'live-monitor.html',label:'Live Monitor'}]);
+
+const MODES = [
+  {id:'random',        label:'Random Mixed',   dot:'#6B6880', danger:false},
+  {id:'normal',        label:'Normal Traffic',  dot:'#2E8B6E', danger:false},
+  {id:'ddos',          label:'DDoS Attack',     dot:'#C0392B', danger:true},
+  {id:'brute_force',   label:'Brute Force',     dot:'#E8903A', danger:true},
+  {id:'sql_injection', label:'SQL Injection',   dot:'#B87333', danger:true},
+  {id:'malware',       label:'Malware / C2',    dot:'#7B2D8B', danger:true},
+  {id:'insider_threat',label:'Insider Threat',  dot:'#4A6FA5', danger:true},
+  {id:'ransomware',    label:'Ransomware',      dot:'#C0392B', danger:true},
+  {id:'hacking',       label:'APT / Hacking',   dot:'#2D2B6B', danger:true},
+];
+const SPEED_LABELS = ['Fast','Quick','Normal','Slow','Crawl'];
+const SPEED_MS     = [400, 800, 1500, 2500, 4500];
+
+let activeMode = 'random', streaming = false, streamInterval, totalCapture = 0;
+const counts = {INFO:0,WARN:0,ERROR:0,CRITICAL:0};
+
+/* Build mode list */
+document.getElementById('modeList').innerHTML = MODES.map(m =>
+  `<button class="mode-btn ${m.id==='random'?'active':''} ${m.danger?'danger-mode':''}" id="mb-${m.id}" onclick="setMode('${m.id}')">
+    <span class="mode-dot" style="background:${m.dot};"></span>${m.label}
+  </button>`
+).join('');
+
+function setMode(id) {
+  activeMode = id;
+  document.querySelectorAll('.mode-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('mb-' + id).classList.add('active');
+  document.getElementById('currentMode').textContent = 'Mode: ' + (MODES.find(m=>m.id===id)?.label || id);
+}
+
+function updateSpeed(v) {
+  document.getElementById('speedLabel').textContent = SPEED_LABELS[v-1];
+  if (streaming) { clearInterval(streamInterval); startInterval(); }
+}
+
+function toggleStream() {
+  if (streaming) stopStream(); else startStream();
+}
+
+function startStream() {
+  streaming = true;
+  document.getElementById('streamBtn').className   = 'start-btn running';
+  document.getElementById('btnLabel').textContent  = 'Stop Stream';
+  document.getElementById('btnIcon').innerHTML     = '<rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/>';
+  document.getElementById('liveDot').className     = 'status-dot live';
+  document.getElementById('liveLabel').textContent = 'Live';
+  document.getElementById('liveLabel').className   = 'live-label active';
+  document.getElementById('emptyMsg')?.remove();
+  startInterval();
+  toast('Stream started', 'success');
+}
+
+function stopStream() {
+  streaming = false;
+  clearInterval(streamInterval);
+  document.getElementById('streamBtn').className   = 'start-btn';
+  document.getElementById('btnLabel').textContent  = 'Start Stream';
+  document.getElementById('btnIcon').innerHTML     = '<polygon points="5 3 19 12 5 21 5 3"/>';
+  document.getElementById('liveDot').className     = 'status-dot idle';
+  document.getElementById('liveLabel').textContent = 'Stopped';
+  document.getElementById('liveLabel').className   = 'live-label';
+  toast('Stream stopped', 'warn');
+}
+
+function startInterval() {
+  const ms = SPEED_MS[document.getElementById('speedSlider').value - 1];
+  streamInterval = setInterval(fetchBatch, ms);
+  fetchBatch();
+}
+
+async function fetchBatch() {
+  const src = document.getElementById('filterSrc').value;
+  const sev = document.getElementById('filterSev').value;
+  const res = await Api.streamLogs({ mode: activeMode, source: src, severity: sev, count: Math.floor(Math.random()*5)+3 });
+  if (!res.ok || !res.data?.logs) return;
+  appendLogs(res.data.logs);
+}
+
+function appendLogs(logs) {
+  const terminal = document.getElementById('terminal');
+  logs.forEach(log => {
+    totalCapture++;
+    const sev = log.severity;
+    if (counts[sev] !== undefined) {
+      counts[sev]++;
+      const el = document.getElementById('sc-' + (sev==='CRITICAL'?'CRIT':sev));
+      if (el) el.textContent = counts[sev];
+    }
+    const row = document.createElement('div');
+    row.className = `log-row row-${sev}`;
+    row.innerHTML = `
+      <span class="t-mono-xs" style="color:var(--ink-3);">${fmtTs(log.timestamp)}</span>
+      <span class="badge sev-${sev}">${sev}</span>
+      <span class="t-mono-xs" style="color:var(--slate);">${log.source}</span>
+      <span class="t-mono-xs text-muted">${log.ip}</span>
+      <span style="font-size:11.5px;">${log.message}</span>
+    `;
+    terminal.appendChild(row);
+  });
+
+  // Trim to 600 rows
+  const rows = terminal.querySelectorAll('.log-row');
+  if (rows.length > 600) for (let i = 0; i < rows.length - 600; i++) rows[i].remove();
+  terminal.scrollTop = terminal.scrollHeight;
+  document.getElementById('captureCount').textContent = totalCapture.toLocaleString() + ' logs captured';
+}
+
+function clearLogs() {
+  const t = document.getElementById('terminal');
+  t.innerHTML = '';
+  totalCapture = 0;
+  Object.keys(counts).forEach(k => { counts[k]=0; const el=document.getElementById('sc-'+(k==='CRITICAL'?'CRIT':k)); if(el) el.textContent='0'; });
+  document.getElementById('captureCount').textContent = '0 logs captured';
+}
+</script>
+</body>
+</html>

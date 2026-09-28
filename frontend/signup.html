@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Create Account — ILF</title>
+<link rel="stylesheet" href="assets/css/tokens.css"/>
+<link rel="stylesheet" href="assets/css/global.css"/>
+<link rel="stylesheet" href="assets/css/components.css"/>
+<style>
+body { background: var(--surface-1); min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: var(--sp-6); }
+.auth-card { background: var(--surface-0); border: 1px solid var(--surface-3); border-radius: var(--r-2xl); padding: var(--sp-10); width: 100%; max-width: 460px; box-shadow: var(--shadow-lg); }
+.auth-brand { display: flex; align-items: center; gap: var(--sp-3); margin-bottom: var(--sp-8); }
+.auth-brand-mark { width: 36px; height: 36px; background: var(--brand-primary); border-radius: var(--r-sm); display: flex; align-items: center; justify-content: center; }
+.auth-brand-mark svg { width: 20px; height: 20px; color: #fff; }
+.otp-section { display: none; }
+.step-indicator { display: flex; align-items: center; gap: var(--sp-2); margin-bottom: var(--sp-6); }
+.step { width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: var(--text-xs); font-weight: 700; background: var(--surface-2); color: var(--ink-3); }
+.step.active { background: var(--brand-primary); color: #fff; }
+.step.done { background: var(--success); color: #fff; }
+.step-line { flex: 1; height: 2px; background: var(--surface-3); border-radius: var(--r-full); }
+.step-line.done { background: var(--success); }
+.otp-timer { font-size: var(--text-sm); color: var(--ink-3); text-align: center; margin-top: var(--sp-4); }
+.otp-timer strong { color: var(--danger); font-weight: 700; }
+.resend-link { color: var(--brand-primary); cursor: pointer; font-weight: 600; }
+.resend-link:hover { text-decoration: underline; }
+</style>
+</head>
+<body>
+<div class="auth-card">
+  <div class="auth-brand">
+    <div class="auth-brand-mark"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg></div>
+    <span style="font-family:var(--font-display);font-weight:800;font-size:var(--text-md);">Intelligent Log Forensic</span>
+  </div>
+
+  <!-- Step indicator -->
+  <div class="step-indicator">
+    <div class="step active" id="step1">1</div>
+    <div class="step-line" id="line1"></div>
+    <div class="step" id="step2">2</div>
+  </div>
+
+  <!-- Step 1: Details -->
+  <div id="signupSection">
+    <h2 class="t-heading" style="margin-bottom:4px;">Create your account</h2>
+    <p style="margin-bottom:var(--sp-6);">Already have one? <a class="auth-link" href="index.html" style="color:var(--brand-primary);font-weight:600;">Sign in</a></p>
+
+    <div style="display:flex;flex-direction:column;gap:var(--sp-4);">
+      <div class="form-group">
+        <label class="form-label">Full name</label>
+        <input id="nameInput" type="text" class="input" placeholder="Your full name"/>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Email address</label>
+        <input id="emailInput" type="email" class="input" placeholder="you@company.io"/>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Password</label>
+        <input id="pwInput" type="password" class="input" placeholder="At least 8 characters"/>
+        <span class="form-hint">Min 8 characters</span>
+      </div>
+    </div>
+    <div class="err-box" id="signupErr" style="display:none;background:var(--danger-light);border:1px solid rgba(192,57,43,0.2);border-radius:var(--r-md);padding:var(--sp-3) var(--sp-4);font-size:var(--text-sm);color:var(--danger);margin-top:var(--sp-4);"></div>
+    <button class="btn btn-primary btn-block btn-lg" id="signupBtn" onclick="doSignup()" style="margin-top:var(--sp-5);">
+      <span id="signupText">Continue</span>
+      <span id="signupSpin" class="spinner spinner-sm" style="display:none;border-color:rgba(255,255,255,0.3);border-top-color:#fff;"></span>
+    </button>
+  </div>
+
+  <!-- Step 2: OTP -->
+  <div id="otpSection" class="otp-section">
+    <h2 class="t-heading" style="margin-bottom:4px;">Verify your email</h2>
+    <p style="margin-bottom:var(--sp-6);">We sent a 6-digit code to <strong id="otpEmailDisplay">your email</strong>. Enter it below.</p>
+
+    <div class="otp-row" id="otpRow">
+      <input class="otp-digit" type="text" maxlength="1" inputmode="numeric" pattern="[0-9]"/>
+      <input class="otp-digit" type="text" maxlength="1" inputmode="numeric" pattern="[0-9]"/>
+      <input class="otp-digit" type="text" maxlength="1" inputmode="numeric" pattern="[0-9]"/>
+      <input class="otp-digit" type="text" maxlength="1" inputmode="numeric" pattern="[0-9]"/>
+      <input class="otp-digit" type="text" maxlength="1" inputmode="numeric" pattern="[0-9]"/>
+      <input class="otp-digit" type="text" maxlength="1" inputmode="numeric" pattern="[0-9]"/>
+    </div>
+
+    <div class="otp-timer" id="otpTimer">Code expires in <strong id="timerVal">30:00</strong></div>
+    <div class="err-box" id="otpErr" style="display:none;background:var(--danger-light);border:1px solid rgba(192,57,43,0.2);border-radius:var(--r-md);padding:var(--sp-3) var(--sp-4);font-size:var(--text-sm);color:var(--danger);margin-top:var(--sp-3);"></div>
+    <button class="btn btn-primary btn-block btn-lg" id="verifyBtn" onclick="doVerify()" style="margin-top:var(--sp-5);">
+      <span id="verifyText">Verify & Create Account</span>
+      <span id="verifySpin" class="spinner spinner-sm" style="display:none;border-color:rgba(255,255,255,0.3);border-top-color:#fff;"></span>
+    </button>
+    <p class="otp-timer" style="margin-top:var(--sp-4);">Didn't receive it? <span class="resend-link" onclick="doResend()">Resend code</span></p>
+  </div>
+</div>
+
+<script src="assets/js/api.js"></script>
+<script>
+let pendingEmail = '';
+let timerInterval;
+
+/* ── OTP digit keyboard flow ─────────────── */
+document.querySelectorAll('.otp-digit').forEach((inp, i, all) => {
+  inp.addEventListener('input', () => {
+    inp.classList.toggle('filled', inp.value.length > 0);
+    if (inp.value && i < all.length - 1) all[i + 1].focus();
+  });
+  inp.addEventListener('keydown', e => {
+    if (e.key === 'Backspace' && !inp.value && i > 0) all[i - 1].focus();
+  });
+});
+
+function getOtpValue() {
+  return [...document.querySelectorAll('.otp-digit')].map(i => i.value).join('');
+}
+
+function startTimer(seconds = 1800) {
+  clearInterval(timerInterval);
+  let rem = seconds;
+  timerInterval = setInterval(() => {
+    const m = String(Math.floor(rem / 60)).padStart(2, '0');
+    const s = String(rem % 60).padStart(2, '0');
+    document.getElementById('timerVal').textContent = `${m}:${s}`;
+    if (rem-- <= 0) {
+      clearInterval(timerInterval);
+      document.getElementById('timerVal').textContent = 'Expired';
+    }
+  }, 1000);
+}
+
+async function doSignup() {
+  const name  = document.getElementById('nameInput').value.trim();
+  const email = document.getElementById('emailInput').value.trim();
+  const pw    = document.getElementById('pwInput').value;
+  const err   = document.getElementById('signupErr');
+  const btn   = document.getElementById('signupBtn');
+
+  err.style.display = 'none';
+  if (!name || !email || !pw) { err.textContent = 'All fields are required.'; err.style.display = 'block'; return; }
+  if (pw.length < 8) { err.textContent = 'Password must be at least 8 characters.'; err.style.display = 'block'; return; }
+
+  btn.disabled = true;
+  document.getElementById('signupText').textContent = 'Sending code…';
+  document.getElementById('signupSpin').style.display = 'inline-block';
+
+  const res = await Api.signup(name, email, pw);
+  btn.disabled = false;
+  document.getElementById('signupText').textContent = 'Continue';
+  document.getElementById('signupSpin').style.display = 'none';
+
+  if (res.ok && res.data?.success) {
+    pendingEmail = email;
+    document.getElementById('otpEmailDisplay').textContent = email;
+    document.getElementById('signupSection').style.display = 'none';
+    document.getElementById('otpSection').style.display = 'block';
+    document.getElementById('step1').textContent = '✓'; document.getElementById('step1').className = 'step done';
+    document.getElementById('step2').className = 'step active';
+    document.getElementById('line1').className = 'step-line done';
+    document.querySelectorAll('.otp-digit')[0].focus();
+    startTimer();
+  } else {
+    err.textContent = res.data?.message || 'Signup failed. Please try again.';
+    err.style.display = 'block';
+  }
+}
+
+async function doVerify() {
+  const otp = getOtpValue();
+  const err = document.getElementById('otpErr');
+  const btn = document.getElementById('verifyBtn');
+  err.style.display = 'none';
+
+  if (otp.length !== 6) { err.textContent = 'Please enter all 6 digits.'; err.style.display = 'block'; return; }
+
+  btn.disabled = true;
+  document.getElementById('verifyText').textContent = 'Verifying…';
+  document.getElementById('verifySpin').style.display = 'inline-block';
+
+  const res = await Api.verifyOtp(pendingEmail, otp, 'signup');
+  btn.disabled = false;
+  document.getElementById('verifyText').textContent = 'Verify & Create Account';
+  document.getElementById('verifySpin').style.display = 'none';
+
+  if (res.ok && res.data?.success) {
+    Api.setAuth(res.data.token, res.data.user);
+    clearInterval(timerInterval);
+    window.location.href = 'dashboard.html';
+  } else {
+    err.textContent = res.data?.message || 'Invalid OTP. Please try again.';
+    err.style.display = 'block';
+    document.querySelectorAll('.otp-digit').forEach(i => { i.value = ''; i.classList.remove('filled'); });
+    document.querySelectorAll('.otp-digit')[0].focus();
+  }
+}
+
+async function doResend() {
+  await Api.resendOtp(pendingEmail, 'signup');
+  startTimer();
+  document.querySelectorAll('.otp-digit').forEach(i => { i.value = ''; i.classList.remove('filled'); });
+  document.querySelectorAll('.otp-digit')[0].focus();
+  document.getElementById('otpErr').style.display = 'none';
+}
+</script>
+</body>
+</html>

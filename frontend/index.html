@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Sign In — Intelligent Log Forensic</title>
+<link rel="stylesheet" href="assets/css/tokens.css"/>
+<link rel="stylesheet" href="assets/css/global.css"/>
+<link rel="stylesheet" href="assets/css/components.css"/>
+<style>
+body { overflow: hidden; background: var(--surface-1); }
+.auth-layout {
+  min-height: 100vh; display: flex; position: relative;
+}
+.auth-left {
+  flex: 1; position: relative; overflow: hidden;
+  background: var(--brand-primary);
+  display: flex; flex-direction: column; justify-content: flex-end; padding: var(--sp-12);
+}
+.auth-left canvas { position: absolute; inset: 0; width: 100% !important; height: 100% !important; }
+.auth-left-content { position: relative; z-index: 2; color: var(--ink-inv); }
+.auth-left-brand { display: flex; align-items: center; gap: var(--sp-3); margin-bottom: auto; position: absolute; top: var(--sp-8); left: var(--sp-8); z-index: 2; }
+.auth-left-mark { width: 36px; height: 36px; background: rgba(255,255,255,0.15); border-radius: var(--r-sm); display: flex; align-items: center; justify-content: center; border: 1px solid rgba(255,255,255,0.2); }
+.auth-left-mark svg { width: 20px; height: 20px; color: #fff; }
+.auth-left-name { font-family: var(--font-display); font-weight: 800; font-size: var(--text-md); color: #fff; }
+.auth-left h2 { color: #fff; margin-bottom: var(--sp-3); }
+.auth-left p  { color: rgba(255,255,255,0.6); font-size: var(--text-sm); }
+.auth-left-stats { display: flex; gap: var(--sp-6); margin-top: var(--sp-6); }
+.auth-stat-num { font-family: var(--font-display); font-size: var(--text-xl); font-weight: 800; color: #fff; }
+.auth-stat-label { font-size: var(--text-xs); color: rgba(255,255,255,0.5); }
+
+.auth-right {
+  width: 480px; flex-shrink: 0; background: var(--surface-0);
+  display: flex; align-items: center; justify-content: center;
+  padding: var(--sp-12) var(--sp-10);
+}
+.auth-form { width: 100%; }
+.auth-title { font-size: var(--text-2xl); margin-bottom: 4px; }
+.auth-sub { color: var(--ink-2); font-size: var(--text-sm); margin-bottom: var(--sp-8); }
+.auth-link { color: var(--brand-primary); font-weight: 600; cursor: pointer; }
+.auth-link:hover { text-decoration: underline; }
+.auth-divider { text-align: center; color: var(--ink-3); font-size: var(--text-xs); margin: var(--sp-5) 0; position: relative; }
+.auth-divider::before { content: ''; position: absolute; top: 50%; left: 0; right: 0; height: 1px; background: var(--surface-3); }
+.auth-divider span { position: relative; background: var(--surface-0); padding: 0 var(--sp-3); }
+.hint-box { background: var(--slate-light); border: 1px solid rgba(74,111,165,0.2); border-radius: var(--r-md); padding: var(--sp-3) var(--sp-4); font-size: var(--text-sm); color: var(--slate); margin-top: var(--sp-5); }
+.hint-box strong { font-weight: 600; }
+.err-box { background: var(--danger-light); border: 1px solid rgba(192,57,43,0.2); border-radius: var(--r-md); padding: var(--sp-3) var(--sp-4); font-size: var(--text-sm); color: var(--danger); display: none; }
+@media(max-width:860px){ .auth-left { display: none; } .auth-right { width: 100%; } }
+</style>
+</head>
+<body>
+<div class="auth-layout">
+  <!-- Left: 3D scene -->
+  <div class="auth-left">
+    <canvas id="hero-canvas"></canvas>
+    <div class="auth-left-brand">
+      <div class="auth-left-mark">
+        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
+      </div>
+      <span class="auth-left-name">Intelligent Log Forensic</span>
+    </div>
+    <div class="auth-left-content">
+      <h2>See the threats<br>hiding in your logs</h2>
+      <p>ML ensemble analysis. MITRE ATT&CK mapping.<br>Real-time forensics — all in one platform.</p>
+      <div class="auth-left-stats">
+        <div><div class="auth-stat-num">100+</div><div class="auth-stat-label">MITRE techniques</div></div>
+        <div><div class="auth-stat-num">5 ML</div><div class="auth-stat-label">Algorithms ensemble</div></div>
+        <div><div class="auth-stat-num">8</div><div class="auth-stat-label">Simulation modes</div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Right: form -->
+  <div class="auth-right">
+    <div class="auth-form">
+      <h2 class="auth-title t-heading">Welcome back</h2>
+      <p class="auth-sub">New here? <a class="auth-link" href="signup.html">Create an account</a></p>
+
+      <div style="display:flex;flex-direction:column;gap:var(--sp-4);margin-bottom:var(--sp-5);">
+        <div class="form-group">
+          <label class="form-label">Email address</label>
+          <div class="input-wrap">
+            <svg class="input-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+            <input id="emailInput" type="email" class="input" placeholder="admin@ilf.io" value="admin@ilf.io"/>
+          </div>
+        </div>
+        <div class="form-group">
+          <div style="display:flex;justify-content:space-between;align-items:center;">
+            <label class="form-label">Password</label>
+            <a class="auth-link text-xs" href="forgot-password.html" style="font-size:var(--text-xs);">Forgot password?</a>
+          </div>
+          <div class="input-wrap">
+            <svg class="input-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+            <input id="pwInput" type="password" class="input" placeholder="Password" value="ilf2026"/>
+          </div>
+        </div>
+      </div>
+
+      <div class="err-box" id="errBox">Invalid email or password. Please try again.</div>
+
+      <button class="btn btn-primary btn-block btn-lg" id="loginBtn" onclick="doLogin()">
+        <span id="loginText">Sign in</span>
+        <span id="loginSpin" class="spinner spinner-sm" style="display:none;border-color:rgba(255,255,255,0.3);border-top-color:#fff;"></span>
+      </button>
+
+      <div class="hint-box">
+        Demo credentials: <strong>admin@ilf.io</strong> / <strong>ilf2026</strong>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script src="assets/js/api.js"></script>
+<script src="assets/js/three/scene-login.js"></script>
+<script>
+if (Api.token()) window.location.href = 'dashboard.html';
+
+async function doLogin() {
+  const email = document.getElementById('emailInput').value.trim();
+  const pw    = document.getElementById('pwInput').value;
+  const btn   = document.getElementById('loginBtn');
+  const err   = document.getElementById('errBox');
+
+  err.style.display = 'none';
+  btn.disabled = true;
+  document.getElementById('loginText').textContent = 'Signing in…';
+  document.getElementById('loginSpin').style.display = 'inline-block';
+
+  const res = await Api.login(email, pw);
+
+  if (res.ok && res.data?.success) {
+    Api.setAuth(res.data.token, res.data.user);
+    document.getElementById('loginText').textContent = 'Redirecting…';
+    setTimeout(() => window.location.href = 'dashboard.html', 400);
+  } else {
+    btn.disabled = false;
+    document.getElementById('loginText').textContent = 'Sign in';
+    document.getElementById('loginSpin').style.display = 'none';
+    err.style.display = 'block';
+    err.textContent = res.data?.message || 'Invalid credentials. Please try again.';
+  }
+}
+document.addEventListener('keydown', e => { if (e.key === 'Enter') doLogin(); });
+</script>
+</body>
+</html>

