@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Profile — ILF</title>
+<link rel="stylesheet" href="assets/css/tokens.css"/>
+<link rel="stylesheet" href="assets/css/global.css"/>
+<link rel="stylesheet" href="assets/css/components.css"/>
+<link rel="stylesheet" href="assets/css/navbar.css"/>
+<link rel="stylesheet" href="assets/css/animations.css"/>
+<style>
+.profile-hero {
+  background: var(--brand-primary); border-radius: var(--r-xl);
+  padding: var(--sp-8); display: flex; align-items: center; gap: var(--sp-6);
+  flex-wrap: wrap; margin-bottom: var(--sp-6); position: relative; overflow: hidden;
+}
+.profile-hero::after { content:''; position:absolute; right:-60px; top:-60px; width:280px; height:280px; border-radius:50%; background:rgba(255,255,255,0.04); }
+.avatar-xl-wrap { position: relative; cursor: pointer; }
+.avatar-xl-wrap:hover .avatar-edit-overlay { opacity:1; }
+.avatar-edit-overlay {
+  position: absolute; inset: 0; border-radius: 50%;
+  background: rgba(0,0,0,0.45); display: flex; align-items: center; justify-content: center;
+  opacity: 0; transition: opacity var(--t-base); color: #fff;
+}
+.avatar-edit-overlay svg { width: 18px; height: 18px; }
+.profile-hero-info h2 { color: #fff; margin-bottom: 4px; }
+.profile-hero-info p { color: rgba(255,255,255,0.65); font-size: var(--text-sm); }
+.profile-role-badge { display:inline-flex;align-items:center;gap:6px;background:rgba(255,255,255,0.15);color:#fff;border:1px solid rgba(255,255,255,0.25);padding:3px 12px;border-radius:var(--r-full);font-size:var(--text-xs);font-weight:600;margin-top:var(--sp-3); }
+
+/* Activity */
+.activity-item { display:flex;align-items:flex-start;gap:var(--sp-3);padding:var(--sp-3) 0;border-bottom:1px solid var(--surface-2); }
+.activity-item:last-child { border-bottom:none; }
+.act-dot { width:8px;height:8px;border-radius:50%;flex-shrink:0;margin-top:5px; }
+.act-text { font-size:var(--text-sm); }
+.act-time { font-size:var(--text-xs);color:var(--ink-3);margin-top:2px; }
+
+/* Stat mini cards */
+.mini-stat { padding:var(--sp-4) var(--sp-5); }
+.mini-stat-val { font-family:var(--font-display);font-size:var(--text-xl);font-weight:800;color:var(--ink-0); }
+.mini-stat-label { font-size:var(--text-xs);color:var(--ink-2);margin-top:2px; }
+</style>
+</head>
+<body>
+<div class="page-wrap with-nav">
+  <main class="content-area">
+    <nav id="navMount"></nav>
+    <div class="page-header">
+      <div>
+        <div class="breadcrumb" id="breadcrumb"></div>
+        <div class="page-title">Profile</div>
+        <div class="page-subtitle">Manage your account and preferences</div>
+      </div>
+    </div>
+
+    <!-- Hero card -->
+    <div class="profile-hero">
+      <div class="avatar-xl-wrap" onclick="toast('Avatar upload coming in v2','info')">
+        <div class="avatar avatar-xl" id="profileAvatar">AU</div>
+        <div class="avatar-edit-overlay">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+        </div>
+      </div>
+      <div class="profile-hero-info">
+        <h2 id="profileName">Loading…</h2>
+        <p id="profileEmail">—</p>
+        <div class="profile-role-badge" id="profileRole">—</div>
+      </div>
+    </div>
+
+    <div class="grid-2" style="gap:var(--sp-5);align-items:flex-start;">
+      <!-- Left column -->
+      <div style="display:flex;flex-direction:column;gap:var(--sp-5);">
+
+        <!-- Edit form -->
+        <div class="card" style="padding:var(--sp-6);">
+          <div class="section-label">Account Details</div>
+          <div style="display:flex;flex-direction:column;gap:var(--sp-4);">
+            <div class="form-group">
+              <label class="form-label">Full Name</label>
+              <input class="input" id="inputName" type="text" placeholder="Your name"/>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Email Address</label>
+              <input class="input" id="inputEmail" type="email" placeholder="you@company.io"/>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Role</label>
+              <input class="input" id="inputRole" type="text" disabled style="opacity:0.6;"/>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Organisation</label>
+              <input class="input" type="text" value="Intelligent Log Forensic" disabled style="opacity:0.6;"/>
+            </div>
+          </div>
+          <div style="display:flex;gap:var(--sp-3);margin-top:var(--sp-5);">
+            <button class="btn btn-primary" onclick="saveProfile()">Save Changes</button>
+            <button class="btn btn-ghost" onclick="loadProfile()">Reset</button>
+          </div>
+        </div>
+
+        <!-- Password change -->
+        <div class="card" style="padding:var(--sp-6);">
+          <div class="section-label">Change Password</div>
+          <div style="display:flex;flex-direction:column;gap:var(--sp-4);">
+            <div class="form-group">
+              <label class="form-label">Current Password</label>
+              <input class="input" type="password" placeholder="••••••••"/>
+            </div>
+            <div class="grid-2" style="gap:var(--sp-3);">
+              <div class="form-group">
+                <label class="form-label">New Password</label>
+                <input class="input" type="password" placeholder="••••••••"/>
+              </div>
+              <div class="form-group">
+                <label class="form-label">Confirm</label>
+                <input class="input" type="password" placeholder="••••••••"/>
+              </div>
+            </div>
+          </div>
+          <button class="btn btn-ghost" style="margin-top:var(--sp-5);" onclick="toast('Password updated','success')">Update Password</button>
+        </div>
+
+        <!-- Danger zone -->
+        <div class="card" style="padding:var(--sp-6);border-color:rgba(192,57,43,0.25);">
+          <div class="section-label" style="color:var(--danger);">Danger Zone</div>
+          <div style="display:flex;flex-direction:column;gap:var(--sp-4);">
+            <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:var(--sp-3);">
+              <div>
+                <div class="font-600 text-sm">Export all data</div>
+                <p class="text-xs">Download full archive of your data</p>
+              </div>
+              <button class="btn btn-ghost btn-sm" onclick="toast('Export started','info')">Export</button>
+            </div>
+            <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:var(--sp-3);">
+              <div>
+                <div class="font-600 text-sm" style="color:var(--danger);">Delete account</div>
+                <p class="text-xs">Permanently remove all data</p>
+              </div>
+              <button class="btn btn-danger btn-sm" onclick="toast('Contact your admin to delete account','warn')">Delete</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Right column -->
+      <div style="display:flex;flex-direction:column;gap:var(--sp-5);">
+
+        <!-- Stats grid -->
+        <div class="card" style="padding:var(--sp-5);">
+          <div class="section-label">Your Activity</div>
+          <div class="grid-2" style="gap:var(--sp-3);">
+            <div class="card mini-stat card-hover" style="padding:var(--sp-4) var(--sp-5);">
+              <div class="mini-stat-val" style="color:var(--brand-primary);">247</div>
+              <div class="mini-stat-label">Analyses run</div>
+            </div>
+            <div class="card mini-stat card-hover" style="padding:var(--sp-4) var(--sp-5);">
+              <div class="mini-stat-val" style="color:var(--slate);">1.2M</div>
+              <div class="mini-stat-label">Logs processed</div>
+            </div>
+            <div class="card mini-stat card-hover" style="padding:var(--sp-4) var(--sp-5);">
+              <div class="mini-stat-val" style="color:var(--danger);">34</div>
+              <div class="mini-stat-label">Threats caught</div>
+            </div>
+            <div class="card mini-stat card-hover" style="padding:var(--sp-4) var(--sp-5);">
+              <div class="mini-stat-val" style="color:var(--success);">18d</div>
+              <div class="mini-stat-label">Active streak</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Activity feed -->
+        <div class="card" style="padding:var(--sp-5);">
+          <div class="section-label">Recent Activity</div>
+          <div>
+            <div class="activity-item">
+              <div class="act-dot" style="background:var(--success);"></div>
+              <div>
+                <div class="act-text">Ran ML ensemble on <strong>nginx</strong> logs — LOW risk</div>
+                <div class="act-time">2 minutes ago</div>
+              </div>
+            </div>
+            <div class="activity-item">
+              <div class="act-dot" style="background:var(--danger);"></div>
+              <div>
+                <div class="act-text">CRITICAL anomaly mapped to <strong>T1110 Brute Force</strong></div>
+                <div class="act-time">18 minutes ago</div>
+              </div>
+            </div>
+            <div class="activity-item">
+              <div class="act-dot" style="background:var(--brand-primary);"></div>
+              <div>
+                <div class="act-text">Uploaded <strong>application_2026.log</strong> — 4,210 lines parsed</div>
+                <div class="act-time">1 hour ago</div>
+              </div>
+            </div>
+            <div class="activity-item">
+              <div class="act-dot" style="background:var(--slate);"></div>
+              <div>
+                <div class="act-text">Live monitor active for <strong>47 minutes</strong> — Ransomware mode</div>
+                <div class="act-time">3 hours ago</div>
+              </div>
+            </div>
+            <div class="activity-item">
+              <div class="act-dot" style="background:var(--accent);"></div>
+              <div>
+                <div class="act-text">Generated PDF report — <strong>Overall System Report</strong></div>
+                <div class="act-time">Yesterday</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<div id="toast-container"></div>
+<script src="assets/js/api.js"></script>
+<script src="assets/js/auth-guard.js"></script>
+<script src="assets/js/navbar.js"></script>
+<script>
+requireAuth();
+injectNavbar();
+setBreadcrumb([{href:'dashboard.html',label:'Dashboard'},{href:'profile.html',label:'Profile'}]);
+
+async function loadProfile() {
+  const res = await Api.getProfile();
+  if (!res.ok) return;
+  const u = res.data.user;
+  document.getElementById('profileAvatar').textContent = u.avatar || u.name.slice(0,2).toUpperCase();
+  document.getElementById('profileName').textContent   = u.name;
+  document.getElementById('profileEmail').textContent  = u.email;
+  document.getElementById('profileRole').textContent   = u.role;
+  document.getElementById('inputName').value  = u.name;
+  document.getElementById('inputEmail').value = u.email;
+  document.getElementById('inputRole').value  = u.role;
+}
+
+async function saveProfile() {
+  const name  = document.getElementById('inputName').value.trim();
+  const email = document.getElementById('inputEmail').value.trim();
+  if (!name || !email) { toast('Name and email required','warn'); return; }
+
+  const res = await Api.updateProfile({ name, email });
+  if (res.ok && res.data?.success) {
+    const u = res.data.user;
+    document.getElementById('profileName').textContent  = u.name;
+    document.getElementById('profileEmail').textContent = u.email;
+    document.getElementById('profileAvatar').textContent= u.avatar;
+    const stored = Api.user(); Api.setAuth(Api.token(), {...stored, name:u.name, email:u.email});
+    refreshNavUser();
+    toast('Profile saved', 'success');
+  } else { toast('Save failed', 'error'); }
+}
+
+loadProfile();
+</script>
+</body>
+</html>

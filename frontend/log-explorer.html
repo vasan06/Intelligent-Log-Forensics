@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Log Explorer — ILF</title>
+<link rel="stylesheet" href="assets/css/tokens.css"/>
+<link rel="stylesheet" href="assets/css/global.css"/>
+<link rel="stylesheet" href="assets/css/components.css"/>
+<link rel="stylesheet" href="assets/css/navbar.css"/>
+<link rel="stylesheet" href="assets/css/animations.css"/>
+<style>
+/* 3D pipeline canvas */
+.pipeline-canvas-wrap {
+  height: 240px; border-radius: var(--r-xl); overflow: hidden;
+  background: var(--brand-primary); position: relative; margin-bottom: var(--sp-5);
+}
+.pipeline-canvas-wrap canvas { position: absolute; inset: 0; width: 100% !important; height: 100% !important; }
+
+/* Pipeline stage labels overlay */
+.pipeline-labels {
+  position: absolute; bottom: 0; left: 0; right: 0;
+  display: flex; align-items: flex-end; justify-content: space-around;
+  padding: var(--sp-4) var(--sp-6); z-index: 2;
+  background: linear-gradient(to top, rgba(45,43,107,0.9) 0%, transparent 100%);
+}
+.pipeline-label {
+  display: flex; flex-direction: column; align-items: center; gap: 4px;
+  opacity: 0.4; transition: opacity var(--t-base), transform var(--t-base);
+}
+.pipeline-label.active  { opacity: 1; transform: translateY(-4px); }
+.pipeline-label.done    { opacity: 0.85; }
+.pipeline-label-name { font-family: var(--font-display); font-size: var(--text-xs); font-weight: 700; color: #fff; letter-spacing: 0.06em; text-transform: uppercase; }
+.pipeline-label-status { font-size: 9px; color: rgba(255,255,255,0.6); }
+.pipeline-label.active  .pipeline-label-status { color: var(--accent); }
+.pipeline-label.done    .pipeline-label-status { color: rgba(255,255,255,0.7); }
+
+/* Stage dot on label */
+.stage-dot { width: 8px; height: 8px; border-radius: 50%; background: rgba(255,255,255,0.3); }
+.pipeline-label.active .stage-dot { background: var(--accent); animation: pulse-status 1s ease infinite; }
+.pipeline-label.done   .stage-dot { background: #fff; }
+
+/* Result stats */
+.result-stats { display: grid; grid-template-columns: repeat(3,1fr); gap: var(--sp-4); margin-bottom: var(--sp-5); }
+.result-stat { padding: var(--sp-5) var(--sp-6); }
+.result-stat-val { font-family: var(--font-display); font-size: var(--text-2xl); font-weight: 800; color: var(--ink-0); }
+.result-stat-label { font-size: var(--text-xs); color: var(--ink-2); margin-top: 4px; }
+
+/* Search & filter row */
+.search-filter-row { display: flex; gap: var(--sp-3); flex-wrap: wrap; align-items: center; padding: var(--sp-4); border-bottom: 1px solid var(--surface-2); }
+.search-wrap { position: relative; flex: 1; min-width: 200px; }
+.search-wrap input { padding-left: 36px; }
+.search-icon { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: var(--ink-3); pointer-events: none; }
+.search-icon svg { width: 14px; height: 14px; }
+</style>
+</head>
+<body>
+<div class="page-wrap with-nav">
+  <main class="content-area">
+    <nav id="navMount"></nav>
+    <div class="page-header">
+      <div>
+        <div class="breadcrumb" id="breadcrumb"></div>
+        <div class="page-title">Log Explorer</div>
+        <div class="page-subtitle">Upload any log file and watch the forensic pipeline in real time</div>
+      </div>
+    </div>
+
+    <!-- 3D Pipeline canvas -->
+    <div class="pipeline-canvas-wrap">
+      <canvas id="pipeline-canvas"></canvas>
+      <div class="pipeline-labels" id="pipelineLabels">
+        <div class="pipeline-label" id="pl-0">
+          <div class="stage-dot"></div>
+          <div class="pipeline-label-name">Collect</div>
+          <div class="pipeline-label-status">Waiting</div>
+        </div>
+        <div class="pipeline-label" id="pl-1">
+          <div class="stage-dot"></div>
+          <div class="pipeline-label-name">Parse</div>
+          <div class="pipeline-label-status">Waiting</div>
+        </div>
+        <div class="pipeline-label" id="pl-2">
+          <div class="stage-dot"></div>
+          <div class="pipeline-label-name">Categorise</div>
+          <div class="pipeline-label-status">Waiting</div>
+        </div>
+        <div class="pipeline-label" id="pl-3">
+          <div class="stage-dot"></div>
+          <div class="pipeline-label-name">Risk Score</div>
+          <div class="pipeline-label-status">Waiting</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Upload zone (shown before upload) -->
+    <div id="uploadSection">
+      <div class="upload-zone card-hover" id="uploadZone"
+           onclick="document.getElementById('fileInput').click()"
+           ondragover="onDragOver(event)" ondragleave="onDragLeave(event)" ondrop="onDrop(event)">
+        <div class="upload-icon-wrap">
+          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="var(--brand-primary)" stroke-width="1.8"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+        </div>
+        <div>
+          <h4 style="margin-bottom:4px;">Drop your log file here</h4>
+          <p class="text-sm">or click to browse — .log, .txt, .csv, .json, .gz</p>
+        </div>
+        <div style="display:flex;gap:var(--sp-2);">
+          <span class="badge badge-neutral">.log</span>
+          <span class="badge badge-neutral">.txt</span>
+          <span class="badge badge-neutral">.csv</span>
+          <span class="badge badge-neutral">.json</span>
+        </div>
+      </div>
+      <input type="file" id="fileInput" style="display:none;" accept=".log,.txt,.csv,.json,.gz" onchange="handleFile(this.files[0])"/>
+    </div>
+
+    <!-- Results (shown after upload) -->
+    <div id="resultsSection" style="display:none;">
+      <div class="result-stats">
+        <div class="card result-stat card-hover">
+          <div class="result-stat-val" id="res-lines">—</div>
+          <div class="result-stat-label">Lines parsed</div>
+        </div>
+        <div class="card result-stat card-hover">
+          <div class="result-stat-val" id="res-anomalies" style="color:var(--danger);">—</div>
+          <div class="result-stat-label">Anomalies found</div>
+        </div>
+        <div class="card result-stat card-hover">
+          <div class="result-stat-val" id="res-id" style="font-family:var(--font-mono);font-size:var(--text-lg);color:var(--slate);">—</div>
+          <div class="result-stat-label">File ID</div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="search-filter-row">
+          <div class="search-wrap">
+            <span class="search-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg></span>
+            <input class="input" id="searchInput" placeholder="Search logs…" oninput="filterTable()" style="padding-left:36px;"/>
+          </div>
+          <select class="select" id="sevFilter" onchange="filterTable()" style="width:auto;min-width:140px;">
+            <option value="all">All Severities</option>
+            <option value="INFO">INFO</option>
+            <option value="WARN">WARN</option>
+            <option value="ERROR">ERROR</option>
+            <option value="CRITICAL">CRITICAL</option>
+          </select>
+          <button class="btn btn-primary btn-sm" onclick="window.location.href='ml-analysis.html'">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9.5 2A2.5 2.5 0 0 1 12 4.5v15a2.5 2.5 0 0 1-4.96-.44 2.5 2.5 0 0 1-2.96-3.08 3 3 0 0 1-.34-5.58 2.5 2.5 0 0 1 1.32-4.24 2.5 2.5 0 0 1 4.44-2.16z"/><path d="M14.5 2A2.5 2.5 0 0 0 12 4.5v15a2.5 2.5 0 0 0 4.96-.44 2.5 2.5 0 0 0 2.96-3.08 3 3 0 0 0 .34-5.58 2.5 2.5 0 0 0-1.32-4.24 2.5 2.5 0 0 0-4.44-2.16z"/></svg>
+            Run ML Analysis
+          </button>
+          <button class="btn btn-ghost btn-sm" onclick="resetUpload()">Upload Another</button>
+        </div>
+        <div class="table-wrap">
+          <table class="table">
+            <thead><tr><th>Time</th><th>Severity</th><th>Source</th><th>IP</th><th>PID</th><th>Message</th></tr></thead>
+            <tbody id="logTable"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<div id="toast-container"></div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script src="assets/js/api.js"></script>
+<script src="assets/js/auth-guard.js"></script>
+<script src="assets/js/navbar.js"></script>
+<script src="assets/js/three/scene-explorer.js"></script>
+<script>
+requireAuth();
+injectNavbar();
+setBreadcrumb([{href:'dashboard.html',label:'Dashboard'},{href:'log-explorer.html',label:'Log Explorer'}]);
+
+let allLogs = [], pipelineTimer, currentPipeId;
+const STAGE_STATUS = ['Collecting…','Parsing…','Categorising…','Scoring risk…'];
+const STAGE_DONE   = ['Collected','Parsed','Categorised','Scored'];
+
+/* ── Pipeline label updater ─────────────── */
+function setPipelineUI(stageIndex, done = false) {
+  for (let i = 0; i <= 3; i++) {
+    const el = document.getElementById('pl-' + i);
+    const statusEl = el.querySelector('.pipeline-label-status');
+    el.classList.remove('active','done');
+    if (i < stageIndex) { el.classList.add('done'); statusEl.textContent = STAGE_DONE[i]; }
+    else if (i === stageIndex) {
+      el.classList.add(done ? 'done' : 'active');
+      statusEl.textContent = done ? STAGE_DONE[i] : STAGE_STATUS[i];
+    } else { statusEl.textContent = 'Waiting'; }
+    if (window.setPipelineStage) window.setPipelineStage(i, i < stageIndex ? 'done' : i === stageIndex ? (done?'done':'active') : 'idle');
+  }
+}
+
+/* Poll pipeline status */
+function startPipelinePolling(pipeId) {
+  clearInterval(pipelineTimer);
+  let stage = 0;
+  setPipelineUI(0, false);
+  pipelineTimer = setInterval(async () => {
+    const res = await Api.pipelineStatus(pipeId);
+    if (!res.ok) return;
+    const s = res.data.stage;
+    if (s !== stage) { stage = s; setPipelineUI(s, res.data.done); }
+    if (res.data.done) { clearInterval(pipelineTimer); setPipelineUI(3, true); }
+  }, 700);
+}
+
+/* ── Drag & drop handlers ─────────────── */
+function onDragOver(e) { e.preventDefault(); document.getElementById('uploadZone').classList.add('drag-active'); }
+function onDragLeave() { document.getElementById('uploadZone').classList.remove('drag-active'); }
+function onDrop(e) { e.preventDefault(); document.getElementById('uploadZone').classList.remove('drag-active'); handleFile(e.dataTransfer.files[0]); }
+
+async function handleFile(file) {
+  if (!file) return;
+  document.getElementById('uploadSection').style.display = 'none';
+
+  const fd = new FormData(); fd.append('file', file);
+  const res = await Api.uploadLog(fd);
+  if (!res?.success) { toast('Upload failed', 'error'); resetUpload(); return; }
+
+  currentPipeId = res.file_id;
+  startPipelinePolling(currentPipeId);
+
+  animateCount(document.getElementById('res-lines'),    res.lines_parsed);
+  animateCount(document.getElementById('res-anomalies'),res.anomalies_found);
+  document.getElementById('res-id').textContent = res.file_id;
+
+  allLogs = res.preview || [];
+  renderTable(allLogs);
+  document.getElementById('resultsSection').style.display = 'block';
+  toast(`Parsed ${res.lines_parsed.toLocaleString()} lines from ${file.name}`, 'success');
+}
+
+function renderTable(logs) {
+  document.getElementById('logTable').innerHTML = logs.map(l => `
+    <tr>
+      <td class="t-mono-xs text-muted">${fmtTs(l.timestamp)}</td>
+      <td>${sevBadge(l.severity)}</td>
+      <td style="color:var(--slate);font-size:var(--text-sm);">${l.source}</td>
+      <td class="t-mono-xs text-muted">${l.ip}</td>
+      <td class="t-mono-xs text-muted">${l.pid}</td>
+      <td style="font-size:var(--text-sm);">${l.message}</td>
+    </tr>`).join('');
+}
+
+function filterTable() {
+  const q   = document.getElementById('searchInput').value.toLowerCase();
+  const sev = document.getElementById('sevFilter').value;
+  renderTable(allLogs.filter(l =>
+    (sev === 'all' || l.severity === sev) &&
+    (!q || l.message.toLowerCase().includes(q) || l.source.toLowerCase().includes(q))
+  ));
+}
+
+function resetUpload() {
+  clearInterval(pipelineTimer);
+  setPipelineUI(0, false);
+  for (let i = 0; i <= 3; i++) {
+    const el = document.getElementById('pl-' + i);
+    el.classList.remove('active','done');
+    el.querySelector('.pipeline-label-status').textContent = 'Waiting';
+    if (window.setPipelineStage) window.setPipelineStage(i, 'idle');
+  }
+  allLogs = [];
+  document.getElementById('logTable').innerHTML = '';
+  document.getElementById('resultsSection').style.display = 'none';
+  document.getElementById('uploadSection').style.display  = 'block';
+  document.getElementById('fileInput').value = '';
+}
+</script>
+</body>
+</html>
