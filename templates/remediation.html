@@ -1,0 +1,443 @@
+﻿<!DOCTYPE html>
+
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+
+<title>Remediation Playbooks | Intelligent Log Forensics</title>
+
+<link rel="stylesheet" href="/static/css/tokens.css">
+<link rel="stylesheet" href="/static/css/layout.css">
+<link rel="stylesheet" href="/static/css/components.css">
+<link rel="stylesheet" href="/static/css/animations.css">
+<link rel="stylesheet" href="/static/css/pages/admin.css">
+
+
+</head>
+
+<body class="remediation-page">
+
+<div class="app-shell">
+
+
+<!-- =========================================================
+     SIDEBAR
+========================================================== -->
+
+<aside class="app-sidebar">
+
+    <div class="sidebar-brand">
+        <a
+            href="{{ url_for('ops_views.render_command_deck') }}"
+            class="brand-link"
+        >
+            <div class="brand-mark">
+                <svg
+                    width="22"
+                    height="22"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                >
+                    <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6-8 10-8 10z"></path>
+                    <path d="M9 12l2 2 4-4"></path>
+                </svg>
+            </div>
+
+            <div class="brand-copy">
+                <strong>ILF</strong>
+                <span>COMMAND DECK</span>
+            </div>
+        </a>
+    </div>
+
+    <nav class="sidebar-navigation">
+
+        <div class="nav-section-label">
+            OPERATIONS
+        </div>
+
+        <a
+            href="{{ url_for('ops_views.render_command_deck') }}"
+            class="sidebar-nav-link"
+        >
+            <span class="nav-icon">Dashboard</span>
+        </a>
+
+        <a
+            href="{{ url_for('ops_views.render_ingest_station') }}"
+            class="sidebar-nav-link"
+        >
+            <span class="nav-icon">Analyze Logs</span>
+        </a>
+
+        <a
+            href="{{ url_for('ops_views.render_dockets_queue') }}"
+            class="sidebar-nav-link"
+        >
+            <span class="nav-icon">Incidents</span>
+        </a>
+
+        <a
+            href="{{ url_for('ops_views.render_mitre_matrix') }}"
+            class="sidebar-nav-link"
+        >
+            <span class="nav-icon">MITRE ATT&CK</span>
+        </a>
+
+        <a
+            href="{{ url_for('ops_views.render_vault_archive') }}"
+            class="sidebar-nav-link"
+        >
+            <span class="nav-icon">Evidence Vault</span>
+        </a>
+
+        <a
+            href="{{ url_for('ops_views.render_remediation_playbooks') }}"
+            class="sidebar-nav-link active"
+        >
+            <span class="nav-icon">Playbooks</span>
+        </a>
+
+        {% if operator is defined and operator and operator.clearance_tier == "Commander" %}
+
+        <div class="nav-section-label nav-section-secondary">
+            CONTROL
+        </div>
+
+        <a
+            href="{{ url_for('ops_views.render_commander_console') }}"
+            class="sidebar-nav-link"
+        >
+            <span class="nav-icon">Commander</span>
+        </a>
+
+        {% endif %}
+
+    </nav>
+
+    <div class="sidebar-footer">
+
+        <div class="system-status">
+            <span class="status-indicator"></span>
+
+            <div>
+                <strong>SYSTEM ONLINE</strong>
+                <small>Telemetry pipeline nominal</small>
+            </div>
+        </div>
+
+        <a
+            href="{{ url_for('auth_views.terminate_session') }}"
+            class="logout-link"
+        >
+            Sign Out
+        </a>
+
+    </div>
+
+</aside>
+
+
+<!-- =========================================================
+     MAIN
+========================================================== -->
+
+<main class="app-main">
+
+    <header class="command-header">
+
+        <div class="command-heading">
+
+            <div class="breadcrumb">
+                <span>OPERATIONS</span>
+                <span class="breadcrumb-separator">/</span>
+                <strong>REMEDIATION</strong>
+            </div>
+
+            <h1>Remediation Playbooks</h1>
+
+            <p>
+                Structured response procedures for containment,
+                investigation, recovery, and post-incident actions.
+            </p>
+
+        </div>
+
+    </header>
+
+
+    <!-- =====================================================
+         PAGE CONTENT
+    ====================================================== -->
+
+    <div class="page-container">
+
+        <section class="dashboard-panel">
+
+            <div class="panel-header">
+
+                <div>
+                    <span class="panel-kicker">
+                        RESPONSE OPERATIONS
+                    </span>
+
+                    <h2>
+                        Available Playbooks
+                    </h2>
+                </div>
+
+                <span class="nominal-badge">
+                    READY
+                </span>
+
+            </div>
+
+
+            <div class="quick-actions-grid">
+
+                {% if playbooks %}
+
+                    {% for playbook in playbooks %}
+
+                    <article class="quick-action-card">
+
+                        <div class="quick-action-icon">
+                            <svg
+                                width="21"
+                                height="21"
+                                viewBox="0 0 24 24"
+                                fill="none"
+                                stroke="currentColor"
+                                stroke-width="1.8"
+                            >
+                                <path d="M12 3l8 4v5c0 5-3.5 8-8 9-4.5-1-8-4-8-9V7l8-4z"></path>
+                                <path d="M9 12l2 2 4-4"></path>
+                            </svg>
+                        </div>
+
+                        <div>
+                            <strong>
+                                {{ playbook.name or playbook.title or "Remediation Playbook" }}
+                            </strong>
+
+                            <span>
+                                {{ playbook.description or "Structured incident response procedure." }}
+                            </span>
+                        </div>
+
+                        {% if playbook.id %}
+                        <a
+                            href="{{ url_for('ops_views.render_remediation_playbook', playbook_id=playbook.id) }}"
+                            class="quick-action-arrow"
+                            aria-label="Open playbook"
+                        >
+                            →
+                        </a>
+                        {% endif %}
+
+                    </article>
+
+                    {% endfor %}
+
+                {% else %}
+
+                    <div class="empty-state">
+
+                        <div class="empty-state-icon">
+                            <svg
+                                width="24"
+                                height="24"
+                                viewBox="0 0 24 24"
+                                fill="none"
+                                stroke="currentColor"
+                                stroke-width="1.6"
+                            >
+                                <circle cx="12" cy="12" r="8"></circle>
+                                <path d="M12 8v4l3 2"></path>
+                            </svg>
+                        </div>
+
+                        <strong>
+                            No remediation playbooks available
+                        </strong>
+
+                        <span>
+                            Response procedures will appear here when configured.
+                        </span>
+
+                    </div>
+
+                {% endif %}
+
+            </div>
+
+        </section>
+
+
+        <!-- =================================================
+             RESPONSE LIFECYCLE
+        ================================================== -->
+
+        <section class="dashboard-panel">
+
+            <div class="panel-header">
+
+                <div>
+                    <span class="panel-kicker">
+                        RESPONSE LIFECYCLE
+                    </span>
+
+                    <h2>
+                        Standard Response Flow
+                    </h2>
+                </div>
+
+            </div>
+
+
+            <div class="telemetry-grid">
+
+                <div class="telemetry-item">
+
+                    <span class="telemetry-label">
+                        01 — DETECT
+                    </span>
+
+                    <div class="telemetry-value">
+                        <strong>Identify</strong>
+                        <span>THREAT</span>
+                    </div>
+
+                </div>
+
+
+                <div class="telemetry-item">
+
+                    <span class="telemetry-label">
+                        02 — CONTAIN
+                    </span>
+
+                    <div class="telemetry-value">
+                        <strong>Isolate</strong>
+                        <span>SOURCE</span>
+                    </div>
+
+                </div>
+
+
+                <div class="telemetry-item">
+
+                    <span class="telemetry-label">
+                        03 — ERADICATE
+                    </span>
+
+                    <div class="telemetry-value">
+                        <strong>Remove</strong>
+                        <span>THREAT</span>
+                    </div>
+
+                </div>
+
+
+                <div class="telemetry-item">
+
+                    <span class="telemetry-label">
+                        04 — RECOVER
+                    </span>
+
+                    <div class="telemetry-value">
+                        <strong>Restore</strong>
+                        <span>SERVICE</span>
+                    </div>
+
+                </div>
+
+            </div>
+
+        </section>
+
+
+        <!-- =================================================
+             RESPONSE NOTES
+        ================================================== -->
+
+        <section class="dashboard-panel">
+
+            <div class="panel-header">
+
+                <div>
+                    <span class="panel-kicker">
+                        OPERATOR GUIDANCE
+                    </span>
+
+                    <h2>
+                        Response Notes
+                    </h2>
+                </div>
+
+            </div>
+
+            <div class="empty-state compact">
+
+                <strong>
+                    Preserve forensic evidence before remediation
+                </strong>
+
+                <span>
+                    Capture relevant logs, timestamps, indicators,
+                    affected assets, and incident context before
+                    applying containment or recovery actions.
+                </span>
+
+            </div>
+
+        </section>
+
+    </div>
+
+
+    <!-- =====================================================
+         FOOTER
+    ====================================================== -->
+
+    <footer class="app-footer">
+
+        <div>
+            <strong>
+                INTELLIGENT LOG FORENSIC
+            </strong>
+
+            <span>
+                Security Operations Platform
+            </span>
+        </div>
+
+        <div class="footer-right">
+
+            <span>
+                Forensic Engine
+            </span>
+
+            <span class="footer-status-dot"></span>
+
+            <span>
+                Operational
+            </span>
+
+        </div>
+
+    </footer>
+
+</main>
+
+
+</div>
+
+</body>
+</html>

@@ -1,0 +1,735 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Incidents | Intelligent Log Forensics</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&family=Space+Grotesk:wght@500;600;700&display=swap"
+        rel="stylesheet"
+    >
+
+    <link rel="stylesheet" href="/static/css/tokens.css">
+    <link rel="stylesheet" href="/static/css/layout.css">
+    <link rel="stylesheet" href="/static/css/components.css">
+    <link rel="stylesheet" href="/static/css/animations.css">
+    <link rel="stylesheet" href="/static/css/pages/incidents.css">
+</head>
+
+<body class="incidents-page">
+
+<div class="app-shell">
+
+    <!-- =====================================================
+         SIDEBAR
+    ====================================================== -->
+
+    <aside class="app-sidebar">
+
+        <div class="sidebar-brand">
+            <a
+                href="{{ url_for('ops_views.render_command_deck') }}"
+                class="brand-link"
+            >
+                <div class="brand-mark">
+                    <svg
+                        width="22"
+                        height="22"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="2"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                    >
+                        <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
+                        <path d="M9 12l2 2 4-4"></path>
+                    </svg>
+                </div>
+
+                <div class="brand-copy">
+                    <strong>ILF</strong>
+                    <span>COMMAND DECK</span>
+                </div>
+            </a>
+        </div>
+
+
+        <nav class="sidebar-navigation">
+
+            <div class="nav-section-label">
+                OPERATIONS
+            </div>
+
+            <a
+                href="{{ url_for('ops_views.render_command_deck') }}"
+                class="sidebar-nav-link"
+            >
+                <span class="nav-icon">
+                    <svg width="18" height="18" viewBox="0 0 24 24"
+                         fill="none" stroke="currentColor"
+                         stroke-width="1.8">
+                        <rect x="3" y="3" width="7" height="7"></rect>
+                        <rect x="14" y="3" width="7" height="7"></rect>
+                        <rect x="3" y="14" width="7" height="7"></rect>
+                        <rect x="14" y="14" width="7" height="7"></rect>
+                    </svg>
+                </span>
+
+                <span>Dashboard</span>
+            </a>
+
+
+            <a
+                href="{{ url_for('ops_views.render_ingest_station') }}"
+                class="sidebar-nav-link"
+            >
+                <span class="nav-icon">
+                    <svg width="18" height="18" viewBox="0 0 24 24"
+                         fill="none" stroke="currentColor"
+                         stroke-width="1.8">
+                        <path d="M12 3v12"></path>
+                        <path d="m7 10 5 5 5-5"></path>
+                        <path d="M5 21h14"></path>
+                    </svg>
+                </span>
+
+                <span>Analyze Logs</span>
+            </a>
+
+
+            <a
+                href="{{ url_for('ops_views.render_dockets_queue') }}"
+                class="sidebar-nav-link active"
+            >
+                <span class="nav-icon">
+                    <svg width="18" height="18" viewBox="0 0 24 24"
+                         fill="none" stroke="currentColor"
+                         stroke-width="1.8">
+                        <path d="M4 5h16"></path>
+                        <path d="M4 12h16"></path>
+                        <path d="M4 19h16"></path>
+                        <circle cx="8" cy="5" r="1"></circle>
+                        <circle cx="16" cy="12" r="1"></circle>
+                        <circle cx="10" cy="19" r="1"></circle>
+                    </svg>
+                </span>
+
+                <span>Incidents</span>
+            </a>
+
+
+            <a
+                href="{{ url_for('ops_views.render_mitre_matrix') }}"
+                class="sidebar-nav-link"
+            >
+                <span class="nav-icon">
+                    <svg width="18" height="18" viewBox="0 0 24 24"
+                         fill="none" stroke="currentColor"
+                         stroke-width="1.8">
+                        <circle cx="12" cy="12" r="8"></circle>
+                        <path d="M12 4v16"></path>
+                        <path d="M4 12h16"></path>
+                    </svg>
+                </span>
+
+                <span>MITRE ATT&CK</span>
+            </a>
+
+
+            <a
+                href="{{ url_for('ops_views.render_vault_archive') }}"
+                class="sidebar-nav-link"
+            >
+                <span class="nav-icon">
+                    <svg width="18" height="18" viewBox="0 0 24 24"
+                         fill="none" stroke="currentColor"
+                         stroke-width="1.8">
+                        <path d="M4 7h16"></path>
+                        <path d="M6 7V5h12v2"></path>
+                        <path d="M5 7h14l-1 13H6L5 7z"></path>
+                        <path d="M9 11h6"></path>
+                    </svg>
+                </span>
+
+                <span>Evidence Vault</span>
+            </a>
+
+
+            <a
+                href="{{ url_for('ops_views.render_remediation_playbooks') }}"
+                class="sidebar-nav-link"
+            >
+                <span class="nav-icon">
+                    <svg width="18" height="18" viewBox="0 0 24 24"
+                         fill="none" stroke="currentColor"
+                         stroke-width="1.8">
+                        <path d="M12 3v18"></path>
+                        <path d="M5 7h14"></path>
+                        <path d="M5 17h14"></path>
+                        <circle cx="8" cy="7" r="2"></circle>
+                        <circle cx="16" cy="17" r="2"></circle>
+                    </svg>
+                </span>
+
+                <span>Playbooks</span>
+            </a>
+
+
+            {% if operator is defined and operator and operator.clearance_tier == "Commander" %}
+
+            <div class="nav-section-label nav-section-secondary">
+                CONTROL
+            </div>
+
+            <a
+                href="{{ url_for('ops_views.render_commander_console') }}"
+                class="sidebar-nav-link"
+            >
+                <span class="nav-icon">
+                    <svg width="18" height="18" viewBox="0 0 24 24"
+                         fill="none" stroke="currentColor"
+                         stroke-width="1.8">
+                        <path d="M12 3l8 4v5c0 5-3.5 8-8 9-4.5-1-8-4-8-9V7l8-4z"></path>
+                        <path d="M9 12l2 2 4-4"></path>
+                    </svg>
+                </span>
+
+                <span>Commander</span>
+            </a>
+
+            {% endif %}
+
+        </nav>
+
+
+        <div class="sidebar-footer">
+
+            <div class="system-status">
+                <span class="status-indicator"></span>
+
+                <div>
+                    <strong>SYSTEM ONLINE</strong>
+                    <small>Telemetry pipeline nominal</small>
+                </div>
+            </div>
+
+            <a
+                href="{{ url_for('auth_views.terminate_session') }}"
+                class="logout-link"
+            >
+                <svg width="17" height="17" viewBox="0 0 24 24"
+                     fill="none" stroke="currentColor"
+                     stroke-width="1.8">
+                    <path d="M10 17l5-5-5-5"></path>
+                    <path d="M15 12H3"></path>
+                    <path d="M21 19V5a2 2 0 0 0-2-2h-5"></path>
+                </svg>
+
+                Sign Out
+            </a>
+
+        </div>
+
+    </aside>
+
+
+    <!-- =====================================================
+         MAIN CONTENT
+    ====================================================== -->
+
+    <main class="app-main">
+
+        <header class="command-header">
+
+            <div class="command-heading">
+
+                <div class="breadcrumb">
+                    <span>OPERATIONS</span>
+                    <span class="breadcrumb-separator">/</span>
+                    <strong>INCIDENTS</strong>
+                </div>
+
+                <h1>Incident Response Center</h1>
+
+                <p>
+                    Review, investigate, and correlate detected forensic incidents.
+                </p>
+
+            </div>
+
+
+            <div class="command-header-actions">
+
+                <button
+                    type="button"
+                    class="icon-button"
+                    id="refresh-incidents"
+                    title="Refresh incidents"
+                    aria-label="Refresh incidents"
+                >
+                    <svg width="18" height="18" viewBox="0 0 24 24"
+                         fill="none" stroke="currentColor"
+                         stroke-width="1.8">
+                        <path d="M20 11a8.1 8.1 0 0 0-15.5-2"></path>
+                        <path d="M4 4v5h5"></path>
+                        <path d="M4 13a8.1 8.1 0 0 0 15.5 2"></path>
+                        <path d="M20 20v-5h-5"></path>
+                    </svg>
+                </button>
+
+                <a
+                    href="{{ url_for('ops_views.render_ingest_station') }}"
+                    class="header-action-button"
+                >
+                    <svg width="17" height="17" viewBox="0 0 24 24"
+                         fill="none" stroke="currentColor"
+                         stroke-width="1.8">
+                        <path d="M12 3v12"></path>
+                        <path d="m7 10 5 5 5-5"></path>
+                        <path d="M5 21h14"></path>
+                    </svg>
+
+                    Analyze Evidence
+                </a>
+
+            </div>
+
+        </header>
+
+
+        <!-- =====================================================
+             STATUS STRIP
+        ====================================================== -->
+
+        <section class="system-status-strip">
+
+            <div class="status-strip-item">
+                <span class="status-dot online"></span>
+                <span>INCIDENT ENGINE</span>
+                <strong>ONLINE</strong>
+            </div>
+
+            <div class="status-strip-item">
+                <span class="status-dot online"></span>
+                <span>CORRELATION</span>
+                <strong>ACTIVE</strong>
+            </div>
+
+            <div class="status-strip-item">
+                <span class="status-dot online"></span>
+                <span>EVIDENCE INDEX</span>
+                <strong>READY</strong>
+            </div>
+
+            <div class="status-strip-time">
+                UTC
+                <span id="incidents-clock">--:--:--</span>
+            </div>
+
+        </section>
+
+
+        <!-- =====================================================
+             INCIDENT SUMMARY
+        ====================================================== -->
+
+        <section class="incident-summary-grid">
+
+            <article class="incident-summary-card">
+                <span class="summary-label">TOTAL INCIDENTS</span>
+
+                <strong class="summary-value">
+                    {{ incidents|length if incidents is defined else 0 }}
+                </strong>
+
+                <span class="summary-meta">
+                    Correlated incident clusters
+                </span>
+            </article>
+
+
+            <article class="incident-summary-card summary-critical">
+                <span class="summary-label">CRITICAL</span>
+
+                <strong class="summary-value">
+                    {% if incidents is defined %}
+                        {{ incidents
+                            |selectattr('triage_severity', 'equalto', 'Critical')
+                            |list
+                            |length }}
+                    {% else %}
+                        0
+                    {% endif %}
+                </strong>
+
+                <span class="summary-meta">
+                    Immediate attention
+                </span>
+            </article>
+
+
+            <article class="incident-summary-card summary-high">
+                <span class="summary-label">HIGH</span>
+
+                <strong class="summary-value">
+                    {% if incidents is defined %}
+                        {{ incidents
+                            |selectattr('triage_severity', 'equalto', 'High')
+                            |list
+                            |length }}
+                    {% else %}
+                        0
+                    {% endif %}
+                </strong>
+
+                <span class="summary-meta">
+                    Elevated response priority
+                </span>
+            </article>
+
+
+            <article class="incident-summary-card summary-active">
+                <span class="summary-label">OPEN QUEUE</span>
+
+                <strong class="summary-value">
+                    {{ incidents|length if incidents is defined else 0 }}
+                </strong>
+
+                <span class="summary-meta">
+                    Awaiting investigation
+                </span>
+            </article>
+
+        </section>
+
+
+        <!-- =====================================================
+             INCIDENT QUEUE
+        ====================================================== -->
+
+        <section class="dashboard-panel incidents-queue-panel">
+
+            <div class="panel-header">
+
+                <div>
+                    <span class="panel-kicker">THREAT RESPONSE</span>
+                    <h2>Incident Queue</h2>
+                </div>
+
+                <span class="live-badge">
+                    <span></span>
+                    LIVE
+                </span>
+
+            </div>
+
+
+            <!-- Search / Filter -->
+
+            <div class="incident-toolbar">
+
+                <div class="incident-search">
+
+                    <svg
+                        width="17"
+                        height="17"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="1.8"
+                    >
+                        <circle cx="11" cy="11" r="7"></circle>
+                        <path d="m20 20-4-4"></path>
+                    </svg>
+
+                    <input
+                        type="search"
+                        id="incident-search"
+                        placeholder="Search incidents..."
+                        autocomplete="off"
+                    >
+
+                </div>
+
+
+                <div class="incident-filters">
+
+                    <button
+                        type="button"
+                        class="incident-filter active"
+                        data-filter="all"
+                    >
+                        All
+                    </button>
+
+                    <button
+                        type="button"
+                        class="incident-filter"
+                        data-filter="Critical"
+                    >
+                        Critical
+                    </button>
+
+                    <button
+                        type="button"
+                        class="incident-filter"
+                        data-filter="High"
+                    >
+                        High
+                    </button>
+
+                    <button
+                        type="button"
+                        class="incident-filter"
+                        data-filter="Elevated"
+                    >
+                        Elevated
+                    </button>
+
+                    <button
+                        type="button"
+                        class="incident-filter"
+                        data-filter="Notice"
+                    >
+                        Notice
+                    </button>
+
+                </div>
+
+            </div>
+
+
+            <!-- =================================================
+                 INCIDENT LIST
+            ================================================== -->
+
+            <div
+                class="incident-queue"
+                id="incident-queue"
+            >
+
+                {% if incidents is defined and incidents %}
+
+                    {% for incident in incidents %}
+
+                    <a
+                        href="{{ url_for(
+                            'ops_views.render_docket_investigation',
+                            docket_id=incident['cluster_id']
+                        ) }}"
+                        class="incident-card"
+                        data-severity="{{ incident['triage_severity'] }}"
+                        data-search="{{ (
+                            incident['cluster_headline']
+                            ~ ' '
+                            ~ incident['triage_severity']
+                            ~ ' '
+                            ~ incident.get('cluster_id', '')
+                        )|lower }}"
+                    >
+
+                        <div class="incident-card-severity severity-{{ incident['triage_severity']|lower }}">
+                            <span></span>
+                            {{ incident['triage_severity'] }}
+                        </div>
+
+
+                        <div class="incident-card-main">
+
+                            <div class="incident-card-heading">
+
+                                <div>
+
+                                    <span class="incident-id">
+                                        {{ incident['cluster_id'] }}
+                                    </span>
+
+                                    <h3>
+                                        {{ incident['cluster_headline'] }}
+                                    </h3>
+
+                                </div>
+
+                                <svg
+                                    class="incident-card-arrow"
+                                    width="18"
+                                    height="18"
+                                    viewBox="0 0 24 24"
+                                    fill="none"
+                                    stroke="currentColor"
+                                    stroke-width="1.8"
+                                >
+                                    <path d="m9 18 6-6-6-6"></path>
+                                </svg>
+
+                            </div>
+
+
+                            <div class="incident-card-meta">
+
+                                <div class="incident-meta-item">
+
+                                    <span class="meta-label">
+                                        CONFIDENCE
+                                    </span>
+
+                                    <strong>
+                                        {{ incident['attribution_confidence'] }}%
+                                    </strong>
+
+                                </div>
+
+
+                                {% if incident.get('technique_id') %}
+
+                                <div class="incident-meta-item">
+
+                                    <span class="meta-label">
+                                        TECHNIQUE
+                                    </span>
+
+                                    <strong>
+                                        {{ incident['technique_id'] }}
+                                    </strong>
+
+                                </div>
+
+                                {% endif %}
+
+
+                                {% if incident.get('created_at') %}
+
+                                <div class="incident-meta-item">
+
+                                    <span class="meta-label">
+                                        DETECTED
+                                    </span>
+
+                                    <strong>
+                                        {{ incident['created_at'] }}
+                                    </strong>
+
+                                </div>
+
+                                {% endif %}
+
+                            </div>
+
+                        </div>
+
+                    </a>
+
+                    {% endfor %}
+
+
+                    <div
+                        class="incident-empty-filter"
+                        id="incident-empty-filter"
+                        hidden
+                    >
+                        <div class="empty-state-icon">
+                            <svg
+                                width="24"
+                                height="24"
+                                viewBox="0 0 24 24"
+                                fill="none"
+                                stroke="currentColor"
+                                stroke-width="1.6"
+                            >
+                                <circle cx="11" cy="11" r="7"></circle>
+                                <path d="m20 20-4-4"></path>
+                            </svg>
+                        </div>
+
+                        <strong>No matching incidents</strong>
+
+                        <span>
+                            Try another search term or severity filter.
+                        </span>
+                    </div>
+
+
+                {% else %}
+
+                    <div class="empty-state incidents-empty">
+
+                        <div class="empty-state-icon">
+
+                            <svg
+                                width="26"
+                                height="26"
+                                viewBox="0 0 24 24"
+                                fill="none"
+                                stroke="currentColor"
+                                stroke-width="1.6"
+                            >
+                                <circle cx="12" cy="12" r="8"></circle>
+                                <path d="m8 12 2.5 2.5L16 9"></path>
+                            </svg>
+
+                        </div>
+
+                        <strong>No active incidents</strong>
+
+                        <span>
+                            The incident queue is currently clear.
+                        </span>
+
+                        <a
+                            href="{{ url_for('ops_views.render_ingest_station') }}"
+                            class="empty-state-action"
+                        >
+                            Analyze new evidence
+                        </a>
+
+                    </div>
+
+                {% endif %}
+
+            </div>
+
+        </section>
+
+
+        <!-- =====================================================
+             FOOTER
+        ====================================================== -->
+
+        <footer class="app-footer">
+
+            <div>
+                <strong>INTELLIGENT LOG FORENSICS</strong>
+                <span>Security Operations Platform</span>
+            </div>
+
+            <div class="footer-right">
+                <span>Incident Engine</span>
+                <span class="footer-status-dot"></span>
+                <span>Operational</span>
+            </div>
+
+        </footer>
+
+    </main>
+
+</div>
+
+
+<!-- =========================================================
+     JAVASCRIPT
+========================================================== -->
+
+<script src="/static/js/core/EventBus.js"></script>
+<script src="/static/js/core/AppState.js"></script>
+<script src="/static/js/core/Router.js"></script>
+
+<script src="/static/js/pages/Incidents.js"></script>
+
+</body>
+</html>

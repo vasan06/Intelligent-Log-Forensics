@@ -1,0 +1,470 @@
+
+{% extends "base.html" %}
+
+{% block shell_css %}
+<link rel="stylesheet" href="../static/css/app_shell.css">
+{% endblock %}
+
+{% block shell_js %}
+<script src="../static/js/app_shell.js"></script>
+{% endblock %}
+
+{% block body %}
+
+<div class="ilf-app-shell">
+
+    <!-- =====================================================
+         TOP HEADER
+    ====================================================== -->
+
+    <header class="ilf-top-header">
+
+        <div class="ilf-header-inner">
+
+            <!-- Product title -->
+
+            <a
+                href="{{ url_for('app.index') }}"
+                class="ilf-product-name"
+            >
+                intelligent-log-forensics
+            </a>
+
+
+            <!-- Desktop Navigation -->
+
+            <nav
+                class="ilf-main-navigation"
+                aria-label="Primary navigation"
+            >
+
+                <a
+                    href="{{ url_for('app.dashboard') }}"
+                    class="ilf-nav-item {% if request.endpoint == 'app.dashboard' %}active{% endif %}"
+                >
+                    Dashboard
+                </a>
+
+
+                <a
+                    href="{{ url_for('app.upload') }}"
+                    class="ilf-nav-item {% if request.endpoint in ['app.upload', 'app.uploads'] %}active{% endif %}"
+                >
+                    Upload Logs
+                </a>
+
+
+                <a
+                    href="{{ url_for('app.analyze') }}"
+                    class="ilf-nav-item {% if request.endpoint and 'analyze' in request.endpoint %}active{% endif %}"
+                >
+                    Analysis
+                </a>
+
+
+                <a
+                    href="{{ url_for('app.mitre') }}"
+                    class="ilf-nav-item {% if request.endpoint and 'mitre' in request.endpoint %}active{% endif %}"
+                >
+                    MITRE ATT&CK
+                </a>
+
+
+                <a
+                    href="{{ url_for('app.ml_analysis') }}"
+                    class="ilf-nav-item {% if request.endpoint and 'ml_analysis' in request.endpoint %}active{% endif %}"
+                >
+                    ML Analysis
+                </a>
+
+
+                <a
+                    href="{{ url_for('app.incidents') }}"
+                    class="ilf-nav-item {% if request.endpoint and 'incident' in request.endpoint %}active{% endif %}"
+                >
+                    Incidents
+                </a>
+
+
+                <a
+                    href="{{ url_for('app.reports') }}"
+                    class="ilf-nav-item {% if request.endpoint and 'report' in request.endpoint %}active{% endif %}"
+                >
+                    Reports
+                </a>
+
+
+                <a
+                    href="{{ url_for('app.simulator') }}"
+                    class="ilf-nav-item {% if request.endpoint and 'simulator' in request.endpoint %}active{% endif %}"
+                >
+                    Live
+                </a>
+
+            </nav>
+
+
+            <!-- Header actions -->
+
+            <div class="ilf-header-actions">
+
+                <!-- System status -->
+
+                <div class="ilf-system-status">
+
+                    <span class="ilf-system-status-dot"></span>
+
+                    <span class="ilf-system-status-text">
+                        System Online
+                    </span>
+
+                </div>
+
+
+                <!-- Notifications -->
+
+                <a
+                    href="{{ url_for('app.notifications') }}"
+                    class="ilf-header-action"
+                    aria-label="Notifications"
+                >
+
+                    <svg
+                        width="18"
+                        height="18"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="1.7"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                    >
+                        <path
+                            d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"
+                        />
+
+                        <path
+                            d="M13.73 21a2 2 0 0 1-3.46 0"
+                        />
+                    </svg>
+
+
+                    {% if unread_notifications > 0 %}
+
+                    <span class="ilf-notification-indicator"></span>
+
+                    {% endif %}
+
+                </a>
+
+
+                <!-- User -->
+
+                <div class="ilf-user-menu">
+
+                    <button
+                        type="button"
+                        class="ilf-user-trigger"
+                        aria-expanded="false"
+                        aria-haspopup="true"
+                    >
+
+                        <span class="ilf-user-avatar">
+                            {{ current_user.name[:1] if current_user else 'U' }}
+                        </span>
+
+                        <span class="ilf-user-name">
+                            {{ current_user.name if current_user else 'User' }}
+                        </span>
+
+                        <svg
+                            class="ilf-user-chevron"
+                            width="13"
+                            height="13"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            stroke-width="2"
+                        >
+                            <polyline points="6 9 12 15 18 9"/>
+                        </svg>
+
+                    </button>
+
+
+                    <div
+                        class="ilf-user-dropdown"
+                        role="menu"
+                    >
+
+                        <div class="ilf-dropdown-identity">
+
+                            <span class="ilf-dropdown-avatar">
+                                {{ current_user.name[:1] if current_user else 'U' }}
+                            </span>
+
+                            <div>
+
+                                <strong>
+                                    {{ current_user.name if current_user else 'User' }}
+                                </strong>
+
+                                <span>
+                                    {{ current_user.display_role if current_user else 'User' }}
+                                </span>
+
+                            </div>
+
+                        </div>
+
+
+                        <div class="ilf-dropdown-divider"></div>
+
+
+                        <a
+                            href="{{ url_for('app.profile') }}"
+                            class="ilf-dropdown-item"
+                            role="menuitem"
+                        >
+
+                            <svg
+                                width="16"
+                                height="16"
+                                viewBox="0 0 24 24"
+                                fill="none"
+                                stroke="currentColor"
+                                stroke-width="1.7"
+                            >
+                                <circle
+                                    cx="12"
+                                    cy="8"
+                                    r="4"
+                                />
+
+                                <path
+                                    d="M4 21a8 8 0 0 1 16 0"
+                                />
+                            </svg>
+
+                            Profile
+
+                        </a>
+
+
+                        {% if current_user and current_user.is_admin %}
+
+                        <a
+                            href="{{ url_for('admin.dashboard') }}"
+                            class="ilf-dropdown-item"
+                            role="menuitem"
+                        >
+
+                            <svg
+                                width="16"
+                                height="16"
+                                viewBox="0 0 24 24"
+                                fill="none"
+                                stroke="currentColor"
+                                stroke-width="1.7"
+                            >
+                                <path
+                                    d="M12 2l2.5 6.5L21 11l-6.5 2.5L12 20l-2.5-6.5L3 11l6.5-2.5L12 2z"
+                                />
+                            </svg>
+
+                            Admin
+
+                        </a>
+
+                        {% endif %}
+
+
+                        <div class="ilf-dropdown-divider"></div>
+
+
+                        <a
+                            href="{{ url_for('auth.logout') }}"
+                            class="ilf-dropdown-item ilf-dropdown-danger"
+                            role="menuitem"
+                        >
+
+                            <svg
+                                width="16"
+                                height="16"
+                                viewBox="0 0 24 24"
+                                fill="none"
+                                stroke="currentColor"
+                                stroke-width="1.7"
+                            >
+                                <path
+                                    d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"
+                                />
+
+                                <polyline
+                                    points="16 17 21 12 16 7"
+                                />
+
+                                <line
+                                    x1="21"
+                                    y1="12"
+                                    x2="9"
+                                    y2="12"
+                                />
+                            </svg>
+
+                            Sign Out
+
+                        </a>
+
+                    </div>
+
+                </div>
+
+
+                <!-- Mobile menu -->
+
+                <button
+                    type="button"
+                    class="ilf-mobile-menu-trigger"
+                    aria-label="Open navigation"
+                    aria-expanded="false"
+                >
+
+                    <span></span>
+                    <span></span>
+                    <span></span>
+
+                </button>
+
+            </div>
+
+        </div>
+
+
+        <!-- =================================================
+             MOBILE NAVIGATION
+        ================================================== -->
+
+        <div class="ilf-mobile-navigation">
+
+            <a
+                href="{{ url_for('app.dashboard') }}"
+                class="ilf-mobile-nav-item {% if request.endpoint == 'app.dashboard' %}active{% endif %}"
+            >
+                Dashboard
+            </a>
+
+
+            <a
+                href="{{ url_for('app.upload') }}"
+                class="ilf-mobile-nav-item {% if request.endpoint in ['app.upload', 'app.uploads'] %}active{% endif %}"
+            >
+                Upload Logs
+            </a>
+
+
+            <a
+                href="{{ url_for('app.analyze') }}"
+                class="ilf-mobile-nav-item {% if request.endpoint and 'analyze' in request.endpoint %}active{% endif %}"
+            >
+                Analysis
+            </a>
+
+
+            <a
+                href="{{ url_for('app.mitre') }}"
+                class="ilf-mobile-nav-item {% if request.endpoint and 'mitre' in request.endpoint %}active{% endif %}"
+            >
+                MITRE ATT&CK
+            </a>
+
+
+            <a
+                href="{{ url_for('app.ml_analysis') }}"
+                class="ilf-mobile-nav-item {% if request.endpoint and 'ml_analysis' in request.endpoint %}active{% endif %}"
+            >
+                ML Analysis
+            </a>
+
+
+            <a
+                href="{{ url_for('app.incidents') }}"
+                class="ilf-mobile-nav-item {% if request.endpoint and 'incident' in request.endpoint %}active{% endif %}"
+            >
+                Incidents
+            </a>
+
+
+            <a
+                href="{{ url_for('app.reports') }}"
+                class="ilf-mobile-nav-item {% if request.endpoint and 'report' in request.endpoint %}active{% endif %}"
+            >
+                Reports
+            </a>
+
+
+            <a
+                href="{{ url_for('app.simulator') }}"
+                class="ilf-mobile-nav-item {% if request.endpoint and 'simulator' in request.endpoint %}active{% endif %}"
+            >
+                Live Simulator
+            </a>
+
+
+            <a
+                href="{{ url_for('app.uploads') }}"
+                class="ilf-mobile-nav-item {% if request.endpoint == 'app.uploads' %}active{% endif %}"
+            >
+                File Archive
+            </a>
+
+
+            {% if current_user and current_user.is_admin %}
+
+            <div class="ilf-mobile-nav-divider"></div>
+
+            <a
+                href="{{ url_for('admin.dashboard') }}"
+                class="ilf-mobile-nav-item ilf-mobile-admin-item {% if request.endpoint and 'admin' in request.endpoint %}active{% endif %}"
+            >
+                Admin
+            </a>
+
+            {% endif %}
+
+        </div>
+
+    </header>
+
+
+    <!-- =====================================================
+         APPLICATION CONTENT
+    ====================================================== -->
+
+    <main class="ilf-page-container">
+
+        <div class="ilf-page-inner">
+
+            {% block page_title %}{% endblock %}
+
+            {% block content %}{% endblock %}
+
+        </div>
+
+    </main>
+
+
+    <!-- =====================================================
+         GLOBAL PAGE TRANSITION
+    ====================================================== -->
+
+    <div
+        class="ilf-page-transition"
+        aria-hidden="true"
+    >
+        <div class="ilf-transition-line"></div>
+    </div>
+
+</div>
+
+{% endblock %}

@@ -1,0 +1,313 @@
+﻿/* =========================================================
+INTELLIGENT LOG FORENSICS
+DESIGN TOKENS
+========================================================= */
+
+:root {
+/* =====================================================
+COLOR SYSTEM
+===================================================== */
+
+
+--color-bg: #071018;
+--color-bg-deep: #040a10;
+--color-surface: #0b151f;
+--color-surface-raised: #101d29;
+--color-surface-hover: #142432;
+
+--color-border: rgba(148, 163, 184, 0.14);
+--color-border-strong: rgba(148, 163, 184, 0.24);
+--color-border-bright: rgba(148, 163, 184, 0.34);
+
+--color-text: #edf4fa;
+--color-text-primary: #edf4fa;
+--color-text-secondary: #a8b8c7;
+--color-text-muted: #718394;
+--color-text-dim: #506171;
+
+--color-white: #ffffff;
+--color-black: #000000;
+
+/* =====================================================
+   ACCENT COLORS
+   ===================================================== */
+
+--color-primary: #42b8ff;
+--color-primary-bright: #72ccff;
+--color-primary-soft: rgba(66, 184, 255, 0.12);
+--color-primary-glow: rgba(66, 184, 255, 0.28);
+
+--color-info: #38bdf8;
+--color-info-soft: rgba(56, 189, 248, 0.12);
+
+--color-success: #36d399;
+--color-success-soft: rgba(54, 211, 153, 0.12);
+
+--color-warning: #f5b942;
+--color-warning-soft: rgba(245, 185, 66, 0.12);
+
+--color-danger: #ff5c67;
+--color-danger-soft: rgba(255, 92, 103, 0.12);
+
+--color-critical: #ff4655;
+--color-critical-soft: rgba(255, 70, 85, 0.13);
+
+--color-purple: #a78bfa;
+--color-purple-soft: rgba(167, 139, 250, 0.12);
+
+--color-cyan: #22d3ee;
+--color-cyan-soft: rgba(34, 211, 238, 0.12);
+
+/* =====================================================
+   SEVERITY
+   ===================================================== */
+
+--severity-critical: #ff4655;
+--severity-high: #ff7849;
+--severity-elevated: #f5b942;
+--severity-notice: #38bdf8;
+--severity-low: #36d399;
+
+/* =====================================================
+   TYPOGRAPHY
+   ===================================================== */
+
+--font-sans:
+    "Inter",
+    -apple-system,
+    BlinkMacSystemFont,
+    "Segoe UI",
+    sans-serif;
+
+--font-display:
+    "Space Grotesk",
+    "Inter",
+    sans-serif;
+
+--font-mono:
+    "JetBrains Mono",
+    "SFMono-Regular",
+    Consolas,
+    "Liberation Mono",
+    monospace;
+
+--font-size-xs: 0.6875rem;
+--font-size-sm: 0.75rem;
+--font-size-md: 0.8125rem;
+--font-size-base: 0.875rem;
+--font-size-lg: 1rem;
+--font-size-xl: 1.125rem;
+--font-size-2xl: 1.375rem;
+--font-size-3xl: 1.75rem;
+--font-size-4xl: 2.25rem;
+
+--line-height-tight: 1.15;
+--line-height-snug: 1.35;
+--line-height-normal: 1.55;
+--line-height-relaxed: 1.75;
+
+/* =====================================================
+   SPACING
+   ===================================================== */
+
+--space-1: 0.25rem;
+--space-2: 0.5rem;
+--space-3: 0.75rem;
+--space-4: 1rem;
+--space-5: 1.25rem;
+--space-6: 1.5rem;
+--space-7: 1.75rem;
+--space-8: 2rem;
+--space-10: 2.5rem;
+--space-12: 3rem;
+--space-16: 4rem;
+
+/* =====================================================
+   LAYOUT
+   ===================================================== */
+
+--sidebar-width: 250px;
+--sidebar-width-collapsed: 76px;
+
+--content-max-width: 1700px;
+
+--header-height: 82px;
+
+/* =====================================================
+   BORDER RADIUS
+   ===================================================== */
+
+--radius-xs: 4px;
+--radius-sm: 6px;
+--radius-md: 9px;
+--radius-lg: 12px;
+--radius-xl: 16px;
+--radius-2xl: 20px;
+
+--radius-pill: 999px;
+
+/* =====================================================
+   SHADOWS
+   ===================================================== */
+
+--shadow-xs:
+    0 1px 2px rgba(0, 0, 0, 0.18);
+
+--shadow-sm:
+    0 4px 12px rgba(0, 0, 0, 0.20);
+
+--shadow-md:
+    0 10px 28px rgba(0, 0, 0, 0.24);
+
+--shadow-lg:
+    0 18px 45px rgba(0, 0, 0, 0.30);
+
+--shadow-glow-primary:
+    0 0 28px rgba(66, 184, 255, 0.12);
+
+--shadow-glow-danger:
+    0 0 28px rgba(255, 70, 85, 0.14);
+
+/* =====================================================
+   TRANSITIONS
+   ===================================================== */
+
+--transition-fast:
+    120ms ease;
+
+--transition-normal:
+    220ms ease;
+
+--transition-slow:
+    380ms ease;
+
+--transition-transform:
+    transform 220ms ease;
+
+/* =====================================================
+   Z-INDEX
+   ===================================================== */
+
+--z-base: 1;
+--z-dropdown: 100;
+--z-sticky: 200;
+--z-sidebar: 500;
+--z-modal: 1000;
+--z-toast: 2000;
+
+/* =====================================================
+   GRADIENTS
+   ===================================================== */
+
+--gradient-page:
+    radial-gradient(
+        circle at 75% 5%,
+        rgba(66, 184, 255, 0.055),
+        transparent 28%
+    ),
+    radial-gradient(
+        circle at 10% 85%,
+        rgba(167, 139, 250, 0.035),
+        transparent 25%
+    );
+
+--gradient-surface:
+    linear-gradient(
+        145deg,
+        rgba(255, 255, 255, 0.025),
+        rgba(255, 255, 255, 0.005)
+    );
+
+--gradient-primary:
+    linear-gradient(
+        135deg,
+        #42b8ff,
+        #238fd1
+    );
+
+--gradient-danger:
+    linear-gradient(
+        135deg,
+        #ff5967,
+        #d93649
+    );
+
+/* =====================================================
+   CHART VARIABLES
+   ===================================================== */
+
+--chart-grid:
+    rgba(148, 163, 184, 0.10);
+
+--chart-axis:
+    rgba(148, 163, 184, 0.22);
+
+--chart-primary:
+    #42b8ff;
+
+--chart-danger:
+    #ff4655;
+
+--chart-warning:
+    #f5b942;
+
+--chart-success:
+    #36d399;
+
+--chart-purple:
+    #a78bfa;
+
+/* =====================================================
+   EFFECTS
+   ===================================================== */
+
+--glass-background:
+    rgba(11, 21, 31, 0.78);
+
+--glass-border:
+    rgba(255, 255, 255, 0.075);
+
+--focus-ring:
+    0 0 0 3px rgba(66, 184, 255, 0.16);
+
+/* =====================================================
+   SCROLLBAR
+   ===================================================== */
+
+--scrollbar-track:
+    #071018;
+
+--scrollbar-thumb:
+    #1c3040;
+
+--scrollbar-thumb-hover:
+    #29465b;
+
+
+}
+
+/* =========================================================
+GLOBAL DARK THEME BASE
+========================================================= */
+
+html {
+color-scheme: dark;
+background: var(--color-bg);
+}
+
+/* =========================================================
+REDUCED MOTION
+========================================================= */
+
+@media (prefers-reduced-motion: reduce) {
+
+
+:root {
+    --transition-fast: 0ms;
+    --transition-normal: 0ms;
+    --transition-slow: 0ms;
+    --transition-transform: none;
+}
+
+
+}

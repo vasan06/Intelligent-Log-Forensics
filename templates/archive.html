@@ -1,0 +1,1247 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Evidence Vault | Intelligent Log Forensic</title>
+
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&family=Space+Grotesk:wght@500;600;700&display=swap"
+        rel="stylesheet"
+    >
+
+    <!-- Core CSS -->
+    <link rel="stylesheet" href="/static/css/tokens.css">
+    <link rel="stylesheet" href="/static/css/layout.css">
+    <link rel="stylesheet" href="/static/css/components.css">
+    <link rel="stylesheet" href="/static/css/animations.css">
+
+    <!-- Page CSS -->
+    <link rel="stylesheet" href="/static/css/pages/admin.css">
+</head>
+
+<body class="app-page archive-page">
+
+    <!-- =========================================================
+         APPLICATION SHELL
+    ========================================================== -->
+
+    <div class="app-shell">
+
+        <!-- Sidebar -->
+        <aside class="app-sidebar">
+
+            <div class="sidebar-brand">
+                <a href="{{ url_for('ops_views.render_command_deck') }}"
+                   class="brand-wrapper">
+
+                    <div class="brand-logo-icon">
+                        <svg
+                            width="20"
+                            height="20"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            stroke-width="2"
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                        >
+                            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
+                            <path d="M9 12l2 2 4-4"></path>
+                        </svg>
+                    </div>
+
+                    <div class="brand-copy">
+                        <span class="brand-title">
+                            INTELLIGENT LOG
+                        </span>
+
+                        <span class="brand-subtitle">
+                            FORENSIC PLATFORM
+                        </span>
+                    </div>
+                </a>
+            </div>
+
+
+            <!-- Navigation -->
+            <nav class="sidebar-navigation">
+
+                <div class="nav-section-label">
+                    OPERATIONS
+                </div>
+
+                <a
+                    href="{{ url_for('ops_views.render_command_deck') }}"
+                    class="sidebar-link"
+                >
+                    <span class="sidebar-link-icon">
+                        <svg viewBox="0 0 24 24" fill="none"
+                             stroke="currentColor" stroke-width="1.8">
+                            <rect x="3" y="3" width="7" height="7"></rect>
+                            <rect x="14" y="3" width="7" height="7"></rect>
+                            <rect x="3" y="14" width="7" height="7"></rect>
+                            <rect x="14" y="14" width="7" height="7"></rect>
+                        </svg>
+                    </span>
+
+                    <span>Dashboard</span>
+                </a>
+
+
+                <a
+                    href="{{ url_for('ops_views.render_ingest_station') }}"
+                    class="sidebar-link"
+                >
+                    <span class="sidebar-link-icon">
+                        <svg viewBox="0 0 24 24" fill="none"
+                             stroke="currentColor" stroke-width="1.8">
+                            <path d="M12 3v12"></path>
+                            <path d="M7 10l5 5 5-5"></path>
+                            <path d="M5 21h14"></path>
+                        </svg>
+                    </span>
+
+                    <span>Analyze</span>
+                </a>
+
+
+                <a
+                    href="{{ url_for('ops_views.render_dockets_queue') }}"
+                    class="sidebar-link"
+                >
+                    <span class="sidebar-link-icon">
+                        <svg viewBox="0 0 24 24" fill="none"
+                             stroke="currentColor" stroke-width="1.8">
+                            <path d="M4 5h16"></path>
+                            <path d="M4 12h16"></path>
+                            <path d="M4 19h16"></path>
+                            <circle cx="8" cy="5" r="1"></circle>
+                            <circle cx="8" cy="12" r="1"></circle>
+                            <circle cx="8" cy="19" r="1"></circle>
+                        </svg>
+                    </span>
+
+                    <span>Incidents</span>
+                </a>
+
+
+                <a
+                    href="{{ url_for('ops_views.render_mitre_matrix') }}"
+                    class="sidebar-link"
+                >
+                    <span class="sidebar-link-icon">
+                        <svg viewBox="0 0 24 24" fill="none"
+                             stroke="currentColor" stroke-width="1.8">
+                            <circle cx="12" cy="12" r="8"></circle>
+                            <circle cx="12" cy="12" r="2"></circle>
+                            <path d="M12 4v6"></path>
+                            <path d="M20 12h-6"></path>
+                            <path d="M12 20v-6"></path>
+                            <path d="M4 12h6"></path>
+                        </svg>
+                    </span>
+
+                    <span>MITRE ATT&CK</span>
+                </a>
+
+
+                <div class="nav-section-label">
+                    EVIDENCE
+                </div>
+
+
+                <a
+                    href="{{ url_for('ops_views.render_vault_archive') }}"
+                    class="sidebar-link active"
+                >
+                    <span class="sidebar-link-icon">
+                        <svg viewBox="0 0 24 24" fill="none"
+                             stroke="currentColor" stroke-width="1.8">
+                            <path d="M4 7h16"></path>
+                            <path d="M6 4h12l2 3H4l2-3z"></path>
+                            <rect x="4" y="7" width="16" height="13" rx="2"></rect>
+                            <path d="M9 11h6"></path>
+                        </svg>
+                    </span>
+
+                    <span>Evidence Vault</span>
+                </a>
+
+
+                <a
+                    href="{{ url_for('ops_views.render_remediation_playbooks') }}"
+                    class="sidebar-link"
+                >
+                    <span class="sidebar-link-icon">
+                        <svg viewBox="0 0 24 24" fill="none"
+                             stroke="currentColor" stroke-width="1.8">
+                            <path d="M4 5h16"></path>
+                            <path d="M4 12h10"></path>
+                            <path d="M4 19h16"></path>
+                            <path d="M17 9l3 3-3 3"></path>
+                        </svg>
+                    </span>
+
+                    <span>Playbooks</span>
+                </a>
+
+
+                {% if session.get("active_operator_id") %}
+                    <div class="nav-section-label">
+                        SYSTEM
+                    </div>
+
+                    {% if operator and operator.clearance_tier == "Commander" %}
+                    <a
+                        href="{{ url_for('ops_views.render_commander_console') }}"
+                        class="sidebar-link"
+                    >
+                        <span class="sidebar-link-icon">
+                            <svg viewBox="0 0 24 24" fill="none"
+                                 stroke="currentColor" stroke-width="1.8">
+                                <circle cx="12" cy="8" r="3"></circle>
+                                <path d="M5 21c0-4 3-7 7-7s7 3 7 7"></path>
+                            </svg>
+                        </span>
+
+                        <span>Admin</span>
+                    </a>
+                    {% endif %}
+                {% endif %}
+
+            </nav>
+
+
+            <!-- Sidebar Footer -->
+            <div class="sidebar-footer">
+
+                <div class="system-status">
+                    <span class="status-dot"></span>
+
+                    <div>
+                        <span class="system-status-label">
+                            FORENSIC ENGINE
+                        </span>
+
+                        <span class="system-status-value">
+                            OPERATIONAL
+                        </span>
+                    </div>
+                </div>
+
+            </div>
+
+        </aside>
+
+
+        <!-- =====================================================
+             MAIN APPLICATION
+        ====================================================== -->
+
+        <main class="app-main">
+
+            <!-- Top Bar -->
+            <header class="app-topbar">
+
+                <div class="topbar-left">
+
+                    <button
+                        type="button"
+                        class="mobile-menu-button"
+                        id="mobile-menu-button"
+                        aria-label="Open navigation"
+                    >
+                        <svg viewBox="0 0 24 24" fill="none"
+                             stroke="currentColor" stroke-width="2">
+                            <path d="M4 6h16"></path>
+                            <path d="M4 12h16"></path>
+                            <path d="M4 18h16"></path>
+                        </svg>
+                    </button>
+
+                    <div>
+                        <div class="breadcrumb">
+                            EVIDENCE / VAULT
+                        </div>
+
+                        <h1 class="page-title">
+                            Evidence Vault
+                        </h1>
+                    </div>
+
+                </div>
+
+
+                <div class="topbar-actions">
+
+                    <a
+                        href="{{ url_for('ops_views.render_ingest_station') }}"
+                        class="btn btn-primary"
+                    >
+                        <svg
+                            width="17"
+                            height="17"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            stroke-width="2"
+                        >
+                            <path d="M12 3v12"></path>
+                            <path d="M7 10l5 5 5-5"></path>
+                            <path d="M5 21h14"></path>
+                        </svg>
+
+                        Upload Evidence
+                    </a>
+
+                    <a
+                        href="{{ url_for('auth_views.terminate_session') }}"
+                        class="topbar-icon-button"
+                        title="Sign out"
+                        aria-label="Sign out"
+                    >
+                        <svg
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            stroke-width="1.8"
+                        >
+                            <path d="M10 17l5-5-5-5"></path>
+                            <path d="M15 12H3"></path>
+                            <path d="M21 19V5a2 2 0 0 0-2-2h-6"></path>
+                        </svg>
+                    </a>
+
+                </div>
+
+            </header>
+
+
+            <!-- Page Content -->
+            <div class="page-content">
+
+                <!-- Intro -->
+                <section class="page-intro">
+
+                    <div>
+                        <div class="section-label">
+                            FORENSIC EVIDENCE REPOSITORY
+                        </div>
+
+                        <h2 class="section-title">
+                            Indexed Evidence Bundles
+                        </h2>
+
+                        <p class="section-description">
+                            Review uploaded telemetry bundles, ingestion state,
+                            record volume, forensic fidelity, and processing diagnostics.
+                        </p>
+                    </div>
+
+                </section>
+
+
+                <!-- =================================================
+                     VAULT SUMMARY
+                ================================================== -->
+
+                <section class="metric-grid">
+
+                    <article class="metric-card">
+
+                        <div class="metric-card-header">
+                            <span class="metric-label">
+                                TOTAL BUNDLES
+                            </span>
+
+                            <span class="metric-icon">
+                                <svg viewBox="0 0 24 24" fill="none"
+                                     stroke="currentColor" stroke-width="1.8">
+                                    <path d="M4 7h16"></path>
+                                    <path d="M6 4h12l2 3H4l2-3z"></path>
+                                    <rect x="4" y="7" width="16" height="13" rx="2"></rect>
+                                </svg>
+                            </span>
+                        </div>
+
+                        <div class="metric-value">
+                            {{ uploads|length }}
+                        </div>
+
+                        <div class="metric-meta">
+                            Evidence objects stored
+                        </div>
+
+                    </article>
+
+
+                    <article class="metric-card">
+
+                        <div class="metric-card-header">
+                            <span class="metric-label">
+                                INDEXED
+                            </span>
+
+                            <span class="metric-icon">
+                                <svg viewBox="0 0 24 24" fill="none"
+                                     stroke="currentColor" stroke-width="1.8">
+                                    <path d="M5 12l4 4L19 6"></path>
+                                </svg>
+                            </span>
+                        </div>
+
+                        <div class="metric-value">
+                            {{ uploads|selectattr("status", "equalto", "Indexed")|list|length }}
+                        </div>
+
+                        <div class="metric-meta">
+                            Successfully processed
+                        </div>
+
+                    </article>
+
+
+                    <article class="metric-card">
+
+                        <div class="metric-card-header">
+                            <span class="metric-label">
+                                PROCESSING
+                            </span>
+
+                            <span class="metric-icon">
+                                <svg viewBox="0 0 24 24" fill="none"
+                                     stroke="currentColor" stroke-width="1.8">
+                                    <circle cx="12" cy="12" r="8"></circle>
+                                    <path d="M12 8v4l3 2"></path>
+                                </svg>
+                            </span>
+                        </div>
+
+                        <div class="metric-value">
+                            {{ uploads|selectattr("status", "equalto", "Processing")|list|length }}
+                        </div>
+
+                        <div class="metric-meta">
+                            Active ingestion jobs
+                        </div>
+
+                    </article>
+
+
+                    <article class="metric-card">
+
+                        <div class="metric-card-header">
+                            <span class="metric-label">
+                                FAILED
+                            </span>
+
+                            <span class="metric-icon danger">
+                                <svg viewBox="0 0 24 24" fill="none"
+                                     stroke="currentColor" stroke-width="1.8">
+                                    <path d="M12 3l9 18H3L12 3z"></path>
+                                    <path d="M12 9v5"></path>
+                                    <circle cx="12" cy="17" r=".8"></circle>
+                                </svg>
+                            </span>
+                        </div>
+
+                        <div class="metric-value">
+                            {{ uploads|selectattr("status", "equalto", "Failed")|list|length }}
+                        </div>
+
+                        <div class="metric-meta">
+                            Require investigation
+                        </div>
+
+                    </article>
+
+                </section>
+
+
+                <!-- =================================================
+                     SEARCH / FILTER BAR
+                ================================================== -->
+
+                <section class="panel vault-panel">
+
+                    <div class="panel-header">
+
+                        <div>
+                            <div class="panel-kicker">
+                                REPOSITORY INDEX
+                            </div>
+
+                            <h3 class="panel-title">
+                                Evidence Bundles
+                            </h3>
+                        </div>
+
+                        <div class="vault-count">
+                            <span id="visible-upload-count">
+                                {{ uploads|length }}
+                            </span>
+
+                            <span>
+                                bundles
+                            </span>
+                        </div>
+
+                    </div>
+
+
+                    <div class="vault-toolbar">
+
+                        <div class="vault-search">
+
+                            <svg
+                                viewBox="0 0 24 24"
+                                fill="none"
+                                stroke="currentColor"
+                                stroke-width="1.8"
+                            >
+                                <circle cx="11" cy="11" r="7"></circle>
+                                <path d="M20 20l-4-4"></path>
+                            </svg>
+
+                            <input
+                                type="search"
+                                id="vault-search"
+                                placeholder="Search evidence filename..."
+                                autocomplete="off"
+                            >
+
+                        </div>
+
+
+                        <div class="vault-filter">
+
+                            <select id="vault-status-filter">
+
+                                <option value="all">
+                                    All Status
+                                </option>
+
+                                <option value="Indexed">
+                                    Indexed
+                                </option>
+
+                                <option value="Processing">
+                                    Processing
+                                </option>
+
+                                <option value="Failed">
+                                    Failed
+                                </option>
+
+                            </select>
+
+                        </div>
+
+                    </div>
+
+
+                    <!-- =================================================
+                         EVIDENCE TABLE
+                    ================================================== -->
+
+                    <div class="table-wrapper">
+
+                        <table class="data-table vault-table">
+
+                            <thead>
+                                <tr>
+                                    <th>Evidence Bundle</th>
+                                    <th>Status</th>
+                                    <th>Records</th>
+                                    <th>Fidelity</th>
+                                    <th>Received</th>
+                                    <th>Diagnostic</th>
+                                </tr>
+                            </thead>
+
+
+                            <tbody id="vault-table-body">
+
+                                {% if uploads %}
+
+                                    {% for item in uploads %}
+
+                                    <tr
+                                        class="vault-row"
+                                        data-filename="{{ item.filename|lower }}"
+                                        data-status="{{ item.status }}"
+                                    >
+
+                                        <!-- Filename -->
+                                        <td>
+
+                                            <div class="evidence-file">
+
+                                                <div class="file-icon">
+                                                    <svg
+                                                        viewBox="0 0 24 24"
+                                                        fill="none"
+                                                        stroke="currentColor"
+                                                        stroke-width="1.7"
+                                                    >
+                                                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                                                        <polyline points="14 2 14 8 20 8"></polyline>
+                                                        <path d="M8 13h8"></path>
+                                                        <path d="M8 17h5"></path>
+                                                    </svg>
+                                                </div>
+
+                                                <div class="evidence-file-info">
+
+                                                    <span class="evidence-filename">
+                                                        {{ item.filename }}
+                                                    </span>
+
+                                                    <span class="evidence-id">
+                                                        VAULT #{{ item.id }}
+                                                    </span>
+
+                                                </div>
+
+                                            </div>
+
+                                        </td>
+
+
+                                        <!-- Status -->
+                                        <td>
+
+                                            {% if item.status == "Indexed" %}
+
+                                                <span class="status-badge status-success">
+                                                    <span class="status-dot"></span>
+                                                    Indexed
+                                                </span>
+
+                                            {% elif item.status == "Processing" %}
+
+                                                <span class="status-badge status-warning">
+                                                    <span class="status-dot"></span>
+                                                    Processing
+                                                </span>
+
+                                            {% elif item.status == "Failed" %}
+
+                                                <span class="status-badge status-danger">
+                                                    <span class="status-dot"></span>
+                                                    Failed
+                                                </span>
+
+                                            {% else %}
+
+                                                <span class="status-badge">
+                                                    <span class="status-dot"></span>
+                                                    {{ item.status }}
+                                                </span>
+
+                                            {% endif %}
+
+                                        </td>
+
+
+                                        <!-- Records -->
+                                        <td>
+
+                                            <span class="mono-value">
+                                                {{ item.records_count or 0 }}
+                                            </span>
+
+                                        </td>
+
+
+                                        <!-- Fidelity -->
+                                        <td>
+
+                                            {% if item.quality_score is not none %}
+
+                                                <div class="fidelity-cell">
+
+                                                    <div class="fidelity-value">
+                                                        {{ "%.1f"|format(item.quality_score) }}%
+                                                    </div>
+
+                                                   <div
+    class="fidelity-progress"
+    data-score="{{ item.quality_score|float|round(1) }}"
+></div>
+
+                                                </div>
+
+                                            {% else %}
+
+                                                <span class="muted-value">
+                                                    —
+                                                </span>
+
+                                            {% endif %}
+
+                                        </td>
+
+
+                                        <!-- Timestamp -->
+                                        <td>
+
+                                            <span class="timestamp-value">
+                                                {{ item.created_at or "—" }}
+                                            </span>
+
+                                        </td>
+
+
+                                        <!-- Diagnostic -->
+                                        <td>
+
+                                            {% if item.error_message %}
+
+                                                <button
+                                                    type="button"
+                                                    class="diagnostic-button"
+                                                    data-diagnostic="{{ item.error_message|e }}"
+                                                >
+                                                    <svg
+                                                        viewBox="0 0 24 24"
+                                                        fill="none"
+                                                        stroke="currentColor"
+                                                        stroke-width="1.8"
+                                                    >
+                                                        <circle cx="12" cy="12" r="9"></circle>
+                                                        <path d="M12 10v6"></path>
+                                                        <circle cx="12" cy="7" r=".8"></circle>
+                                                    </svg>
+
+                                                    View Error
+                                                </button>
+
+                                            {% else %}
+
+                                                <span class="diagnostic-clean">
+                                                    No issues
+                                                </span>
+
+                                            {% endif %}
+
+                                        </td>
+
+                                    </tr>
+
+                                    {% endfor %}
+
+                                {% else %}
+
+                                    <tr id="empty-vault-row">
+
+                                        <td colspan="6">
+
+                                            <div class="empty-state">
+
+                                                <div class="empty-state-icon">
+                                                    <svg
+                                                        viewBox="0 0 24 24"
+                                                        fill="none"
+                                                        stroke="currentColor"
+                                                        stroke-width="1.5"
+                                                    >
+                                                        <path d="M4 7h16"></path>
+                                                        <path d="M6 4h12l2 3H4l2-3z"></path>
+                                                        <rect
+                                                            x="4"
+                                                            y="7"
+                                                            width="16"
+                                                            height="13"
+                                                            rx="2"
+                                                        ></rect>
+                                                    </svg>
+                                                </div>
+
+                                                <h3>
+                                                    Evidence vault is empty
+                                                </h3>
+
+                                                <p>
+                                                    Upload a telemetry evidence bundle
+                                                    to begin forensic analysis.
+                                                </p>
+
+                                                <a
+                                                    href="{{ url_for('ops_views.render_ingest_station') }}"
+                                                    class="btn btn-primary"
+                                                >
+                                                    Upload Evidence
+                                                </a>
+
+                                            </div>
+
+                                        </td>
+
+                                    </tr>
+
+                                {% endif %}
+
+
+                                <!-- Filter Empty State -->
+                                <tr
+                                    id="vault-filter-empty"
+                                    class="is-hidden"
+                                >
+
+                                    <td colspan="6">
+
+                                        <div class="table-empty-state">
+
+                                            <svg
+                                                viewBox="0 0 24 24"
+                                                fill="none"
+                                                stroke="currentColor"
+                                                stroke-width="1.5"
+                                            >
+                                                <circle cx="11" cy="11" r="7"></circle>
+                                                <path d="M20 20l-4-4"></path>
+                                            </svg>
+
+                                            <span>
+                                                No evidence bundles match your filters.
+                                            </span>
+
+                                        </div>
+
+                                    </td>
+
+                                </tr>
+
+                            </tbody>
+
+                        </table>
+
+                    </div>
+
+                </section>
+
+
+                <!-- =================================================
+                     VAULT INFORMATION
+                ================================================== -->
+
+                <section class="vault-info-grid">
+
+                    <article class="info-panel">
+
+                        <div class="info-panel-icon">
+                            <svg
+                                viewBox="0 0 24 24"
+                                fill="none"
+                                stroke="currentColor"
+                                stroke-width="1.7"
+                            >
+                                <path d="M12 3l8 4v5c0 5-3.5 8-8 9-4.5-1-8-4-8-9V7l8-4z"></path>
+                                <path d="M9 12l2 2 4-4"></path>
+                            </svg>
+                        </div>
+
+                        <div>
+                            <h3>
+                                Evidence Integrity
+                            </h3>
+
+                            <p>
+                                Every uploaded evidence bundle is fingerprinted
+                                using SHA-256 before forensic processing.
+                            </p>
+                        </div>
+
+                    </article>
+
+
+                    <article class="info-panel">
+
+                        <div class="info-panel-icon">
+                            <svg
+                                viewBox="0 0 24 24"
+                                fill="none"
+                                stroke="currentColor"
+                                stroke-width="1.7"
+                            >
+                                <path d="M12 3v18"></path>
+                                <path d="M5 8h14"></path>
+                                <path d="M5 16h14"></path>
+                                <circle cx="12" cy="8" r="2"></circle>
+                                <circle cx="12" cy="16" r="2"></circle>
+                            </svg>
+                        </div>
+
+                        <div>
+                            <h3>
+                                Processing Pipeline
+                            </h3>
+
+                            <p>
+                                Uploaded telemetry is parsed, normalized,
+                                correlated, scored, and indexed into the evidence vault.
+                            </p>
+                        </div>
+
+                    </article>
+
+
+                    <article class="info-panel">
+
+                        <div class="info-panel-icon">
+                            <svg
+                                viewBox="0 0 24 24"
+                                fill="none"
+                                stroke="currentColor"
+                                stroke-width="1.7"
+                            >
+                                <path d="M4 19V5"></path>
+                                <path d="M4 19h16"></path>
+                                <path d="M7 15l3-4 3 2 5-7"></path>
+                            </svg>
+                        </div>
+
+                        <div>
+                            <h3>
+                                Forensic Fidelity
+                            </h3>
+
+                            <p>
+                                Fidelity scores represent the calculated quality
+                                of successfully normalized forensic telemetry.
+                            </p>
+                        </div>
+
+                    </article>
+
+                </section>
+
+            </div>
+
+        </main>
+
+    </div>
+
+
+    <!-- =========================================================
+         DIAGNOSTIC MODAL
+    ========================================================== -->
+
+    <div
+        class="modal-overlay is-hidden"
+        id="diagnostic-modal"
+        aria-hidden="true"
+    >
+
+        <div class="modal-card">
+
+            <div class="modal-header">
+
+                <div>
+                    <div class="modal-kicker">
+                        PROCESSING DIAGNOSTIC
+                    </div>
+
+                    <h3 class="modal-title">
+                        Ingestion Error
+                    </h3>
+                </div>
+
+                <button
+                    type="button"
+                    class="modal-close"
+                    id="diagnostic-modal-close"
+                    aria-label="Close diagnostic"
+                >
+                    <svg
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="2"
+                    >
+                        <path d="M6 6l12 12"></path>
+                        <path d="M18 6L6 18"></path>
+                    </svg>
+                </button>
+
+            </div>
+
+            <div class="modal-body">
+
+                <pre id="diagnostic-message"></pre>
+
+            </div>
+
+            <div class="modal-footer">
+
+                <button
+                    type="button"
+                    class="btn btn-outline"
+                    id="diagnostic-modal-dismiss"
+                >
+                    Close
+                </button>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- =========================================================
+         CORE JAVASCRIPT
+    ========================================================== -->
+
+    <script src="/static/js/core/EventBus.js"></script>
+    <script src="/static/js/core/AppState.js"></script>
+    <script src="/static/js/core/Router.js"></script>
+
+    <!-- Page JavaScript -->
+    <script src="/static/js/pages/Admin.js"></script>
+
+    <!-- Archive-specific behaviour -->
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+
+            const searchInput =
+                document.getElementById("vault-search");
+
+            const statusFilter =
+                document.getElementById("vault-status-filter");
+
+            const rows =
+                Array.from(
+                    document.querySelectorAll(".vault-row")
+                );
+
+            const emptyState =
+                document.getElementById("vault-filter-empty");
+
+            const visibleCount =
+                document.getElementById("visible-upload-count");
+
+
+            function filterVault() {
+
+                const query =
+                    (searchInput?.value || "")
+                        .trim()
+                        .toLowerCase();
+
+                const selectedStatus =
+                    statusFilter?.value || "all";
+
+                let visible = 0;
+
+
+                rows.forEach(function (row) {
+
+                    const filename =
+                        row.dataset.filename || "";
+
+                    const status =
+                        row.dataset.status || "";
+
+                    const matchesSearch =
+                        !query ||
+                        filename.includes(query);
+
+                    const matchesStatus =
+                        selectedStatus === "all" ||
+                        status === selectedStatus;
+
+                    const shouldShow =
+                        matchesSearch &&
+                        matchesStatus;
+
+
+                    row.style.display =
+                        shouldShow ? "" : "none";
+
+
+                    if (shouldShow) {
+                        visible++;
+                    }
+
+                });
+
+
+                if (visibleCount) {
+                    visibleCount.textContent = visible;
+                }
+
+
+                if (emptyState) {
+                    emptyState.classList.toggle(
+                        "is-hidden",
+                        visible !== 0
+                    );
+                }
+
+            }
+
+
+            if (searchInput) {
+                searchInput.addEventListener(
+                    "input",
+                    filterVault
+                );
+            }
+
+
+            if (statusFilter) {
+                statusFilter.addEventListener(
+                    "change",
+                    filterVault
+                );
+            }
+
+
+            /* ==============================================
+               Diagnostic Modal
+            =============================================== */
+
+            const modal =
+                document.getElementById("diagnostic-modal");
+
+            const message =
+                document.getElementById("diagnostic-message");
+
+            const closeButton =
+                document.getElementById(
+                    "diagnostic-modal-close"
+                );
+
+            const dismissButton =
+                document.getElementById(
+                    "diagnostic-modal-dismiss"
+                );
+
+
+            function closeDiagnostic() {
+
+                if (!modal) {
+                    return;
+                }
+
+                modal.classList.add("is-hidden");
+                modal.setAttribute(
+                    "aria-hidden",
+                    "true"
+                );
+
+            }
+
+
+            function openDiagnostic(text) {
+
+                if (!modal || !message) {
+                    return;
+                }
+
+                message.textContent =
+                    text || "No diagnostic information available.";
+
+                modal.classList.remove("is-hidden");
+
+                modal.setAttribute(
+                    "aria-hidden",
+                    "false"
+                );
+
+            }
+
+
+            document
+                .querySelectorAll(".diagnostic-button")
+                .forEach(function (button) {
+
+                    button.addEventListener(
+                        "click",
+                        function () {
+
+                            openDiagnostic(
+                                button.dataset.diagnostic
+                            );
+
+                        }
+                    );
+
+                });
+
+
+            closeButton?.addEventListener(
+                "click",
+                closeDiagnostic
+            );
+
+
+            dismissButton?.addEventListener(
+                "click",
+                closeDiagnostic
+            );
+
+
+            modal?.addEventListener(
+                "click",
+                function (event) {
+
+                    if (event.target === modal) {
+                        closeDiagnostic();
+                    }
+
+                }
+            );
+
+
+            document.addEventListener(
+                "keydown",
+                function (event) {
+
+                    if (event.key === "Escape") {
+                        closeDiagnostic();
+                    }
+
+                }
+            );
+
+
+            /* ==============================================
+               Mobile Sidebar
+            =============================================== */
+
+            const menuButton =
+                document.getElementById(
+                    "mobile-menu-button"
+                );
+
+            const sidebar =
+                document.querySelector(
+                    ".app-sidebar"
+                );
+
+
+            menuButton?.addEventListener(
+                "click",
+                function () {
+
+                    sidebar?.classList.toggle(
+                        "mobile-open"
+                    );
+
+                }
+            );
+
+        });
+    </script>
+
+</body>
+</html>

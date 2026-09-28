@@ -1,0 +1,699 @@
+
+{% extends "app_shell.html" %}
+
+{% block title %}Dashboard — Intelligent Log Forensics{% endblock %}
+{% block page_title %}Security Dashboard{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="../../static/css/dashboard.css">
+{% endblock %}
+
+{% block content %}
+
+<div class="dashboard-page">
+
+  <!-- =========================================================
+       HEADER
+  ========================================================== -->
+  <section class="dashboard-hero">
+    <div>
+      <div class="dashboard-eyebrow">
+        <span class="status-pulse"></span>
+        SECURITY OPERATIONS CENTER
+      </div>
+
+      <h1 class="page-title">Security Dashboard</h1>
+
+      <p class="page-subtitle">
+        Real-time threat intelligence and forensic activity overview.
+      </p>
+    </div>
+
+    <div class="dashboard-header-actions">
+      <div class="system-status">
+        <span class="status-dot"></span>
+        <span>Detection Engine Online</span>
+      </div>
+
+      <a href="{{ url_for('app.upload') }}" class="btn btn-primary">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none"
+             stroke="currentColor" stroke-width="2.5">
+          <line x1="12" y1="5" x2="12" y2="19"/>
+          <line x1="5" y1="12" x2="19" y2="12"/>
+        </svg>
+        Upload Log
+      </a>
+    </div>
+  </section>
+
+
+  <!-- =========================================================
+       STAT CARDS
+  ========================================================== -->
+  <section class="dashboard-stats">
+
+    <div class="dashboard-stat-card stat-blue">
+      <div class="stat-card-top">
+        <div class="dashboard-stat-icon">
+          <svg width="21" height="21" viewBox="0 0 24 24" fill="none"
+               stroke="currentColor" stroke-width="2">
+            <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>
+          </svg>
+        </div>
+
+        <span class="stat-live">LIVE</span>
+      </div>
+
+      <div class="stat-label">Total Log Records</div>
+
+      <div class="stat-value" data-count="{{ stats.total_logs }}">
+        {{ stats.total_logs }}
+      </div>
+
+      <div class="stat-sub">
+        Across all analyzed files
+      </div>
+
+      <div class="stat-sparkline">
+        <canvas id="logs-sparkline"></canvas>
+      </div>
+    </div>
+
+
+    <div class="dashboard-stat-card stat-red">
+      <div class="stat-card-top">
+        <div class="dashboard-stat-icon">
+          <svg width="21" height="21" viewBox="0 0 24 24" fill="none"
+               stroke="currentColor" stroke-width="2">
+            <path d="M10.29 3.86L1.82 18a2 2 0 0 0
+                     1.71 3h16.94a2 2 0 0 0
+                     1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
+            <line x1="12" y1="9" x2="12" y2="13"/>
+            <line x1="12" y1="17" x2="12.01" y2="17"/>
+          </svg>
+        </div>
+
+        <span class="stat-alert">THREAT</span>
+      </div>
+
+      <div class="stat-label">Threats Detected</div>
+
+      <div class="stat-value threat-value">
+        {{ stats.total_threats }}
+      </div>
+
+      <div class="stat-sub">
+        {{ stats.critical_count }} critical severity
+      </div>
+
+      <div class="stat-sparkline">
+        <canvas id="threats-sparkline"></canvas>
+      </div>
+    </div>
+
+
+    <div class="dashboard-stat-card stat-orange">
+      <div class="stat-card-top">
+        <div class="dashboard-stat-icon">
+          <svg width="21" height="21" viewBox="0 0 24 24" fill="none"
+               stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="10"/>
+            <line x1="12" y1="8" x2="12" y2="12"/>
+            <line x1="12" y1="16" x2="12.01" y2="16"/>
+          </svg>
+        </div>
+
+        <span class="stat-alert">ACTIVE</span>
+      </div>
+
+      <div class="stat-label">Active Incidents</div>
+
+      <div class="stat-value incident-value">
+        {{ stats.active_incidents }}
+      </div>
+
+      <div class="stat-sub">
+        Requiring investigation
+      </div>
+
+      <div class="stat-sparkline">
+        <canvas id="incidents-sparkline"></canvas>
+      </div>
+    </div>
+
+
+    <div class="dashboard-stat-card stat-green">
+      <div class="stat-card-top">
+        <div class="dashboard-stat-icon">
+          <svg width="21" height="21" viewBox="0 0 24 24" fill="none"
+               stroke="currentColor" stroke-width="2">
+            <path d="M21 15v4a2 2 0 0 1-2 2H5
+                     a2 2 0 0 1-2-2v-4"/>
+            <polyline points="17 8 12 3 7 8"/>
+            <line x1="12" y1="3" x2="12" y2="15"/>
+          </svg>
+        </div>
+
+        <span class="stat-ok">INDEXED</span>
+      </div>
+
+      <div class="stat-label">Files Analyzed</div>
+
+      <div class="stat-value">
+        {{ stats.total_files }}
+      </div>
+
+      <div class="stat-sub">
+        Average score: {{ stats.avg_threat_score }}/100
+      </div>
+
+      <div class="stat-progress">
+        <span
+          class="progress-fill"
+          data-progress="{{ stats.avg_threat_score or 0 }}"
+        ></span>
+      </div>
+    </div>
+
+  </section>
+
+
+  <!-- =========================================================
+       MAIN VISUALIZATION GRID
+  ========================================================== -->
+  <section class="dashboard-main-grid">
+
+    <!-- Threat Distribution -->
+    <div class="dashboard-panel threat-panel">
+
+      <div class="panel-header">
+        <div>
+          <div class="panel-kicker">THREAT TELEMETRY</div>
+          <h2 class="panel-title">Severity Distribution</h2>
+        </div>
+
+        <div class="live-indicator">
+          <span></span>
+          Live
+        </div>
+      </div>
+
+      <div class="threat-visual">
+
+        <div class="threat-donut-wrap">
+          <canvas id="severity-chart"></canvas>
+
+          <div class="donut-center">
+            <span class="donut-number">
+              {{ stats.total_threats }}
+            </span>
+            <span class="donut-label">Threats</span>
+          </div>
+        </div>
+
+
+        <div class="severity-list">
+
+          {% set severity_items = [
+            ('Critical', stats.severity_map.get('Critical', 0), 'critical'),
+            ('High', stats.severity_map.get('High', 0), 'high'),
+            ('Elevated', stats.severity_map.get('Elevated', 0), 'elevated'),
+            ('Notice', stats.severity_map.get('Notice', 0), 'notice')
+          ] %}
+
+          {% for name, count, key in severity_items %}
+
+          <div class="severity-row">
+
+            <div class="severity-name">
+              <span class="severity-marker {{ key }}"></span>
+              <span>{{ name }}</span>
+            </div>
+
+            <div class="severity-bar">
+              <span
+                data-width="{{ (
+                  count / (stats.total_threats if stats.total_threats > 0 else 1) * 100
+                )|int }}"
+                class="{{ key }}">
+              </span>
+            </div>
+
+            <strong>{{ count }}</strong>
+
+          </div>
+
+          {% endfor %}
+
+        </div>
+
+      </div>
+    </div>
+
+
+    <!-- Activity Monitor -->
+    <div class="dashboard-panel activity-panel">
+
+      <div class="panel-header">
+        <div>
+          <div class="panel-kicker">EVENT STREAM</div>
+          <h2 class="panel-title">Detection Activity</h2>
+        </div>
+
+        <div class="activity-live">
+          <span class="activity-wave"></span>
+          Monitoring
+        </div>
+      </div>
+
+      <div class="activity-canvas-wrap">
+        <canvas id="activity-chart"></canvas>
+
+        <div class="activity-overlay">
+          <span class="activity-value">
+            {{ stats.total_logs }}
+          </span>
+          <span>events processed</span>
+        </div>
+      </div>
+
+      <div class="activity-footer">
+        <span>Event telemetry</span>
+        <span id="activity-time">Realtime</span>
+      </div>
+
+    </div>
+
+  </section>
+
+
+  <!-- =========================================================
+       INCIDENTS + FORENSIC PIPELINE
+  ========================================================== -->
+  <section class="dashboard-secondary-grid">
+
+    <!-- Recent Incidents -->
+    <div class="dashboard-panel incidents-panel">
+
+      <div class="panel-header">
+
+        <div>
+          <div class="panel-kicker">INCIDENT RESPONSE</div>
+          <h2 class="panel-title">Recent Incidents</h2>
+        </div>
+
+        <a href="{{ url_for('app.incidents') }}"
+           class="panel-link">
+          View all
+          <span>→</span>
+        </a>
+
+      </div>
+
+      {% if stats.recent_incidents %}
+
+      <div class="incident-list">
+
+        {% for inc in stats.recent_incidents %}
+
+        <a
+          href="{{ url_for('app.incident_detail', incident_id=inc.incident_id) }}"
+          class="incident-item"
+        >
+
+          <div class="incident-severity severity-{{ inc.severity.lower() }}"></div>
+
+          <div class="incident-content">
+
+            <div class="incident-title">
+              {{ inc.title }}
+            </div>
+
+            <div class="incident-meta">
+              <span>{{ inc.filename }}</span>
+              <span>•</span>
+              <span>{{ inc.created_at[:10] }}</span>
+            </div>
+
+          </div>
+
+          <div class="incident-statuses">
+
+            <span class="badge badge-{{ inc.severity.lower() }}">
+              {{ inc.severity }}
+            </span>
+
+            <span class="badge badge-{{ inc.status }}">
+              {{ inc.status.title() }}
+            </span>
+
+          </div>
+
+          <svg class="incident-arrow"
+               width="16"
+               height="16"
+               viewBox="0 0 24 24"
+               fill="none"
+               stroke="currentColor"
+               stroke-width="2">
+            <polyline points="9 18 15 12 9 6"/>
+          </svg>
+
+        </a>
+
+        {% endfor %}
+
+      </div>
+
+      {% else %}
+
+      <div class="dashboard-empty">
+
+        <div class="empty-orb">
+          <svg width="26" height="26"
+               viewBox="0 0 24 24"
+               fill="none"
+               stroke="currentColor"
+               stroke-width="1.5">
+            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+            <path d="M9 12l2 2 4-4"/>
+          </svg>
+        </div>
+
+        <h3>No active incidents</h3>
+
+        <p>
+          Upload and analyze logs to automatically detect
+          security incidents.
+        </p>
+
+        <a href="{{ url_for('app.upload') }}"
+           class="btn btn-primary btn-sm">
+          Upload Log
+        </a>
+
+      </div>
+
+      {% endif %}
+
+    </div>
+
+
+    <!-- Forensic Pipeline -->
+    <div class="dashboard-panel pipeline-panel">
+
+      <div class="panel-header">
+
+        <div>
+          <div class="panel-kicker">ANALYSIS ENGINE</div>
+          <h2 class="panel-title">Forensic Pipeline</h2>
+        </div>
+
+        <span class="pipeline-status">
+          Operational
+        </span>
+
+      </div>
+
+      <div class="pipeline">
+
+        <div class="pipeline-node active">
+          <div class="pipeline-icon">
+            <span>01</span>
+          </div>
+
+          <div>
+            <strong>Log Ingestion</strong>
+            <small>Input telemetry</small>
+          </div>
+        </div>
+
+        <div class="pipeline-connector"></div>
+
+        <div class="pipeline-node active">
+          <div class="pipeline-icon">
+            <span>02</span>
+          </div>
+
+          <div>
+            <strong>Parsing</strong>
+            <small>Field extraction</small>
+          </div>
+        </div>
+
+        <div class="pipeline-connector"></div>
+
+        <div class="pipeline-node active">
+          <div class="pipeline-icon">
+            <span>03</span>
+          </div>
+
+          <div>
+            <strong>Detection</strong>
+            <small>Threat analysis</small>
+          </div>
+        </div>
+
+        <div class="pipeline-connector"></div>
+
+        <div class="pipeline-node">
+          <div class="pipeline-icon">
+            <span>04</span>
+          </div>
+
+          <div>
+            <strong>MITRE Mapping</strong>
+            <small>Technique correlation</small>
+          </div>
+        </div>
+
+        <div class="pipeline-connector"></div>
+
+        <div class="pipeline-node">
+          <div class="pipeline-icon">
+            <span>05</span>
+          </div>
+
+          <div>
+            <strong>Incident Response</strong>
+            <small>Investigation</small>
+          </div>
+        </div>
+
+      </div>
+
+    </div>
+
+  </section>
+
+
+  <!-- =========================================================
+       RECENT FILES
+  ========================================================== -->
+  <section class="dashboard-panel files-panel">
+
+    <div class="panel-header">
+
+      <div>
+        <div class="panel-kicker">FORENSIC STORAGE</div>
+        <h2 class="panel-title">Recent Log Files</h2>
+      </div>
+
+      <a href="{{ url_for('app.upload') }}"
+         class="btn btn-primary btn-sm">
+
+        <svg width="14"
+             height="14"
+             viewBox="0 0 24 24"
+             fill="none"
+             stroke="currentColor"
+             stroke-width="2.5">
+          <line x1="12" y1="5" x2="12" y2="19"/>
+          <line x1="5" y1="12" x2="19" y2="12"/>
+        </svg>
+
+        Upload New
+
+      </a>
+
+    </div>
+
+
+    {% if stats.recent_files %}
+
+    <div class="forensic-table-wrap">
+
+      <table class="forensic-table">
+
+        <thead>
+          <tr>
+            <th>FILE</th>
+            <th>STATUS</th>
+            <th>RECORDS</th>
+            <th>THREATS</th>
+            <th>UPLOADED</th>
+            <th></th>
+          </tr>
+        </thead>
+
+        <tbody>
+
+          {% for f in stats.recent_files %}
+
+          <tr>
+
+            <td>
+
+              <div class="file-cell">
+
+                <div class="file-icon">
+                  <svg width="16"
+                       height="16"
+                       viewBox="0 0 24 24"
+                       fill="none"
+                       stroke="currentColor"
+                       stroke-width="1.8">
+                    <path d="M14 2H6a2 2 0 0 0-2 2v16
+                             a2 2 0 0 0 2 2h12
+                             a2 2 0 0 0 2-2V8z"/>
+                    <polyline points="14 2 14 8 20 8"/>
+                  </svg>
+                </div>
+
+                <span>{{ f.filename }}</span>
+
+              </div>
+
+            </td>
+
+
+            <td>
+
+              <span class="file-status
+                {% if f.status == 'indexed' %}
+                  indexed
+                {% elif f.status == 'failed' %}
+                  failed
+                {% else %}
+                  pending
+                {% endif %}
+              ">
+                <span></span>
+                {{ f.status.title() }}
+              </span>
+
+            </td>
+
+
+            <td class="mono-value">
+              {{ f.record_count or 0 }}
+            </td>
+
+
+            <td>
+
+              {% if f.threat_count %}
+
+              <span class="threat-count">
+                {{ f.threat_count }}
+              </span>
+
+              {% else %}
+
+              <span class="zero-count">0</span>
+
+              {% endif %}
+
+            </td>
+
+
+            <td class="file-date">
+              {{ f.uploaded_at[:16] }}
+            </td>
+
+
+            <td>
+
+              <a
+                href="{{ url_for('app.analyze', file_id=f.file_id) }}"
+                class="table-action"
+              >
+                Analyze
+                <span>→</span>
+              </a>
+
+            </td>
+
+          </tr>
+
+          {% endfor %}
+
+        </tbody>
+
+      </table>
+
+    </div>
+
+    {% else %}
+
+    <div class="dashboard-empty files-empty">
+
+      <div class="empty-orb">
+        <svg width="30"
+             height="30"
+             viewBox="0 0 24 24"
+             fill="none"
+             stroke="currentColor"
+             stroke-width="1.5">
+          <path d="M21 15v4a2 2 0 0 1-2 2H5
+                   a2 2 0 0 1-2-2v-4"/>
+          <polyline points="17 8 12 3 7 8"/>
+          <line x1="12" y1="3" x2="12" y2="15"/>
+        </svg>
+      </div>
+
+      <h3>No log files yet</h3>
+
+      <p>
+        Upload your first log file to start threat detection
+        and forensic analysis.
+      </p>
+
+      <a href="{{ url_for('app.upload') }}"
+         class="btn btn-primary">
+        Upload Log File
+      </a>
+
+    </div>
+
+    {% endif %}
+
+  </section>
+
+</div>
+
+{% endblock %}
+
+
+{% block extra_js %}
+
+<div
+  id="dashboard-data"
+  hidden
+  data-dashboard="{{ {
+    'totalLogs': stats.total_logs|default(0)|int,
+    'totalThreats': stats.total_threats|default(0)|int,
+    'activeIncidents': stats.active_incidents|default(0)|int,
+    'totalFiles': stats.total_files|default(0)|int,
+    'severity': {
+      'critical': stats.severity_map.get('Critical', 0)|default(0)|int,
+      'high': stats.severity_map.get('High', 0)|default(0)|int,
+      'elevated': stats.severity_map.get('Elevated', 0)|default(0)|int,
+      'notice': stats.severity_map.get('Notice', 0)|default(0)|int
+    }
+  }|tojson|forceescape }}"
+></div>
+
+<script src="../../static/js/dashboard.js"></script>
+
+{% endblock %}

@@ -1,0 +1,318 @@
+{% extends "app_shell.html" %}
+
+{% block title %}File Archive — Intelligent Log Forensics{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="../../static/css/uploads.css">
+{% endblock %}
+
+{% block page_title %}File Archive{% endblock %}
+
+{% block content %}
+
+<div class="uploads-page">
+
+    <!-- =====================================================
+         PAGE HEADER
+    ====================================================== -->
+    <div class="page-header">
+
+        <div>
+            <h1 class="page-title">File Archive</h1>
+
+            <p class="page-subtitle">
+                All uploaded and analyzed log files
+            </p>
+        </div>
+
+        <div class="page-actions">
+            <a
+                href="{{ url_for('app.upload') }}"
+                class="btn btn-primary"
+            >
+                <svg
+                    width="14"
+                    height="14"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2.5"
+                >
+                    <line x1="12" y1="5" x2="12" y2="19"></line>
+                    <line x1="5" y1="12" x2="19" y2="12"></line>
+                </svg>
+
+                Upload New File
+            </a>
+        </div>
+
+    </div>
+
+
+    <!-- =====================================================
+         FILE ARCHIVE
+    ====================================================== -->
+    <div class="card archive-card">
+
+        {% if files %}
+
+        <div class="table-container">
+
+            <table>
+
+                <thead>
+                    <tr>
+                        <th>Filename</th>
+                        <th>Type</th>
+                        <th>Size</th>
+                        <th>Status</th>
+                        <th>Records</th>
+                        <th>Threats</th>
+                        <th>Quality</th>
+                        <th>Uploaded</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+
+                    {% for f in files %}
+
+                    <tr>
+
+                        <!-- Filename -->
+                        <td>
+
+                            <div class="file-name">
+
+                                <svg
+                                    width="16"
+                                    height="16"
+                                    viewBox="0 0 24 24"
+                                    fill="none"
+                                    stroke="var(--color-primary)"
+                                    stroke-width="1.8"
+                                >
+                                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                                    <polyline points="14 2 14 8 20 8"></polyline>
+                                </svg>
+
+                                <span
+                                    class="file-name-text"
+                                    title="{{ f.filename }}"
+                                >
+                                    {{ f.filename }}
+                                </span>
+
+                            </div>
+
+                        </td>
+
+
+                        <!-- Extension -->
+                        <td>
+                            <span class="tag file-type">
+                                .{{ f.file_ext }}
+                            </span>
+                        </td>
+
+
+                        <!-- Size -->
+                        <td>
+                            <span style="color:var(--color-text-muted)">
+                                {{ (f.file_size / 1024)|round(1) }} KB
+                            </span>
+                        </td>
+
+
+                        <!-- Status -->
+                        <td>
+
+                            <span
+                                class="badge status-badge
+                                {% if f.status == 'indexed' %}
+                                    badge-success
+                                {% elif f.status == 'failed' %}
+                                    badge-critical
+                                {% else %}
+                                    badge-neutral
+                                {% endif %}"
+                            >
+                                {{ f.status.title() }}
+                            </span>
+
+                        </td>
+
+
+                        <!-- Records -->
+                        <td>
+                            {{ f.record_count }}
+                        </td>
+
+
+                        <!-- Threats -->
+                        <td>
+
+                            {% if f.threat_count %}
+
+                            <span class="threat-count has-threats">
+                                {{ f.threat_count }}
+                            </span>
+
+                            {% else %}
+
+                            <span class="threat-count">
+                                0
+                            </span>
+
+                            {% endif %}
+
+                        </td>
+
+
+                        <!-- Quality -->
+                        <td>
+
+                            <div class="score-bar">
+
+                                <div class="score-bar-track">
+
+                                    <div
+                                        class="score-bar-fill
+                                        {% if (f.quality_score or 0) >= 70 %}
+                                            success
+                                        {% elif (f.quality_score or 0) >= 40 %}
+                                            warning
+                                        {% else %}
+                                            critical
+                                        {% endif %}"
+                                        data-width="{{ f.quality_score or 0 }}"
+                                    ></div>
+
+                                </div>
+
+                                <span class="score-label">
+                                    {{ "%.0f"|format(f.quality_score or 0) }}
+                                </span>
+
+                            </div>
+
+                        </td>
+
+
+                        <!-- Uploaded -->
+                        <td>
+
+                            <span
+                                class="td-mono"
+                                style="color:var(--color-text-muted)"
+                            >
+                                {{ f.uploaded_at[:16] }}
+                            </span>
+
+                        </td>
+
+
+                        <!-- Actions -->
+                        <td>
+
+                            <div class="file-actions">
+
+                                {% if f.status == 'indexed' %}
+
+                                <a
+                                    href="{{ url_for('app.analyze', file_id=f.file_id) }}"
+                                    class="btn btn-ghost btn-sm"
+                                    title="Analyze file"
+                                >
+                                    Analyze
+                                </a>
+
+                                <a
+                                    href="{{ url_for('app.ml_analysis', file_id=f.file_id) }}"
+                                    class="btn btn-ghost btn-sm"
+                                    title="View ML analysis"
+                                >
+                                    ML
+                                </a>
+
+                                {% else %}
+
+                                <span
+                                    style="
+                                        font-size:11px;
+                                        color:var(--color-text-muted);
+                                    "
+                                >
+                                    —
+                                </span>
+
+                                {% endif %}
+
+                            </div>
+
+                        </td>
+
+                    </tr>
+
+                    {% endfor %}
+
+                </tbody>
+
+            </table>
+
+        </div>
+
+        {% else %}
+
+        <!-- =================================================
+             EMPTY STATE
+        ================================================== -->
+
+        <div class="empty-state">
+
+            <div class="empty-state-icon">
+
+                <svg
+                    width="28"
+                    height="28"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="1.5"
+                >
+                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                    <polyline points="14 2 14 8 20 8"></polyline>
+                </svg>
+
+            </div>
+
+            <p class="empty-state-title">
+                No files uploaded yet
+            </p>
+
+            <p class="empty-state-desc">
+                Upload a log file to begin automated threat detection
+                and forensic analysis.
+            </p>
+
+            <a
+                href="{{ url_for('app.upload') }}"
+                class="btn btn-primary"
+            >
+                Upload First File
+            </a>
+
+        </div>
+
+        {% endif %}
+
+    </div>
+
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script src="../../static/js/uploads.js"></script>
+{% endblock %}

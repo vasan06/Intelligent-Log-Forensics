@@ -1,0 +1,343 @@
+{% extends "app_shell.html" %}
+
+{% block title %}Incident #{{ incident.incident_id }} — Intelligent Log Forensics{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="../../static/css/incident_detail.css">
+{% endblock %}
+
+{% block page_title %}Incident #{{ incident.incident_id }}{% endblock %}
+
+{% block content %}
+
+<div class="incident-detail">
+
+  <!-- ── Incident Toolbar ── -->
+  <div class="incident-toolbar">
+    <a href="{{ url_for('app.incidents') }}" class="btn btn-ghost btn-sm">
+      ← Back to Incidents
+    </a>
+
+    <span class="badge badge-{{ incident.severity.lower() }}">
+      {{ incident.severity }}
+    </span>
+
+    <span class="badge badge-{{ incident.status }}">
+      {{ incident.status.title() }}
+    </span>
+  </div>
+
+
+  <!-- ── Main Layout ── -->
+  <div class="content-grid incident-layout">
+
+    <!-- ── Left Column ── -->
+    <div class="incident-main-column">
+
+      <!-- Incident Details -->
+      <div class="card incident-detail-card">
+
+        <div class="card-header">
+          <span class="card-title">Incident Details</span>
+        </div>
+
+        <div class="card-body incident-detail-body">
+
+          <!-- Title -->
+          <div class="incident-field">
+            <div class="incident-field-label">
+              Title
+            </div>
+
+            <div class="incident-field-value incident-title-value">
+              {{ incident.title }}
+            </div>
+          </div>
+
+
+          <!-- Category + Confidence -->
+          <div class="incident-meta-grid">
+
+            <div class="incident-field">
+              <div class="incident-field-label">
+                Category
+              </div>
+
+              <div class="incident-field-value">
+                <span class="tag">
+                  {{ incident.category }}
+                </span>
+              </div>
+            </div>
+
+
+            <div class="incident-field">
+              <div class="incident-field-label">
+                Confidence
+              </div>
+
+              <div class="incident-confidence">
+                <div class="incident-confidence-value">
+                  {{ incident.confidence }}%
+                </div>
+              </div>
+            </div>
+
+          </div>
+
+
+          <!-- MITRE Technique -->
+          {% if incident.technique_id %}
+
+          <div class="incident-field">
+
+            <div class="incident-field-label">
+              MITRE Technique
+            </div>
+
+            <div class="incident-mitre">
+
+              <span class="tag">
+                {{ incident.technique_id }}
+              </span>
+
+              {% if technique %}
+              <span class="incident-mitre-name">
+                {{ technique.name }}
+              </span>
+              {% endif %}
+
+            </div>
+
+          </div>
+
+          {% endif %}
+
+
+          <!-- Root Cause -->
+          {% if incident.root_cause %}
+
+          <div class="incident-field">
+
+            <div class="incident-field-label">
+              Root Cause
+            </div>
+
+            <p class="incident-root-cause">
+              {{ incident.root_cause }}
+            </p>
+
+          </div>
+
+          {% endif %}
+
+
+          <!-- MITRE Information -->
+          {% if technique %}
+
+          <div class="incident-mitre-info">
+
+            <div class="incident-mitre-tactic">
+              MITRE: {{ technique.tactic }}
+            </div>
+
+            <p class="incident-mitre-description">
+              {{ technique.description }}
+            </p>
+
+          </div>
+
+          {% endif %}
+
+        </div>
+      </div>
+
+
+      <!-- ── Update Incident ── -->
+      <div class="card">
+
+        <div class="card-header">
+          <span class="card-title">
+            Update Incident
+          </span>
+        </div>
+
+        <div class="card-body">
+
+          <form
+            method="POST"
+            action="{{ url_for('app.update_incident', incident_id=incident.incident_id) }}"
+            class="incident-update-form"
+          >
+
+            <!-- Status -->
+            <div class="form-group">
+
+              <label class="form-label">
+                Status
+              </label>
+
+              <select class="form-select" name="status">
+
+                {% for s in ['new','investigating','confirmed','resolved','closed'] %}
+
+                <option
+                  value="{{ s }}"
+                  {% if incident.status == s %}selected{% endif %}
+                >
+                  {{ s.title() }}
+                </option>
+
+                {% endfor %}
+
+              </select>
+
+            </div>
+
+
+            <!-- Notes -->
+            <div class="form-group">
+
+              <label class="form-label">
+                Investigation Notes
+              </label>
+
+              <textarea
+                class="form-textarea"
+                name="notes"
+                rows="4"
+                placeholder="Add investigation notes, findings, or remediation steps..."
+              >{{ incident.notes or '' }}</textarea>
+
+            </div>
+
+
+            <!-- Submit -->
+            <button
+              type="submit"
+              class="btn btn-primary"
+            >
+              Update Incident
+            </button>
+
+          </form>
+
+        </div>
+      </div>
+
+    </div>
+
+
+    <!-- ── Right Column / Timeline ── -->
+    <div class="incident-side-column">
+
+      <div class="card incident-timeline-card">
+
+        <div class="card-header">
+
+          <span class="card-title">
+            Event Timeline
+          </span>
+
+          <span class="card-header-meta">
+            {{ timeline|length }} events
+          </span>
+
+        </div>
+
+
+        {% if timeline %}
+
+        <div class="incident-timeline">
+
+          {% for ev in timeline %}
+
+          <div class="timeline-event">
+
+            <!-- Severity Marker -->
+            <div
+              class="timeline-marker
+              {% if ev.severity == 'Critical' %}
+                timeline-marker-critical
+              {% elif ev.severity == 'High' %}
+                timeline-marker-high
+              {% elif ev.severity %}
+                timeline-marker-warning
+              {% endif %}"
+            ></div>
+
+
+            <div class="timeline-content">
+
+              <!-- IP + Timestamp -->
+              <div class="timeline-top">
+
+                <span class="timeline-ip">
+                  {{ ev.source_ip or 'internal' }}
+                </span>
+
+                <span class="timeline-time">
+                  {{ ev.timestamp[:16] if ev.timestamp else '' }}
+                </span>
+
+              </div>
+
+
+              <!-- Event Type -->
+              <div class="timeline-event-type">
+                {{ ev.event_type }}
+              </div>
+
+
+              <!-- Finding -->
+              {% if ev.finding %}
+
+              <div class="timeline-finding">
+                {{ ev.finding[:120] }}
+              </div>
+
+              {% endif %}
+
+
+              <!-- Message -->
+              {% if ev.message %}
+
+              <div class="timeline-message">
+                {{ ev.message[:100] }}
+              </div>
+
+              {% endif %}
+
+            </div>
+
+          </div>
+
+          {% endfor %}
+
+        </div>
+
+        {% else %}
+
+        <div class="empty-state incident-empty-timeline">
+
+          <p class="empty-state-desc">
+            No timeline events available.
+          </p>
+
+        </div>
+
+        {% endif %}
+
+      </div>
+
+    </div>
+
+  </div>
+
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script src="../../static/js/incident_detail.js"></script>
+{% endblock %}

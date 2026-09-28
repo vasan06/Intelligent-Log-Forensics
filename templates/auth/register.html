@@ -1,0 +1,544 @@
+
+{% extends "base.html" %}
+{% block title %}Create Account — Intelligent Log Forensics{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="../../static/css/register.css">
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script src="../../static/js/register.js"></script>
+{% endblock %}
+
+{% block body %}
+
+<main class="ilf-register-page">
+
+    <!-- =====================================================
+         AMBIENT BACKGROUND
+    ====================================================== -->
+
+    <div class="ilf-register-background" aria-hidden="true">
+        <div class="ilf-register-glow ilf-glow-one"></div>
+        <div class="ilf-register-glow ilf-glow-two"></div>
+        <div class="ilf-register-glow ilf-glow-three"></div>
+
+        <div class="ilf-register-particle-field"></div>
+    </div>
+
+
+    <!-- =====================================================
+         TOP BRAND / NAVIGATION
+    ====================================================== -->
+
+    <header class="ilf-register-header">
+
+        <a
+            href="{{ url_for('app.index') }}"
+            class="ilf-product-title"
+            aria-label="Intelligent Log Forensics home"
+        >
+            intelligent-log-forensics
+        </a>
+
+        <div class="ilf-register-header-status">
+            <span class="ilf-status-dot"></span>
+            Secure workspace creation
+        </div>
+
+    </header>
+
+
+    <!-- =====================================================
+         MAIN AUTHENTICATION AREA
+    ====================================================== -->
+
+    <section class="ilf-register-layout">
+
+        <!-- =================================================
+             LEFT — 3D FORMATION
+        ================================================== -->
+
+        <section
+            class="ilf-register-visual"
+            aria-label="Secure workspace visualization"
+        >
+
+            <div class="ilf-visual-label">
+                <span>01</span>
+                BUILD YOUR WORKSPACE
+            </div>
+
+
+            <!-- Three.js mounting point -->
+
+            <div
+                class="ilf-register-three-container"
+                aria-hidden="true"
+            ></div>
+
+
+            <!-- Floating formation information -->
+
+            <div class="ilf-formation-info">
+
+                <span class="ilf-formation-kicker">
+                    Identity architecture
+                </span>
+
+                <h2>
+                    Your workspace
+                    <br>
+                    takes shape here.
+                </h2>
+
+                <p>
+                    Your account becomes the starting point
+                    for collecting, processing and understanding
+                    forensic data.
+                </p>
+
+            </div>
+
+
+            <!-- Formation telemetry -->
+
+            <div class="ilf-formation-telemetry">
+
+                <div class="ilf-telemetry-item">
+                    <span class="ilf-telemetry-value" data-formation-state>
+                        INITIALIZING
+                    </span>
+                    <span class="ilf-telemetry-label">
+                        formation state
+                    </span>
+                </div>
+
+                <div class="ilf-telemetry-item">
+                    <span class="ilf-telemetry-value" data-particle-count>
+                        000
+                    </span>
+                    <span class="ilf-telemetry-label">
+                        active particles
+                    </span>
+                </div>
+
+                <div class="ilf-telemetry-item">
+                    <span class="ilf-telemetry-value">
+                        AES
+                    </span>
+                    <span class="ilf-telemetry-label">
+                        session channel
+                    </span>
+                </div>
+
+            </div>
+
+        </section>
+
+
+        <!-- =================================================
+             RIGHT — SIGNUP FORM
+        ================================================== -->
+
+        <section class="ilf-register-panel">
+
+            <div class="ilf-register-panel-inner">
+
+                <div class="ilf-register-heading">
+
+                    <div class="ilf-step-indicator">
+                        <span class="ilf-step-active">01</span>
+                        <span></span>
+                        <span>02</span>
+                    </div>
+
+                    <p class="ilf-eyebrow">
+                        NEW OPERATOR
+                    </p>
+
+                    <h1>
+                        Create your account
+                    </h1>
+
+                    <p class="ilf-register-description">
+                        Set up your secure identity to enter
+                        the Intelligent Log Forensics workspace.
+                    </p>
+
+                </div>
+
+
+                <!-- =================================================
+                     FLASH MESSAGES
+                ================================================== -->
+
+                {% with messages = get_flashed_messages(with_categories=true) %}
+
+                    {% for cat, msg in messages %}
+
+                        <div
+                            class="ilf-alert ilf-alert-{{ 'error' if cat == 'error' else cat }}"
+                            role="alert"
+                        >
+                            <span class="ilf-alert-indicator"></span>
+
+                            <span class="ilf-alert-message">
+                                {{ msg }}
+                            </span>
+
+                            <button
+                                type="button"
+                                class="ilf-alert-close"
+                                aria-label="Dismiss message"
+                            >
+                                ×
+                            </button>
+                        </div>
+
+                    {% endfor %}
+
+                {% endwith %}
+
+
+                <!-- =================================================
+                     REGISTRATION FORM
+                ================================================== -->
+
+                <form
+                    method="POST"
+                    class="ilf-register-form"
+                    novalidate
+                >
+
+                    <!-- FULL NAME -->
+
+                    <div class="ilf-field">
+
+                        <label
+                            class="ilf-field-label"
+                            for="register-name"
+                        >
+                            Full name
+                        </label>
+
+                        <div class="ilf-input-shell">
+
+                            <span
+                                class="ilf-input-index"
+                                aria-hidden="true"
+                            >
+                                01
+                            </span>
+
+                            <input
+                                id="register-name"
+                                class="ilf-input"
+                                type="text"
+                                name="name"
+                                value="{{ form.get('name','') }}"
+                                placeholder="Your full name"
+                                autocomplete="name"
+                                required
+                            >
+
+                        </div>
+
+                        <div class="ilf-field-error"></div>
+
+                    </div>
+
+
+                    <!-- EMAIL -->
+
+                    <div class="ilf-field">
+
+                        <label
+                            class="ilf-field-label"
+                            for="register-email"
+                        >
+                            Email address
+                        </label>
+
+                        <div class="ilf-input-shell">
+
+                            <span
+                                class="ilf-input-index"
+                                aria-hidden="true"
+                            >
+                                02
+                            </span>
+
+                            <input
+                                id="register-email"
+                                class="ilf-input"
+                                type="email"
+                                name="email"
+                                value="{{ form.get('email','') }}"
+                                placeholder="you@company.com"
+                                autocomplete="email"
+                                required
+                            >
+
+                        </div>
+
+                        <div class="ilf-field-error"></div>
+
+                    </div>
+
+
+                    <!-- PASSWORD -->
+
+                    <div class="ilf-field">
+
+                        <div class="ilf-label-row">
+
+                            <label
+                                class="ilf-field-label"
+                                for="register-password"
+                            >
+                                Password
+                            </label>
+
+                            <span class="ilf-password-strength">
+                                <span
+                                    class="ilf-strength-text"
+                                    data-password-strength
+                                >
+                                    —
+                                </span>
+                            </span>
+
+                        </div>
+
+
+                        <div class="ilf-input-shell">
+
+                            <span
+                                class="ilf-input-index"
+                                aria-hidden="true"
+                            >
+                                03
+                            </span>
+
+                            <input
+                                id="register-password"
+                                class="ilf-input ilf-password-input"
+                                type="password"
+                                name="password"
+                                placeholder="Create a secure password"
+                                autocomplete="new-password"
+                                minlength="8"
+                                required
+                            >
+
+                            <button
+                                type="button"
+                                class="ilf-password-toggle"
+                                data-target="register-password"
+                                aria-label="Show password"
+                            >
+                                <span class="ilf-eye-open">SHOW</span>
+                                <span class="ilf-eye-close">HIDE</span>
+                            </button>
+
+                        </div>
+
+                        <div class="ilf-password-meter">
+                            <span></span>
+                            <span></span>
+                            <span></span>
+                            <span></span>
+                        </div>
+
+                        <div class="ilf-field-hint">
+                            Use at least 8 characters with a mix of letters,
+                            numbers and symbols.
+                        </div>
+
+                        <div class="ilf-field-error"></div>
+
+                    </div>
+
+
+                    <!-- CONFIRM PASSWORD -->
+
+                    <div class="ilf-field">
+
+                        <label
+                            class="ilf-field-label"
+                            for="register-confirm-password"
+                        >
+                            Confirm password
+                        </label>
+
+                        <div class="ilf-input-shell">
+
+                            <span
+                                class="ilf-input-index"
+                                aria-hidden="true"
+                            >
+                                04
+                            </span>
+
+                            <input
+                                id="register-confirm-password"
+                                class="ilf-input ilf-password-input"
+                                type="password"
+                                name="confirm_password"
+                                placeholder="Repeat your password"
+                                autocomplete="new-password"
+                                required
+                            >
+
+                            <button
+                                type="button"
+                                class="ilf-password-toggle"
+                                data-target="register-confirm-password"
+                                aria-label="Show password"
+                            >
+                                <span class="ilf-eye-open">SHOW</span>
+                                <span class="ilf-eye-close">HIDE</span>
+                            </button>
+
+                        </div>
+
+                        <div class="ilf-field-error"></div>
+
+                    </div>
+
+
+                    <!-- SECURITY AGREEMENT -->
+
+                    <label class="ilf-consent">
+
+                        <input
+                            type="checkbox"
+                            name="terms"
+                            value="1"
+                            required
+                        >
+
+                        <span class="ilf-custom-checkbox">
+                            <span></span>
+                        </span>
+
+                        <span class="ilf-consent-text">
+                            I understand that this workspace is intended
+                            for authorized forensic and security analysis.
+                        </span>
+
+                    </label>
+
+
+                    <!-- SUBMIT -->
+
+                    <button
+                        type="submit"
+                        class="ilf-register-submit"
+                    >
+
+                        <span class="ilf-submit-label">
+                            Create secure workspace
+                        </span>
+
+                        <span
+                            class="ilf-submit-arrow"
+                            aria-hidden="true"
+                        >
+                            →
+                        </span>
+
+                        <span
+                            class="ilf-submit-loader"
+                            aria-hidden="true"
+                        ></span>
+
+                    </button>
+
+                </form>
+
+
+                <!-- =================================================
+                     FOOTER
+                ================================================== -->
+
+                <div class="ilf-register-footer">
+
+                    <span>
+                        Already have an account?
+                    </span>
+
+                    <a href="{{ url_for('auth.login') }}">
+                        Sign in
+                    </a>
+
+                </div>
+
+
+                <div class="ilf-security-note">
+
+                    <span class="ilf-security-lock">
+                        SECURE
+                    </span>
+
+                    <span>
+                        Your credentials are transmitted
+                        through the protected application channel.
+                    </span>
+
+                </div>
+
+            </div>
+
+        </section>
+
+    </section>
+
+
+    <!-- =====================================================
+         GATEWAY TRANSITION
+    ====================================================== -->
+
+    <div
+        class="ilf-register-transition"
+        aria-hidden="true"
+    >
+
+        <div class="ilf-transition-core"></div>
+
+        <div class="ilf-transition-ring ring-one"></div>
+        <div class="ilf-transition-ring ring-two"></div>
+        <div class="ilf-transition-ring ring-three"></div>
+
+        <div class="ilf-transition-particles"></div>
+
+        <div class="ilf-transition-message">
+
+            <span>
+                WORKSPACE INITIALIZED
+            </span>
+
+            <strong>
+                Entering forensic environment
+            </strong>
+
+        </div>
+
+    </div>
+
+</main>
+
+{% endblock %}
+
+
+**Important:** I deliberately didn't put any default credentials, admin account, or fake login information here.
+
+This HTML also gives us proper hooks for the next two files:
+
+**`register.css`** → complete light-theme layout + glassmorphism + 3D scene positioning + responsive behavior.
+
+**`register.js`** → particle formation, password strength, live form interaction, 3D object movement, and signup → gateway transition.
+
+And the 3D object will **not be a static imported image**. We'll build the visual behavior around the crystal/holographic reference you selected.

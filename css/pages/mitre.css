@@ -1,0 +1,831 @@
+﻿css
+/* =========================================================
+   MITRE ATT&CK MATRIX
+   Intelligent Log Forensics
+========================================================= */
+
+.mitre-page {
+    min-height: 100vh;
+}
+
+/* =========================================================
+   PAGE HEADER
+========================================================= */
+
+.mitre-header {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 24px;
+    margin-bottom: 24px;
+}
+
+.mitre-header-copy {
+    min-width: 0;
+}
+
+.mitre-header-copy .panel-kicker {
+    display: block;
+    margin-bottom: 8px;
+}
+
+.mitre-header-copy h1 {
+    margin: 0;
+    font-family: "Space Grotesk", sans-serif;
+    font-size: clamp(28px, 3vw, 42px);
+    line-height: 1.05;
+    letter-spacing: -0.035em;
+    color: var(--color-text, #e5e7eb);
+}
+
+.mitre-header-copy p {
+    max-width: 760px;
+    margin: 12px 0 0;
+    color: var(--color-text-muted, #94a3b8);
+    font-size: 14px;
+    line-height: 1.7;
+}
+
+/* =========================================================
+   MATRIX STATUS BAR
+========================================================= */
+
+.mitre-status-strip {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 1px;
+    margin-bottom: 20px;
+    overflow: hidden;
+    border: 1px solid rgba(148, 163, 184, 0.12);
+    border-radius: 12px;
+    background: rgba(148, 163, 184, 0.08);
+}
+
+.mitre-status-item {
+    min-height: 74px;
+    padding: 15px 18px;
+    background: rgba(15, 23, 42, 0.72);
+}
+
+.mitre-status-label {
+    display: block;
+    margin-bottom: 7px;
+    color: #64748b;
+    font-family: "JetBrains Mono", monospace;
+    font-size: 9px;
+    font-weight: 600;
+    letter-spacing: 0.12em;
+}
+
+.mitre-status-value {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: #e2e8f0;
+    font-family: "Space Grotesk", sans-serif;
+    font-size: 18px;
+    font-weight: 700;
+}
+
+.mitre-status-value .status-dot {
+    width: 7px;
+    height: 7px;
+    flex: 0 0 auto;
+}
+
+/* =========================================================
+   TOOLBAR
+========================================================= */
+
+.mitre-toolbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    margin-bottom: 18px;
+    padding: 13px 15px;
+    border: 1px solid rgba(148, 163, 184, 0.12);
+    border-radius: 12px;
+    background: rgba(15, 23, 42, 0.62);
+}
+
+.mitre-toolbar-left,
+.mitre-toolbar-right {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+}
+
+.mitre-search {
+    width: 260px;
+    height: 38px;
+    padding: 0 12px;
+    outline: none;
+    border: 1px solid rgba(148, 163, 184, 0.15);
+    border-radius: 8px;
+    background: rgba(2, 6, 23, 0.55);
+    color: #e2e8f0;
+    font-family: "Inter", sans-serif;
+    font-size: 12px;
+    transition:
+        border-color 160ms ease,
+        box-shadow 160ms ease;
+}
+
+.mitre-search::placeholder {
+    color: #475569;
+}
+
+.mitre-search:focus {
+    border-color: rgba(96, 165, 250, 0.45);
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.08);
+}
+
+.mitre-filter {
+    height: 38px;
+    min-width: 145px;
+    padding: 0 11px;
+    outline: none;
+    border: 1px solid rgba(148, 163, 184, 0.15);
+    border-radius: 8px;
+    background: rgba(2, 6, 23, 0.55);
+    color: #cbd5e1;
+    font-size: 11px;
+    cursor: pointer;
+}
+
+.mitre-filter:focus {
+    border-color: rgba(96, 165, 250, 0.45);
+}
+
+.mitre-view-button {
+    width: 38px;
+    height: 38px;
+    display: grid;
+    place-items: center;
+    border: 1px solid rgba(148, 163, 184, 0.15);
+    border-radius: 8px;
+    background: rgba(30, 41, 59, 0.55);
+    color: #64748b;
+    cursor: pointer;
+    transition:
+        color 160ms ease,
+        border-color 160ms ease,
+        background 160ms ease;
+}
+
+.mitre-view-button:hover,
+.mitre-view-button.active {
+    border-color: rgba(96, 165, 250, 0.35);
+    background: rgba(37, 99, 235, 0.10);
+    color: #60a5fa;
+}
+
+/* =========================================================
+   MATRIX CONTAINER
+========================================================= */
+
+.mitre-matrix-panel {
+    overflow: hidden;
+    border: 1px solid rgba(148, 163, 184, 0.12);
+    border-radius: 15px;
+    background: rgba(15, 23, 42, 0.60);
+}
+
+.mitre-matrix-header {
+    display: grid;
+    grid-template-columns: 260px repeat(3, minmax(170px, 1fr));
+    min-width: 780px;
+    border-bottom: 1px solid rgba(148, 163, 184, 0.12);
+    background: rgba(2, 6, 23, 0.50);
+}
+
+.mitre-matrix-header-cell {
+    min-height: 82px;
+    padding: 16px;
+    border-right: 1px solid rgba(148, 163, 184, 0.08);
+}
+
+.mitre-matrix-header-cell:last-child {
+    border-right: 0;
+}
+
+.mitre-matrix-header-cell small {
+    display: block;
+    margin-bottom: 7px;
+    color: #475569;
+    font-family: "JetBrains Mono", monospace;
+    font-size: 8px;
+    letter-spacing: 0.12em;
+}
+
+.mitre-matrix-header-cell strong {
+    color: #cbd5e1;
+    font-family: "Space Grotesk", sans-serif;
+    font-size: 13px;
+}
+
+/* =========================================================
+   MATRIX BODY
+========================================================= */
+
+.mitre-matrix-scroll {
+    overflow-x: auto;
+    overflow-y: hidden;
+}
+
+.mitre-matrix-body {
+    min-width: 780px;
+}
+
+.mitre-matrix-row {
+    display: grid;
+    grid-template-columns: 260px repeat(3, minmax(170px, 1fr));
+    min-height: 128px;
+    border-bottom: 1px solid rgba(148, 163, 184, 0.08);
+}
+
+.mitre-matrix-row:last-child {
+    border-bottom: 0;
+}
+
+.mitre-matrix-row:hover {
+    background: rgba(30, 41, 59, 0.20);
+}
+
+.mitre-technique-cell {
+    position: relative;
+    padding: 17px;
+    border-right: 1px solid rgba(148, 163, 184, 0.08);
+}
+
+.mitre-technique-id {
+    display: inline-flex;
+    align-items: center;
+    min-height: 22px;
+    padding: 0 7px;
+    border: 1px solid rgba(96, 165, 250, 0.18);
+    border-radius: 5px;
+    background: rgba(37, 99, 235, 0.08);
+    color: #60a5fa;
+    font-family: "JetBrains Mono", monospace;
+    font-size: 9px;
+    font-weight: 600;
+}
+
+.mitre-technique-name {
+    display: block;
+    margin-top: 9px;
+    color: #dbe4ee;
+    font-family: "Space Grotesk", sans-serif;
+    font-size: 14px;
+    font-weight: 600;
+    line-height: 1.35;
+}
+
+.mitre-technique-description {
+    display: block;
+    margin-top: 6px;
+    color: #64748b;
+    font-size: 10px;
+    line-height: 1.55;
+}
+
+/* =========================================================
+   MATRIX CELLS
+========================================================= */
+
+.mitre-cell {
+    position: relative;
+    min-height: 128px;
+    padding: 13px;
+    border-right: 1px solid rgba(148, 163, 184, 0.08);
+}
+
+.mitre-cell:last-child {
+    border-right: 0;
+}
+
+.mitre-cell-card {
+    width: 100%;
+    height: 100%;
+    min-height: 98px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    padding: 13px;
+    border: 1px solid rgba(148, 163, 184, 0.09);
+    border-radius: 9px;
+    background: rgba(2, 6, 23, 0.38);
+    transition:
+        transform 160ms ease,
+        border-color 160ms ease,
+        background 160ms ease;
+}
+
+.mitre-cell-card:hover {
+    transform: translateY(-2px);
+    border-color: rgba(96, 165, 250, 0.25);
+    background: rgba(30, 41, 59, 0.45);
+}
+
+.mitre-cell-card.detected {
+    border-color: rgba(239, 68, 68, 0.25);
+    background: rgba(127, 29, 29, 0.10);
+}
+
+.mitre-cell-card.mapped {
+    border-color: rgba(59, 130, 246, 0.20);
+    background: rgba(30, 64, 175, 0.08);
+}
+
+.mitre-cell-card.empty {
+    opacity: 0.55;
+}
+
+.mitre-cell-top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+}
+
+.mitre-cell-type {
+    color: #64748b;
+    font-family: "JetBrains Mono", monospace;
+    font-size: 8px;
+    letter-spacing: 0.08em;
+}
+
+.mitre-cell-status {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: #334155;
+}
+
+.mitre-cell-card.detected .mitre-cell-status {
+    background: #ef4444;
+    box-shadow: 0 0 10px rgba(239, 68, 68, 0.65);
+}
+
+.mitre-cell-card.mapped .mitre-cell-status {
+    background: #3b82f6;
+    box-shadow: 0 0 10px rgba(59, 130, 246, 0.50);
+}
+
+.mitre-cell-name {
+    margin-top: 12px;
+    color: #cbd5e1;
+    font-size: 11px;
+    font-weight: 600;
+    line-height: 1.35;
+}
+
+.mitre-cell-count {
+    display: flex;
+    align-items: baseline;
+    gap: 5px;
+    margin-top: 9px;
+}
+
+.mitre-cell-count strong {
+    color: #f1f5f9;
+    font-family: "Space Grotesk", sans-serif;
+    font-size: 20px;
+}
+
+.mitre-cell-count span {
+    color: #475569;
+    font-size: 8px;
+    text-transform: uppercase;
+}
+
+/* =========================================================
+   TECHNIQUE LIST VIEW
+========================================================= */
+
+.mitre-list {
+    display: none;
+}
+
+.mitre-list.active {
+    display: block;
+}
+
+.mitre-list-item {
+    display: grid;
+    grid-template-columns: 105px minmax(0, 1fr) 130px 110px;
+    align-items: center;
+    gap: 18px;
+    min-height: 72px;
+    padding: 12px 18px;
+    border-bottom: 1px solid rgba(148, 163, 184, 0.08);
+}
+
+.mitre-list-item:last-child {
+    border-bottom: 0;
+}
+
+.mitre-list-item:hover {
+    background: rgba(30, 41, 59, 0.22);
+}
+
+.mitre-list-id {
+    color: #60a5fa;
+    font-family: "JetBrains Mono", monospace;
+    font-size: 10px;
+    font-weight: 600;
+}
+
+.mitre-list-name {
+    min-width: 0;
+}
+
+.mitre-list-name strong {
+    display: block;
+    overflow: hidden;
+    color: #dbe4ee;
+    font-size: 12px;
+    font-weight: 600;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.mitre-list-name span {
+    display: block;
+    margin-top: 4px;
+    overflow: hidden;
+    color: #64748b;
+    font-size: 10px;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.mitre-list-tactic {
+    color: #94a3b8;
+    font-size: 10px;
+}
+
+.mitre-list-count {
+    justify-self: end;
+    color: #cbd5e1;
+    font-family: "JetBrains Mono", monospace;
+    font-size: 10px;
+}
+
+/* =========================================================
+   DETAIL / INSPECTOR PANEL
+========================================================= */
+
+.mitre-inspector {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 340px;
+    gap: 18px;
+    margin-top: 20px;
+}
+
+.mitre-detail-panel,
+.mitre-inspector-panel {
+    border: 1px solid rgba(148, 163, 184, 0.12);
+    border-radius: 14px;
+    background: rgba(15, 23, 42, 0.58);
+}
+
+.mitre-detail-panel {
+    padding: 22px;
+}
+
+.mitre-detail-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 20px;
+    margin-bottom: 20px;
+}
+
+.mitre-detail-id {
+    display: block;
+    margin-bottom: 7px;
+    color: #60a5fa;
+    font-family: "JetBrains Mono", monospace;
+    font-size: 10px;
+}
+
+.mitre-detail-title {
+    margin: 0;
+    color: #e2e8f0;
+    font-family: "Space Grotesk", sans-serif;
+    font-size: 22px;
+}
+
+.mitre-detail-description {
+    margin: 10px 0 0;
+    color: #64748b;
+    font-size: 12px;
+    line-height: 1.7;
+}
+
+.mitre-detail-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 7px;
+    margin-top: 20px;
+}
+
+.mitre-detail-tag {
+    padding: 5px 8px;
+    border: 1px solid rgba(148, 163, 184, 0.13);
+    border-radius: 5px;
+    background: rgba(30, 41, 59, 0.45);
+    color: #94a3b8;
+    font-family: "JetBrains Mono", monospace;
+    font-size: 8px;
+}
+
+/* =========================================================
+   INSPECTOR
+========================================================= */
+
+.mitre-inspector-panel {
+    padding: 20px;
+}
+
+.mitre-inspector-title {
+    margin: 0 0 18px;
+    color: #cbd5e1;
+    font-family: "Space Grotesk", sans-serif;
+    font-size: 15px;
+}
+
+.mitre-inspector-stat {
+    padding: 13px 0;
+    border-bottom: 1px solid rgba(148, 163, 184, 0.08);
+}
+
+.mitre-inspector-stat:last-child {
+    border-bottom: 0;
+}
+
+.mitre-inspector-stat span {
+    display: block;
+    color: #64748b;
+    font-family: "JetBrains Mono", monospace;
+    font-size: 8px;
+    letter-spacing: 0.09em;
+}
+
+.mitre-inspector-stat strong {
+    display: block;
+    margin-top: 5px;
+    color: #e2e8f0;
+    font-size: 15px;
+}
+
+/* =========================================================
+   TACTIC SUMMARY
+========================================================= */
+
+.mitre-tactic-grid {
+    display: grid;
+    grid-template-columns: repeat(6, minmax(0, 1fr));
+    gap: 10px;
+    margin-top: 20px;
+}
+
+.mitre-tactic-card {
+    min-height: 100px;
+    padding: 14px;
+    border: 1px solid rgba(148, 163, 184, 0.10);
+    border-radius: 10px;
+    background: rgba(15, 23, 42, 0.52);
+}
+
+.mitre-tactic-card span {
+    display: block;
+    color: #64748b;
+    font-family: "JetBrains Mono", monospace;
+    font-size: 8px;
+    line-height: 1.4;
+}
+
+.mitre-tactic-card strong {
+    display: block;
+    margin-top: 13px;
+    color: #e2e8f0;
+    font-family: "Space Grotesk", sans-serif;
+    font-size: 22px;
+}
+
+.mitre-tactic-bar {
+    height: 3px;
+    margin-top: 10px;
+    overflow: hidden;
+    border-radius: 999px;
+    background: rgba(148, 163, 184, 0.10);
+}
+
+.mitre-tactic-bar span {
+    width: var(--mitre-progress, 0%);
+    height: 100%;
+    background: #3b82f6;
+    border-radius: inherit;
+}
+
+/* =========================================================
+   3D / CANVAS AREA
+========================================================= */
+
+.mitre-visual-panel {
+    position: relative;
+    min-height: 460px;
+    margin-top: 20px;
+    overflow: hidden;
+    border: 1px solid rgba(148, 163, 184, 0.12);
+    border-radius: 15px;
+    background:
+        radial-gradient(
+            circle at center,
+            rgba(37, 99, 235, 0.10),
+            transparent 55%
+        ),
+        rgba(2, 6, 23, 0.70);
+}
+
+.mitre-visual-canvas {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+}
+
+.mitre-visual-overlay {
+    position: absolute;
+    top: 18px;
+    left: 18px;
+    z-index: 2;
+    pointer-events: none;
+}
+
+.mitre-visual-overlay span {
+    display: block;
+    color: #60a5fa;
+    font-family: "JetBrains Mono", monospace;
+    font-size: 8px;
+    letter-spacing: 0.12em;
+}
+
+.mitre-visual-overlay strong {
+    display: block;
+    margin-top: 5px;
+    color: #cbd5e1;
+    font-family: "Space Grotesk", sans-serif;
+    font-size: 15px;
+}
+
+/* =========================================================
+   EMPTY STATE
+========================================================= */
+
+.mitre-empty {
+    min-height: 240px;
+    display: grid;
+    place-items: center;
+    padding: 35px;
+    text-align: center;
+}
+
+.mitre-empty-icon {
+    width: 48px;
+    height: 48px;
+    display: grid;
+    place-items: center;
+    margin: 0 auto 15px;
+    border: 1px solid rgba(148, 163, 184, 0.13);
+    border-radius: 12px;
+    background: rgba(30, 41, 59, 0.35);
+    color: #64748b;
+}
+
+.mitre-empty strong {
+    display: block;
+    color: #cbd5e1;
+    font-size: 13px;
+}
+
+.mitre-empty span {
+    display: block;
+    max-width: 360px;
+    margin-top: 7px;
+    color: #64748b;
+    font-size: 11px;
+    line-height: 1.6;
+}
+
+/* =========================================================
+   SCROLLBAR
+========================================================= */
+
+.mitre-matrix-scroll::-webkit-scrollbar {
+    height: 7px;
+}
+
+.mitre-matrix-scroll::-webkit-scrollbar-track {
+    background: rgba(2, 6, 23, 0.50);
+}
+
+.mitre-matrix-scroll::-webkit-scrollbar-thumb {
+    border-radius: 999px;
+    background: rgba(100, 116, 139, 0.35);
+}
+
+.mitre-matrix-scroll::-webkit-scrollbar-thumb:hover {
+    background: rgba(100, 116, 139, 0.55);
+}
+
+/* =========================================================
+   RESPONSIVE
+========================================================= */
+
+@media (max-width: 1200px) {
+    .mitre-tactic-grid {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+
+    .mitre-inspector {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 900px) {
+    .mitre-status-strip {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .mitre-toolbar {
+        align-items: stretch;
+        flex-direction: column;
+    }
+
+    .mitre-toolbar-left,
+    .mitre-toolbar-right {
+        width: 100%;
+    }
+
+    .mitre-search {
+        width: 100%;
+    }
+}
+
+@media (max-width: 680px) {
+    .mitre-header {
+        align-items: flex-start;
+        flex-direction: column;
+    }
+
+    .mitre-status-strip {
+        grid-template-columns: 1fr;
+    }
+
+    .mitre-toolbar-left,
+    .mitre-toolbar-right {
+        flex-wrap: wrap;
+    }
+
+    .mitre-filter {
+        flex: 1 1 140px;
+    }
+
+    .mitre-tactic-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .mitre-list-item {
+        grid-template-columns: 80px minmax(0, 1fr);
+    }
+
+    .mitre-list-tactic,
+    .mitre-list-count {
+        display: none;
+    }
+
+    .mitre-visual-panel {
+        min-height: 360px;
+    }
+}
+
+@media (max-width: 430px) {
+    .mitre-tactic-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .mitre-status-item {
+        min-height: 66px;
+    }
+
+    .mitre-detail-panel,
+    .mitre-inspector-panel {
+        padding: 16px;
+    }
+}
+

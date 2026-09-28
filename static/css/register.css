@@ -1,0 +1,2306 @@
+
+/* =========================================================
+   INTELLIGENT LOG FORENSICS
+   REGISTER PAGE
+   Light / Glass / 3D Formation
+   File: app/static/css/register.css
+========================================================= */
+
+
+/* =========================================================
+   01. ROOT
+========================================================= */
+
+.ilf-register-page {
+    --register-bg: #f5f8fc;
+    --register-surface: rgba(255, 255, 255, 0.72);
+    --register-surface-strong: rgba(255, 255, 255, 0.9);
+
+    --register-border: rgba(15, 23, 42, 0.09);
+    --register-border-strong: rgba(37, 99, 235, 0.2);
+
+    --register-text: #0f172a;
+    --register-text-secondary: #64748b;
+    --register-text-muted: #94a3b8;
+
+    --register-blue: #2563eb;
+    --register-cyan: #0891b2;
+    --register-violet: #7c3aed;
+
+    --register-danger: #dc2626;
+    --register-success: #059669;
+
+    --register-radius-sm: 8px;
+    --register-radius-md: 14px;
+    --register-radius-lg: 22px;
+
+    position: relative;
+
+    min-height: 100vh;
+    width: 100%;
+
+    overflow: hidden;
+
+    background:
+        radial-gradient(
+            circle at 15% 20%,
+            rgba(37, 99, 235, 0.07),
+            transparent 28%
+        ),
+        radial-gradient(
+            circle at 82% 72%,
+            rgba(8, 145, 178, 0.06),
+            transparent 30%
+        ),
+        linear-gradient(
+            135deg,
+            #f8fafc 0%,
+            #f4f7fb 52%,
+            #eef4fa 100%
+        );
+
+    color: var(--register-text);
+
+    font-family:
+        Inter,
+        ui-sans-serif,
+        system-ui,
+        -apple-system,
+        BlinkMacSystemFont,
+        "Segoe UI",
+        sans-serif;
+
+    isolation: isolate;
+}
+
+
+/* =========================================================
+   02. BACKGROUND
+========================================================= */
+
+.ilf-register-background {
+    position: absolute;
+
+    inset: 0;
+
+    overflow: hidden;
+
+    pointer-events: none;
+
+    z-index: -2;
+}
+
+
+.ilf-register-background::before {
+    content: "";
+
+    position: absolute;
+
+    inset: 0;
+
+    background-image:
+        linear-gradient(
+            rgba(15, 23, 42, 0.025) 1px,
+            transparent 1px
+        ),
+        linear-gradient(
+            90deg,
+            rgba(15, 23, 42, 0.025) 1px,
+            transparent 1px
+        );
+
+    background-size:
+        48px 48px;
+
+    mask-image:
+        linear-gradient(
+            to bottom,
+            black,
+            transparent 78%
+        );
+
+    opacity: 0.5;
+}
+
+
+.ilf-register-background::after {
+    content: "";
+
+    position: absolute;
+
+    inset: 0;
+
+    background:
+        linear-gradient(
+            90deg,
+            rgba(245, 248, 252, 0.7),
+            transparent 30%,
+            transparent 70%,
+            rgba(245, 248, 252, 0.72)
+        );
+
+    pointer-events: none;
+}
+
+
+/* =========================================================
+   03. AMBIENT GLOWS
+========================================================= */
+
+.ilf-register-glow {
+    position: absolute;
+
+    border-radius: 50%;
+
+    filter: blur(80px);
+
+    pointer-events: none;
+
+    opacity: 0.38;
+
+    animation:
+        register-glow-float
+        12s
+        ease-in-out
+        infinite alternate;
+}
+
+
+.ilf-glow-one {
+    width: 340px;
+    height: 340px;
+
+    top: -120px;
+    left: 8%;
+
+    background:
+        rgba(37, 99, 235, 0.13);
+}
+
+
+.ilf-glow-two {
+    width: 300px;
+    height: 300px;
+
+    right: 3%;
+    bottom: -100px;
+
+    background:
+        rgba(8, 145, 178, 0.12);
+
+    animation-delay: -4s;
+}
+
+
+.ilf-glow-three {
+    width: 220px;
+    height: 220px;
+
+    left: 42%;
+    top: 46%;
+
+    background:
+        rgba(124, 58, 237, 0.06);
+
+    animation-delay: -7s;
+}
+
+
+@keyframes register-glow-float {
+
+    from {
+        transform:
+            translate3d(
+                -15px,
+                -10px,
+                0
+            )
+            scale(1);
+    }
+
+    to {
+        transform:
+            translate3d(
+                18px,
+                16px,
+                0
+            )
+            scale(1.08);
+    }
+}
+
+
+/* =========================================================
+   04. PARTICLE FIELD
+========================================================= */
+
+.ilf-register-particle-field {
+    position: absolute;
+
+    inset: 0;
+
+    overflow: hidden;
+}
+
+
+.ilf-register-particle-field::before {
+    content: "";
+
+    position: absolute;
+
+    width: 4px;
+    height: 4px;
+
+    top: 35%;
+    left: 48%;
+
+    border-radius: 50%;
+
+    background: var(--register-blue);
+
+    box-shadow:
+        120px 80px 0 rgba(37, 99, 235, 0.18),
+        -170px 120px 0 rgba(8, 145, 178, 0.16),
+        260px -90px 0 rgba(124, 58, 237, 0.12),
+        -260px -120px 0 rgba(37, 99, 235, 0.1);
+
+    filter: blur(0.5px);
+
+    opacity: 0.45;
+}
+
+
+/* =========================================================
+   05. HEADER
+========================================================= */
+
+.ilf-register-header {
+    position: relative;
+
+    z-index: 10;
+
+    height: 82px;
+
+    display: flex;
+
+    align-items: center;
+
+    justify-content: space-between;
+
+    padding:
+        0
+        clamp(24px, 4vw, 64px);
+
+    border-bottom:
+        1px solid
+        rgba(15, 23, 42, 0.06);
+
+    background:
+        rgba(255, 255, 255, 0.52);
+
+    backdrop-filter:
+        blur(18px);
+
+    -webkit-backdrop-filter:
+        blur(18px);
+}
+
+
+.ilf-product-title {
+    color: var(--register-text);
+
+    text-decoration: none;
+
+    font-size: 14px;
+
+    font-weight: 700;
+
+    letter-spacing: -0.025em;
+
+    transition:
+        color 180ms ease,
+        transform 180ms ease;
+}
+
+
+.ilf-product-title:hover {
+    color: var(--register-blue);
+
+    transform:
+        translateX(2px);
+}
+
+
+.ilf-register-header-status {
+    display: flex;
+
+    align-items: center;
+
+    gap: 9px;
+
+    color: var(--register-text-muted);
+
+    font-size: 11px;
+
+    font-weight: 600;
+
+    letter-spacing: 0.06em;
+
+    text-transform: uppercase;
+}
+
+
+.ilf-status-dot {
+    width: 7px;
+    height: 7px;
+
+    border-radius: 50%;
+
+    background: #10b981;
+
+    box-shadow:
+        0 0 0 4px rgba(16, 185, 129, 0.08),
+        0 0 12px rgba(16, 185, 129, 0.32);
+
+    animation:
+        status-pulse
+        2.2s
+        ease-in-out
+        infinite;
+}
+
+
+@keyframes status-pulse {
+
+    0%,
+    100% {
+        opacity: 0.7;
+        transform: scale(0.92);
+    }
+
+    50% {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+
+/* =========================================================
+   06. MAIN LAYOUT
+========================================================= */
+
+.ilf-register-layout {
+    position: relative;
+
+    z-index: 2;
+
+    width: min(
+        1420px,
+        calc(100% - 48px)
+    );
+
+    min-height:
+        calc(100vh - 82px);
+
+    margin:
+        0 auto;
+
+    display: grid;
+
+    grid-template-columns:
+        minmax(0, 1.08fr)
+        minmax(430px, 0.92fr);
+
+    align-items: center;
+
+    gap:
+        clamp(50px, 7vw, 120px);
+
+    padding:
+        clamp(42px, 5vw, 76px)
+        0;
+}
+
+
+/* =========================================================
+   07. VISUAL SIDE
+========================================================= */
+
+.ilf-register-visual {
+    position: relative;
+
+    min-height: 650px;
+
+    display: flex;
+
+    align-items: center;
+
+    justify-content: center;
+
+    overflow: visible;
+}
+
+
+.ilf-visual-label {
+    position: absolute;
+
+    top: 4px;
+    left: 4px;
+
+    display: flex;
+
+    align-items: center;
+
+    gap: 12px;
+
+    color: var(--register-text-muted);
+
+    font-size: 10px;
+
+    font-weight: 700;
+
+    letter-spacing: 0.15em;
+
+    text-transform: uppercase;
+}
+
+
+.ilf-visual-label span {
+    display: inline-flex;
+
+    align-items: center;
+
+    justify-content: center;
+
+    width: 30px;
+    height: 22px;
+
+    border:
+        1px solid
+        var(--register-border-strong);
+
+    border-radius: 5px;
+
+    color: var(--register-blue);
+
+    font-size: 9px;
+}
+
+
+/* =========================================================
+   08. THREE.JS CONTAINER
+========================================================= */
+
+.ilf-register-three-container {
+    position: absolute;
+
+    width:
+        min(660px, 100%);
+
+    height:
+        min(660px, 78vh);
+
+    left: 50%;
+    top: 51%;
+
+    transform:
+        translate(-50%, -50%);
+
+    pointer-events: auto;
+
+    z-index: 1;
+}
+
+
+.ilf-register-three-container canvas {
+    display: block;
+
+    width: 100% !important;
+    height: 100% !important;
+
+    outline: none;
+
+    cursor: crosshair;
+}
+
+
+/* =========================================================
+   09. VISUAL INFORMATION
+========================================================= */
+
+.ilf-formation-info {
+    position: absolute;
+
+    left: 0;
+
+    bottom: 10px;
+
+    width: min(
+        310px,
+        45%
+    );
+
+    z-index: 4;
+
+    padding:
+        22px;
+
+    border:
+        1px solid
+        rgba(255, 255, 255, 0.78);
+
+    border-radius:
+        var(--register-radius-lg);
+
+    background:
+        rgba(255, 255, 255, 0.56);
+
+    box-shadow:
+        0 18px 50px
+        rgba(15, 23, 42, 0.07);
+
+    backdrop-filter:
+        blur(18px);
+
+    -webkit-backdrop-filter:
+        blur(18px);
+}
+
+
+.ilf-formation-kicker {
+    display: block;
+
+    margin-bottom: 10px;
+
+    color: var(--register-blue);
+
+    font-size: 9px;
+
+    font-weight: 800;
+
+    letter-spacing: 0.14em;
+
+    text-transform: uppercase;
+}
+
+
+.ilf-formation-info h2 {
+    margin: 0 0 10px;
+
+    color: var(--register-text);
+
+    font-size:
+        clamp(23px, 2.3vw, 32px);
+
+    line-height: 1.08;
+
+    letter-spacing: -0.045em;
+}
+
+
+.ilf-formation-info p {
+    margin: 0;
+
+    color: var(--register-text-secondary);
+
+    font-size: 12px;
+
+    line-height: 1.7;
+}
+
+
+/* =========================================================
+   10. TELEMETRY
+========================================================= */
+
+.ilf-formation-telemetry {
+    position: absolute;
+
+    right: 0;
+
+    bottom: 10px;
+
+    width: 210px;
+
+    z-index: 4;
+
+    display: flex;
+
+    flex-direction: column;
+
+    gap: 1px;
+
+    padding: 3px;
+
+    border:
+        1px solid
+        rgba(255, 255, 255, 0.78);
+
+    border-radius:
+        var(--register-radius-md);
+
+    background:
+        rgba(255, 255, 255, 0.52);
+
+    box-shadow:
+        0 16px 40px
+        rgba(15, 23, 42, 0.05);
+
+    backdrop-filter:
+        blur(18px);
+
+    -webkit-backdrop-filter:
+        blur(18px);
+}
+
+
+.ilf-telemetry-item {
+    display: flex;
+
+    align-items: center;
+
+    justify-content: space-between;
+
+    gap: 10px;
+
+    padding:
+        10px
+        12px;
+
+    border-radius: 9px;
+}
+
+
+.ilf-telemetry-item:not(:last-child) {
+    border-bottom:
+        1px solid
+        rgba(15, 23, 42, 0.045);
+}
+
+
+.ilf-telemetry-value {
+    color: var(--register-text);
+
+    font-family:
+        "SFMono-Regular",
+        Consolas,
+        monospace;
+
+    font-size: 9px;
+
+    font-weight: 700;
+
+    letter-spacing: 0.04em;
+}
+
+
+.ilf-telemetry-item:first-child
+.ilf-telemetry-value {
+    color: var(--register-blue);
+}
+
+
+.ilf-telemetry-label {
+    color: var(--register-text-muted);
+
+    font-size: 8px;
+
+    text-align: right;
+
+    white-space: nowrap;
+}
+
+
+/* =========================================================
+   11. REGISTER PANEL
+========================================================= */
+
+.ilf-register-panel {
+    position: relative;
+
+    z-index: 5;
+
+    width: 100%;
+
+    max-width: 520px;
+
+    justify-self: end;
+}
+
+
+.ilf-register-panel-inner {
+    position: relative;
+
+    padding:
+        clamp(28px, 3.2vw, 46px);
+
+    border:
+        1px solid
+        rgba(255, 255, 255, 0.88);
+
+    border-radius:
+        28px;
+
+    background:
+        rgba(255, 255, 255, 0.66);
+
+    box-shadow:
+        0 30px 90px
+        rgba(15, 23, 42, 0.09),
+        inset 0 1px 0
+        rgba(255, 255, 255, 0.9);
+
+    backdrop-filter:
+        blur(24px);
+
+    -webkit-backdrop-filter:
+        blur(24px);
+
+    overflow: hidden;
+}
+
+
+.ilf-register-panel-inner::before {
+    content: "";
+
+    position: absolute;
+
+    top: 0;
+    left: 12%;
+
+    width: 76%;
+    height: 1px;
+
+    background:
+        linear-gradient(
+            90deg,
+            transparent,
+            rgba(37, 99, 235, 0.42),
+            transparent
+        );
+}
+
+
+/* =========================================================
+   12. HEADING
+========================================================= */
+
+.ilf-register-heading {
+    margin-bottom: 30px;
+}
+
+
+.ilf-step-indicator {
+    display: flex;
+
+    align-items: center;
+
+    gap: 8px;
+
+    margin-bottom: 25px;
+}
+
+
+.ilf-step-indicator > span {
+    display: block;
+
+    width: 25px;
+    height: 2px;
+
+    border-radius: 999px;
+
+    background:
+        rgba(15, 23, 42, 0.1);
+
+    font-size: 0;
+}
+
+
+.ilf-step-indicator .ilf-step-active {
+    width: 42px;
+
+    background:
+        var(--register-blue);
+
+    box-shadow:
+        0 0 12px
+        rgba(37, 99, 235, 0.18);
+}
+
+
+.ilf-step-indicator span:last-child {
+    width: auto;
+
+    height: auto;
+
+    background: none;
+
+    color: var(--register-text-muted);
+
+    font-family:
+        "SFMono-Regular",
+        Consolas,
+        monospace;
+
+    font-size: 9px;
+
+    letter-spacing: 0.08em;
+}
+
+
+.ilf-eyebrow {
+    margin: 0 0 8px;
+
+    color: var(--register-blue);
+
+    font-size: 10px;
+
+    font-weight: 800;
+
+    letter-spacing: 0.15em;
+
+    text-transform: uppercase;
+}
+
+
+.ilf-register-heading h1 {
+    margin: 0 0 10px;
+
+    color: var(--register-text);
+
+    font-size:
+        clamp(29px, 3vw, 40px);
+
+    line-height: 1.05;
+
+    letter-spacing: -0.055em;
+}
+
+
+.ilf-register-description {
+    max-width: 430px;
+
+    margin: 0;
+
+    color: var(--register-text-secondary);
+
+    font-size: 13px;
+
+    line-height: 1.7;
+}
+
+
+/* =========================================================
+   13. ALERTS
+========================================================= */
+
+.ilf-alert {
+    display: flex;
+
+    align-items: flex-start;
+
+    gap: 10px;
+
+    margin-bottom: 20px;
+
+    padding:
+        12px
+        13px;
+
+    border:
+        1px solid
+        rgba(220, 38, 38, 0.13);
+
+    border-radius:
+        11px;
+
+    background:
+        rgba(254, 242, 242, 0.8);
+
+    color: #991b1b;
+
+    font-size: 12px;
+
+    line-height: 1.5;
+}
+
+
+.ilf-alert-indicator {
+    flex: 0 0 auto;
+
+    width: 7px;
+    height: 7px;
+
+    margin-top: 5px;
+
+    border-radius: 50%;
+
+    background:
+        var(--register-danger);
+}
+
+
+.ilf-alert-message {
+    flex: 1;
+}
+
+
+.ilf-alert-close {
+    border: 0;
+
+    padding: 0;
+
+    background: none;
+
+    color: #991b1b;
+
+    font-size: 18px;
+
+    line-height: 1;
+
+    cursor: pointer;
+}
+
+
+/* =========================================================
+   14. FORM
+========================================================= */
+
+.ilf-register-form {
+    display: flex;
+
+    flex-direction: column;
+
+    gap: 19px;
+}
+
+
+.ilf-field {
+    position: relative;
+}
+
+
+.ilf-field-label {
+    display: block;
+
+    margin-bottom: 8px;
+
+    color: var(--register-text);
+
+    font-size: 11px;
+
+    font-weight: 700;
+
+    letter-spacing: 0.01em;
+}
+
+
+.ilf-label-row {
+    display: flex;
+
+    align-items: center;
+
+    justify-content: space-between;
+
+    gap: 12px;
+
+    margin-bottom: 8px;
+}
+
+
+.ilf-label-row .ilf-field-label {
+    margin-bottom: 0;
+}
+
+
+/* =========================================================
+   15. INPUT
+========================================================= */
+
+.ilf-input-shell {
+    position: relative;
+
+    display: flex;
+
+    align-items: center;
+
+    height: 52px;
+
+    border:
+        1px solid
+        rgba(15, 23, 42, 0.1);
+
+    border-radius:
+        12px;
+
+    background:
+        rgba(255, 255, 255, 0.76);
+
+    box-shadow:
+        inset 0 1px 2px
+        rgba(15, 23, 42, 0.025);
+
+    transition:
+        border-color 180ms ease,
+        box-shadow 180ms ease,
+        background 180ms ease,
+        transform 180ms ease;
+}
+
+
+.ilf-input-shell::before {
+    content: "";
+
+    position: absolute;
+
+    left: 0;
+
+    top: 10px;
+    bottom: 10px;
+
+    width: 2px;
+
+    border-radius: 999px;
+
+    background:
+        transparent;
+
+    transition:
+        background 180ms ease;
+}
+
+
+.ilf-input-shell:focus-within {
+    border-color:
+        rgba(37, 99, 235, 0.4);
+
+    background:
+        rgba(255, 255, 255, 0.96);
+
+    box-shadow:
+        0 0 0 4px
+        rgba(37, 99, 235, 0.055),
+        0 8px 25px
+        rgba(37, 99, 235, 0.045);
+
+    transform:
+        translateY(-1px);
+}
+
+
+.ilf-input-shell:focus-within::before {
+    background:
+        var(--register-blue);
+}
+
+
+.ilf-input-index {
+    flex: 0 0 48px;
+
+    display: flex;
+
+    align-items: center;
+
+    justify-content: center;
+
+    height: 100%;
+
+    border-right:
+        1px solid
+        rgba(15, 23, 42, 0.055);
+
+    color: var(--register-text-muted);
+
+    font-family:
+        "SFMono-Regular",
+        Consolas,
+        monospace;
+
+    font-size: 9px;
+
+    letter-spacing: 0.04em;
+}
+
+
+.ilf-input {
+    width: 100%;
+
+    min-width: 0;
+
+    height: 100%;
+
+    padding:
+        0
+        15px;
+
+    border: 0;
+
+    outline: none;
+
+    background: transparent;
+
+    color: var(--register-text);
+
+    font: inherit;
+
+    font-size: 13px;
+}
+
+
+.ilf-input::placeholder {
+    color:
+        #a8b2c0;
+}
+
+
+.ilf-input:autofill,
+.ilf-input:-webkit-autofill {
+    -webkit-text-fill-color:
+        var(--register-text);
+
+    box-shadow:
+        0 0 0 1000px
+        rgba(255, 255, 255, 0.95)
+        inset;
+}
+
+
+/* =========================================================
+   16. PASSWORD TOGGLE
+========================================================= */
+
+.ilf-password-toggle {
+    flex: 0 0 auto;
+
+    height: 100%;
+
+    padding:
+        0
+        14px;
+
+    border: 0;
+
+    background: transparent;
+
+    color: var(--register-text-muted);
+
+    font-family:
+        "SFMono-Regular",
+        Consolas,
+        monospace;
+
+    font-size: 8px;
+
+    font-weight: 700;
+
+    letter-spacing: 0.08em;
+
+    cursor: pointer;
+
+    transition:
+        color 180ms ease;
+}
+
+
+.ilf-password-toggle:hover,
+.ilf-password-toggle.is-visible {
+    color: var(--register-blue);
+}
+
+
+.ilf-eye-close {
+    display: none;
+}
+
+
+.ilf-password-toggle.is-visible
+.ilf-eye-open {
+    display: none;
+}
+
+
+.ilf-password-toggle.is-visible
+.ilf-eye-close {
+    display: inline;
+}
+
+
+/* =========================================================
+   17. PASSWORD STRENGTH
+========================================================= */
+
+.ilf-password-strength {
+    color: var(--register-text-muted);
+
+    font-family:
+        "SFMono-Regular",
+        Consolas,
+        monospace;
+
+    font-size: 8px;
+
+    font-weight: 700;
+
+    letter-spacing: 0.08em;
+
+    text-transform: uppercase;
+}
+
+
+.ilf-password-meter {
+    display: grid;
+
+    grid-template-columns:
+        repeat(4, 1fr);
+
+    gap: 4px;
+
+    margin-top: 7px;
+}
+
+
+.ilf-password-meter span {
+    height: 3px;
+
+    border-radius: 999px;
+
+    background:
+        rgba(15, 23, 42, 0.08);
+
+    transition:
+        background 180ms ease,
+        transform 180ms ease;
+}
+
+
+.ilf-password-meter.is-level-1
+span:nth-child(1) {
+    background: #ef4444;
+}
+
+
+.ilf-password-meter.is-level-2
+span:nth-child(-n + 2) {
+    background: #f59e0b;
+}
+
+
+.ilf-password-meter.is-level-3
+span:nth-child(-n + 3) {
+    background: #0ea5e9;
+}
+
+
+.ilf-password-meter.is-level-4
+span {
+    background: #10b981;
+}
+
+
+.ilf-field-hint {
+    margin-top: 7px;
+
+    color: var(--register-text-muted);
+
+    font-size: 9px;
+
+    line-height: 1.5;
+}
+
+
+/* =========================================================
+   18. FIELD ERRORS
+========================================================= */
+
+.ilf-field-error {
+    min-height: 0;
+
+    margin-top: 0;
+
+    color: var(--register-danger);
+
+    font-size: 9px;
+
+    line-height: 1.4;
+
+    opacity: 0;
+
+    transform:
+        translateY(-3px);
+
+    transition:
+        opacity 160ms ease,
+        transform 160ms ease,
+        margin 160ms ease;
+}
+
+
+.ilf-field.has-error
+.ilf-field-error {
+    margin-top: 6px;
+
+    opacity: 1;
+
+    transform:
+        translateY(0);
+}
+
+
+.ilf-field.has-error
+.ilf-input-shell {
+    border-color:
+        rgba(220, 38, 38, 0.35);
+
+    box-shadow:
+        0 0 0 3px
+        rgba(220, 38, 38, 0.04);
+}
+
+
+/* =========================================================
+   19. CONSENT
+========================================================= */
+
+.ilf-consent {
+    display: flex;
+
+    align-items: flex-start;
+
+    gap: 10px;
+
+    margin-top: 1px;
+
+    cursor: pointer;
+}
+
+
+.ilf-consent input {
+    position: absolute;
+
+    opacity: 0;
+
+    pointer-events: none;
+}
+
+
+.ilf-custom-checkbox {
+    flex: 0 0 auto;
+
+    width: 17px;
+    height: 17px;
+
+    margin-top: 1px;
+
+    display: flex;
+
+    align-items: center;
+
+    justify-content: center;
+
+    border:
+        1px solid
+        rgba(15, 23, 42, 0.17);
+
+    border-radius: 5px;
+
+    background:
+        rgba(255, 255, 255, 0.75);
+
+    transition:
+        background 160ms ease,
+        border-color 160ms ease,
+        box-shadow 160ms ease;
+}
+
+
+.ilf-custom-checkbox span {
+    width: 7px;
+    height: 7px;
+
+    border-radius: 2px;
+
+    background: white;
+
+    transform: scale(0);
+
+    transition:
+        transform 160ms ease;
+}
+
+
+.ilf-consent input:checked
++ .ilf-custom-checkbox {
+    border-color:
+        var(--register-blue);
+
+    background:
+        var(--register-blue);
+
+    box-shadow:
+        0 0 0 3px
+        rgba(37, 99, 235, 0.08);
+}
+
+
+.ilf-consent input:checked
++ .ilf-custom-checkbox span {
+    transform: scale(1);
+}
+
+
+.ilf-consent-text {
+    color: var(--register-text-secondary);
+
+    font-size: 9px;
+
+    line-height: 1.6;
+}
+
+
+/* =========================================================
+   20. SUBMIT BUTTON
+========================================================= */
+
+.ilf-register-submit {
+    position: relative;
+
+    width: 100%;
+
+    height: 56px;
+
+    display: flex;
+
+    align-items: center;
+
+    justify-content: center;
+
+    gap: 14px;
+
+    margin-top: 3px;
+
+    overflow: hidden;
+
+    border: 0;
+
+    border-radius:
+        13px;
+
+    background:
+        linear-gradient(
+            105deg,
+            #1d4ed8 0%,
+            #2563eb 48%,
+            #0891b2 100%
+        );
+
+    color: white;
+
+    box-shadow:
+        0 13px 30px
+        rgba(37, 99, 235, 0.2);
+
+    font-size: 12px;
+
+    font-weight: 700;
+
+    letter-spacing: 0.01em;
+
+    cursor: pointer;
+
+    transition:
+        transform 180ms ease,
+        box-shadow 180ms ease,
+        filter 180ms ease;
+}
+
+
+.ilf-register-submit::before {
+    content: "";
+
+    position: absolute;
+
+    inset: 0;
+
+    background:
+        linear-gradient(
+            110deg,
+            transparent 25%,
+            rgba(255, 255, 255, 0.2) 48%,
+            transparent 70%
+        );
+
+    transform:
+        translateX(-120%);
+
+    transition:
+        transform 650ms ease;
+}
+
+
+.ilf-register-submit:hover {
+    transform:
+        translateY(-2px);
+
+    box-shadow:
+        0 18px 38px
+        rgba(37, 99, 235, 0.26);
+
+    filter:
+        saturate(1.08);
+}
+
+
+.ilf-register-submit:hover::before {
+    transform:
+        translateX(120%);
+}
+
+
+.ilf-register-submit:active {
+    transform:
+        translateY(0);
+}
+
+
+.ilf-submit-label,
+.ilf-submit-arrow {
+    position: relative;
+
+    z-index: 2;
+}
+
+
+.ilf-submit-arrow {
+    font-size: 19px;
+
+    font-weight: 400;
+
+    transition:
+        transform 180ms ease;
+}
+
+
+.ilf-register-submit:hover
+.ilf-submit-arrow {
+    transform:
+        translateX(4px);
+}
+
+
+.ilf-submit-loader {
+    display: none;
+
+    width: 17px;
+    height: 17px;
+
+    border:
+        2px solid
+        rgba(255, 255, 255, 0.35);
+
+    border-top-color:
+        white;
+
+    border-radius: 50%;
+
+    animation:
+        submit-spin
+        700ms
+        linear
+        infinite;
+}
+
+
+.ilf-register-submit.is-loading
+.ilf-submit-label,
+.ilf-register-submit.is-loading
+.ilf-submit-arrow {
+    display: none;
+}
+
+
+.ilf-register-submit.is-loading
+.ilf-submit-loader {
+    display: block;
+}
+
+
+@keyframes submit-spin {
+
+    to {
+        transform:
+            rotate(360deg);
+    }
+}
+
+
+/* =========================================================
+   21. FOOTER
+========================================================= */
+
+.ilf-register-footer {
+    display: flex;
+
+    align-items: center;
+
+    justify-content: center;
+
+    gap: 6px;
+
+    margin-top: 20px;
+
+    color: var(--register-text-muted);
+
+    font-size: 10px;
+}
+
+
+.ilf-register-footer a {
+    color: var(--register-blue);
+
+    font-weight: 700;
+
+    text-decoration: none;
+
+    transition:
+        color 160ms ease;
+}
+
+
+.ilf-register-footer a:hover {
+    color:
+        #1d4ed8;
+
+    text-decoration:
+        underline;
+}
+
+
+/* =========================================================
+   22. SECURITY NOTE
+========================================================= */
+
+.ilf-security-note {
+    display: flex;
+
+    align-items: center;
+
+    justify-content: center;
+
+    gap: 7px;
+
+    margin-top: 17px;
+
+    padding-top: 15px;
+
+    border-top:
+        1px solid
+        rgba(15, 23, 42, 0.055);
+
+    color: var(--register-text-muted);
+
+    font-size: 8px;
+
+    line-height: 1.5;
+
+    text-align: center;
+}
+
+
+.ilf-security-lock {
+    flex: 0 0 auto;
+
+    padding:
+        3px
+        6px;
+
+    border:
+        1px solid
+        rgba(5, 150, 105, 0.16);
+
+    border-radius: 4px;
+
+    color: var(--register-success);
+
+    font-family:
+        "SFMono-Regular",
+        Consolas,
+        monospace;
+
+    font-size: 7px;
+
+    font-weight: 800;
+
+    letter-spacing: 0.08em;
+}
+
+
+/* =========================================================
+   23. AUTHENTICATION / TRANSITION
+========================================================= */
+
+.ilf-register-transition {
+    position: fixed;
+
+    inset: 0;
+
+    z-index: 100;
+
+    display: flex;
+
+    align-items: center;
+
+    justify-content: center;
+
+    overflow: hidden;
+
+    background:
+        rgba(245, 248, 252, 0.96);
+
+    opacity: 0;
+
+    visibility: hidden;
+
+    pointer-events: none;
+
+    transition:
+        opacity 500ms ease,
+        visibility 500ms ease;
+}
+
+
+.ilf-register-transition.is-active {
+    opacity: 1;
+
+    visibility: visible;
+
+    pointer-events: auto;
+}
+
+
+.ilf-transition-core {
+    position: absolute;
+
+    width: 130px;
+    height: 130px;
+
+    border-radius: 50%;
+
+    background:
+        radial-gradient(
+            circle,
+            rgba(37, 99, 235, 0.32),
+            rgba(8, 145, 178, 0.12) 42%,
+            transparent 70%
+        );
+
+    filter: blur(4px);
+
+    animation:
+        transition-core-pulse
+        1.6s
+        ease-in-out
+        infinite;
+}
+
+
+@keyframes transition-core-pulse {
+
+    0%,
+    100% {
+        transform:
+            scale(0.7);
+
+        opacity: 0.45;
+    }
+
+    50% {
+        transform:
+            scale(1.18);
+
+        opacity: 1;
+    }
+}
+
+
+.ilf-transition-ring {
+    position: absolute;
+
+    border:
+        1px solid
+        rgba(37, 99, 235, 0.28);
+
+    border-radius: 50%;
+
+    transform:
+        scale(0.2);
+
+    opacity: 0;
+}
+
+
+.ilf-register-transition.is-active
+.ilf-transition-ring {
+    animation:
+        transition-ring-expand
+        1.8s
+        cubic-bezier(.16, 1, .3, 1)
+        forwards;
+}
+
+
+.ring-one {
+    width: 190px;
+    height: 190px;
+
+    animation-delay: 0s !important;
+}
+
+
+.ring-two {
+    width: 360px;
+    height: 360px;
+
+    border-color:
+        rgba(8, 145, 178, 0.2) !important;
+
+    animation-delay: 120ms !important;
+}
+
+
+.ring-three {
+    width: 560px;
+    height: 560px;
+
+    border-color:
+        rgba(124, 58, 237, 0.12) !important;
+
+    animation-delay: 240ms !important;
+}
+
+
+@keyframes transition-ring-expand {
+
+    0% {
+        transform:
+            scale(0.2)
+            rotate(0deg);
+
+        opacity: 0;
+    }
+
+    25% {
+        opacity: 1;
+    }
+
+    100% {
+        transform:
+            scale(1.15)
+            rotate(180deg);
+
+        opacity: 0;
+    }
+}
+
+
+.ilf-transition-particles {
+    position: absolute;
+
+    inset: 0;
+
+    pointer-events: none;
+}
+
+
+.ilf-transition-message {
+    position: relative;
+
+    z-index: 5;
+
+    display: flex;
+
+    flex-direction: column;
+
+    align-items: center;
+
+    gap: 7px;
+
+    margin-top: 240px;
+
+    text-align: center;
+}
+
+
+.ilf-transition-message span {
+    color: var(--register-blue);
+
+    font-family:
+        "SFMono-Regular",
+        Consolas,
+        monospace;
+
+    font-size: 9px;
+
+    font-weight: 800;
+
+    letter-spacing: 0.18em;
+}
+
+
+.ilf-transition-message strong {
+    color: var(--register-text);
+
+    font-size: 16px;
+
+    font-weight: 650;
+
+    letter-spacing: -0.02em;
+}
+
+
+/* =========================================================
+   24. AUTHENTICATING PAGE STATE
+========================================================= */
+
+.ilf-register-page.is-authenticating
+.ilf-register-panel {
+    pointer-events: none;
+}
+
+
+.ilf-register-page.is-authenticating
+.ilf-register-visual {
+    filter:
+        saturate(1.15);
+}
+
+
+/* =========================================================
+   25. REDUCED MOTION
+========================================================= */
+
+@media (prefers-reduced-motion: reduce) {
+
+    .ilf-register-page *,
+    .ilf-register-page *::before,
+    .ilf-register-page *::after {
+        animation-duration: 0.01ms !important;
+
+        animation-iteration-count: 1 !important;
+
+        transition-duration: 0.01ms !important;
+    }
+}
+
+
+/* =========================================================
+   26. LARGE DESKTOP
+========================================================= */
+
+@media (min-width: 1500px) {
+
+    .ilf-register-layout {
+        gap: 130px;
+    }
+
+
+    .ilf-register-visual {
+        min-height: 700px;
+    }
+
+
+    .ilf-register-three-container {
+        width: 700px;
+        height: 700px;
+    }
+}
+
+
+/* =========================================================
+   27. TABLET
+========================================================= */
+
+@media (max-width: 1080px) {
+
+    .ilf-register-layout {
+        grid-template-columns:
+            minmax(0, 1fr)
+            minmax(390px, 0.9fr);
+
+        gap: 35px;
+    }
+
+
+    .ilf-register-visual {
+        min-height: 590px;
+    }
+
+
+    .ilf-register-three-container {
+        width: 580px;
+        height: 580px;
+    }
+
+
+    .ilf-formation-info {
+        width: 270px;
+    }
+
+
+    .ilf-formation-telemetry {
+        width: 180px;
+    }
+}
+
+
+/* =========================================================
+   28. MOBILE / SINGLE COLUMN
+========================================================= */
+
+@media (max-width: 820px) {
+
+    .ilf-register-header {
+        height: 70px;
+
+        padding:
+            0
+            20px;
+    }
+
+
+    .ilf-register-header-status {
+        display: none;
+    }
+
+
+    .ilf-register-layout {
+        width:
+            min(
+                100% - 30px,
+                560px
+            );
+
+        min-height: auto;
+
+        display: flex;
+
+        flex-direction: column;
+
+        gap: 10px;
+
+        padding:
+            28px
+            0
+            45px;
+    }
+
+
+    .ilf-register-visual {
+        width: 100%;
+
+        min-height: 440px;
+
+        order: 1;
+    }
+
+
+    .ilf-register-panel {
+        width: 100%;
+
+        max-width: none;
+
+        order: 2;
+    }
+
+
+    .ilf-register-three-container {
+        width: 500px;
+        height: 500px;
+
+        max-width: 100%;
+    }
+
+
+    .ilf-formation-info {
+        left: 0;
+
+        bottom: 0;
+
+        width: 250px;
+
+        padding: 16px;
+    }
+
+
+    .ilf-formation-info h2 {
+        font-size: 22px;
+    }
+
+
+    .ilf-formation-info p {
+        font-size: 10px;
+    }
+
+
+    .ilf-formation-telemetry {
+        right: 0;
+
+        bottom: 0;
+
+        width: 175px;
+    }
+
+
+    .ilf-telemetry-item {
+        padding:
+            8px
+            10px;
+    }
+}
+
+
+/* =========================================================
+   29. SMALL MOBILE
+========================================================= */
+
+@media (max-width: 560px) {
+
+    .ilf-register-layout {
+        width:
+            calc(100% - 22px);
+
+        padding-top: 20px;
+    }
+
+
+    .ilf-register-visual {
+        min-height: 360px;
+    }
+
+
+    .ilf-register-three-container {
+        width: 390px;
+        height: 390px;
+    }
+
+
+    .ilf-visual-label {
+        top: 0;
+    }
+
+
+    .ilf-formation-info {
+        left: 0;
+
+        width: 205px;
+
+        padding: 13px;
+    }
+
+
+    .ilf-formation-info h2 {
+        font-size: 18px;
+    }
+
+
+    .ilf-formation-info p {
+        display: none;
+    }
+
+
+    .ilf-formation-telemetry {
+        width: 135px;
+    }
+
+
+    .ilf-telemetry-label {
+        display: none;
+    }
+
+
+    .ilf-telemetry-item {
+        justify-content: center;
+    }
+
+
+    .ilf-register-panel-inner {
+        padding:
+            24px
+            18px;
+
+        border-radius:
+            21px;
+    }
+
+
+    .ilf-register-heading h1 {
+        font-size: 28px;
+    }
+
+
+    .ilf-register-description {
+        font-size: 12px;
+    }
+
+
+    .ilf-register-submit {
+        height: 53px;
+    }
+
+
+    .ilf-security-note {
+        align-items: flex-start;
+    }
+}
+
+
+/* =========================================================
+   30. VERY SMALL MOBILE
+========================================================= */
+
+@media (max-width: 390px) {
+
+    .ilf-register-header {
+        padding:
+            0
+            14px;
+    }
+
+
+    .ilf-product-title {
+        font-size: 12px;
+    }
+
+
+    .ilf-register-layout {
+        width:
+            calc(100% - 16px);
+    }
+
+
+    .ilf-register-visual {
+        min-height: 320px;
+    }
+
+
+    .ilf-register-three-container {
+        width: 340px;
+        height: 340px;
+    }
+
+
+    .ilf-formation-info {
+        width: 180px;
+    }
+
+
+    .ilf-formation-telemetry {
+        width: 115px;
+    }
+
+
+    .ilf-register-panel-inner {
+        padding:
+            21px
+            15px;
+    }
+}

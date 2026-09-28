@@ -1,0 +1,364 @@
+{% extends "app_shell.html" %}
+
+{% block title %}Reports — Intelligent Log Forensics{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="../../static/css/reports.css">
+{% endblock %}
+
+{% block page_title %}Reports{% endblock %}
+
+{% block content %}
+
+<div class="page-header">
+  <div>
+    <div class="page-eyebrow">FORENSIC OUTPUT</div>
+    <h1 class="page-title">Forensic Reports</h1>
+    <p class="page-subtitle">
+      Generate and download comprehensive security investigation reports
+    </p>
+  </div>
+</div>
+
+{% with messages = get_flashed_messages(with_categories=true) %}
+  {% for cat, msg in messages %}
+    <div class="alert alert-{{ cat }}">
+      {{ msg }}
+    </div>
+  {% endfor %}
+{% endwith %}
+
+<!-- Report Generator -->
+<div class="reports-layout">
+
+  <div class="card report-generator-card">
+    <div class="card-header">
+      <div>
+        <span class="card-title">Generate New Report</span>
+        <p class="card-description">
+          Build a forensic report from your analyzed security data.
+        </p>
+      </div>
+
+      <div class="report-header-icon">
+        <svg width="20" height="20" viewBox="0 0 24 24"
+             fill="none" stroke="currentColor" stroke-width="1.8">
+          <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+          <polyline points="14 2 14 8 20 8"/>
+          <line x1="8" y1="13" x2="16" y2="13"/>
+          <line x1="8" y1="17" x2="14" y2="17"/>
+        </svg>
+      </div>
+    </div>
+
+    <div class="card-body">
+
+      <form
+        method="POST"
+        action="{{ url_for('app.generate_report') }}"
+        id="report-generator-form"
+      >
+
+        <div class="report-form-stack">
+
+          <!-- File -->
+          <div class="form-group">
+            <label class="form-label" for="report-file">
+              Log File
+              <span class="optional-label">Optional</span>
+            </label>
+
+            <select
+              class="form-select"
+              id="report-file"
+              name="file_id"
+            >
+              <option value="">
+                All analyzed files — Summary Report
+              </option>
+
+              {% for f in user_files %}
+              <option value="{{ f.file_id }}">
+                {{ f.filename }}
+              </option>
+              {% endfor %}
+            </select>
+
+            <p class="form-hint">
+              Select a specific file for a targeted investigation report.
+            </p>
+          </div>
+
+          <!-- Report Type -->
+          <div class="form-group">
+            <label class="form-label" for="report-type">
+              Report Type
+            </label>
+
+            <div class="report-type-grid">
+
+              <label class="report-type-option">
+                <input
+                  type="radio"
+                  name="report_type"
+                  value="full"
+                  checked
+                >
+
+                <span class="report-type-content">
+                  <span class="report-type-icon">
+                    <svg width="17" height="17" viewBox="0 0 24 24"
+                         fill="none" stroke="currentColor" stroke-width="1.8">
+                      <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                      <polyline points="14 2 14 8 20 8"/>
+                      <line x1="8" y1="13" x2="16" y2="13"/>
+                      <line x1="8" y1="17" x2="16" y2="17"/>
+                    </svg>
+                  </span>
+
+                  <span>
+                    <strong>Full Investigation</strong>
+                    <small>Complete forensic analysis</small>
+                  </span>
+                </span>
+              </label>
+
+              <label class="report-type-option">
+                <input
+                  type="radio"
+                  name="report_type"
+                  value="executive"
+                >
+
+                <span class="report-type-content">
+                  <span class="report-type-icon">
+                    <svg width="17" height="17" viewBox="0 0 24 24"
+                         fill="none" stroke="currentColor" stroke-width="1.8">
+                      <path d="M4 19V5"/>
+                      <path d="M4 5h13l-2 4 2 4H4"/>
+                    </svg>
+                  </span>
+
+                  <span>
+                    <strong>Executive Summary</strong>
+                    <small>High-level security overview</small>
+                  </span>
+                </span>
+              </label>
+
+              <label class="report-type-option">
+                <input
+                  type="radio"
+                  name="report_type"
+                  value="technical"
+                >
+
+                <span class="report-type-content">
+                  <span class="report-type-icon">
+                    <svg width="17" height="17" viewBox="0 0 24 24"
+                         fill="none" stroke="currentColor" stroke-width="1.8">
+                      <polyline points="16 18 22 12 16 6"/>
+                      <polyline points="8 6 2 12 8 18"/>
+                      <line x1="14" y1="4" x2="10" y2="20"/>
+                    </svg>
+                  </span>
+
+                  <span>
+                    <strong>Technical Details</strong>
+                    <small>Detailed analyst information</small>
+                  </span>
+                </span>
+              </label>
+
+            </div>
+          </div>
+
+          <!-- Submit -->
+          <div class="report-form-actions">
+            <button
+              type="submit"
+              class="btn btn-primary"
+              id="generate-report-btn"
+            >
+              <svg width="15" height="15" viewBox="0 0 24 24"
+                   fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                <polyline points="14 2 14 8 20 8"/>
+                <line x1="12" y1="12" x2="12" y2="18"/>
+                <polyline points="9" y1="15" x2="12" y2="18"/>
+                <polyline points="15" y1="15" x2="12" y2="18"/>
+              </svg>
+
+              <span>Generate & Download PDF</span>
+            </button>
+          </div>
+
+        </div>
+
+      </form>
+
+    </div>
+  </div>
+
+  <!-- Included Content -->
+  <div class="card report-included-card">
+
+    <div class="card-header">
+      <div>
+        <span class="card-title">What's Included?</span>
+        <p class="card-description">
+          Report contents generated from your forensic analysis.
+        </p>
+      </div>
+    </div>
+
+    <div class="card-body report-included-list">
+
+      {% for item in [
+        'Case Information & File Metadata',
+        'Investigation Summary & Statistics',
+        'Critical Event Timeline',
+        'Threat Detection Details',
+        'ML Anomaly Scores',
+        'MITRE ATT&CK Technique Mappings',
+        'Incident List & Status',
+        'Security Recommendations'
+      ] %}
+
+      <div class="report-included-item">
+        <span class="included-check">
+          <svg width="13" height="13" viewBox="0 0 24 24"
+               fill="none" stroke="currentColor" stroke-width="2.5">
+            <polyline points="20 6 9 17 4 12"/>
+          </svg>
+        </span>
+
+        <span>{{ item }}</span>
+      </div>
+
+      {% endfor %}
+
+    </div>
+  </div>
+
+</div>
+
+<!-- Report History -->
+<div class="card report-history-card">
+
+  <div class="card-header">
+    <div>
+      <span class="card-title">Report History</span>
+      <p class="card-description">
+        Previously generated forensic reports.
+      </p>
+    </div>
+
+    {% if reports %}
+      <span class="badge badge-neutral">
+        {{ reports|length }} reports
+      </span>
+    {% endif %}
+  </div>
+
+  {% if reports %}
+
+  <div class="table-container report-table-container">
+
+    <table class="report-history-table">
+
+      <thead>
+        <tr>
+          <th>Title</th>
+          <th>Type</th>
+          <th>File</th>
+          <th>Status</th>
+          <th>Generated</th>
+        </tr>
+      </thead>
+
+      <tbody>
+
+        {% for r in reports %}
+
+        <tr>
+
+          <td>
+            <div class="report-title-cell">
+              <span class="report-file-icon">
+                <svg width="15" height="15" viewBox="0 0 24 24"
+                     fill="none" stroke="currentColor" stroke-width="1.8">
+                  <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                  <polyline points="14 2 14 8 20 8"/>
+                </svg>
+              </span>
+
+              <span class="td-primary">{{ r.title }}</span>
+            </div>
+          </td>
+
+          <td>
+            <span class="tag">
+              {{ r.report_type.title() }}
+            </span>
+          </td>
+
+          <td>
+            <span class="report-filename">
+              {{ r.filename or 'All files' }}
+            </span>
+          </td>
+
+          <td>
+            <span class="badge badge-success">
+              {{ r.status.title() }}
+            </span>
+          </td>
+
+          <td class="td-mono report-created-time">
+            {{ r.created_at[:16] }}
+          </td>
+
+        </tr>
+
+        {% endfor %}
+
+      </tbody>
+
+    </table>
+
+  </div>
+
+  {% else %}
+
+  <div class="empty-state report-empty-state">
+
+    <div class="empty-state-icon">
+      <svg width="28" height="28" viewBox="0 0 24 24"
+           fill="none" stroke="currentColor" stroke-width="1.5">
+        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+        <polyline points="14 2 14 8 20 8"/>
+        <line x1="8" y1="13" x2="16" y2="13"/>
+        <line x1="8" y1="17" x2="13" y2="17"/>
+      </svg>
+    </div>
+
+    <p class="empty-state-title">
+      No reports generated yet
+    </p>
+
+    <p class="empty-state-desc">
+      Generate your first security report using the form above.
+    </p>
+
+  </div>
+
+  {% endif %}
+
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script src="../../static/js/reports.js"></script>
+{% endblock %}

@@ -1,0 +1,1005 @@
+﻿<!DOCTYPE html>
+
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+
+<title>
+    {{ incident.title|default("Incident Investigation") }} | Intelligent Log Forensics
+</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+
+<link
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&family=Space+Grotesk:wght@500;600;700&display=swap"
+    rel="stylesheet"
+>
+
+<link rel="stylesheet" href="/static/css/tokens.css">
+<link rel="stylesheet" href="/static/css/layout.css">
+<link rel="stylesheet" href="/static/css/components.css">
+<link rel="stylesheet" href="/static/css/animations.css">
+<link rel="stylesheet" href="/static/css/pages/incidents.css">
+
+
+</head>
+
+<body class="incident-detail-page">
+
+<div class="app-shell">
+
+
+<!-- =========================================================
+     SIDEBAR
+========================================================== -->
+
+<aside class="app-sidebar">
+
+    <div class="sidebar-brand">
+        <a
+            href="{{ url_for('ops_views.render_command_deck') }}"
+            class="brand-link"
+        >
+            <div class="brand-mark">
+                <svg
+                    width="22"
+                    height="22"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                >
+                    <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6-8 10-8 10z"></path>
+                    <path d="M9 12l2 2 4-4"></path>
+                </svg>
+            </div>
+
+            <div class="brand-copy">
+                <strong>ILF</strong>
+                <span>COMMAND DECK</span>
+            </div>
+        </a>
+    </div>
+
+
+    <!-- =====================================================
+         NAVIGATION
+    ====================================================== -->
+
+    <nav class="sidebar-navigation">
+
+        <div class="nav-section-label">
+            OPERATIONS
+        </div>
+
+        <!-- Dashboard -->
+
+        <a
+            href="{{ url_for('ops_views.render_command_deck') }}"
+            class="sidebar-nav-link"
+        >
+            <span class="nav-icon">
+                <svg
+                    width="18"
+                    height="18"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="1.8"
+                >
+                    <rect x="3" y="3" width="7" height="7"></rect>
+                    <rect x="14" y="3" width="7" height="7"></rect>
+                    <rect x="3" y="14" width="7" height="7"></rect>
+                    <rect x="14" y="14" width="7" height="7"></rect>
+                </svg>
+            </span>
+
+            <span>Dashboard</span>
+        </a>
+
+
+        <!-- Analyze -->
+
+        <a
+            href="{{ url_for('ops_views.render_ingest_station') }}"
+            class="sidebar-nav-link"
+        >
+            <span class="nav-icon">
+                <svg
+                    width="18"
+                    height="18"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="1.8"
+                >
+                    <path d="M12 3v12"></path>
+                    <path d="m7 10 5 5 5-5"></path>
+                    <path d="M5 21h14"></path>
+                </svg>
+            </span>
+
+            <span>Analyze Logs</span>
+        </a>
+
+
+        <!-- Incidents -->
+
+        <a
+            href="{{ url_for('ops_views.render_dockets_queue') }}"
+            class="sidebar-nav-link active"
+        >
+            <span class="nav-icon">
+                <svg
+                    width="18"
+                    height="18"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="1.8"
+                >
+                    <path d="M4 5h16"></path>
+                    <path d="M4 12h16"></path>
+                    <path d="M4 19h16"></path>
+                    <circle cx="8" cy="5" r="1"></circle>
+                    <circle cx="16" cy="12" r="1"></circle>
+                    <circle cx="10" cy="19" r="1"></circle>
+                </svg>
+            </span>
+
+            <span>Incidents</span>
+        </a>
+
+
+        <!-- MITRE -->
+
+        <a
+            href="{{ url_for('ops_views.render_mitre_matrix') }}"
+            class="sidebar-nav-link"
+        >
+            <span class="nav-icon">
+                <svg
+                    width="18"
+                    height="18"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="1.8"
+                >
+                    <circle cx="12" cy="12" r="8"></circle>
+                    <path d="M12 4v16"></path>
+                    <path d="M4 12h16"></path>
+                </svg>
+            </span>
+
+            <span>MITRE ATT&amp;CK</span>
+        </a>
+
+
+        <!-- Evidence -->
+
+        <a
+            href="{{ url_for('ops_views.render_vault_archive') }}"
+            class="sidebar-nav-link"
+        >
+            <span class="nav-icon">
+                <svg
+                    width="18"
+                    height="18"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="1.8"
+                >
+                    <path d="M4 7h16"></path>
+                    <path d="M6 7V5h12v2"></path>
+                    <path d="M5 7h14l-1 13H6L5 7z"></path>
+                    <path d="M9 11h6"></path>
+                </svg>
+            </span>
+
+            <span>Evidence Vault</span>
+        </a>
+
+
+        <!-- Playbooks -->
+
+        <a
+            href="{{ url_for('ops_views.render_remediation_playbooks') }}"
+            class="sidebar-nav-link"
+        >
+            <span class="nav-icon">
+                <svg
+                    width="18"
+                    height="18"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="1.8"
+                >
+                    <path d="M12 3v18"></path>
+                    <path d="M5 7h14"></path>
+                    <path d="M5 17h14"></path>
+                    <circle cx="8" cy="7" r="2"></circle>
+                    <circle cx="16" cy="17" r="2"></circle>
+                </svg>
+            </span>
+
+            <span>Playbooks</span>
+        </a>
+
+    </nav>
+
+
+    <!-- =====================================================
+         SIDEBAR FOOTER
+    ====================================================== -->
+
+    <div class="sidebar-footer">
+
+        <div class="system-status">
+
+            <span class="status-indicator"></span>
+
+            <div>
+                <strong>SYSTEM ONLINE</strong>
+                <small>Telemetry pipeline nominal</small>
+            </div>
+
+        </div>
+
+
+        <a
+            href="{{ url_for('auth_views.terminate_session') }}"
+            class="logout-link"
+        >
+            <svg
+                width="17"
+                height="17"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="1.8"
+            >
+                <path d="M10 17l5-5-5-5"></path>
+                <path d="M15 12H3"></path>
+                <path d="M21 19V5a2 2 0 0 0-2-2h-5"></path>
+            </svg>
+
+            Sign Out
+        </a>
+
+    </div>
+
+</aside>
+
+
+<!-- =========================================================
+     MAIN APPLICATION
+========================================================== -->
+
+<main class="app-main">
+
+    <!-- =====================================================
+         HEADER
+    ====================================================== -->
+
+    <header class="command-header">
+
+        <div class="command-heading">
+
+            <div class="breadcrumb">
+
+                <a href="{{ url_for('ops_views.render_dockets_queue') }}">
+                    INCIDENTS
+                </a>
+
+                <span class="breadcrumb-separator">/</span>
+
+                <strong>INVESTIGATION</strong>
+
+            </div>
+
+
+            <h1>
+                {{ incident.title|default("Incident Investigation") }}
+            </h1>
+
+
+            <p>
+                Forensic investigation and correlated evidence for this
+                incident cluster.
+            </p>
+
+        </div>
+
+
+        <div class="command-header-actions">
+
+            <a
+                href="{{ url_for('ops_views.render_dockets_queue') }}"
+                class="header-action-button"
+            >
+                <svg
+                    width="17"
+                    height="17"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="1.8"
+                >
+                    <path d="m15 18-6-6 6-6"></path>
+                </svg>
+
+                All Incidents
+            </a>
+
+        </div>
+
+    </header>
+
+
+    <!-- =====================================================
+         INCIDENT STATUS
+    ====================================================== -->
+
+    <section class="system-status-strip">
+
+        <div class="status-strip-item">
+
+            <span class="status-dot online"></span>
+
+            <span>INCIDENT ID</span>
+
+            <strong>
+                {{ incident.cluster_id|default(incident.id|default("N/A")) }}
+            </strong>
+
+        </div>
+
+
+        <div class="status-strip-item">
+
+            <span class="status-dot online"></span>
+
+            <span>SEVERITY</span>
+
+            <strong>
+                {{ incident.severity|default(incident.triage_severity|default("UNKNOWN")) }}
+            </strong>
+
+        </div>
+
+
+        <div class="status-strip-item">
+
+            <span class="status-dot online"></span>
+
+            <span>STATUS</span>
+
+            <strong>
+                {{ incident.status|default("OPEN") }}
+            </strong>
+
+        </div>
+
+
+        <div class="status-strip-time">
+
+            UTC
+
+            <span id="incident-clock">
+                --:--:--
+            </span>
+
+        </div>
+
+    </section>
+
+
+    <!-- =====================================================
+         INCIDENT OVERVIEW
+    ====================================================== -->
+
+    <section class="incident-overview-grid">
+
+        <!-- Threat Overview -->
+
+        <article class="dashboard-panel incident-summary-panel">
+
+            <div class="panel-header">
+
+                <div>
+
+                    <span class="panel-kicker">
+                        INCIDENT PROFILE
+                    </span>
+
+                    <h2>
+                        Threat Overview
+                    </h2>
+
+                </div>
+
+
+                <span
+                    class="severity-badge severity-{{ incident.severity|default(incident.triage_severity|default('unknown'))|lower }}"
+                >
+                    {{ incident.severity|default(incident.triage_severity|default("UNKNOWN")) }}
+                </span>
+
+            </div>
+
+
+            <div class="incident-summary-content">
+
+                <div class="summary-primary">
+
+                    <span class="summary-label">
+                        ROOT CAUSE
+                    </span>
+
+                    <p>
+                        {{ incident.root_cause|default("No root-cause assessment is currently available.") }}
+                    </p>
+
+                </div>
+
+
+                <div class="summary-grid">
+
+                    <div class="summary-item">
+
+                        <span>TECHNIQUE</span>
+
+                        <strong>
+                            {{ incident.technique_id|default("Unmapped") }}
+                        </strong>
+
+                    </div>
+
+
+                    <div class="summary-item">
+
+                        <span>CONFIDENCE</span>
+
+                        <strong>
+                            {{ incident.attribution_confidence|default(0) }}%
+                        </strong>
+
+                    </div>
+
+
+                    <div class="summary-item">
+
+                        <span>FIRST OBSERVED</span>
+
+                        <strong>
+                            {{ incident.first_seen|default(incident.created_at|default("N/A")) }}
+                        </strong>
+
+                    </div>
+
+
+                    <div class="summary-item">
+
+                        <span>LAST OBSERVED</span>
+
+                        <strong>
+                            {{ incident.last_seen|default("N/A") }}
+                        </strong>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </article>
+
+
+        <!-- Risk Profile -->
+
+        <article class="dashboard-panel incident-risk-panel">
+
+            <div class="panel-header">
+
+                <div>
+
+                    <span class="panel-kicker">
+                        THREAT ASSESSMENT
+                    </span>
+
+                    <h2>
+                        Risk Profile
+                    </h2>
+
+                </div>
+
+            </div>
+
+
+            <div class="risk-score-display">
+
+                <strong>
+                    {{ incident.threat_index|default(incident.risk_score|default(0)) }}
+                </strong>
+
+                <span>/100</span>
+
+            </div>
+
+
+            <!--
+                IMPORTANT:
+                Do not put Jinja directly inside the style attribute.
+                Store the value in data-score and let JavaScript
+                update the width.
+            -->
+
+            <div
+                class="risk-meter"
+                data-risk-score="{{ incident.threat_index|default(incident.risk_score|default(0)) }}"
+            >
+
+                <span class="risk-meter-fill"></span>
+
+            </div>
+
+
+            <div class="risk-meter-labels">
+
+                <span>LOW</span>
+                <span>MODERATE</span>
+                <span>HIGH</span>
+                <span>CRITICAL</span>
+
+            </div>
+
+
+            <div class="risk-details">
+
+                <div>
+
+                    <span>Threat Signals</span>
+
+                    <strong>
+                        {{ incident.threat_count|default(incident.signal_count|default(0)) }}
+                    </strong>
+
+                </div>
+
+
+                <div>
+
+                    <span>Evidence Records</span>
+
+                    <strong>
+                        {{ incident.evidence_count|default(timeline|length) }}
+                    </strong>
+
+                </div>
+
+            </div>
+
+        </article>
+
+    </section>
+
+
+    <!-- =====================================================
+         INVESTIGATION GRID
+    ====================================================== -->
+
+    <section class="dashboard-grid incident-investigation-grid">
+
+        <!-- Evidence Timeline -->
+
+        <article class="dashboard-panel timeline-panel">
+
+            <div class="panel-header">
+
+                <div>
+
+                    <span class="panel-kicker">
+                        FORENSIC ACTIVITY
+                    </span>
+
+                    <h2>
+                        Evidence Timeline
+                    </h2>
+
+                </div>
+
+
+                <span class="live-badge">
+
+                    <span></span>
+
+                    CORRELATED
+
+                </span>
+
+            </div>
+
+
+            <div class="forensic-timeline">
+
+                {% for event in timeline %}
+
+                <div class="timeline-event">
+
+                    <div class="timeline-marker">
+                        <span></span>
+                    </div>
+
+
+                    <div class="timeline-content">
+
+                        <div class="timeline-topline">
+
+                            <time>
+                                {{ event.timestamp|default("Unknown time") }}
+                            </time>
+
+                            <span class="timeline-source">
+                                {{ event.source_ip|default("Unknown source") }}
+                            </span>
+
+                        </div>
+
+
+                        <h3>
+                            {{ event.event_type|default("Telemetry Event") }}
+                        </h3>
+
+
+                        <p>
+                            {{ event.finding|default(event.message|default("No event description available.")) }}
+                        </p>
+
+
+                        {% if event.destination_ip is defined and event.destination_ip %}
+
+                        <div class="event-meta">
+
+                            <span>
+                                Destination
+                            </span>
+
+                            <strong>
+                                {{ event.destination_ip }}
+                            </strong>
+
+                        </div>
+
+                        {% endif %}
+
+                    </div>
+
+                </div>
+
+                {% else %}
+
+                <div class="empty-state">
+
+                    <div class="empty-state-icon">
+
+                        <svg
+                            width="24"
+                            height="24"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            stroke-width="1.6"
+                        >
+                            <circle cx="12" cy="12" r="8"></circle>
+                            <path d="M12 8v4l3 2"></path>
+                        </svg>
+
+                    </div>
+
+
+                    <strong>
+                        No timeline records
+                    </strong>
+
+
+                    <span>
+                        No correlated forensic events are available
+                        for this incident.
+                    </span>
+
+                </div>
+
+                {% endfor %}
+
+            </div>
+
+        </article>
+
+
+        <!-- Incident Details -->
+
+        <article class="dashboard-panel details-panel">
+
+            <div class="panel-header">
+
+                <div>
+
+                    <span class="panel-kicker">
+                        FORENSIC CONTEXT
+                    </span>
+
+                    <h2>
+                        Incident Details
+                    </h2>
+
+                </div>
+
+            </div>
+
+
+            <div class="detail-list">
+
+                <div class="detail-row">
+
+                    <span>Cluster ID</span>
+
+                    <strong>
+                        {{ incident.cluster_id|default(incident.id|default("N/A")) }}
+                    </strong>
+
+                </div>
+
+
+                <div class="detail-row">
+
+                    <span>Severity</span>
+
+                    <strong>
+                        {{ incident.severity|default(incident.triage_severity|default("UNKNOWN")) }}
+                    </strong>
+
+                </div>
+
+
+                <div class="detail-row">
+
+                    <span>MITRE Technique</span>
+
+                    <strong>
+                        {{ incident.technique_id|default("Unmapped") }}
+                    </strong>
+
+                </div>
+
+
+                <div class="detail-row">
+
+                    <span>Attribution Confidence</span>
+
+                    <strong>
+                        {{ incident.attribution_confidence|default(0) }}%
+                    </strong>
+
+                </div>
+
+
+                <div class="detail-row">
+
+                    <span>Source</span>
+
+                    <strong>
+                        {{ incident.source|default("Forensic telemetry") }}
+                    </strong>
+
+                </div>
+
+
+                <div class="detail-row">
+
+                    <span>Status</span>
+
+                    <strong>
+                        {{ incident.status|default("OPEN") }}
+                    </strong>
+
+                </div>
+
+            </div>
+
+        </article>
+
+    </section>
+
+
+    <!-- =====================================================
+         FINDINGS
+    ====================================================== -->
+
+    <section class="dashboard-panel findings-panel">
+
+        <div class="panel-header">
+
+            <div>
+
+                <span class="panel-kicker">
+                    ANALYST ASSESSMENT
+                </span>
+
+                <h2>
+                    Findings &amp; Root Cause
+                </h2>
+
+            </div>
+
+        </div>
+
+
+        <div class="findings-content">
+
+            <div class="finding-block">
+
+                <span class="finding-label">
+                    ROOT CAUSE
+                </span>
+
+                <p>
+                    {{ incident.root_cause|default("Root cause analysis is not available for this incident.") }}
+                </p>
+
+            </div>
+
+
+            {% if incident.findings is defined and incident.findings %}
+
+            <div class="finding-block">
+
+                <span class="finding-label">
+                    FINDINGS
+                </span>
+
+                <p>
+                    {{ incident.findings }}
+                </p>
+
+            </div>
+
+            {% endif %}
+
+
+            {% if incident.recommendation is defined and incident.recommendation %}
+
+            <div class="finding-block">
+
+                <span class="finding-label">
+                    RECOMMENDATION
+                </span>
+
+                <p>
+                    {{ incident.recommendation }}
+                </p>
+
+            </div>
+
+            {% endif %}
+
+        </div>
+
+    </section>
+
+
+    <!-- =====================================================
+         FOOTER
+    ====================================================== -->
+
+    <footer class="app-footer">
+
+        <div>
+
+            <strong>
+                INTELLIGENT LOG FORENSICS
+            </strong>
+
+            <span>
+                Security Operations Platform
+            </span>
+
+        </div>
+
+
+        <div class="footer-right">
+
+            <span>
+                Forensic Engine
+            </span>
+
+            <span class="footer-status-dot"></span>
+
+            <span>
+                Operational
+            </span>
+
+        </div>
+
+    </footer>
+
+</main>
+
+
+</div>
+
+<!-- =========================================================
+     JAVASCRIPT
+========================================================== -->
+
+<script src="/static/js/core/EventBus.js"></script>
+
+<script src="/static/js/core/AppState.js"></script>
+
+<script src="/static/js/core/Router.js"></script>
+
+<script>
+(function () {
+
+    /* =========================================================
+       INCIDENT CLOCK
+    ========================================================= */
+
+    const clock = document.getElementById("incident-clock");
+
+    function updateClock() {
+
+        if (!clock) {
+            return;
+        }
+
+        const now = new Date();
+
+        clock.textContent = now.toISOString().slice(11, 19);
+    }
+
+    updateClock();
+
+    window.setInterval(updateClock, 1000);
+
+
+    /* =========================================================
+       RISK METER
+    ========================================================= */
+
+    const riskMeter = document.querySelector(".risk-meter");
+
+    if (riskMeter) {
+
+        const riskFill = riskMeter.querySelector(".risk-meter-fill");
+
+        const rawScore = Number(
+            riskMeter.dataset.riskScore || 0
+        );
+
+        const score = Math.min(
+            100,
+            Math.max(0, Number.isFinite(rawScore) ? rawScore : 0)
+        );
+
+        if (riskFill) {
+
+            riskFill.style.width = score + "%";
+
+        }
+
+    }
+
+})();
+</script>
+
+</body>
+</html>

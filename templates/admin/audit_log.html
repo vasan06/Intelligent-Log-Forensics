@@ -1,0 +1,31 @@
+{% extends "app_shell.html" %}
+{% block title %}Audit Log — Intelligent Log Forensics{% endblock %}
+{% block page_title %}Audit Log{% endblock %}
+{% block content %}
+<div class="page-header">
+  <h1 class="page-title">Audit Log</h1>
+  <p class="page-subtitle">Complete activity trail for all user actions</p>
+</div>
+<div class="card">
+  {% if logs %}
+  <div class="table-container" style="border:none;border-radius:0">
+    <table>
+      <thead><tr><th>Action</th><th>User</th><th>Detail</th><th>IP Address</th><th>Timestamp</th></tr></thead>
+      <tbody>
+        {% for l in logs %}
+        <tr>
+          <td><span class="tag">{{ l.action.replace('_',' ').title() }}</span></td>
+          <td style="color:var(--color-text-muted)">{{ l.email or 'System' }}</td>
+          <td style="color:var(--color-text-secondary);max-width:300px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ l.detail or '—' }}</td>
+          <td class="td-mono" style="color:var(--color-text-muted)">{{ l.ip_address or '—' }}</td>
+          <td class="td-mono" style="color:var(--color-text-muted)">{{ l.created_at[:19] }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+  <div class="empty-state"><p class="empty-state-desc">No audit events recorded yet.</p></div>
+  {% endif %}
+</div>
+{% endblock %}

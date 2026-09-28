@@ -1,0 +1,294 @@
+
+{% extends "app_shell.html" %}
+
+{% block title %}Incidents — Intelligent Log Forensics{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="../../static/css/incidents.css">
+{% endblock %}
+
+{% block page_title %}Incidents{% endblock %}
+
+{% block content %}
+
+<div class="page-header">
+  <div>
+    <h1 class="page-title">Incident Management</h1>
+    <p class="page-subtitle">
+      Track, investigate and resolve detected security incidents
+    </p>
+  </div>
+</div>
+
+<!-- Filters -->
+<div class="card incidents-filter-card">
+  <div class="card-body">
+    <form method="GET" class="incidents-filter-form">
+
+      <div class="form-group">
+        <label class="form-label" for="incident-status">
+          Status
+        </label>
+
+        <select
+          class="form-select"
+          id="incident-status"
+          name="status"
+          onchange="this.form.submit()"
+        >
+          <option value="">All Statuses</option>
+
+          {% for s in ['new', 'investigating', 'confirmed', 'resolved', 'closed'] %}
+          <option
+            value="{{ s }}"
+            {% if status_filter == s %}selected{% endif %}
+          >
+            {{ s.title() }}
+          </option>
+          {% endfor %}
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label" for="incident-severity">
+          Severity
+        </label>
+
+        <select
+          class="form-select"
+          id="incident-severity"
+          name="severity"
+          onchange="this.form.submit()"
+        >
+          <option value="">All Severities</option>
+
+          {% for s in ['Critical', 'High', 'Elevated', 'Notice'] %}
+          <option
+            value="{{ s }}"
+            {% if severity_filter == s %}selected{% endif %}
+          >
+            {{ s }}
+          </option>
+          {% endfor %}
+        </select>
+      </div>
+
+      {% if status_filter or severity_filter %}
+      <a
+        href="{{ url_for('app.incidents') }}"
+        class="btn btn-ghost incidents-clear-btn"
+      >
+        Clear Filters
+      </a>
+      {% endif %}
+
+    </form>
+  </div>
+</div>
+
+
+<!-- Incident Table -->
+<div class="card incidents-card">
+
+  {% if incidents %}
+
+  <div class="table-container incidents-table-container">
+
+    <table class="incidents-table">
+
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>Title</th>
+          <th>Severity</th>
+          <th>Category</th>
+          <th>Technique</th>
+          <th>Confidence</th>
+          <th>Status</th>
+          <th>File</th>
+          <th>Created</th>
+          <th>Action</th>
+        </tr>
+      </thead>
+
+      <tbody>
+
+        {% for inc in incidents %}
+
+        <tr
+          class="incident-row"
+          data-animation-delay="{{ loop.index0 * 0.03 }}"
+        >
+
+          <!-- ID -->
+          <td class="td-mono incident-id">
+            #{{ inc.incident_id }}
+          </td>
+
+
+          <!-- Title -->
+          <td class="incident-title-cell">
+
+            <a
+              href="{{ url_for('app.incident_detail', incident_id=inc.incident_id) }}"
+              class="incident-title-link"
+            >
+              {{ inc.title }}
+            </a>
+
+          </td>
+
+
+          <!-- Severity -->
+          <td>
+            <span class="badge badge-{{ inc.severity.lower() }}">
+              {{ inc.severity }}
+            </span>
+          </td>
+
+
+          <!-- Category -->
+          <td>
+            <span class="tag">
+              {{ inc.category }}
+            </span>
+          </td>
+
+
+          <!-- MITRE Technique -->
+          <td>
+
+            {% if inc.technique_id %}
+
+            <span class="tag">
+              {{ inc.technique_id }}
+            </span>
+
+            {% else %}
+
+            <span class="incident-muted">
+              —
+            </span>
+
+            {% endif %}
+
+          </td>
+
+
+          <!-- Confidence -->
+          <td>
+
+            <span
+              class="incident-confidence
+              {% if inc.confidence >= 80 %}
+                confidence-critical
+              {% elif inc.confidence >= 60 %}
+                confidence-warning
+              {% else %}
+                confidence-normal
+              {% endif %}"
+            >
+              {{ inc.confidence }}%
+            </span>
+
+          </td>
+
+
+          <!-- Status -->
+          <td>
+
+            <span class="badge badge-{{ inc.status }}">
+              {{ inc.status.title() }}
+            </span>
+
+          </td>
+
+
+          <!-- File -->
+          <td class="incident-file-cell">
+            {{ inc.filename }}
+          </td>
+
+
+          <!-- Created -->
+          <td class="td-mono incident-date">
+            {{ inc.created_at[:10] }}
+          </td>
+
+
+          <!-- Action -->
+          <td>
+
+            <a
+              href="{{ url_for('app.incident_detail', incident_id=inc.incident_id) }}"
+              class="btn btn-ghost btn-sm incident-view-btn"
+            >
+              View
+            </a>
+
+          </td>
+
+        </tr>
+
+        {% endfor %}
+
+      </tbody>
+
+    </table>
+
+  </div>
+
+
+  {% else %}
+
+  <!-- Empty State -->
+  <div class="empty-state incidents-empty-state">
+
+    <div class="empty-state-icon">
+
+      <svg
+        width="28"
+        height="28"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="1.5"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+      >
+        <path
+          d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"
+        />
+        <line x1="12" y1="9" x2="12" y2="13" />
+        <line x1="12" y1="17" x2="12.01" y2="17" />
+      </svg>
+
+    </div>
+
+    <p class="empty-state-title">
+      No incidents found
+    </p>
+
+    <p class="empty-state-desc">
+      Incidents are automatically created when critical threats
+      are detected during log analysis.
+    </p>
+
+    <a
+      href="{{ url_for('app.upload') }}"
+      class="btn btn-primary"
+    >
+      Analyze a Log File
+    </a>
+
+  </div>
+
+  {% endif %}
+
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script src="../../static/js/incidents.js"></script>
+{% endblock %}

@@ -1,0 +1,840 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>MITRE ATT&CK | Intelligent Log Forensics</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&family=Space+Grotesk:wght@500;600;700&display=swap"
+        rel="stylesheet"
+    >
+
+    <link rel="stylesheet" href="/static/css/tokens.css">
+    <link rel="stylesheet" href="/static/css/layout.css">
+    <link rel="stylesheet" href="/static/css/components.css">
+    <link rel="stylesheet" href="/static/css/animations.css">
+    <link rel="stylesheet" href="/static/css/pages/mitre.css">
+</head>
+
+<body class="mitre-page">
+
+<div class="app-shell">
+
+    <!-- =====================================================
+         SIDEBAR
+    ====================================================== -->
+
+    <aside class="app-sidebar">
+
+        <div class="sidebar-brand">
+            <a
+                href="{{ url_for('ops_views.render_command_deck') }}"
+                class="brand-link"
+            >
+                <div class="brand-mark">
+                    <svg
+                        width="22"
+                        height="22"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="2"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                    >
+                        <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
+                        <path d="M9 12l2 2 4-4"></path>
+                    </svg>
+                </div>
+
+                <div class="brand-copy">
+                    <strong>ILF</strong>
+                    <span>COMMAND DECK</span>
+                </div>
+            </a>
+        </div>
+
+
+        <nav class="sidebar-navigation">
+
+            <div class="nav-section-label">
+                OPERATIONS
+            </div>
+
+
+            <a
+                href="{{ url_for('ops_views.render_command_deck') }}"
+                class="sidebar-nav-link"
+            >
+                <span class="nav-icon">
+                    <svg width="18" height="18" viewBox="0 0 24 24"
+                         fill="none" stroke="currentColor"
+                         stroke-width="1.8">
+                        <rect x="3" y="3" width="7" height="7"></rect>
+                        <rect x="14" y="3" width="7" height="7"></rect>
+                        <rect x="3" y="14" width="7" height="7"></rect>
+                        <rect x="14" y="14" width="7" height="7"></rect>
+                    </svg>
+                </span>
+
+                <span>Dashboard</span>
+            </a>
+
+
+            <a
+                href="{{ url_for('ops_views.render_ingest_station') }}"
+                class="sidebar-nav-link"
+            >
+                <span class="nav-icon">
+                    <svg width="18" height="18" viewBox="0 0 24 24"
+                         fill="none" stroke="currentColor"
+                         stroke-width="1.8">
+                        <path d="M12 3v12"></path>
+                        <path d="m7 10 5 5 5-5"></path>
+                        <path d="M5 21h14"></path>
+                    </svg>
+                </span>
+
+                <span>Analyze Logs</span>
+            </a>
+
+
+            <a
+                href="{{ url_for('ops_views.render_dockets_queue') }}"
+                class="sidebar-nav-link"
+            >
+                <span class="nav-icon">
+                    <svg width="18" height="18" viewBox="0 0 24 24"
+                         fill="none" stroke="currentColor"
+                         stroke-width="1.8">
+                        <path d="M4 5h16"></path>
+                        <path d="M4 12h16"></path>
+                        <path d="M4 19h16"></path>
+                        <circle cx="8" cy="5" r="1"></circle>
+                        <circle cx="16" cy="12" r="1"></circle>
+                        <circle cx="10" cy="19" r="1"></circle>
+                    </svg>
+                </span>
+
+                <span>Incidents</span>
+            </a>
+
+
+            <a
+                href="{{ url_for('ops_views.render_mitre_matrix') }}"
+                class="sidebar-nav-link active"
+            >
+                <span class="nav-icon">
+                    <svg width="18" height="18" viewBox="0 0 24 24"
+                         fill="none" stroke="currentColor"
+                         stroke-width="1.8">
+                        <circle cx="12" cy="12" r="8"></circle>
+                        <path d="M12 4v16"></path>
+                        <path d="M4 12h16"></path>
+                    </svg>
+                </span>
+
+                <span>MITRE ATT&CK</span>
+            </a>
+
+
+            <a
+                href="{{ url_for('ops_views.render_vault_archive') }}"
+                class="sidebar-nav-link"
+            >
+                <span class="nav-icon">
+                    <svg width="18" height="18" viewBox="0 0 24 24"
+                         fill="none" stroke="currentColor"
+                         stroke-width="1.8">
+                        <path d="M4 7h16"></path>
+                        <path d="M6 7V5h12v2"></path>
+                        <path d="M5 7h14l-1 13H6L5 7z"></path>
+                        <path d="M9 11h6"></path>
+                    </svg>
+                </span>
+
+                <span>Evidence Vault</span>
+            </a>
+
+
+            <a
+                href="{{ url_for('ops_views.render_remediation_playbooks') }}"
+                class="sidebar-nav-link"
+            >
+                <span class="nav-icon">
+                    <svg width="18" height="18" viewBox="0 0 24 24"
+                         fill="none" stroke="currentColor"
+                         stroke-width="1.8">
+                        <path d="M12 3v18"></path>
+                        <path d="M5 7h14"></path>
+                        <path d="M5 17h14"></path>
+                        <circle cx="8" cy="7" r="2"></circle>
+                        <circle cx="16" cy="17" r="2"></circle>
+                    </svg>
+                </span>
+
+                <span>Playbooks</span>
+            </a>
+
+
+            {% if operator is defined and operator and operator.clearance_tier == "Commander" %}
+
+            <div class="nav-section-label nav-section-secondary">
+                CONTROL
+            </div>
+
+            <a
+                href="{{ url_for('ops_views.render_commander_console') }}"
+                class="sidebar-nav-link"
+            >
+                <span class="nav-icon">
+                    <svg width="18" height="18" viewBox="0 0 24 24"
+                         fill="none" stroke="currentColor"
+                         stroke-width="1.8">
+                        <path d="M12 3l8 4v5c0 5-3.5 8-8 9-4.5-1-8-4-8-9V7l8-4z"></path>
+                        <path d="M9 12l2 2 4-4"></path>
+                    </svg>
+                </span>
+
+                <span>Commander</span>
+            </a>
+
+            {% endif %}
+
+        </nav>
+
+
+        <div class="sidebar-footer">
+
+            <div class="system-status">
+                <span class="status-indicator"></span>
+
+                <div>
+                    <strong>SYSTEM ONLINE</strong>
+                    <small>Telemetry pipeline nominal</small>
+                </div>
+            </div>
+
+            <a
+                href="{{ url_for('auth_views.terminate_session') }}"
+                class="logout-link"
+            >
+                <svg width="17" height="17" viewBox="0 0 24 24"
+                     fill="none" stroke="currentColor"
+                     stroke-width="1.8">
+                    <path d="M10 17l5-5-5-5"></path>
+                    <path d="M15 12H3"></path>
+                    <path d="M21 19V5a2 2 0 0 0-2-2h-5"></path>
+                </svg>
+
+                Sign Out
+            </a>
+
+        </div>
+
+    </aside>
+
+
+    <!-- =====================================================
+         MAIN APPLICATION
+    ====================================================== -->
+
+    <main class="app-main">
+
+        <!-- =================================================
+             HEADER
+        ================================================== -->
+
+        <header class="command-header">
+
+            <div class="command-heading">
+
+                <div class="breadcrumb">
+                    <span>OPERATIONS</span>
+                    <span class="breadcrumb-separator">/</span>
+                    <strong>MITRE ATT&amp;CK</strong>
+                </div>
+
+                <h1>MITRE ATT&amp;CK Intelligence Matrix</h1>
+
+                <p>
+                    Explore adversary techniques and their relationship
+                    to observed forensic telemetry.
+                </p>
+
+            </div>
+
+
+            <div class="command-header-actions">
+
+                <button
+                    type="button"
+                    class="icon-button"
+                    id="refresh-mitre"
+                    title="Refresh MITRE matrix"
+                    aria-label="Refresh MITRE matrix"
+                >
+                    <svg width="18" height="18" viewBox="0 0 24 24"
+                         fill="none" stroke="currentColor"
+                         stroke-width="1.8">
+                        <path d="M20 11a8.1 8.1 0 0 0-15.5-2"></path>
+                        <path d="M4 4v5h5"></path>
+                        <path d="M4 13a8.1 8.1 0 0 0 15.5 2"></path>
+                        <path d="M20 20v-5h-5"></path>
+                    </svg>
+                </button>
+
+            </div>
+
+        </header>
+
+
+        <!-- =================================================
+             STATUS STRIP
+        ================================================== -->
+
+        <section class="system-status-strip">
+
+            <div class="status-strip-item">
+                <span class="status-dot online"></span>
+                <span>MITRE ENGINE</span>
+                <strong>ONLINE</strong>
+            </div>
+
+            <div class="status-strip-item">
+                <span class="status-dot online"></span>
+                <span>TECHNIQUE MAPPING</span>
+                <strong>ACTIVE</strong>
+            </div>
+
+            <div class="status-strip-item">
+                <span class="status-dot online"></span>
+                <span>ATT&amp;CK DATASET</span>
+                <strong>READY</strong>
+            </div>
+
+            <div class="status-strip-time">
+                UTC
+                <span id="mitre-clock">--:--:--</span>
+            </div>
+
+        </section>
+
+
+        <!-- =================================================
+             MATRIX OVERVIEW
+        ================================================== -->
+
+        <section class="mitre-overview-grid">
+
+            <article class="mitre-overview-card">
+
+                <span class="overview-label">
+                    TECHNIQUES
+                </span>
+
+                <strong class="overview-value">
+                    {{ techniques|length if techniques is defined else 0 }}
+                </strong>
+
+                <span class="overview-meta">
+                    Available ATT&amp;CK techniques
+                </span>
+
+            </article>
+
+
+            <article class="mitre-overview-card">
+
+                <span class="overview-label">
+                    TACTICS
+                </span>
+
+                <strong class="overview-value">
+                    {{ tactics|length if tactics is defined else 0 }}
+                </strong>
+
+                <span class="overview-meta">
+                    ATT&amp;CK tactic categories
+                </span>
+
+            </article>
+
+
+            <article class="mitre-overview-card">
+
+                <span class="overview-label">
+                    MAPPED SIGNALS
+                </span>
+
+                <strong class="overview-value">
+                    {{ mapped_signals|default(0) }}
+                </strong>
+
+                <span class="overview-meta">
+                    Telemetry linked to techniques
+                </span>
+
+            </article>
+
+
+            <article class="mitre-overview-card">
+
+                <span class="overview-label">
+                    COVERAGE
+                </span>
+
+                <strong class="overview-value">
+                    {{ coverage|default(0) }}%
+                </strong>
+
+                <span class="overview-meta">
+                    Technique coverage
+                </span>
+
+            </article>
+
+        </section>
+
+
+        <!-- =================================================
+             SEARCH / FILTER
+        ================================================== -->
+
+        <section class="dashboard-panel mitre-control-panel">
+
+            <div class="panel-header">
+
+                <div>
+                    <span class="panel-kicker">
+                        ATT&amp;CK EXPLORER
+                    </span>
+
+                    <h2>
+                        Technique Matrix
+                    </h2>
+                </div>
+
+                <span class="nominal-badge">
+                    SYNCHRONIZED
+                </span>
+
+            </div>
+
+
+            <div class="mitre-toolbar">
+
+                <div class="mitre-search">
+
+                    <svg
+                        width="17"
+                        height="17"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="1.8"
+                    >
+                        <circle cx="11" cy="11" r="7"></circle>
+                        <path d="m20 20-4-4"></path>
+                    </svg>
+
+                    <input
+                        type="search"
+                        id="mitre-search"
+                        placeholder="Search technique, ID, tactic..."
+                        autocomplete="off"
+                    >
+
+                </div>
+
+
+                <select
+                    id="mitre-tactic-filter"
+                    class="mitre-select"
+                >
+                    <option value="all">
+                        All tactics
+                    </option>
+
+                    {% if tactics is defined %}
+
+                        {% for tactic in tactics %}
+
+                            {% if tactic is string %}
+
+                            <option value="{{ tactic }}">
+                                {{ tactic }}
+                            </option>
+
+                            {% elif tactic.name is defined %}
+
+                            <option value="{{ tactic.name }}">
+                                {{ tactic.name }}
+                            </option>
+
+                            {% endif %}
+
+                        {% endfor %}
+
+                    {% endif %}
+                </select>
+
+
+                <button
+                    type="button"
+                    class="mitre-filter-reset"
+                    id="mitre-filter-reset"
+                >
+                    Reset
+                </button>
+
+            </div>
+
+        </section>
+
+
+        <!-- =================================================
+             MITRE MATRIX
+        ================================================== -->
+
+        <section class="dashboard-panel mitre-matrix-panel">
+
+            <div class="panel-header">
+
+                <div>
+                    <span class="panel-kicker">
+                        ENTERPRISE MATRIX
+                    </span>
+
+                    <h2>
+                        Observed Technique Coverage
+                    </h2>
+                </div>
+
+                <span
+                    class="matrix-result-count"
+                    id="mitre-result-count"
+                >
+                    0 techniques
+                </span>
+
+            </div>
+
+
+            <div
+                class="mitre-matrix"
+                id="mitre-matrix"
+            >
+
+                {% if techniques is defined and techniques %}
+
+                    {% for technique in techniques %}
+
+                    <article
+                        class="mitre-technique-card"
+                        data-technique-id="{{ technique.id|default(technique.technique_id|default('')) }}"
+                        data-technique-name="{{ technique.name|default(technique.technique_name|default(''))|lower }}"
+                        data-tactic="{{ technique.tactic|default(technique.tactic_name|default(''))|lower }}"
+                    >
+
+                        <div class="technique-card-top">
+
+                            <span class="technique-id">
+                                {{ technique.id|default(technique.technique_id|default('N/A')) }}
+                            </span>
+
+                            {% if technique.detected|default(false) %}
+
+                            <span class="technique-status detected">
+                                DETECTED
+                            </span>
+
+                            {% else %}
+
+                            <span class="technique-status">
+                                MONITORED
+                            </span>
+
+                            {% endif %}
+
+                        </div>
+
+
+                        <div class="technique-card-body">
+
+                            <h3>
+                                {{ technique.name|default(
+                                    technique.technique_name|default('Unnamed Technique')
+                                ) }}
+                            </h3>
+
+                            {% if technique.description is defined %}
+
+                            <p>
+                                {{ technique.description }}
+                            </p>
+
+                            {% endif %}
+
+                        </div>
+
+
+                        <div class="technique-card-meta">
+
+                            <div class="technique-meta-block">
+
+                                <span>
+                                    TACTIC
+                                </span>
+
+                                <strong>
+                                    {{ technique.tactic|default(
+                                        technique.tactic_name|default('Unclassified')
+                                    ) }}
+                                </strong>
+
+                            </div>
+
+
+                            {% if technique.signal_count is defined %}
+
+                            <div class="technique-meta-block">
+
+                                <span>
+                                    SIGNALS
+                                </span>
+
+                                <strong>
+                                    {{ technique.signal_count }}
+                                </strong>
+
+                            </div>
+
+                            {% endif %}
+
+
+                            {% if technique.confidence is defined %}
+
+                            <div class="technique-meta-block">
+
+                                <span>
+                                    CONFIDENCE
+                                </span>
+
+                                <strong>
+                                    {{ technique.confidence }}%
+                                </strong>
+
+                            </div>
+
+                            {% endif %}
+
+                        </div>
+
+
+                        <div class="technique-card-footer">
+
+                            <span class="technique-indicator"></span>
+
+                            <span>
+                                ATT&amp;CK technique mapping
+                            </span>
+
+                        </div>
+
+                    </article>
+
+                    {% endfor %}
+
+
+                {% elif matrix is defined and matrix %}
+
+                    {% for technique in matrix %}
+
+                    <article
+                        class="mitre-technique-card"
+                        data-technique-id="{{ technique.id|default(technique.technique_id|default('')) }}"
+                        data-technique-name="{{ technique.name|default(technique.technique_name|default(''))|lower }}"
+                        data-tactic="{{ technique.tactic|default(technique.tactic_name|default(''))|lower }}"
+                    >
+
+                        <div class="technique-card-top">
+
+                            <span class="technique-id">
+                                {{ technique.id|default(technique.technique_id|default('N/A')) }}
+                            </span>
+
+                            <span class="technique-status">
+                                MONITORED
+                            </span>
+
+                        </div>
+
+
+                        <div class="technique-card-body">
+
+                            <h3>
+                                {{ technique.name|default(
+                                    technique.technique_name|default('Unnamed Technique')
+                                ) }}
+                            </h3>
+
+                            {% if technique.description is defined %}
+
+                            <p>
+                                {{ technique.description }}
+                            </p>
+
+                            {% endif %}
+
+                        </div>
+
+
+                        <div class="technique-card-meta">
+
+                            <div class="technique-meta-block">
+
+                                <span>
+                                    TACTIC
+                                </span>
+
+                                <strong>
+                                    {{ technique.tactic|default(
+                                        technique.tactic_name|default('Unclassified')
+                                    ) }}
+                                </strong>
+
+                            </div>
+
+                        </div>
+
+
+                        <div class="technique-card-footer">
+
+                            <span class="technique-indicator"></span>
+
+                            <span>
+                                ATT&amp;CK technique mapping
+                            </span>
+
+                        </div>
+
+                    </article>
+
+                    {% endfor %}
+
+
+                {% else %}
+
+                    <div class="empty-state mitre-empty">
+
+                        <div class="empty-state-icon">
+
+                            <svg
+                                width="27"
+                                height="27"
+                                viewBox="0 0 24 24"
+                                fill="none"
+                                stroke="currentColor"
+                                stroke-width="1.6"
+                            >
+                                <circle cx="12" cy="12" r="8"></circle>
+                                <path d="M12 4v16"></path>
+                                <path d="M4 12h16"></path>
+                            </svg>
+
+                        </div>
+
+                        <strong>
+                            No MITRE technique data available
+                        </strong>
+
+                        <span>
+                            Technique mappings will appear after forensic
+                            telemetry has been analyzed.
+                        </span>
+
+                    </div>
+
+                {% endif %}
+
+
+                <div
+                    class="empty-state mitre-filter-empty"
+                    id="mitre-filter-empty"
+                    hidden
+                >
+
+                    <div class="empty-state-icon">
+
+                        <svg
+                            width="25"
+                            height="25"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            stroke-width="1.6"
+                        >
+                            <circle cx="11" cy="11" r="7"></circle>
+                            <path d="m20 20-4-4"></path>
+                        </svg>
+
+                    </div>
+
+                    <strong>
+                        No matching techniques
+                    </strong>
+
+                    <span>
+                        Change the search term or tactic filter.
+                    </span>
+
+                </div>
+
+            </div>
+
+        </section>
+
+
+        <!-- =================================================
+             FOOTER
+        ================================================== -->
+
+        <footer class="app-footer">
+
+            <div>
+                <strong>INTELLIGENT LOG FORENSICS</strong>
+                <span>Security Operations Platform</span>
+            </div>
+
+            <div class="footer-right">
+                <span>MITRE Engine</span>
+                <span class="footer-status-dot"></span>
+                <span>Operational</span>
+            </div>
+
+        </footer>
+
+    </main>
+
+</div>
+
+
+<!-- =========================================================
+     JAVASCRIPT
+========================================================== -->
+
+<script src="/static/js/core/EventBus.js"></script>
+<script src="/static/js/core/AppState.js"></script>
+<script src="/static/js/core/Router.js"></script>
+
+<script src="/static/js/three/MitreMatrix3D.js"></script>
+<script src="/static/js/pages/Mitre.js"></script>
+
+</body>
+</html>
