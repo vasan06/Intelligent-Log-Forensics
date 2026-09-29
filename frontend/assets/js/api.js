@@ -1,117 +1,1001 @@
+
 /*
  * api.js — ILF API Client
- * Central fetch wrapper. All requests visible in DevTools → Network.
- * JWT token automatically attached. Auto-redirect on 401.
+ *
+ * JWT authentication:
+ * - Access token: short-lived API token
+ * - Refresh token: used to obtain a new access token
+ * - Automatic access-token refresh on 401
+ * - Refresh-token rotation supported by backend
+ * - Current-session logout
+ * - Logout all sessions
+ *
+ * No classes.
  */
 
 const API_BASE = 'http://localhost:5000/api';
 
 const Api = {
-  /* ── Token helpers ─────────────────────────── */
-  token:   () => localStorage.getItem('ilf_token') || '',
-  user:    () => JSON.parse(localStorage.getItem('ilf_user') || '{}'),
-  setAuth: (token, user) => {
-    localStorage.setItem('ilf_token', token);
-    localStorage.setItem('ilf_user', JSON.stringify(user));
-  },
-  clearAuth: () => {
-    localStorage.removeItem('ilf_token');
-    localStorage.removeItem('ilf_user');
+
+  /* =========================================================
+   * TOKEN STORAGE
+   * ========================================================= */
+
+  accessToken: () => {
+    return localStorage.getItem('ilf_access_token') || '';
   },
 
-  /* ── Core request ──────────────────────────── */
-  async _req(method, path, body = null, isForm = false) {
-    const headers = { 'X-ILF-Client': 'web/2.0' };
-    if (!isForm) headers['Content-Type'] = 'application/json';
-    if (Api.token()) headers['Authorization'] = `Bearer ${Api.token()}`;
+  refreshToken: () => {
+    return localStorage.getItem('ilf_refresh_token') || '';
+  },
 
-    const opts = { method, headers };
-    if (body) opts.body = isForm ? body : JSON.stringify(body);
+  /*
+   * Backward compatibility.
+   * Existing frontend pages may still call Api.token().
+   */
+  token: () => {
+    return Api.accessToken();
+  },
 
-    /* DevTools: grouped log for every request */
-    console.groupCollapsed(`[ILF API] ${method} ${path}`);
-    if (body && !isForm) console.log('Payload:', body);
-
+  user: () => {
     try {
-      const res  = await fetch(`${API_BASE}${path}`, opts);
-      const data = await res.json();
-      console.log('Status:', res.status, '| Response:', data);
-      console.groupEnd();
-
-      if (res.status === 401) {
-        Api.clearAuth();
-        window.location.href = '/signin.html';
-        return { ok: false, data: null };
-      }
-      return { ok: res.ok, status: res.status, data };
-    } catch (err) {
-      console.error('Network error:', err.message);
-      console.groupEnd();
-      return { ok: false, status: 0, data: null, error: err.message };
+      return JSON.parse(
+        localStorage.getItem('ilf_user') || '{}'
+      );
+    } catch {
+      return {};
     }
   },
 
-  get:   (path)        => Api._req('GET',    path),
-  post:  (path, body)  => Api._req('POST',   path, body),
-  put:   (path, body)  => Api._req('PUT',    path, body),
-  del:   (path)        => Api._req('DELETE', path),
-  form:  (path, fd)    => Api._req('POST',   path, fd, true),
+  setAuth: (accessToken, refreshToken, user) => {
+    if (accessToken) {
+      localStorage.setItem(
+        'ilf_access_token',
+        accessToken
+      );
+    }
 
-  /* ── Auth ──────────────────────────────────── */
-  login:           (email, password)   => Api.post('/auth/login',    { email, password }),
-  signup:          (name,email,pw)     => Api.post('/auth/signup',   { name, email, password:pw }),
-  verifyOtp:       (email, otp, type)  => Api.post('/auth/verify-otp', { email, otp, type }),
-  resendOtp:       (email, type)       => Api.post('/auth/resend-otp', { email, type }),
-  forgotPassword:  (email)             => Api.post('/auth/forgot-password', { email }),
-  resetPassword:   (email, otp, pw)    => Api.post('/auth/reset-password',  { email, otp, new_password: pw }),
-  logout:          ()                  => Api.post('/auth/logout'),
+    if (refreshToken) {
+      localStorage.setItem(
+        'ilf_refresh_token',
+        refreshToken
+      );
+    }
 
-  /* ── Dashboard ─────────────────────────────── */
-  dashStats:   ()       => Api.get('/dashboard/stats'),
-  dashMlSummary: ()     => Api.get('/dashboard/ml-summary'),
+    if (user) {
+      localStorage.setItem(
+        'ilf_user',
+        JSON.stringify(user)
+      );
+    }
+  },
 
-  /* ── Live monitor ──────────────────────────── */
-  streamLogs:  (params) => Api.get(`/logs/stream?${new URLSearchParams(params)}`),
+  clearAuth: () => {
+    localStorage.removeItem('ilf_access_token');
+    localStorage.removeItem('ilf_refresh_token');
 
-  /* ── Log explorer ──────────────────────────── */
-  uploadLog:   (fd)     => Api.form('/logs/upload', fd),
-  pipelineStatus: (id)  => Api.get(`/logs/pipeline/${id}`),
+    /*
+     * Remove old JWT storage key too.
+     */
+    localStorage.removeItem('ilf_token');
 
-  /* ── ML analysis ───────────────────────────── */
-  mlAnalyze:   (body)   => Api.post('/ml/analyze', body),
-  mlAlgos:     ()       => Api.get('/ml/algorithms'),
+    localStorage.removeItem('ilf_user');
+  },
 
-  /* ── MITRE ─────────────────────────────────── */
-  mitreCatalog:  (params) => Api.get(`/mitre/catalog?${new URLSearchParams(params)}`),
-  mitreMap:      (body)   => Api.post('/mitre/map', body),
-  mitreTechnique:(tid)    => Api.get(`/mitre/technique/${tid}`),
-  mitreTactics:  ()       => Api.get('/mitre/tactics'),
 
-  /* ── Reports ───────────────────────────────── */
-  generateReport: (body)  => Api._reqBlob('POST', '/reports/generate', body),
-  reportHistory:  ()      => Api.get('/reports/history'),
+  /* =========================================================
+   * LEGACY TOKEN MIGRATION
+   * ========================================================= */
 
-  /* ── Admin ─────────────────────────────────── */
-  adminStats:     ()      => Api.get('/admin/stats'),
-  adminUsers:     ()      => Api.get('/admin/users'),
-  adminUpdateUser:(id, d) => Api.put(`/admin/users/${id}`, d),
+  migrateLegacyToken: () => {
+    const oldToken =
+      localStorage.getItem('ilf_token');
 
-  /* ── Profile ───────────────────────────────── */
-  getProfile:     ()      => Api.get('/user/profile'),
-  updateProfile:  (body)  => Api.put('/user/profile', body),
+    const newToken =
+      localStorage.getItem('ilf_access_token');
 
-  /* ── Blob (for PDF download) ───────────────── */
-  async _reqBlob(method, path, body) {
+    if (!newToken && oldToken) {
+      localStorage.setItem(
+        'ilf_access_token',
+        oldToken
+      );
+
+      localStorage.removeItem('ilf_token');
+    }
+  },
+
+
+  /* =========================================================
+   * AUTHORIZATION HEADERS
+   * ========================================================= */
+
+  authHeaders: () => {
     const headers = {
-      'Content-Type': 'application/json',
       'X-ILF-Client': 'web/2.0',
     };
-    if (Api.token()) headers['Authorization'] = `Bearer ${Api.token()}`;
-    console.log(`[ILF API] ${method} ${path} (blob)`);
+
+    const token = Api.accessToken();
+
+    if (token) {
+      headers['Authorization'] =
+        `Bearer ${token}`;
+    }
+
+    return headers;
+  },
+
+
+  /* =========================================================
+   * REFRESH ACCESS TOKEN
+   * ========================================================= */
+
+  refreshAccessToken: async () => {
+
+    const refreshToken =
+      Api.refreshToken();
+
+    if (!refreshToken) {
+      return {
+        ok: false,
+        status: 401,
+        data: null,
+      };
+    }
+
     try {
-      const res  = await fetch(`${API_BASE}${path}`, { method, headers, body: JSON.stringify(body) });
-      const blob = await res.blob();
-      return { ok: res.ok, blob };
-    } catch(e) { return { ok: false, blob: null }; }
+
+      const response = await fetch(
+        `${API_BASE}/auth/refresh`,
+        {
+          method: 'POST',
+
+          headers: {
+            'Content-Type':
+              'application/json',
+
+            'X-ILF-Client':
+              'web/2.0',
+          },
+
+          body: JSON.stringify({
+            refresh_token:
+              refreshToken,
+          }),
+        }
+      );
+
+      let data = null;
+
+      const contentType =
+        response.headers.get(
+          'content-type'
+        ) || '';
+
+      if (
+        contentType.includes(
+          'application/json'
+        )
+      ) {
+        data = await response.json();
+      }
+
+      if (!response.ok) {
+
+        Api.clearAuth();
+
+        return {
+          ok: false,
+          status: response.status,
+          data,
+        };
+      }
+
+      /*
+       * Backend response:
+       *
+       * access_token
+       * refresh_token
+       * user
+       */
+
+      if (data && data.access_token) {
+        localStorage.setItem(
+          'ilf_access_token',
+          data.access_token
+        );
+      }
+
+      /*
+       * Refresh-token rotation.
+       *
+       * Backend generates a new refresh token
+       * during every successful refresh.
+       */
+      if (data && data.refresh_token) {
+        localStorage.setItem(
+          'ilf_refresh_token',
+          data.refresh_token
+        );
+      }
+
+      if (data && data.user) {
+        localStorage.setItem(
+          'ilf_user',
+          JSON.stringify(data.user)
+        );
+      }
+
+      return {
+        ok: true,
+        status: response.status,
+        data,
+      };
+
+    } catch (error) {
+
+      console.error(
+        '[ILF JWT] Refresh request failed:',
+        error.message
+      );
+
+      return {
+        ok: false,
+        status: 0,
+        data: null,
+        error: error.message,
+      };
+    }
+  },
+
+
+  /* =========================================================
+   * CORE REQUEST
+   * ========================================================= */
+
+  _req: async (
+    method,
+    path,
+    body = null,
+    isForm = false,
+    retry = true
+  ) => {
+
+    /*
+     * Migrate old token storage before
+     * every request.
+     */
+    Api.migrateLegacyToken();
+
+    const headers = {
+      ...Api.authHeaders(),
+    };
+
+    /*
+     * Do not set Content-Type for FormData.
+     * Browser must set multipart boundary itself.
+     */
+    if (!isForm) {
+      headers['Content-Type'] =
+        'application/json';
+    }
+
+    const options = {
+      method,
+      headers,
+    };
+
+    if (
+      body !== null &&
+      body !== undefined
+    ) {
+      options.body = isForm
+        ? body
+        : JSON.stringify(body);
+    }
+
+    console.groupCollapsed(
+      `[ILF API] ${method} ${path}`
+    );
+
+    if (body && !isForm) {
+      console.log(
+        'Payload:',
+        body
+      );
+    }
+
+    try {
+
+      /*
+       * -----------------------------------------------------
+       * FIRST REQUEST
+       * -----------------------------------------------------
+       */
+
+      let response = await fetch(
+        `${API_BASE}${path}`,
+        options
+      );
+
+
+      /*
+       * -----------------------------------------------------
+       * ACCESS TOKEN EXPIRED
+       * -----------------------------------------------------
+       *
+       * Try refresh exactly once.
+       */
+
+      if (
+        response.status === 401 &&
+        retry &&
+        Api.refreshToken()
+      ) {
+
+        console.log(
+          '[ILF JWT] Access token expired/invalid.'
+        );
+
+        console.log(
+          '[ILF JWT] Attempting refresh...'
+        );
+
+        const refreshResult =
+          await Api.refreshAccessToken();
+
+        if (refreshResult.ok) {
+
+          console.log(
+            '[ILF JWT] Access token refreshed.'
+          );
+
+          /*
+           * Rebuild Authorization header
+           * using the new access token.
+           */
+
+          const retryHeaders = {
+            ...headers,
+            ...Api.authHeaders(),
+          };
+
+          const retryOptions = {
+            ...options,
+            headers: retryHeaders,
+          };
+
+          /*
+           * Retry original request once.
+           */
+
+          response = await fetch(
+            `${API_BASE}${path}`,
+            retryOptions
+          );
+
+        } else {
+
+          console.warn(
+            '[ILF JWT] Refresh failed.'
+          );
+
+          Api.clearAuth();
+
+          console.groupEnd();
+
+          window.location.href =
+            '/signin.html';
+
+          return {
+            ok: false,
+            status: 401,
+            data: null,
+          };
+        }
+      }
+
+
+      /*
+       * -----------------------------------------------------
+       * RESPONSE PARSING
+       * -----------------------------------------------------
+       */
+
+      let data = null;
+
+      const contentType =
+        response.headers.get(
+          'content-type'
+        ) || '';
+
+      if (
+        contentType.includes(
+          'application/json'
+        )
+      ) {
+        data = await response.json();
+      } else {
+        data = await response.text();
+      }
+
+
+      console.log(
+        'Status:',
+        response.status,
+        '| Response:',
+        data
+      );
+
+      console.groupEnd();
+
+
+      /*
+       * -----------------------------------------------------
+       * FINAL 401
+       * -----------------------------------------------------
+       *
+       * This happens when:
+       *
+       * - original request returned 401
+       * - refresh was attempted
+       * - refreshed request still returned 401
+       *
+       * Do not refresh again.
+       */
+
+      if (
+        response.status === 401 &&
+        retry === false
+      ) {
+
+        Api.clearAuth();
+
+        window.location.href =
+          '/signin.html';
+
+        return {
+          ok: false,
+          status: 401,
+          data: null,
+        };
+      }
+
+
+      /*
+       * Normal response.
+       */
+
+      return {
+        ok: response.ok,
+        status: response.status,
+        data,
+      };
+
+    } catch (error) {
+
+      console.error(
+        '[ILF API] Network error:',
+        error.message
+      );
+
+      console.groupEnd();
+
+      return {
+        ok: false,
+        status: 0,
+        data: null,
+        error: error.message,
+      };
+    }
+  },
+
+
+  /* =========================================================
+   * HTTP METHODS
+   * ========================================================= */
+
+  get: (path) => {
+    return Api._req(
+      'GET',
+      path
+    );
+  },
+
+  post: (path, body) => {
+    return Api._req(
+      'POST',
+      path,
+      body
+    );
+  },
+
+  put: (path, body) => {
+    return Api._req(
+      'PUT',
+      path,
+      body
+    );
+  },
+
+  del: (path) => {
+    return Api._req(
+      'DELETE',
+      path
+    );
+  },
+
+  form: (path, formData) => {
+    return Api._req(
+      'POST',
+      path,
+      formData,
+      true
+    );
+  },
+
+
+  /* =========================================================
+   * AUTH
+   * ========================================================= */
+
+  login: (email, password) => {
+    return Api.post(
+      '/auth/login',
+      {
+        email,
+        password,
+      }
+    );
+  },
+
+  signup: (name, email, password) => {
+    return Api.post(
+      '/auth/signup',
+      {
+        name,
+        email,
+        password,
+      }
+    );
+  },
+
+  refresh: () => {
+    return Api.refreshAccessToken();
+  },
+
+  logout: async () => {
+
+    const refreshToken =
+      Api.refreshToken();
+
+    try {
+
+      /*
+       * Revoke current refresh session
+       * on the backend.
+       *
+       * retry=false prevents another refresh
+       * if the access token is already expired.
+       */
+
+      const result = await Api._req(
+        'POST',
+        '/auth/logout',
+        {
+          refresh_token:
+            refreshToken,
+        },
+        false,
+        false
+      );
+
+      /*
+       * Always clear local authentication.
+       */
+      Api.clearAuth();
+
+      return result;
+
+    } catch (error) {
+
+      /*
+       * Local logout must work even if
+       * backend is unavailable.
+       */
+
+      Api.clearAuth();
+
+      return {
+        ok: false,
+        status: 0,
+        data: null,
+        error: error.message,
+      };
+    }
+  },
+
+  logoutAll: async () => {
+
+    try {
+
+      const result = await Api._req(
+        'POST',
+        '/auth/logout-all',
+        null,
+        false,
+        false
+      );
+
+      Api.clearAuth();
+
+      return result;
+
+    } catch (error) {
+
+      Api.clearAuth();
+
+      return {
+        ok: false,
+        status: 0,
+        data: null,
+        error: error.message,
+      };
+    }
+  },
+
+
+  /* =========================================================
+   * PASSWORD / ACCOUNT
+   * ========================================================= */
+
+  verifyOtp: (email, otp, type) => {
+    return Api.post(
+      '/auth/verify-otp',
+      {
+        email,
+        otp,
+        type,
+      }
+    );
+  },
+
+  resendOtp: (email, type) => {
+    return Api.post(
+      '/auth/resend-otp',
+      {
+        email,
+        type,
+      }
+    );
+  },
+
+  forgotPassword: (email) => {
+    return Api.post(
+      '/auth/forgot-password',
+      {
+        email,
+      }
+    );
+  },
+
+  resetPassword: (
+    email,
+    otp,
+    password
+  ) => {
+    return Api.post(
+      '/auth/reset-password',
+      {
+        email,
+        otp,
+        new_password: password,
+      }
+    );
+  },
+
+
+  /* =========================================================
+   * DASHBOARD
+   * ========================================================= */
+
+  dashStats: () => {
+    return Api.get(
+      '/dashboard/stats'
+    );
+  },
+
+  dashMlSummary: () => {
+    return Api.get(
+      '/dashboard/ml-summary'
+    );
+  },
+
+
+  /* =========================================================
+   * LIVE MONITOR
+   * ========================================================= */
+
+  streamLogs: (params = {}) => {
+    return Api.get(
+      `/logs/stream?${new URLSearchParams(params)}`
+    );
+  },
+
+
+  /* =========================================================
+   * LOG EXPLORER
+   * ========================================================= */
+
+  uploadLog: (formData) => {
+    return Api.form(
+      '/logs/upload',
+      formData
+    );
+  },
+
+  pipelineStatus: (id) => {
+    return Api.get(
+      `/logs/pipeline/${id}`
+    );
+  },
+
+
+  /* =========================================================
+   * ML ANALYSIS
+   * ========================================================= */
+
+  mlAnalyze: (body) => {
+    return Api.post(
+      '/ml/analyze',
+      body
+    );
+  },
+
+  mlAlgos: () => {
+    return Api.get(
+      '/ml/algorithms'
+    );
+  },
+
+
+  /* =========================================================
+   * MITRE
+   * ========================================================= */
+
+  mitreCatalog: (params = {}) => {
+    return Api.get(
+      `/mitre/catalog?${new URLSearchParams(params)}`
+    );
+  },
+
+  mitreMap: (body) => {
+    return Api.post(
+      '/mitre/map',
+      body
+    );
+  },
+
+  mitreTechnique: (tid) => {
+    return Api.get(
+      `/mitre/technique/${tid}`
+    );
+  },
+
+  mitreTactics: () => {
+    return Api.get(
+      '/mitre/tactics'
+    );
+  },
+
+
+  /* =========================================================
+   * REPORTS
+   * ========================================================= */
+
+  generateReport: (body) => {
+    return Api._reqBlob(
+      'POST',
+      '/reports/generate',
+      body
+    );
+  },
+
+  reportHistory: () => {
+    return Api.get(
+      '/reports/history'
+    );
+  },
+
+
+  /* =========================================================
+   * ADMIN
+   * ========================================================= */
+
+  adminStats: () => {
+    return Api.get(
+      '/admin/stats'
+    );
+  },
+
+  adminUsers: () => {
+    return Api.get(
+      '/admin/users'
+    );
+  },
+
+  adminUpdateUser: (id, data) => {
+    return Api.put(
+      `/admin/users/${id}`,
+      data
+    );
+  },
+
+
+  /* =========================================================
+   * PROFILE
+   * ========================================================= */
+
+  getProfile: () => {
+    return Api.get(
+      '/user/profile'
+    );
+  },
+
+  updateProfile: (body) => {
+    return Api.put(
+      '/user/profile',
+      body
+    );
+  },
+
+
+  /* =========================================================
+   * BLOB / PDF REQUEST
+   * ========================================================= */
+
+  _reqBlob: async (
+    method,
+    path,
+    body,
+    retry = true
+  ) => {
+
+    const headers = {
+      'Content-Type':
+        'application/json',
+
+      'X-ILF-Client':
+        'web/2.0',
+
+      ...Api.authHeaders(),
+    };
+
+    try {
+
+      /*
+       * First PDF request.
+       */
+
+      let response = await fetch(
+        `${API_BASE}${path}`,
+        {
+          method,
+          headers,
+          body: JSON.stringify(body),
+        }
+      );
+
+
+      /*
+       * Access token expired.
+       * Refresh once.
+       */
+
+      if (
+        response.status === 401 &&
+        retry &&
+        Api.refreshToken()
+      ) {
+
+        console.log(
+          '[ILF JWT] PDF request received 401.'
+        );
+
+        const refreshResult =
+          await Api.refreshAccessToken();
+
+        if (!refreshResult.ok) {
+
+          Api.clearAuth();
+
+          window.location.href =
+            '/signin.html';
+
+          return {
+            ok: false,
+            status: 401,
+            blob: null,
+          };
+        }
+
+        /*
+         * Retry PDF request using
+         * the new access token.
+         */
+
+        response = await fetch(
+          `${API_BASE}${path}`,
+          {
+            method,
+
+            headers: {
+              ...headers,
+              ...Api.authHeaders(),
+            },
+
+            body: JSON.stringify(body),
+          }
+        );
+      }
+
+
+      /*
+       * Read response as Blob.
+       */
+
+      const blob =
+        await response.blob();
+
+
+      /*
+       * If authentication is still invalid
+       * after the refresh attempt.
+       */
+
+      if (
+        response.status === 401 &&
+        retry === false
+      ) {
+
+        Api.clearAuth();
+
+        window.location.href =
+          '/signin.html';
+
+        return {
+          ok: false,
+          status: 401,
+          blob: null,
+        };
+      }
+
+
+      return {
+        ok: response.ok,
+        status: response.status,
+        blob,
+      };
+
+    } catch (error) {
+
+      console.error(
+        '[ILF API] Blob request failed:',
+        error.message
+      );
+
+      return {
+        ok: false,
+        status: 0,
+        blob: null,
+        error: error.message,
+      };
+    }
   },
 };
+
+
+/* =========================================================
+ * INITIAL TOKEN MIGRATION
+ * ========================================================= */
+
+Api.migrateLegacyToken();

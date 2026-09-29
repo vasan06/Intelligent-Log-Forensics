@@ -1,66 +1,76 @@
 """
-Uploaded log file model.
+Uploaded log file database table.
+
+Functional database definition.
+No ORM model class is used.
 """
 
 import uuid
-from datetime import datetime
 
-from sqlalchemy import BigInteger, DateTime, ForeignKey, String, func
-from sqlalchemy.orm import Mapped, mapped_column, relationship
+from sqlalchemy import (
+    BigInteger,
+    Column,
+    DateTime,
+    ForeignKey,
+    String,
+    Table,
+    func,
+)
 
 from backend.database import Base
 
 
-class UploadedFile(Base):
-    __tablename__ = "uploaded_files"
+metadata = Base.metadata
 
-    id: Mapped[str] = mapped_column(
+
+uploaded_files = Table(
+    "uploaded_files",
+    metadata,
+
+    Column(
+        "id",
         String(36),
         primary_key=True,
         default=lambda: str(uuid.uuid4()),
-    )
+    ),
 
-    user_id: Mapped[str] = mapped_column(
+    Column(
+        "user_id",
         String(36),
         ForeignKey("users.id", ondelete="CASCADE"),
         nullable=False,
         index=True,
-    )
+    ),
 
-    filename: Mapped[str] = mapped_column(
+    Column(
+        "filename",
         String(255),
         nullable=False,
-    )
+    ),
 
-    storage_path: Mapped[str] = mapped_column(
+    Column(
+        "storage_path",
         String(1000),
         nullable=False,
-    )
+    ),
 
-    size: Mapped[int] = mapped_column(
+    Column(
+        "size",
         BigInteger,
         nullable=False,
-    )
+    ),
 
-    status: Mapped[str] = mapped_column(
+    Column(
+        "status",
         String(30),
         nullable=False,
         default="uploaded",
-    )
+    ),
 
-    created_at: Mapped[datetime] = mapped_column(
+    Column(
+        "created_at",
         DateTime(timezone=True),
         nullable=False,
         server_default=func.now(),
-    )
-
-    user = relationship(
-        "User",
-        back_populates="uploaded_files",
-    )
-
-    analyses = relationship(
-        "LogAnalysis",
-        back_populates="file",
-        cascade="all, delete-orphan",
-    )
+    ),
+)

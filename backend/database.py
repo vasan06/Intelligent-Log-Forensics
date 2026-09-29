@@ -4,33 +4,43 @@ database.py — ILF PostgreSQL Database Layer
 Provides:
 - SQLAlchemy engine
 - database session factory
-- declarative model base
+- declarative ORM base
 - database initialization
-- connectivity check
+- database connectivity check
 
-Authentication/routes should not create raw PostgreSQL connections.
+No custom application classes or methods.
 """
 
 from contextlib import contextmanager
 
 from sqlalchemy import create_engine, text
-from sqlalchemy.orm import DeclarativeBase, sessionmaker
+from sqlalchemy.orm import declarative_base, sessionmaker
 
-from backend.config import Config
+from backend import config
 
 
-class Base(DeclarativeBase):
-    """Base class for all ILF database models."""
-    pass
+# =========================================================
+# SQLAlchemy ORM Base
+# =========================================================
 
+Base = declarative_base()
+
+
+# =========================================================
+# Database Engine
+# =========================================================
 
 engine = create_engine(
-    Config.DATABASE_URL,
+    config.DATABASE_URL,
     pool_pre_ping=True,
     pool_recycle=1800,
     future=True,
 )
 
+
+# =========================================================
+# Session Factory
+# =========================================================
 
 SessionLocal = sessionmaker(
     bind=engine,
@@ -39,6 +49,10 @@ SessionLocal = sessionmaker(
     expire_on_commit=False,
 )
 
+
+# =========================================================
+# Database Session
+# =========================================================
 
 @contextmanager
 def get_db():
@@ -49,6 +63,7 @@ def get_db():
     Rolls back on failure.
     Always closes the session.
     """
+
     db = SessionLocal()
 
     try:
@@ -63,10 +78,15 @@ def get_db():
         db.close()
 
 
+# =========================================================
+# Database Connectivity
+# =========================================================
+
 def check_database_connection() -> bool:
     """
-    Verify that PostgreSQL is reachable.
+    Check whether PostgreSQL is reachable.
     """
+
     try:
         with engine.connect() as connection:
             connection.execute(text("SELECT 1"))
@@ -77,17 +97,20 @@ def check_database_connection() -> bool:
         return False
 
 
+# =========================================================
+# Database Initialization
+# =========================================================
+
 def init_database():
     """
-    Create all registered tables.
+    Create all registered database tables.
 
-    This is intended for development/initial setup.
-    A proper migration system can replace this later.
+    Intended for development/initial setup.
     """
-    # Import models so SQLAlchemy knows about every table.
+
+    # Import models so SQLAlchemy registers their tables.
     from backend.models.user import User
     from backend.models.session import Session
-    
     from backend.models.uploaded_file import UploadedFile
     from backend.models.log_analysis import LogAnalysis
     from backend.models.report import Report

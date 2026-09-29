@@ -1,0 +1,3066 @@
+{
+  "info": {
+    "_postman_id": "8c9d2644-cd16-482f-bc1e-ad59527fcab4",
+    "name": "ILF",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_exporter_id": "56267039"
+  },
+  "item": [
+    {
+      "name": "Health",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "http://localhost:5000/api/health",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "5000",
+          "path": [
+            "api",
+            "health"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Login",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "X-ILF-Client",
+            "value": "web/2.0"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n  \"email\": \"vasan83000@gmail.com\",\r\n  \"password\": \"12345678\"\r\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "http://localhost:5000/api/auth/login",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "5000",
+          "path": [
+            "api",
+            "auth",
+            "login"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Report History",
+      "protocolProfileBehavior": {
+        "disableCookies": false,
+        "followRedirects": false,
+        "maxResponseSize": 52428800,
+        "strictSSL": false
+      },
+      "request": {
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIwYTQ2NGQ0Yi00YjJjLTQzY2QtOWE2OC0yMDIwNmU4MTEyYTEiLCJlbWFpbCI6ImlsZl90ZXN0XzIwMjZAZXhhbXBsZS5jb20iLCJyb2xlIjoiQW5hbHlzdCIsInR5cGUiOiJhY2Nlc3MiLCJpYXQiOjE3OTA2Njc3MjAsImV4cCI6MTc5MDY3MTMyMH0.816v1tK8a2YxblOWDOO5miZjaD1V2v4oUdx_llTwslw",
+              "type": "string"
+            }
+          ]
+        },
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "http://localhost:5000/api/reports/history",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "5000",
+          "path": [
+            "api",
+            "reports",
+            "history"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "MITRE Mapping",
+      "protocolProfileBehavior": {
+        "disableCookies": false,
+        "followRedirects": false,
+        "maxResponseSize": 52428800,
+        "strictSSL": false
+      },
+      "request": {
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n  \"logs\": [\r\n    {\r\n      \"id\": \"test-1\",\r\n      \"source\": \"application\",\r\n      \"message\": \"SQL syntax error near users\"\r\n    },\r\n    {\r\n      \"id\": \"test-2\",\r\n      \"source\": \"sshd\",\r\n      \"message\": \"Failed password authentication failure\"\r\n    }\r\n  ]\r\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "http://localhost:5000/api/mitre/map",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "5000",
+          "path": [
+            "api",
+            "mitre",
+            "map"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "MITRE Mapping",
+      "protocolProfileBehavior": {
+        "disableCookies": false,
+        "followRedirects": false,
+        "maxResponseSize": 52428800,
+        "strictSSL": false
+      },
+      "request": {
+        "method": "GET",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n  \"logs\": [\r\n    {\r\n      \"id\": \"test-1\",\r\n      \"source\": \"application\",\r\n      \"message\": \"SQL syntax error near users\"\r\n    },\r\n    {\r\n      \"id\": \"test-2\",\r\n      \"source\": \"sshd\",\r\n      \"message\": \"Failed password authentication failure\"\r\n    }\r\n  ]\r\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "http://localhost:5000/api/mitre/map",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "5000",
+          "path": [
+            "api",
+            "mitre",
+            "map"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "MITRE Mapping",
+      "protocolProfileBehavior": {
+        "disableCookies": false,
+        "followRedirects": false,
+        "maxResponseSize": 52428800,
+        "strictSSL": false
+      },
+      "request": {
+        "method": "GET",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n  \"logs\": [\r\n    {\r\n      \"id\": \"test-1\",\r\n      \"source\": \"application\",\r\n      \"message\": \"SQL syntax error near users\"\r\n    },\r\n    {\r\n      \"id\": \"test-2\",\r\n      \"source\": \"sshd\",\r\n      \"message\": \"Failed password authentication failure\"\r\n    }\r\n  ]\r\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "http://localhost:5000/api/mitre/mapping",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "5000",
+          "path": [
+            "api",
+            "mitre",
+            "mapping"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "MITRE Mapping",
+      "protocolProfileBehavior": {
+        "disableCookies": false,
+        "followRedirects": false,
+        "maxResponseSize": 52428800,
+        "strictSSL": false
+      },
+      "request": {
+        "method": "GET",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n  \"logs\": [\r\n    {\r\n      \"id\": \"test-1\",\r\n      \"source\": \"application\",\r\n      \"message\": \"SQL syntax error near users\"\r\n    },\r\n    {\r\n      \"id\": \"test-2\",\r\n      \"source\": \"sshd\",\r\n      \"message\": \"Failed password authentication failure\"\r\n    }\r\n  ]\r\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "http://localhost:5000/api/mitre/map",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "5000",
+          "path": [
+            "api",
+            "mitre",
+            "map"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Catalog ID",
+      "protocolProfileBehavior": {
+        "disableCookies": false,
+        "followRedirects": false,
+        "maxResponseSize": 52428800,
+        "strictSSL": false
+      },
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "http://localhost:5000/api/mitre/technique/T1190",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "5000",
+          "path": [
+            "api",
+            "mitre",
+            "technique",
+            "T1190"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "http://localhost:5000/api/mitre/catalog",
+      "protocolProfileBehavior": {
+        "disableCookies": false,
+        "followRedirects": false,
+        "maxResponseSize": 52428800,
+        "strictSSL": false
+      },
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "http://localhost:5000/api/mitre/catalog",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "5000",
+          "path": [
+            "api",
+            "mitre",
+            "catalog"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "http://localhost:5000/api/mitre/techniques",
+      "protocolProfileBehavior": {
+        "disableCookies": false,
+        "followRedirects": false,
+        "maxResponseSize": 52428800,
+        "strictSSL": false
+      },
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "http://localhost:5000/api/mitre/techniques",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "5000",
+          "path": [
+            "api",
+            "mitre",
+            "techniques"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Get Logs",
+      "protocolProfileBehavior": {
+        "disableCookies": false,
+        "followRedirects": false,
+        "maxResponseSize": 52428800,
+        "strictSSL": false
+      },
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "ty",
+            "value": "",
+            "disabled": true
+          }
+        ],
+        "url": {
+          "raw": "http://localhost:5000/api/logs/stream?count=10&mode=random&source=all&severity=all",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "5000",
+          "path": [
+            "api",
+            "logs",
+            "stream"
+          ],
+          "query": [
+            {
+              "key": "count",
+              "value": "10"
+            },
+            {
+              "key": "mode",
+              "value": "random"
+            },
+            {
+              "key": "source",
+              "value": "all"
+            },
+            {
+              "key": "severity",
+              "value": "all"
+            }
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Get Logs",
+      "protocolProfileBehavior": {
+        "disableCookies": false,
+        "followRedirects": false,
+        "maxResponseSize": 52428800,
+        "strictSSL": false
+      },
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "ty",
+            "value": "",
+            "disabled": true
+          }
+        ],
+        "url": {
+          "raw": "http://localhost:5000/logs/stream?count=10&mode=random&source=all&severity=all",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "5000",
+          "path": [
+            "logs",
+            "stream"
+          ],
+          "query": [
+            {
+              "key": "count",
+              "value": "10"
+            },
+            {
+              "key": "mode",
+              "value": "random"
+            },
+            {
+              "key": "source",
+              "value": "all"
+            },
+            {
+              "key": "severity",
+              "value": "all"
+            }
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Get Logs",
+      "protocolProfileBehavior": {
+        "disableCookies": false,
+        "followRedirects": false,
+        "maxResponseSize": 52428800,
+        "strictSSL": false
+      },
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "ty",
+            "value": "",
+            "disabled": true
+          }
+        ],
+        "url": {
+          "raw": "http://localhost:5000/logs/stream?count=10&mode=random&source=all&severity=all",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "5000",
+          "path": [
+            "logs",
+            "stream"
+          ],
+          "query": [
+            {
+              "key": "count",
+              "value": "10"
+            },
+            {
+              "key": "mode",
+              "value": "random"
+            },
+            {
+              "key": "source",
+              "value": "all"
+            },
+            {
+              "key": "severity",
+              "value": "all"
+            }
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Get Logs",
+      "protocolProfileBehavior": {
+        "disableCookies": false,
+        "followRedirects": false,
+        "maxResponseSize": 52428800,
+        "strictSSL": false
+      },
+      "request": {
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIwYTQ2NGQ0Yi00YjJjLTQzY2QtOWE2OC0yMDIwNmU4MTEyYTEiLCJlbWFpbCI6ImlsZl90ZXN0XzIwMjZAZXhhbXBsZS5jb20iLCJyb2xlIjoiQW5hbHlzdCIsInR5cGUiOiJhY2Nlc3MiLCJpYXQiOjE3OTA2Njc3MjAsImV4cCI6MTc5MDY3MTMyMH0.816v1tK8a2YxblOWDOO5miZjaD1V2v4oUdx_llTwslw",
+              "type": "string"
+            }
+          ]
+        },
+        "method": "GET",
+        "header": [
+          {
+            "key": "ty",
+            "value": "",
+            "disabled": true
+          }
+        ],
+        "url": {
+          "raw": "http://localhost:5000/logs/stream?count=10&mode=random&source=all&severity=all",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "5000",
+          "path": [
+            "logs",
+            "stream"
+          ],
+          "query": [
+            {
+              "key": "count",
+              "value": "10"
+            },
+            {
+              "key": "mode",
+              "value": "random"
+            },
+            {
+              "key": "source",
+              "value": "all"
+            },
+            {
+              "key": "severity",
+              "value": "all"
+            }
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Get Logs",
+      "protocolProfileBehavior": {
+        "disableCookies": false,
+        "followRedirects": false,
+        "maxResponseSize": 52428800,
+        "strictSSL": false
+      },
+      "request": {
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIwYTQ2NGQ0Yi00YjJjLTQzY2QtOWE2OC0yMDIwNmU4MTEyYTEiLCJlbWFpbCI6ImlsZl90ZXN0XzIwMjZAZXhhbXBsZS5jb20iLCJyb2xlIjoiQW5hbHlzdCIsInR5cGUiOiJhY2Nlc3MiLCJpYXQiOjE3OTA2Njc3MjAsImV4cCI6MTc5MDY3MTMyMH0.816v1tK8a2YxblOWDOO5miZjaD1V2v4oUdx_llTwslw",
+              "type": "string"
+            }
+          ]
+        },
+        "method": "GET",
+        "header": [
+          {
+            "key": "ty",
+            "value": "",
+            "disabled": true
+          }
+        ],
+        "url": {
+          "raw": "http://localhost:5000/api/logs",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "5000",
+          "path": [
+            "api",
+            "logs"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Report History",
+      "protocolProfileBehavior": {
+        "disableCookies": false,
+        "followRedirects": false,
+        "maxResponseSize": 52428800,
+        "strictSSL": false
+      },
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "http://localhost:5000/api/reports/history",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "5000",
+          "path": [
+            "api",
+            "reports",
+            "history"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Report Generate",
+      "protocolProfileBehavior": {
+        "disableCookies": false,
+        "followRedirects": false,
+        "maxResponseSize": 52428800,
+        "strictSSL": false
+      },
+      "request": {
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n  \"type\": \"overall\",\r\n  \"source\": \"auth\",\r\n  \"time_range\": \"1h\",\r\n  \"summary\": {\r\n    \"total_logs\": 5,\r\n    \"anomalies\": 3,\r\n    \"anomaly_score\": 0.4321,\r\n    \"risk_level\": \"LOW\"\r\n  },\r\n  \"severity\": {\r\n    \"INFO\": 0,\r\n    \"WARN\": 0,\r\n    \"ERROR\": 2,\r\n    \"CRITICAL\": 1,\r\n    \"DEBUG\": 0\r\n  },\r\n  \"ml_results\": [\r\n    {\r\n      \"algorithm\": \"Isolation Forest\",\r\n      \"score\": 0.4321,\r\n      \"confidence\": 0.84\r\n    },\r\n    {\r\n      \"algorithm\": \"Local Outlier Factor\",\r\n      \"score\": 0.3733,\r\n      \"confidence\": 0.837\r\n    },\r\n    {\r\n      \"algorithm\": \"One-Class SVM\",\r\n      \"score\": 0.36,\r\n      \"confidence\": 0.86\r\n    },\r\n    {\r\n      \"algorithm\": \"LSTM Sequence Model\",\r\n      \"score\": 0.406,\r\n      \"confidence\": 0.808\r\n    }\r\n  ],\r\n  \"recommendations\": [\r\n    \"Review authentication failures.\",\r\n    \"Investigate privilege escalation events.\",\r\n    \"Monitor repeated activity from the affected IP.\"\r\n  ]\r\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "http://localhost:5000/api/reports/generate",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "5000",
+          "path": [
+            "api",
+            "reports",
+            "generate"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Frontend-style Request",
+      "protocolProfileBehavior": {
+        "disableCookies": false,
+        "followRedirects": false,
+        "maxResponseSize": 52428800,
+        "strictSSL": false
+      },
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n  \"source\": \"auth\",\r\n  \"time_range\": \"1h\",\r\n  \"logs\": []\r\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "http://localhost:5000/api/ml/analyze",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "5000",
+          "path": [
+            "api",
+            "ml",
+            "analyze"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "http://localhost:5000/api/ml/algorithms",
+      "protocolProfileBehavior": {
+        "disableCookies": false,
+        "followRedirects": false,
+        "maxResponseSize": 52428800,
+        "strictSSL": false
+      },
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "http://localhost:5000/api/ml/algorithms",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "5000",
+          "path": [
+            "api",
+            "ml",
+            "algorithms"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "http://localhost:5000/api/ml/algorithms",
+      "protocolProfileBehavior": {
+        "disableCookies": false,
+        "followRedirects": false,
+        "maxResponseSize": 52428800,
+        "strictSSL": false
+      },
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "http://localhost:5000/api/ml/algorithms",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "5000",
+          "path": [
+            "api",
+            "ml",
+            "algorithms"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Frontend-style Request",
+      "protocolProfileBehavior": {
+        "disableCookies": false,
+        "followRedirects": false,
+        "maxResponseSize": 52428800,
+        "strictSSL": false
+      },
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n  \"source\": \"nginx\",\r\n  \"time_range\": \"1h\",\r\n  \"logs\": [\r\n    {\r\n      \"id\": \"1\",\r\n      \"timestamp\": \"2026-09-29T10:00:00Z\",\r\n      \"severity\": \"INFO\",\r\n      \"source\": \"nginx\",\r\n      \"ip\": \"192.168.1.10\",\r\n      \"pid\": 1001,\r\n      \"message\": \"GET /index.html 200\"\r\n    },\r\n    {\r\n      \"id\": \"2\",\r\n      \"timestamp\": \"2026-09-29T10:01:00Z\",\r\n      \"severity\": \"WARN\",\r\n      \"source\": \"nginx\",\r\n      \"ip\": \"192.168.1.20\",\r\n      \"pid\": 1002,\r\n      \"message\": \"Request rate limit warning\"\r\n    },\r\n    {\r\n      \"id\": \"3\",\r\n      \"timestamp\": \"2026-09-29T10:02:00Z\",\r\n      \"severity\": \"ERROR\",\r\n      \"source\": \"nginx\",\r\n      \"ip\": \"10.10.10.50\",\r\n      \"pid\": 1003,\r\n      \"message\": \"Outbound C2 connection detected\"\r\n    }\r\n  ]\r\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "http://localhost:5000/api/ml/analyze",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "5000",
+          "path": [
+            "api",
+            "ml",
+            "analyze"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "http://localhost:5000/api/ml/algorithms",
+      "protocolProfileBehavior": {
+        "disableCookies": false,
+        "followRedirects": false,
+        "maxResponseSize": 52428800,
+        "strictSSL": false
+      },
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "http://localhost:5000/api/ml/algorithms",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "5000",
+          "path": [
+            "api",
+            "ml",
+            "algorithms"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Test with real log data",
+      "protocolProfileBehavior": {
+        "disableCookies": false,
+        "followRedirects": false,
+        "maxResponseSize": 52428800,
+        "strictSSL": false
+      },
+      "request": {
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n  \"source\": \"auth\",\r\n  \"time_range\": \"1h\",\r\n  \"logs\": [\r\n    {\r\n      \"id\": \"1\",\r\n      \"timestamp\": \"2026-09-29T10:00:00Z\",\r\n      \"severity\": \"INFO\",\r\n      \"source\": \"auth\",\r\n      \"ip\": \"192.168.1.10\",\r\n      \"pid\": 1001,\r\n      \"message\": \"User login successful\"\r\n    },\r\n    {\r\n      \"id\": \"2\",\r\n      \"timestamp\": \"2026-09-29T10:01:00Z\",\r\n      \"severity\": \"WARN\",\r\n      \"source\": \"auth\",\r\n      \"ip\": \"192.168.1.20\",\r\n      \"pid\": 1002,\r\n      \"message\": \"Invalid user login attempt\"\r\n    },\r\n    {\r\n      \"id\": \"3\",\r\n      \"timestamp\": \"2026-09-29T10:02:00Z\",\r\n      \"severity\": \"ERROR\",\r\n      \"source\": \"auth\",\r\n      \"ip\": \"10.10.10.50\",\r\n      \"pid\": 1003,\r\n      \"message\": \"Authentication failure failed password\"\r\n    },\r\n    {\r\n      \"id\": \"4\",\r\n      \"timestamp\": \"2026-09-29T10:03:00Z\",\r\n      \"severity\": \"CRITICAL\",\r\n      \"source\": \"auth\",\r\n      \"ip\": \"10.10.10.50\",\r\n      \"pid\": 1003,\r\n      \"message\": \"Privilege escalation detected\"\r\n    },\r\n    {\r\n      \"id\": \"5\",\r\n      \"timestamp\": \"2026-09-29T10:04:00Z\",\r\n      \"severity\": \"ERROR\",\r\n      \"source\": \"auth\",\r\n      \"ip\": \"10.10.10.50\",\r\n      \"pid\": 1003,\r\n      \"message\": \"Failed password authentication failure\"\r\n    }\r\n  ]\r\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "http://localhost:5000/api/ml/analyze",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "5000",
+          "path": [
+            "api",
+            "ml",
+            "analyze"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Test empty logs",
+      "protocolProfileBehavior": {
+        "disableCookies": false,
+        "followRedirects": false,
+        "maxResponseSize": 52428800,
+        "strictSSL": false
+      },
+      "request": {
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n  \"source\": \"all\",\r\n  \"time_range\": \"1h\",\r\n  \"logs\": []\r\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "http://localhost:5000/api/ml/analyze",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "5000",
+          "path": [
+            "api",
+            "ml",
+            "analyze"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Test invalid logs type",
+      "protocolProfileBehavior": {
+        "disableCookies": false,
+        "followRedirects": false,
+        "maxResponseSize": 52428800,
+        "strictSSL": false
+      },
+      "request": {
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n  \"source\": \"all\",\r\n  \"time_range\": \"1h\",\r\n  \"logs\": \"invalid\"\r\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "http://localhost:5000/api/ml/analyze",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "5000",
+          "path": [
+            "api",
+            "ml",
+            "analyze"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "ML Analysis",
+      "protocolProfileBehavior": {
+        "disableCookies": false,
+        "followRedirects": false,
+        "maxResponseSize": 52428800,
+        "strictSSL": false
+      },
+      "request": {
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIwYTQ2NGQ0Yi00YjJjLTQzY2QtOWE2OC0yMDIwNmU4MTEyYTEiLCJlbWFpbCI6ImlsZl90ZXN0XzIwMjZAZXhhbXBsZS5jb20iLCJyb2xlIjoiQW5hbHlzdCIsInR5cGUiOiJhY2Nlc3MiLCJpYXQiOjE3OTA2Njc3MjAsImV4cCI6MTc5MDY3MTMyMH0.816v1tK8a2YxblOWDOO5miZjaD1V2v4oUdx_llTwslw",
+              "type": "string"
+            }
+          ]
+        },
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n    \"source\": \"all\",\r\n    \"time_range\": \"1h\"\r\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "http://localhost:5000/api/ml/analyze",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "5000",
+          "path": [
+            "api",
+            "ml",
+            "analyze"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "ML Analysis",
+      "protocolProfileBehavior": {
+        "disableCookies": false,
+        "followRedirects": false,
+        "maxResponseSize": 52428800,
+        "strictSSL": false
+      },
+      "request": {
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIwYTQ2NGQ0Yi00YjJjLTQzY2QtOWE2OC0yMDIwNmU4MTEyYTEiLCJlbWFpbCI6ImlsZl90ZXN0XzIwMjZAZXhhbXBsZS5jb20iLCJyb2xlIjoiQW5hbHlzdCIsInR5cGUiOiJhY2Nlc3MiLCJpYXQiOjE3OTA2Njc3MjAsImV4cCI6MTc5MDY3MTMyMH0.816v1tK8a2YxblOWDOO5miZjaD1V2v4oUdx_llTwslw",
+              "type": "string"
+            }
+          ]
+        },
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n    \"source\": \"all\",\r\n    \"time_range\": \"1h\"\r\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "http://localhost:5000/api/ml/analyze",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "5000",
+          "path": [
+            "api",
+            "ml",
+            "analyze"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "ML Algorithms",
+      "protocolProfileBehavior": {
+        "disableCookies": false,
+        "followRedirects": false,
+        "maxResponseSize": 52428800,
+        "strictSSL": false
+      },
+      "request": {
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIwYTQ2NGQ0Yi00YjJjLTQzY2QtOWE2OC0yMDIwNmU4MTEyYTEiLCJlbWFpbCI6ImlsZl90ZXN0XzIwMjZAZXhhbXBsZS5jb20iLCJyb2xlIjoiQW5hbHlzdCIsInR5cGUiOiJhY2Nlc3MiLCJpYXQiOjE3OTA2Njc3MjAsImV4cCI6MTc5MDY3MTMyMH0.816v1tK8a2YxblOWDOO5miZjaD1V2v4oUdx_llTwslw",
+              "type": "string"
+            }
+          ]
+        },
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "http://localhost:5000/api/ml/algorithms",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "5000",
+          "path": [
+            "api",
+            "ml",
+            "algorithms"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "ML Algorithms",
+      "protocolProfileBehavior": {
+        "disableCookies": false,
+        "followRedirects": false,
+        "maxResponseSize": 52428800,
+        "strictSSL": false
+      },
+      "request": {
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIwYTQ2NGQ0Yi00YjJjLTQzY2QtOWE2OC0yMDIwNmU4MTEyYTEiLCJlbWFpbCI6ImlsZl90ZXN0XzIwMjZAZXhhbXBsZS5jb20iLCJyb2xlIjoiQW5hbHlzdCIsInR5cGUiOiJhY2Nlc3MiLCJpYXQiOjE3OTA2Njc3MjAsImV4cCI6MTc5MDY3MTMyMH0.816v1tK8a2YxblOWDOO5miZjaD1V2v4oUdx_llTwslw",
+              "type": "string"
+            }
+          ]
+        },
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "http://localhost:5000/api/ml/algorithms",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "5000",
+          "path": [
+            "api",
+            "ml",
+            "algorithms"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "ML Algorithms",
+      "protocolProfileBehavior": {
+        "disableCookies": false,
+        "followRedirects": false,
+        "maxResponseSize": 52428800,
+        "strictSSL": false
+      },
+      "request": {
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIwYTQ2NGQ0Yi00YjJjLTQzY2QtOWE2OC0yMDIwNmU4MTEyYTEiLCJlbWFpbCI6ImlsZl90ZXN0XzIwMjZAZXhhbXBsZS5jb20iLCJyb2xlIjoiQW5hbHlzdCIsInR5cGUiOiJhY2Nlc3MiLCJpYXQiOjE3OTA2Njc3MjAsImV4cCI6MTc5MDY3MTMyMH0.816v1tK8a2YxblOWDOO5miZjaD1V2v4oUdx_llTwslw",
+              "type": "string"
+            }
+          ]
+        },
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "http://localhost:5000/api/ml/algorithms",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "5000",
+          "path": [
+            "api",
+            "ml",
+            "algorithms"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "ML Analysis",
+      "protocolProfileBehavior": {
+        "disableCookies": false,
+        "followRedirects": false,
+        "maxResponseSize": 52428800,
+        "strictSSL": false
+      },
+      "request": {
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIwYTQ2NGQ0Yi00YjJjLTQzY2QtOWE2OC0yMDIwNmU4MTEyYTEiLCJlbWFpbCI6ImlsZl90ZXN0XzIwMjZAZXhhbXBsZS5jb20iLCJyb2xlIjoiQW5hbHlzdCIsInR5cGUiOiJhY2Nlc3MiLCJpYXQiOjE3OTA2Njc3MjAsImV4cCI6MTc5MDY3MTMyMH0.816v1tK8a2YxblOWDOO5miZjaD1V2v4oUdx_llTwslw",
+              "type": "string"
+            }
+          ]
+        },
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n    \"source\": \"all\",\r\n    \"time_range\": \"1h\"\r\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "http://localhost:5000/api/ml/analyze",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "5000",
+          "path": [
+            "api",
+            "ml",
+            "analyze"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "ML Analysis",
+      "protocolProfileBehavior": {
+        "disableCookies": false,
+        "followRedirects": false,
+        "maxResponseSize": 52428800,
+        "strictSSL": false
+      },
+      "request": {
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIwYTQ2NGQ0Yi00YjJjLTQzY2QtOWE2OC0yMDIwNmU4MTEyYTEiLCJlbWFpbCI6ImlsZl90ZXN0XzIwMjZAZXhhbXBsZS5jb20iLCJyb2xlIjoiQW5hbHlzdCIsInR5cGUiOiJhY2Nlc3MiLCJpYXQiOjE3OTA2Njc3MjAsImV4cCI6MTc5MDY3MTMyMH0.816v1tK8a2YxblOWDOO5miZjaD1V2v4oUdx_llTwslw",
+              "type": "string"
+            }
+          ]
+        },
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n    \"source\": \"all\",\r\n    \"time_range\": \"1h\"\r\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "http://localhost:5000/api/ml/analyze",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "5000",
+          "path": [
+            "api",
+            "ml",
+            "analyze"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "ML Analysis",
+      "protocolProfileBehavior": {
+        "disableCookies": false,
+        "followRedirects": false,
+        "maxResponseSize": 52428800,
+        "strictSSL": false
+      },
+      "request": {
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIwYTQ2NGQ0Yi00YjJjLTQzY2QtOWE2OC0yMDIwNmU4MTEyYTEiLCJlbWFpbCI6ImlsZl90ZXN0XzIwMjZAZXhhbXBsZS5jb20iLCJyb2xlIjoiQW5hbHlzdCIsInR5cGUiOiJhY2Nlc3MiLCJpYXQiOjE3OTA2Njc3MjAsImV4cCI6MTc5MDY3MTMyMH0.816v1tK8a2YxblOWDOO5miZjaD1V2v4oUdx_llTwslw",
+              "type": "string"
+            }
+          ]
+        },
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n    \"source\": \"all\",\r\n    \"time_range\": \"1h\"\r\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "http://localhost:5000/api/ml/analyze",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "5000",
+          "path": [
+            "api",
+            "ml",
+            "analyze"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "ML Analysis",
+      "protocolProfileBehavior": {
+        "disableCookies": false,
+        "followRedirects": false,
+        "maxResponseSize": 52428800,
+        "strictSSL": false
+      },
+      "request": {
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIwYTQ2NGQ0Yi00YjJjLTQzY2QtOWE2OC0yMDIwNmU4MTEyYTEiLCJlbWFpbCI6ImlsZl90ZXN0XzIwMjZAZXhhbXBsZS5jb20iLCJyb2xlIjoiQW5hbHlzdCIsInR5cGUiOiJhY2Nlc3MiLCJpYXQiOjE3OTA2Njc3MjAsImV4cCI6MTc5MDY3MTMyMH0.816v1tK8a2YxblOWDOO5miZjaD1V2v4oUdx_llTwslw",
+              "type": "string"
+            }
+          ]
+        },
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n    \"source\": \"all\",\r\n    \"time_range\": \"1h\"\r\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "http://localhost:5000/api/ml/analyze",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "5000",
+          "path": [
+            "api",
+            "ml",
+            "analyze"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "ML Analysis",
+      "protocolProfileBehavior": {
+        "disableCookies": false,
+        "followRedirects": false,
+        "maxResponseSize": 52428800,
+        "strictSSL": false
+      },
+      "request": {
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIwYTQ2NGQ0Yi00YjJjLTQzY2QtOWE2OC0yMDIwNmU4MTEyYTEiLCJlbWFpbCI6ImlsZl90ZXN0XzIwMjZAZXhhbXBsZS5jb20iLCJyb2xlIjoiQW5hbHlzdCIsInR5cGUiOiJhY2Nlc3MiLCJpYXQiOjE3OTA2Njc3MjAsImV4cCI6MTc5MDY3MTMyMH0.816v1tK8a2YxblOWDOO5miZjaD1V2v4oUdx_llTwslw",
+              "type": "string"
+            }
+          ]
+        },
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n    \"source\": \"all\",\r\n    \"time_range\": \"1h\"\r\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "http://localhost:5000/api/ml/analyze",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "5000",
+          "path": [
+            "api",
+            "ml",
+            "analyze"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "ML Algorithms",
+      "protocolProfileBehavior": {
+        "disableCookies": false,
+        "followRedirects": false,
+        "maxResponseSize": 52428800,
+        "strictSSL": false
+      },
+      "request": {
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIwYTQ2NGQ0Yi00YjJjLTQzY2QtOWE2OC0yMDIwNmU4MTEyYTEiLCJlbWFpbCI6ImlsZl90ZXN0XzIwMjZAZXhhbXBsZS5jb20iLCJyb2xlIjoiQW5hbHlzdCIsInR5cGUiOiJhY2Nlc3MiLCJpYXQiOjE3OTA2Njc3MjAsImV4cCI6MTc5MDY3MTMyMH0.816v1tK8a2YxblOWDOO5miZjaD1V2v4oUdx_llTwslw",
+              "type": "string"
+            }
+          ]
+        },
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "http://localhost:5000/api/ml/algorithms",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "5000",
+          "path": [
+            "api",
+            "ml",
+            "algorithms"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Test LSTM",
+      "protocolProfileBehavior": {
+        "disableCookies": false,
+        "followRedirects": false,
+        "maxResponseSize": 52428800,
+        "strictSSL": false
+      },
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n  \"algorithm\": \"LSTM Sequence Model\",\r\n  \"algorithm_id\": \"lstm_seq\"\r\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "http://127.0.0.1:5000/api/ml/analyze",
+          "protocol": "http",
+          "host": [
+            "127",
+            "0",
+            "0",
+            "1"
+          ],
+          "port": "5000",
+          "path": [
+            "api",
+            "ml",
+            "analyze"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Test LSTM",
+      "protocolProfileBehavior": {
+        "disableCookies": false,
+        "followRedirects": false,
+        "maxResponseSize": 52428800,
+        "strictSSL": false
+      },
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n  \"algorithm\": \"LSTM Sequence Model\",\r\n  \"algorithm_id\": \"lstm_seq\"\r\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "http://127.0.0.1:5000/api/ml/analyze",
+          "protocol": "http",
+          "host": [
+            "127",
+            "0",
+            "0",
+            "1"
+          ],
+          "port": "5000",
+          "path": [
+            "api",
+            "ml",
+            "analyze"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Test LSTM",
+      "protocolProfileBehavior": {
+        "disableCookies": false,
+        "followRedirects": false,
+        "maxResponseSize": 52428800,
+        "strictSSL": false
+      },
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n  \"source\": \"all\",\r\n  \"time_range\": \"1h\"\r\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "http://127.0.0.1:5000/api/ml/analyze",
+          "protocol": "http",
+          "host": [
+            "127",
+            "0",
+            "0",
+            "1"
+          ],
+          "port": "5000",
+          "path": [
+            "api",
+            "ml",
+            "analyze"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Test LSTM",
+      "protocolProfileBehavior": {
+        "disableCookies": false,
+        "followRedirects": false,
+        "maxResponseSize": 52428800,
+        "strictSSL": false
+      },
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n  \"algorithm\": \"LSTM Sequence Model\",\r\n  \"algorithm_id\": \"lstm_seq\"\r\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "http://127.0.0.1:5000/api/ml/analyze",
+          "protocol": "http",
+          "host": [
+            "127",
+            "0",
+            "0",
+            "1"
+          ],
+          "port": "5000",
+          "path": [
+            "api",
+            "ml",
+            "analyze"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "http://127.0.0.1:5000/api/ml/analyze",
+      "protocolProfileBehavior": {
+        "disableCookies": false,
+        "followRedirects": false,
+        "maxResponseSize": 52428800,
+        "strictSSL": false
+      },
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n  \"algorithm\": \"One-Class SVM\",\r\n  \"algorithm_id\": \"one_class_svm\"\r\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "http://127.0.0.1:5000/api/ml/analyze",
+          "protocol": "http",
+          "host": [
+            "127",
+            "0",
+            "0",
+            "1"
+          ],
+          "port": "5000",
+          "path": [
+            "api",
+            "ml",
+            "analyze"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Test Local Outlier Factor",
+      "protocolProfileBehavior": {
+        "disableCookies": false,
+        "followRedirects": false,
+        "maxResponseSize": 52428800,
+        "strictSSL": false
+      },
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n  \"source\": \"all\",\r\n  \"time_range\": \"1h\"\r\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "http://127.0.0.1:5000/api/ml/analyze",
+          "protocol": "http",
+          "host": [
+            "127",
+            "0",
+            "0",
+            "1"
+          ],
+          "port": "5000",
+          "path": [
+            "api",
+            "ml",
+            "analyze"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Isolation Forest",
+      "protocolProfileBehavior": {
+        "disableCookies": false,
+        "followRedirects": false,
+        "maxResponseSize": 52428800,
+        "strictSSL": false
+      },
+      "request": {
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n    \"source\": \"all\",\r\n    \"time_range\": \"1h\"\r\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "http://127.0.0.1:5000/api/ml/analyze/isolation_forest",
+          "protocol": "http",
+          "host": [
+            "127",
+            "0",
+            "0",
+            "1"
+          ],
+          "port": "5000",
+          "path": [
+            "api",
+            "ml",
+            "analyze",
+            "isolation_forest"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Isolation Forest",
+      "protocolProfileBehavior": {
+        "disableCookies": false,
+        "followRedirects": false,
+        "maxResponseSize": 52428800,
+        "strictSSL": false
+      },
+      "request": {
+        "method": "GET",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n    \"source\": \"all\",\r\n    \"time_range\": \"1h\"\r\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "http://127.0.0.1:5000/api/ml/analyze/isolation_forest",
+          "protocol": "http",
+          "host": [
+            "127",
+            "0",
+            "0",
+            "1"
+          ],
+          "port": "5000",
+          "path": [
+            "api",
+            "ml",
+            "analyze",
+            "isolation_forest"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "ML Analysis",
+      "protocolProfileBehavior": {
+        "disableCookies": false,
+        "followRedirects": false,
+        "maxResponseSize": 52428800,
+        "strictSSL": false
+      },
+      "request": {
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIwYTQ2NGQ0Yi00YjJjLTQzY2QtOWE2OC0yMDIwNmU4MTEyYTEiLCJlbWFpbCI6ImlsZl90ZXN0XzIwMjZAZXhhbXBsZS5jb20iLCJyb2xlIjoiQW5hbHlzdCIsInR5cGUiOiJhY2Nlc3MiLCJpYXQiOjE3OTA2Njc3MjAsImV4cCI6MTc5MDY3MTMyMH0.816v1tK8a2YxblOWDOO5miZjaD1V2v4oUdx_llTwslw",
+              "type": "string"
+            }
+          ]
+        },
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n    \"source\": \"all\",\r\n    \"time_range\": \"1h\"\r\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "http://localhost:5000/api/ml/analyze",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "5000",
+          "path": [
+            "api",
+            "ml",
+            "analyze"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "ML Algorithms",
+      "protocolProfileBehavior": {
+        "disableCookies": false,
+        "followRedirects": false,
+        "maxResponseSize": 52428800,
+        "strictSSL": false
+      },
+      "request": {
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIwYTQ2NGQ0Yi00YjJjLTQzY2QtOWE2OC0yMDIwNmU4MTEyYTEiLCJlbWFpbCI6ImlsZl90ZXN0XzIwMjZAZXhhbXBsZS5jb20iLCJyb2xlIjoiQW5hbHlzdCIsInR5cGUiOiJhY2Nlc3MiLCJpYXQiOjE3OTA2Njc3MjAsImV4cCI6MTc5MDY3MTMyMH0.816v1tK8a2YxblOWDOO5miZjaD1V2v4oUdx_llTwslw",
+              "type": "string"
+            }
+          ]
+        },
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "http://localhost:5000/api/ml/algorithms",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "5000",
+          "path": [
+            "api",
+            "ml",
+            "algorithms"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "ML Algorithms",
+      "protocolProfileBehavior": {
+        "disableCookies": false,
+        "followRedirects": false,
+        "maxResponseSize": 52428800,
+        "strictSSL": false
+      },
+      "request": {
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIwYTQ2NGQ0Yi00YjJjLTQzY2QtOWE2OC0yMDIwNmU4MTEyYTEiLCJlbWFpbCI6ImlsZl90ZXN0XzIwMjZAZXhhbXBsZS5jb20iLCJyb2xlIjoiQW5hbHlzdCIsInR5cGUiOiJhY2Nlc3MiLCJpYXQiOjE3OTA2Njc3MjAsImV4cCI6MTc5MDY3MTMyMH0.816v1tK8a2YxblOWDOO5miZjaD1V2v4oUdx_llTwslw",
+              "type": "string"
+            }
+          ]
+        },
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "http://localhost:5000/api/ml/algorithms",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "5000",
+          "path": [
+            "api",
+            "ml",
+            "algorithms"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "ML Algorithms",
+      "protocolProfileBehavior": {
+        "disableCookies": false,
+        "followRedirects": false,
+        "maxResponseSize": 52428800,
+        "strictSSL": false
+      },
+      "request": {
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIwYTQ2NGQ0Yi00YjJjLTQzY2QtOWE2OC0yMDIwNmU4MTEyYTEiLCJlbWFpbCI6ImlsZl90ZXN0XzIwMjZAZXhhbXBsZS5jb20iLCJyb2xlIjoiQW5hbHlzdCIsInR5cGUiOiJhY2Nlc3MiLCJpYXQiOjE3OTA2Njc3MjAsImV4cCI6MTc5MDY3MTMyMH0.816v1tK8a2YxblOWDOO5miZjaD1V2v4oUdx_llTwslw",
+              "type": "string"
+            }
+          ]
+        },
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "http://localhost:5000/api/ml/algorithms",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "5000",
+          "path": [
+            "api",
+            "ml",
+            "algorithms"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Pipeline Status",
+      "protocolProfileBehavior": {
+        "disableCookies": false,
+        "followRedirects": false,
+        "maxResponseSize": 52428800,
+        "strictSSL": false
+      },
+      "request": {
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIwYTQ2NGQ0Yi00YjJjLTQzY2QtOWE2OC0yMDIwNmU4MTEyYTEiLCJlbWFpbCI6ImlsZl90ZXN0XzIwMjZAZXhhbXBsZS5jb20iLCJyb2xlIjoiQW5hbHlzdCIsInR5cGUiOiJhY2Nlc3MiLCJpYXQiOjE3OTA2Njc3MjAsImV4cCI6MTc5MDY3MTMyMH0.816v1tK8a2YxblOWDOO5miZjaD1V2v4oUdx_llTwslw",
+              "type": "string"
+            }
+          ]
+        },
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "http://localhost:5000/api/logs/pipeline/58176ba8-d90",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "5000",
+          "path": [
+            "api",
+            "logs",
+            "pipeline",
+            "58176ba8-d90"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Upload",
+      "protocolProfileBehavior": {
+        "disableCookies": false,
+        "followRedirects": false,
+        "maxResponseSize": 52428800,
+        "strictSSL": false
+      },
+      "request": {
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIwYTQ2NGQ0Yi00YjJjLTQzY2QtOWE2OC0yMDIwNmU4MTEyYTEiLCJlbWFpbCI6ImlsZl90ZXN0XzIwMjZAZXhhbXBsZS5jb20iLCJyb2xlIjoiQW5hbHlzdCIsInR5cGUiOiJhY2Nlc3MiLCJpYXQiOjE3OTA2Njc3MjAsImV4cCI6MTc5MDY3MTMyMH0.816v1tK8a2YxblOWDOO5miZjaD1V2v4oUdx_llTwslw",
+              "type": "string"
+            }
+          ]
+        },
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "formdata",
+          "formdata": [
+            {
+              "key": "file",
+              "type": "file",
+              "src": [
+                "/D:/major project updated/PROJECT_REBUILT_FINAL_v2/NEW_PROJECT/sample_logs/attackflow_synthetic_logs_under_10mb/sample.txt"
+              ]
+            }
+          ]
+        },
+        "url": {
+          "raw": "http://localhost:5000/api/logs/upload",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "5000",
+          "path": [
+            "api",
+            "logs",
+            "upload"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Live Monitor",
+      "protocolProfileBehavior": {
+        "disableCookies": false,
+        "followRedirects": false,
+        "maxResponseSize": 52428800,
+        "strictSSL": false
+      },
+      "request": {
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIwYTQ2NGQ0Yi00YjJjLTQzY2QtOWE2OC0yMDIwNmU4MTEyYTEiLCJlbWFpbCI6ImlsZl90ZXN0XzIwMjZAZXhhbXBsZS5jb20iLCJyb2xlIjoiQW5hbHlzdCIsInR5cGUiOiJhY2Nlc3MiLCJpYXQiOjE3OTA2Njc3MjAsImV4cCI6MTc5MDY3MTMyMH0.816v1tK8a2YxblOWDOO5miZjaD1V2v4oUdx_llTwslw",
+              "type": "string"
+            }
+          ]
+        },
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "http://localhost:5000/api/logs/stream",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "5000",
+          "path": [
+            "api",
+            "logs",
+            "stream"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "ML Summary",
+      "protocolProfileBehavior": {
+        "disableCookies": false,
+        "followRedirects": false,
+        "maxResponseSize": 52428800,
+        "strictSSL": false
+      },
+      "request": {
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIwYTQ2NGQ0Yi00YjJjLTQzY2QtOWE2OC0yMDIwNmU4MTEyYTEiLCJlbWFpbCI6ImlsZl90ZXN0XzIwMjZAZXhhbXBsZS5jb20iLCJyb2xlIjoiQW5hbHlzdCIsInR5cGUiOiJhY2Nlc3MiLCJpYXQiOjE3OTA2Njc3MjAsImV4cCI6MTc5MDY3MTMyMH0.816v1tK8a2YxblOWDOO5miZjaD1V2v4oUdx_llTwslw",
+              "type": "string"
+            }
+          ]
+        },
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "http://localhost:5000/api/dashboard/ml-summary",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "5000",
+          "path": [
+            "api",
+            "dashboard",
+            "ml-summary"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Dashboard API",
+      "protocolProfileBehavior": {
+        "disableCookies": false,
+        "followRedirects": false,
+        "maxResponseSize": 52428800,
+        "strictSSL": false
+      },
+      "request": {
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIwYTQ2NGQ0Yi00YjJjLTQzY2QtOWE2OC0yMDIwNmU4MTEyYTEiLCJlbWFpbCI6ImlsZl90ZXN0XzIwMjZAZXhhbXBsZS5jb20iLCJyb2xlIjoiQW5hbHlzdCIsInR5cGUiOiJhY2Nlc3MiLCJpYXQiOjE3OTA2Njc3MjAsImV4cCI6MTc5MDY3MTMyMH0.816v1tK8a2YxblOWDOO5miZjaD1V2v4oUdx_llTwslw",
+              "type": "string"
+            }
+          ]
+        },
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "http://localhost:5000/api/dashboard/stats",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "5000",
+          "path": [
+            "api",
+            "dashboard",
+            "stats"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Duplicate Signup",
+      "protocolProfileBehavior": {
+        "disableCookies": false,
+        "followRedirects": false,
+        "maxResponseSize": 52428800,
+        "strictSSL": false
+      },
+      "request": {
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n    \"name\": \"ILF Test User 2\",\r\n    \"email\": \"ilf_test_2026@example.com\",\r\n    \"password\": \"AnotherPassword123!\"\r\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "http://localhost:5000/api/auth/signup",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "5000",
+          "path": [
+            "api",
+            "auth",
+            "signup"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Signup",
+      "protocolProfileBehavior": {
+        "disableCookies": false,
+        "followRedirects": false,
+        "maxResponseSize": 52428800,
+        "strictSSL": false
+      },
+      "request": {
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n    \"name\": \"ILF Test User\",\r\n    \"email\": \"ilf_test_2026@example.com\",\r\n    \"password\": \"TestPassword123!\"\r\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "http://localhost:5000/api/auth/signup",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "5000",
+          "path": [
+            "api",
+            "auth",
+            "signup"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Invalid Access Token",
+      "protocolProfileBehavior": {
+        "disableCookies": false,
+        "followRedirects": false,
+        "maxResponseSize": 52428800,
+        "strictSSL": false
+      },
+      "request": {
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI0OTgxY2E4YS02ZDE4LTQxZjItYThhOS0wNWIxZTg0ZWMxYmYiLCJlbWFpbCI6InZhc2FuODMwMDBAZ21haWwuY29tIiwicm9sZSI6IkFuYWx5c3QiLCJ0eXBlIjoiYWNjZXNzIiwiaWF0IjoxNzkwNjY2NDc3LCJleHAiOjE3OTA2NzAwNzd9.mLSd3gGuXxnOpQwVTD0bP6stsbgwZxg2xu3XbsGn9km4",
+              "type": "string"
+            }
+          ]
+        },
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "http://localhost:5000/api/user/profile",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "5000",
+          "path": [
+            "api",
+            "user",
+            "profile"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Invalid Access Token",
+      "protocolProfileBehavior": {
+        "disableCookies": false,
+        "followRedirects": false,
+        "maxResponseSize": 52428800,
+        "strictSSL": false
+      },
+      "request": {
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI0OTgxY2E4YS02ZDE4LTQxZjItYThhOS0wNWIxZTg0ZWMxYmYiLCJlbWFpbCI6InZhc2FuODMwMDBAZ21haWwuY29tIiwicm9sZSI6IkFuYWx5c3QiLCJ0eXBlIjoiYWNjZXNzIiwiaWF0IjoxNzkwNjY2NDc3LCJleHAiOjE3OTA2NzAwNzd9.mLSd3gGuXxnOpQwVTD0bP6tsbgwZxg2xu3XbsGn9km4",
+              "type": "string"
+            }
+          ]
+        },
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "http://localhost:5000/api/user/profile",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "5000",
+          "path": [
+            "api",
+            "user",
+            "profile"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Invalid Access Token",
+      "protocolProfileBehavior": {
+        "disableCookies": false,
+        "followRedirects": false,
+        "maxResponseSize": 52428800,
+        "strictSSL": false
+      },
+      "request": {
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI0OTgxY2E4YS02ZDE4LTQxZjItYThhOS0wNWIxZTg0ZWMxYmYiLCJlbWFpbCI6InZhc2FuODMwMDBAZ21haWwuY29tIiwicm9sZSI6IkFuYWx5c3QiLCJ0eXBlIjoiYWNjZXNzIiwiaWF0IjoxNzkwNjY2NDc3LCJleHAiOjE3OTA2NzAwNzd9.mLSd3gGuXxnOpQwVTD0bP6tsbgwZxg2xu3XbsGn9km4",
+              "type": "string"
+            }
+          ]
+        },
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "http://localhost:5000/api/user/profile",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "5000",
+          "path": [
+            "api",
+            "user",
+            "profile"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Persistence",
+      "protocolProfileBehavior": {
+        "disableCookies": false,
+        "followRedirects": false,
+        "maxResponseSize": 52428800,
+        "strictSSL": false
+      },
+      "request": {
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI0OTgxY2E4YS02ZDE4LTQxZjItYThhOS0wNWIxZTg0ZWMxYmYiLCJlbWFpbCI6InZhc2FuODMwMDBAZ21haWwuY29tIiwicm9sZSI6IkFuYWx5c3QiLCJ0eXBlIjoiYWNjZXNzIiwiaWF0IjoxNzkwNjY3MjIzLCJleHAiOjE3OTA2NzA4MjN9.C53UpUtjxCxMEbraC2le1vmTm_EipRUzpk47ERxjxCQ",
+              "type": "string"
+            }
+          ]
+        },
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "http://localhost:5000/api/user/profile",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "5000",
+          "path": [
+            "api",
+            "user",
+            "profile"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Profile Update",
+      "protocolProfileBehavior": {
+        "disableCookies": false,
+        "followRedirects": false,
+        "maxResponseSize": 52428800,
+        "strictSSL": false
+      },
+      "request": {
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI0OTgxY2E4YS02ZDE4LTQxZjItYThhOS0wNWIxZTg0ZWMxYmYiLCJlbWFpbCI6InZhc2FuODMwMDBAZ21haWwuY29tIiwicm9sZSI6IkFuYWx5c3QiLCJ0eXBlIjoiYWNjZXNzIiwiaWF0IjoxNzkwNjY3MjIzLCJleHAiOjE3OTA2NzA4MjN9.C53UpUtjxCxMEbraC2le1vmTm_EipRUzpk47ERxjxCQ",
+              "type": "string"
+            }
+          ]
+        },
+        "method": "PUT",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n    \"name\": \"Vasan Test\"\r\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "http://localhost:5000/api/user/profile",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "5000",
+          "path": [
+            "api",
+            "user",
+            "profile"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Protected API",
+      "protocolProfileBehavior": {
+        "disableCookies": false,
+        "followRedirects": false,
+        "maxResponseSize": 52428800,
+        "strictSSL": false
+      },
+      "request": {
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI0OTgxY2E4YS02ZDE4LTQxZjItYThhOS0wNWIxZTg0ZWMxYmYiLCJlbWFpbCI6InZhc2FuODMwMDBAZ21haWwuY29tIiwicm9sZSI6IkFuYWx5c3QiLCJ0eXBlIjoiYWNjZXNzIiwiaWF0IjoxNzkwNjY3MjIzLCJleHAiOjE3OTA2NzA4MjN9.C53UpUtjxCxMEbraC2le1vmTm_EipRUzpk47ERxjxCQ",
+              "type": "string"
+            }
+          ]
+        },
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "http://localhost:5000/api/user/profile",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "5000",
+          "path": [
+            "api",
+            "user",
+            "profile"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Protected API",
+      "protocolProfileBehavior": {
+        "disableCookies": false,
+        "followRedirects": false,
+        "maxResponseSize": 52428800,
+        "strictSSL": false
+      },
+      "request": {
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI0OTgxY2E4YS02ZDE4LTQxZjItYThhOS0wNWIxZTg0ZWMxYmYiLCJlbWFpbCI6InZhc2FuODMwMDBAZ21haWwuY29tIiwicm9sZSI6IkFuYWx5c3QiLCJ0eXBlIjoiYWNjZXNzIiwiaWF0IjoxNzkwNjY3MjIzLCJleHAiOjE3OTA2NzA4MjN9.C53UpUtjxCxMEbraC2le1vmTm_EipRUzpk47ERxjxCQ",
+              "type": "string"
+            }
+          ]
+        },
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "http://localhost:5000/api/user/profile",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "5000",
+          "path": [
+            "api",
+            "user",
+            "profile"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Protected API",
+      "protocolProfileBehavior": {
+        "disableCookies": false,
+        "followRedirects": false,
+        "maxResponseSize": 52428800,
+        "strictSSL": false
+      },
+      "request": {
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n  \"email\": \"vasan83000@gmail.com\",\r\n  \"password\": \"12345678\"\r\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "http://localhost:5000/api/auth/login",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "5000",
+          "path": [
+            "api",
+            "auth",
+            "login"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Logout-All Revoke Refresh Token",
+      "protocolProfileBehavior": {
+        "disableCookies": false,
+        "followRedirects": false,
+        "maxResponseSize": 52428800,
+        "strictSSL": false
+      },
+      "request": {
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n  \"refresh_token\": \"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI0OTgxY2E4YS02ZDE4LTQxZjItYThhOS0wNWIxZTg0ZWMxYmYiLCJlbWFpbCI6InZhc2FuODMwMDBAZ21haWwuY29tIiwicm9sZSI6IkFuYWx5c3QiLCJ0eXBlIjoiYWNjZXNzIiwiaWF0IjoxNzkwNjY2ODU5LCJleHAiOjE3OTA2NzA0NTl9.rfltfRczJhujrbiDH6rNIK69ywPSbXdHSFCLtARP6uQ\"\r\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "http://localhost:5000/api/auth/refresh",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "5000",
+          "path": [
+            "api",
+            "auth",
+            "refresh"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Logout-All Revoke Refresh Token",
+      "protocolProfileBehavior": {
+        "disableCookies": false,
+        "followRedirects": false,
+        "maxResponseSize": 52428800,
+        "strictSSL": false
+      },
+      "request": {
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n  \"refresh_token\": \"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI0OTgxY2E4YS02ZDE4LTQxZjItYThhOS0wNWIxZTg0ZWMxYmYiLCJlbWFpbCI6InZhc2FuODMwMDBAZ21haWwuY29tIiwicm9sZSI6IkFuYWx5c3QiLCJ0eXBlIjoiYWNjZXNzIiwiaWF0IjoxNzkwNjY2ODU5LCJleHAiOjE3OTA2NzA0NTl9.rfltfRczJhujrbiDH6rNIK69ywPSbXdHSFCLtARP6uQ\"\r\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "http://localhost:5000/api/auth/refresh",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "5000",
+          "path": [
+            "api",
+            "auth",
+            "refresh"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Logout-All Revoke Refresh Token",
+      "protocolProfileBehavior": {
+        "disableCookies": false,
+        "followRedirects": false,
+        "maxResponseSize": 52428800,
+        "strictSSL": false
+      },
+      "request": {
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n  \"refresh_token\": \"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI0OTgxY2E4YS02ZDE4LTQxZjItYThhOS0wNWIxZTg0ZWMxYmYiLCJlbWFpbCI6InZhc2FuODMwMDBAZ21haWwuY29tIiwicm9sZSI6IkFuYWx5c3QiLCJ0eXBlIjoiYWNjZXNzIiwiaWF0IjoxNzkwNjY2ODU5LCJleHAiOjE3OTA2NzA0NTl9.rfltfRczJhujrbiDH6rNIK69ywPSbXdHSFCLtARP6uQ\"\r\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "http://localhost:5000/api/auth/refresh",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "5000",
+          "path": [
+            "api",
+            "auth",
+            "refresh"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Logout-All Revoke Refresh Token",
+      "protocolProfileBehavior": {
+        "disableCookies": false,
+        "followRedirects": false,
+        "maxResponseSize": 52428800,
+        "strictSSL": false
+      },
+      "request": {
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n  \"refresh_token\": \"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI0OTgxY2E4YS02ZDE4LTQxZjItYThhOS0wNWIxZTg0ZWMxYmYiLCJlbWFpbCI6InZhc2FuODMwMDBAZ21haWwuY29tIiwicm9sZSI6IkFuYWx5c3QiLCJ0eXBlIjoiYWNjZXNzIiwiaWF0IjoxNzkwNjY2ODU5LCJleHAiOjE3OTA2NzA0NTl9.rfltfRczJhujrbiDH6rNIK69ywPSbXdHSFCLtARP6uQ\"\r\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "http://localhost:5000/api/auth/refresh",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "5000",
+          "path": [
+            "api",
+            "auth",
+            "refresh"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Logout-All Revoke Refresh Token",
+      "protocolProfileBehavior": {
+        "disableCookies": false,
+        "followRedirects": false,
+        "maxResponseSize": 52428800,
+        "strictSSL": false
+      },
+      "request": {
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n  \"refresh_token\": \"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI0OTgxY2E4YS02ZDE4LTQxZjItYThhOS0wNWIxZTg0ZWMxYmYiLCJlbWFpbCI6InZhc2FuODMwMDBAZ21haWwuY29tIiwicm9sZSI6IkFuYWx5c3QiLCJ0eXBlIjoiYWNjZXNzIiwiaWF0IjoxNzkwNjY2ODU5LCJleHAiOjE3OTA2NzA0NTl9.rfltfRczJhujrbiDH6rNIK69ywPSbXdHSFCLtARP6uQ\"\r\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "http://localhost:5000/api/auth/refresh",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "5000",
+          "path": [
+            "api",
+            "auth",
+            "refresh"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Logout-All",
+      "protocolProfileBehavior": {
+        "disableCookies": false,
+        "followRedirects": false,
+        "maxResponseSize": 52428800,
+        "strictSSL": false
+      },
+      "request": {
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI0OTgxY2E4YS02ZDE4LTQxZjItYThhOS0wNWIxZTg0ZWMxYmYiLCJlbWFpbCI6InZhc2FuODMwMDBAZ21haWwuY29tIiwicm9sZSI6IkFuYWx5c3QiLCJ0eXBlIjoiYWNjZXNzIiwiaWF0IjoxNzkwNjY2ODU5LCJleHAiOjE3OTA2NzA0NTl9.rfltfRczJhujrbiDH6rNIK69ywPSbXdHSFCLtARP6uQ",
+              "type": "string"
+            }
+          ]
+        },
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "http://localhost:5000/api/auth/logout-all",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "5000",
+          "path": [
+            "api",
+            "auth",
+            "logout-all"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Logout-All",
+      "protocolProfileBehavior": {
+        "disableCookies": false,
+        "followRedirects": false,
+        "maxResponseSize": 52428800,
+        "strictSSL": false
+      },
+      "request": {
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "http://localhost:5000/api/auth/logout-all",
+              "type": "string"
+            }
+          ]
+        },
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "http://localhost:5000/api/auth/logout-all",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "5000",
+          "path": [
+            "api",
+            "auth",
+            "logout-all"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Logout-All",
+      "protocolProfileBehavior": {
+        "disableCookies": false,
+        "followRedirects": false,
+        "maxResponseSize": 52428800,
+        "strictSSL": false
+      },
+      "request": {
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n  \"email\": \"vasan83000@gmail.com\",\r\n  \"password\": \"12345678\"\r\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "http://localhost:5000/api/auth/login",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "5000",
+          "path": [
+            "api",
+            "auth",
+            "login"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Logout-All",
+      "protocolProfileBehavior": {
+        "disableCookies": false,
+        "followRedirects": false,
+        "maxResponseSize": 52428800,
+        "strictSSL": false
+      },
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "Logout-All",
+          "host": [
+            "Logout-All"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Revoke Refresh Token",
+      "protocolProfileBehavior": {
+        "disableCookies": false,
+        "followRedirects": false,
+        "maxResponseSize": 52428800,
+        "strictSSL": false
+      },
+      "request": {
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n  \"refresh_token\": \"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI0OTgxY2E4YS02ZDE4LTQxZjItYThhOS0wNWIxZTg0ZWMxYmYiLCJ0eXBlIjoicmVmcmVzaCIsImlhdCI6MTc5MDY2NjQ3NywiZXhwIjoxNzkzMjU4NDc3fQ.78bCFq9URlVHlGW7SI5iTF9k197yG269hZf-jjwUTBk\"\r\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "http://localhost:5000/api/auth/refresh",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "5000",
+          "path": [
+            "api",
+            "auth",
+            "refresh"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Logout",
+      "protocolProfileBehavior": {
+        "disableCookies": false,
+        "followRedirects": false,
+        "maxResponseSize": 52428800,
+        "strictSSL": false
+      },
+      "request": {
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n  \"refresh_token\": \"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI0OTgxY2E4YS02ZDE4LTQxZjItYThhOS0wNWIxZTg0ZWMxYmYiLCJ0eXBlIjoicmVmcmVzaCIsImlhdCI6MTc5MDY2NjQ3NywiZXhwIjoxNzkzMjU4NDc3fQ.78bCFq9URlVHlGW7SI5iTF9k197yG269hZf-jjwUTBk\"\r\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "http://localhost:5000/api/auth/logout",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "5000",
+          "path": [
+            "api",
+            "auth",
+            "logout"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Refresh Token",
+      "protocolProfileBehavior": {
+        "disableCookies": false,
+        "followRedirects": false,
+        "maxResponseSize": 52428800,
+        "strictSSL": false
+      },
+      "request": {
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n  \"refresh_token\": \"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI0OTgxY2E4YS02ZDE4LTQxZjItYThhOS0wNWIxZTg0ZWMxYmYiLCJ0eXBlIjoicmVmcmVzaCIsImlhdCI6MTc5MDY2NjQ3NywiZXhwIjoxNzkzMjU4NDc3fQ.78bCFq9URlVHlGW7SI5iTF9k197yG269hZf-jjwUTBk\"\r\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "http://localhost:5000/api/auth/refresh",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "5000",
+          "path": [
+            "api",
+            "auth",
+            "refresh"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Login",
+      "protocolProfileBehavior": {
+        "disableCookies": false,
+        "followRedirects": false,
+        "maxResponseSize": 52428800,
+        "strictSSL": false
+      },
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "X-ILF-Client",
+            "value": "web/2.0"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n  \"email\": \"vasan83000@gmail.com\",\r\n  \"password\": \"12345678\"\r\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "http://localhost:5000/api/auth/login",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "5000",
+          "path": [
+            "api",
+            "auth",
+            "login"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Login",
+      "protocolProfileBehavior": {
+        "disableCookies": false,
+        "followRedirects": false,
+        "maxResponseSize": 52428800,
+        "strictSSL": false
+      },
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "X-ILF-Client",
+            "value": "web/2.0"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n  \"email\": \"vasan83000@gmail.com\",\r\n  \"password\": \"12345678\"\r\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "http://localhost:5000/api/auth/login",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "5000",
+          "path": [
+            "api",
+            "auth",
+            "login"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Login",
+      "protocolProfileBehavior": {
+        "disableCookies": false,
+        "followRedirects": false,
+        "maxResponseSize": 52428800,
+        "strictSSL": false
+      },
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "X-ILF-Client",
+            "value": "web/2.0"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n  \"email\": \"vasan83000@gmail.com\",\r\n  \"password\": \"12345678\"\r\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "http://localhost:5000/api/auth/login",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "5000",
+          "path": [
+            "api",
+            "auth",
+            "login"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Health",
+      "protocolProfileBehavior": {
+        "disableCookies": false,
+        "followRedirects": false,
+        "maxResponseSize": 52428800,
+        "strictSSL": false
+      },
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "http://localhost:5000/api/health",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "5000",
+          "path": [
+            "api",
+            "health"
+          ]
+        }
+      },
+      "response": []
+    }
+  ]
+}

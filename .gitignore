@@ -9,3 +9,6 @@ __pycache__/
 
 # Ignore root or directory-specific bytecode
 **/*.cpython-*.pyc
+
+API_TESTING/*.postman_collection.json
+.env

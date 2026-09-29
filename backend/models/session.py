@@ -1,55 +1,70 @@
 """
-Persistent authentication session model.
+Persistent authentication session database table.
+
+Functional database definition.
+No ORM model class is used.
 """
 
 import uuid
-from datetime import datetime
 
-from sqlalchemy import DateTime, ForeignKey, String, func
-from sqlalchemy.orm import Mapped, mapped_column, relationship
+from sqlalchemy import (
+    Column,
+    DateTime,
+    ForeignKey,
+    String,
+    Table,
+    func,
+)
 
 from backend.database import Base
 
 
-class Session(Base):
-    __tablename__ = "sessions"
+metadata = Base.metadata
 
-    id: Mapped[str] = mapped_column(
+
+sessions = Table(
+    "sessions",
+    metadata,
+
+    Column(
+        "id",
         String(36),
         primary_key=True,
         default=lambda: str(uuid.uuid4()),
-    )
+    ),
 
-    user_id: Mapped[str] = mapped_column(
+    Column(
+        "user_id",
         String(36),
         ForeignKey("users.id", ondelete="CASCADE"),
         nullable=False,
         index=True,
-    )
+    ),
 
-    refresh_token_hash: Mapped[str] = mapped_column(
+    Column(
+        "refresh_token_hash",
         String(255),
         nullable=False,
         unique=True,
-    )
+        index=True,
+    ),
 
-    expires_at: Mapped[datetime] = mapped_column(
+    Column(
+        "expires_at",
         DateTime(timezone=True),
         nullable=False,
-    )
+    ),
 
-    revoked_at: Mapped[datetime | None] = mapped_column(
+    Column(
+        "revoked_at",
         DateTime(timezone=True),
         nullable=True,
-    )
+    ),
 
-    created_at: Mapped[datetime] = mapped_column(
+    Column(
+        "created_at",
         DateTime(timezone=True),
         nullable=False,
         server_default=func.now(),
-    )
-
-    user = relationship(
-        "User",
-        back_populates="sessions",
-    )
+    ),
+)

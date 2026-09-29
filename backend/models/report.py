@@ -1,61 +1,70 @@
 """
-Generated report model.
+Generated report database table.
+
+Functional database definition.
+No ORM model class is used.
 """
 
 import uuid
-from datetime import datetime
 
-from sqlalchemy import DateTime, ForeignKey, String, func
-from sqlalchemy.orm import Mapped, mapped_column, relationship
+from sqlalchemy import (
+    Column,
+    DateTime,
+    ForeignKey,
+    String,
+    Table,
+    func,
+)
 
 from backend.database import Base
 
 
-class Report(Base):
-    __tablename__ = "reports"
+metadata = Base.metadata
 
-    id: Mapped[str] = mapped_column(
+
+reports = Table(
+    "reports",
+    metadata,
+
+    Column(
+        "id",
         String(36),
         primary_key=True,
         default=lambda: str(uuid.uuid4()),
-    )
+    ),
 
-    user_id: Mapped[str] = mapped_column(
+    Column(
+        "user_id",
         String(36),
         ForeignKey("users.id", ondelete="CASCADE"),
         nullable=False,
         index=True,
-    )
+    ),
 
-    analysis_id: Mapped[str] = mapped_column(
+    Column(
+        "analysis_id",
         String(36),
         ForeignKey("log_analyses.id", ondelete="CASCADE"),
         nullable=False,
         index=True,
-    )
+    ),
 
-    report_type: Mapped[str] = mapped_column(
+    Column(
+        "report_type",
         String(50),
         nullable=False,
-    )
+    ),
 
-    file_path: Mapped[str] = mapped_column(
+    Column(
+        "file_path",
         String(1000),
         nullable=False,
-    )
+    ),
 
-    created_at: Mapped[datetime] = mapped_column(
+    Column(
+        "created_at",
         DateTime(timezone=True),
         nullable=False,
         server_default=func.now(),
-    )
-
-    user = relationship(
-        "User",
-        back_populates="reports",
-    )
-
-    analysis = relationship(
-        "LogAnalysis",
-        back_populates="reports",
-    )
+    ),
+)
