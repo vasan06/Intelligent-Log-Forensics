@@ -16,7 +16,5 @@ echo.
 echo   ILF is running!
 echo   Landing  : http://localhost:5000/
 echo   Backend  : http://localhost:5000
-echo   Login    : admin@ilf.io / ilf2026
-echo   DevTools : F12 ^> Network tab for API calls
-echo.
+  DevTools: enable "Preserve log" to keep requests across navigations\necho.
 pause
