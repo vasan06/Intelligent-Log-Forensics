@@ -37,10 +37,10 @@ const NAV_LINKS = [
 function injectNavbar() {
   const user     = Api.user();
   const initials = (user.name || 'U').split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase();
-  const page = location.pathname.replace(/\\/$/, '') || '/';
+  const page = location.pathname.replace(/\/\$/, '') || '/';
 
   const linksHtml = NAV_LINKS.map(l => {
-    const active = page === l.href.replace(/\\/$/, '') ? 'active' : '';
+    const active = page === l.href.replace(/\/\$/, '') ? 'active' : '';
     const badge  = l.badge ? `<span class="nav-badge">${l.badge}</span>` : '';
     return `<a href="${l.href}" class="nav-link ${active}" data-page="${l.href}">
       ${ICONS[l.icon]} <span>${l.label}</span>${badge}
@@ -48,7 +48,7 @@ function injectNavbar() {
   }).join('');
 
   const drawerHtml = NAV_LINKS.map(l => {
-    const active = page === l.href ? 'active' : '';
+    const active = page === l.href.replace(/\/$/, '') ? 'active' : '';
     return `<a href="${l.href}" class="nav-link ${active}">${ICONS[l.icon]} <span>${l.label}</span></a>`;
   }).join('');
 
