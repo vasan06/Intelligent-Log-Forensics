@@ -216,16 +216,17 @@ async function handleFile(file) {
 
   const fd = new FormData(); fd.append('file', file);
   const res = await Api.uploadLog(fd);
-  if (!res?.success) { toast('Upload failed', 'error'); resetUpload(); return; }
+  const data = res?.data;
+  if (!res?.ok || !data?.success) { toast(data?.message || 'Upload failed', 'error'); resetUpload(); return; }
 
-  currentPipeId = res.file_id;
+  currentPipeId = data.file_id;
   startPipelinePolling(currentPipeId);
 
-  animateCount(document.getElementById('res-lines'),    res.lines_parsed);
-  animateCount(document.getElementById('res-anomalies'),res.anomalies_found);
-  document.getElementById('res-id').textContent = res.file_id;
+  animateCount(document.getElementById('res-lines'),    data.lines_parsed);
+  animateCount(document.getElementById('res-anomalies'),data.anomalies_found);
+  document.getElementById('res-id').textContent = data.file_id;
 
-  allLogs = res.preview || [];
+  allLogs = data.preview || [];
   renderTable(allLogs);
   document.getElementById('resultsSection').style.display = 'block';
   toast(`Parsed ${res.lines_parsed.toLocaleString()} lines from ${file.name}`, 'success');
