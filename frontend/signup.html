@@ -1,202 +1,2589 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8"/>
-<meta name="viewport" content="width=device-width,initial-scale=1"/>
-<title>Create Account — ILF</title>
-<link rel="stylesheet" href="assets/css/tokens.css"/>
-<link rel="stylesheet" href="assets/css/global.css"/>
-<link rel="stylesheet" href="assets/css/components.css"/>
-<style>
-body { background: var(--surface-1); min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: var(--sp-6); }
-.auth-card { background: var(--surface-0); border: 1px solid var(--surface-3); border-radius: var(--r-2xl); padding: var(--sp-10); width: 100%; max-width: 460px; box-shadow: var(--shadow-lg); }
-.auth-brand { display: flex; align-items: center; gap: var(--sp-3); margin-bottom: var(--sp-8); }
-.auth-brand-mark { width: 36px; height: 36px; background: var(--brand-primary); border-radius: var(--r-sm); display: flex; align-items: center; justify-content: center; }
-.auth-brand-mark svg { width: 20px; height: 20px; color: #fff; }
-.otp-section { display: none; }
-.step-indicator { display: flex; align-items: center; gap: var(--sp-2); margin-bottom: var(--sp-6); }
-.step { width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: var(--text-xs); font-weight: 700; background: var(--surface-2); color: var(--ink-3); }
-.step.active { background: var(--brand-primary); color: #fff; }
-.step.done { background: var(--success); color: #fff; }
-.step-line { flex: 1; height: 2px; background: var(--surface-3); border-radius: var(--r-full); }
-.step-line.done { background: var(--success); }
-.otp-timer { font-size: var(--text-sm); color: var(--ink-3); text-align: center; margin-top: var(--sp-4); }
-.otp-timer strong { color: var(--danger); font-weight: 700; }
-.resend-link { color: var(--brand-primary); cursor: pointer; font-weight: 600; }
-.resend-link:hover { text-decoration: underline; }
-</style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <title>Sign up — Intelligent Log Forensic</title>
+
+  <link rel="stylesheet" href="assets/css/tokens.css" />
+  <link rel="stylesheet" href="assets/css/global.css" />
+  <link rel="stylesheet" href="assets/css/components.css" />
+  <link rel="stylesheet" href="assets/css/animations.css" />
+
+  <style>
+    /* =========================================================
+       ILF SIGN-UP
+       Same visual system as ILF SIGN-IN
+       ========================================================= */
+
+    :root {
+      --auth-bg: var(--surface-0, #f8f9fc);
+      --auth-card: var(--surface-1, #ffffff);
+      --auth-border: var(--surface-3, #e4e5eb);
+      --auth-text: var(--ink-0, #17162a);
+      --auth-muted: var(--ink-2, #68677a);
+      --auth-faint: var(--ink-3, #9998a8);
+      --auth-brand: var(--brand-primary, #2d2b6b);
+
+      --log-info: #4d87bd;
+      --log-warn: #b08420;
+      --log-error: #c65454;
+      --log-critical: #bd4774;
+      --log-debug: #7565a9;
+    }
+
+    *,
+    *::before,
+    *::after {
+      box-sizing: border-box;
+    }
+
+    html,
+    body {
+      min-height: 100%;
+    }
+
+    body {
+      margin: 0;
+      background: var(--auth-bg);
+      color: var(--auth-text);
+      overflow-x: hidden;
+    }
+
+    /* =========================================================
+       AUTH SHELL
+       ========================================================= */
+
+    .auth-page {
+      min-height: 100vh;
+      display: grid;
+      grid-template-columns: 1.5fr 1fr;
+
+      background:
+        radial-gradient(
+          circle at 20% 20%,
+          rgba(45, 43, 107, 0.035),
+          transparent 35%
+        ),
+        var(--auth-bg);
+    }
+
+    /* =========================================================
+       LEFT VISUAL
+       ========================================================= */
+
+    .auth-visual {
+      position: relative;
+      min-height: 100vh;
+      overflow: hidden;
+
+      border-right: 1px solid var(--auth-border);
+
+      background:
+        linear-gradient(
+          180deg,
+          rgba(255, 255, 255, 0.96) 0%,
+          rgba(248, 249, 252, 0.98) 65%,
+          rgba(243, 245, 249, 1) 100%
+        );
+    }
+
+    .auth-visual::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+
+      pointer-events: none;
+      opacity: 0.45;
+
+      background-image:
+        linear-gradient(
+          rgba(45, 43, 107, 0.035) 1px,
+          transparent 1px
+        ),
+        linear-gradient(
+          90deg,
+          rgba(45, 43, 107, 0.035) 1px,
+          transparent 1px
+        );
+
+      background-size: 44px 44px;
+
+      mask-image:
+        linear-gradient(
+          to bottom,
+          black,
+          transparent 92%
+        );
+    }
+
+    /* =========================================================
+       BRAND
+       ========================================================= */
+
+    .visual-header {
+      position: absolute;
+      top: 42px;
+      left: 48px;
+
+      z-index: 20;
+
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .visual-mark {
+      width: 34px;
+      height: 34px;
+
+      display: flex;
+      align-items: center;
+      justify-content: center;
+
+      border-radius: 9px;
+
+      background: var(--auth-brand);
+
+      box-shadow:
+        0 8px 24px rgba(45, 43, 107, 0.16);
+    }
+
+    .visual-mark svg {
+      width: 19px;
+      height: 19px;
+      color: white;
+    }
+
+    .visual-brand {
+      font-family:
+        var(--font-display, Inter, sans-serif);
+
+      font-size: 15px;
+      font-weight: 800;
+      letter-spacing: -0.02em;
+    }
+
+    /* =========================================================
+       COPY
+       ========================================================= */
+
+    .visual-copy {
+      position: absolute;
+
+      left: 48px;
+      top: 115px;
+
+      z-index: 20;
+
+      max-width: 430px;
+    }
+
+    .visual-eyebrow {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+
+      margin-bottom: 14px;
+
+      font-size: 10px;
+      font-weight: 700;
+
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+
+      color: var(--auth-brand);
+    }
+
+    .visual-eyebrow-dot {
+      width: 6px;
+      height: 6px;
+
+      flex: 0 0 auto;
+
+      border-radius: 50%;
+
+      background: var(--auth-brand);
+
+      box-shadow:
+        0 0 0 4px rgba(45, 43, 107, 0.08);
+    }
+
+    .visual-copy h1 {
+      margin: 0 0 12px;
+
+      font-family:
+        var(--font-display, Inter, sans-serif);
+
+      font-size: clamp(28px, 3vw, 44px);
+      line-height: 1.08;
+
+      letter-spacing: -0.045em;
+
+      color: var(--auth-text);
+    }
+
+    .visual-copy h1 span {
+      color: var(--auth-brand);
+    }
+
+    .visual-copy p {
+      margin: 0;
+
+      max-width: 390px;
+
+      font-size: 14px;
+      line-height: 1.65;
+
+      color: var(--auth-muted);
+    }
+
+    /* =========================================================
+       PARTICLE FIELD
+       ========================================================= */
+
+    .log-rain {
+      position: absolute;
+      inset: 0;
+
+      z-index: 3;
+
+      overflow: hidden;
+
+      pointer-events: none;
+    }
+
+    .rain-particle {
+      position: absolute;
+
+      width: 5px;
+      height: 5px;
+
+      border-radius: 50%;
+
+      background:
+        var(--particle-color, var(--auth-brand));
+
+      box-shadow:
+        0 0 0 3px
+        color-mix(
+          in srgb,
+          var(--particle-color, var(--auth-brand)) 10%,
+          transparent
+        ),
+        0 0 12px
+        color-mix(
+          in srgb,
+          var(--particle-color, var(--auth-brand)) 35%,
+          transparent
+        );
+
+      transform:
+        translate3d(-50%, 0, 0);
+
+      will-change:
+        transform,
+        opacity;
+    }
+
+    .rain-particle::after {
+      content: "";
+
+      position: absolute;
+
+      left: 50%;
+      top: 5px;
+
+      width: 1px;
+      height: 34px;
+
+      transform: translateX(-50%);
+
+      background:
+        linear-gradient(
+          to bottom,
+          color-mix(
+            in srgb,
+            var(--particle-color, var(--auth-brand)) 35%,
+            transparent
+          ),
+          transparent
+        );
+    }
+
+    /* =========================================================
+       CONVERSION ZONE
+       ========================================================= */
+
+    .conversion-zone {
+      position: absolute;
+
+      left: 48px;
+      right: 48px;
+      bottom: 42%;
+
+      height: 1px;
+
+      z-index: 8;
+
+      background:
+        linear-gradient(
+          90deg,
+          transparent,
+          rgba(45, 43, 107, 0.20),
+          transparent
+        );
+    }
+
+    /* =========================================================
+       CONVERSION FLASH
+       ========================================================= */
+
+    .conversion-flash {
+      position: absolute;
+
+      width: 7px;
+      height: 7px;
+
+      border-radius: 50%;
+
+      background:
+        var(--flash-color, var(--auth-brand));
+
+      transform:
+        translate(-50%, -50%)
+        scale(1);
+
+      pointer-events: none;
+
+      animation:
+        conversionFlash
+        420ms
+        cubic-bezier(0.16, 1, 0.3, 1)
+        forwards;
+    }
+
+    @keyframes conversionFlash {
+      0% {
+        opacity: 0.85;
+
+        transform:
+          translate(-50%, -50%)
+          scale(0.7);
+      }
+
+      35% {
+        opacity: 0.7;
+
+        transform:
+          translate(-50%, -50%)
+          scale(2);
+      }
+
+      100% {
+        opacity: 0;
+
+        transform:
+          translate(-50%, -50%)
+          scale(5);
+      }
+    }
+
+    /* =========================================================
+       LOG STREAM
+       ========================================================= */
+
+    .log-stream {
+      position: absolute;
+
+      top: calc(58% + 10px);
+      bottom: 42px;
+      left: 0;
+      right: 0;
+
+      z-index: 5;
+
+      width: 100%;
+
+      overflow: hidden;
+
+      background: transparent !important;
+      border: 0 !important;
+      box-shadow: none !important;
+      outline: none !important;
+
+      display: flex;
+      justify-content: center;
+      align-items: flex-end;
+
+      pointer-events: none;
+
+      clip-path: inset(0);
+
+      mask-image:
+        linear-gradient(
+          to bottom,
+          transparent 0%,
+          black 9%,
+          black 100%
+        );
+    }
+
+    .auth-visual .log-stream,
+    .auth-visual .log-stream *,
+    .auth-visual .log-list,
+    .auth-visual .live-log {
+      background-color: transparent !important;
+      background-image: none !important;
+      border-color: transparent !important;
+      box-shadow: none !important;
+    }
+
+    .log-list {
+      position: absolute;
+
+      left: 50%;
+      bottom: 0;
+
+      width: 100%;
+      max-width: none;
+
+      margin: 0;
+      padding: 0;
+
+      transform: translateX(-50%);
+
+      display: flex;
+      flex-direction: column;
+
+      align-items: center;
+      justify-content: flex-end;
+
+      gap: 5px;
+
+      background: transparent !important;
+      border: 0 !important;
+      box-shadow: none !important;
+
+      pointer-events: none;
+    }
+
+    .live-log {
+      position: relative;
+
+      flex: 0 0 auto;
+
+      width: max-content;
+      max-width: min(92vw, 900px);
+
+      min-height: 25px;
+
+      margin: 0;
+      padding: 3px 0;
+
+      display: flex;
+      align-items: center;
+      justify-content: center;
+
+      gap: 12px;
+
+      background: transparent !important;
+      border: 0 !important;
+      border-radius: 0 !important;
+      box-shadow: none !important;
+      outline: none !important;
+
+      font-family:
+        var(--font-mono, monospace);
+
+      font-size: 9px;
+      line-height: 1.35;
+
+      white-space: nowrap;
+
+      opacity: 0;
+
+      transform:
+        translateY(-7px)
+        scale(0.985);
+
+      animation:
+        logMaterialize
+        460ms
+        cubic-bezier(0.16, 1, 0.3, 1)
+        forwards;
+    }
+
+    .log-time {
+      flex: 0 0 auto;
+      color: #9695a2;
+    }
+
+    .log-severity {
+      flex: 0 0 auto;
+      font-weight: 700;
+    }
+
+    .log-source {
+      flex: 0 0 auto;
+      color: #598b72;
+      white-space: nowrap;
+    }
+
+    .log-message {
+      flex: 0 0 auto;
+      min-width: 0;
+      color: #777687;
+      white-space: nowrap;
+    }
+
+    @keyframes logMaterialize {
+      0% {
+        opacity: 0;
+        transform:
+          translateY(-7px)
+          scale(0.985);
+      }
+
+      55% {
+        opacity: 1;
+        transform:
+          translateY(1px)
+          scale(1.002);
+      }
+
+      100% {
+        opacity: 1;
+        transform:
+          translateY(0)
+          scale(1);
+      }
+    }
+
+    /* =========================================================
+       STATUS
+       ========================================================= */
+
+    .stream-status {
+      position: absolute;
+
+      left: 48px;
+      bottom: 17px;
+
+      display: flex;
+      align-items: center;
+      gap: 7px;
+
+      z-index: 15;
+
+      font-family:
+        var(--font-mono, monospace);
+
+      font-size: 8px;
+      letter-spacing: 0.08em;
+
+      color: rgba(45, 43, 107, 0.42);
+    }
+
+    .stream-status-dot {
+      width: 6px;
+      height: 6px;
+
+      border-radius: 50%;
+
+      background: #5b9b79;
+
+      animation:
+        streamPulse
+        1.5s
+        ease
+        infinite;
+    }
+
+    @keyframes streamPulse {
+      0%,
+      100% {
+        opacity: 0.45;
+      }
+
+      50% {
+        opacity: 1;
+      }
+    }
+
+    /* =========================================================
+       RIGHT AUTH
+       ========================================================= */
+
+    .auth-panel {
+      min-height: 100vh;
+
+      display: flex;
+      align-items: center;
+      justify-content: center;
+
+      padding: 48px 42px;
+
+      background:
+        rgba(255, 255, 255, 0.58);
+    }
+
+    .auth-card {
+      width: min(100%, 400px);
+    }
+
+    .mobile-brand {
+      display: none;
+
+      align-items: center;
+      gap: 10px;
+
+      margin-bottom: 32px;
+    }
+
+    .mobile-brand-mark {
+      width: 32px;
+      height: 32px;
+
+      display: flex;
+      align-items: center;
+      justify-content: center;
+
+      border-radius: 8px;
+
+      background: var(--auth-brand);
+    }
+
+    .mobile-brand-mark svg {
+      width: 17px;
+      height: 17px;
+      color: white;
+    }
+
+    .mobile-brand span {
+      font-weight: 800;
+
+      font-family:
+        var(--font-display, Inter, sans-serif);
+    }
+
+    .auth-heading {
+      margin-bottom: 28px;
+    }
+
+    .auth-heading h2 {
+      margin: 0 0 8px;
+
+      font-family:
+        var(--font-display, Inter, sans-serif);
+
+      font-size: 30px;
+      line-height: 1.1;
+
+      letter-spacing: -0.04em;
+    }
+
+    .auth-heading p {
+      margin: 0;
+
+      font-size: 14px;
+      line-height: 1.5;
+
+      color: var(--auth-muted);
+    }
+
+    /* =========================================================
+       FORM
+       ========================================================= */
+
+    .auth-form {
+      display: flex;
+      flex-direction: column;
+
+      gap: 16px;
+    }
+
+    .field {
+      display: flex;
+      flex-direction: column;
+
+      gap: 7px;
+    }
+
+    .field-label {
+      font-size: 12px;
+      font-weight: 650;
+
+      color: var(--auth-text);
+    }
+
+    .field-control {
+      width: 100%;
+      min-height: 46px;
+
+      padding: 0 13px;
+
+      border:
+        1px solid
+        var(--auth-border);
+
+      border-radius: 8px;
+
+      outline: none;
+
+      background: white;
+      color: var(--auth-text);
+
+      font: inherit;
+      font-size: 13px;
+
+      transition:
+        border-color 160ms ease,
+        box-shadow 160ms ease,
+        background 160ms ease;
+    }
+
+    .field-control::placeholder {
+      color: #aaa9b6;
+    }
+
+    .field-control:hover {
+      border-color: #c9c8d4;
+    }
+
+    .field-control:focus {
+      border-color: var(--auth-brand);
+
+      box-shadow:
+        0 0 0 3px
+        rgba(45, 43, 107, 0.08);
+    }
+
+    /* =========================================================
+       PASSWORD
+       ========================================================= */
+
+    .password-wrap {
+      position: relative;
+    }
+
+    .password-wrap .field-control {
+      padding-right: 48px;
+    }
+
+    .password-toggle {
+      position: absolute;
+
+      right: 9px;
+      top: 50%;
+
+      width: 32px;
+      height: 32px;
+
+      transform: translateY(-50%);
+
+      display: flex;
+      align-items: center;
+      justify-content: center;
+
+      border: 0;
+
+      background: transparent;
+
+      color: var(--auth-faint);
+
+      cursor: pointer;
+    }
+
+    .password-toggle:hover {
+      color: var(--auth-brand);
+    }
+
+    /* =========================================================
+       PASSWORD STRENGTH
+       ========================================================= */
+
+    .password-strength {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+
+      margin-top: 1px;
+
+      min-height: 12px;
+    }
+
+    .strength-track {
+      flex: 1;
+
+      height: 3px;
+
+      overflow: hidden;
+
+      border-radius: 999px;
+
+      background: #ececf1;
+    }
+
+    .strength-bar {
+      width: 0;
+      height: 100%;
+
+      border-radius: inherit;
+
+      background: var(--auth-brand);
+
+      transition:
+        width 180ms ease,
+        background 180ms ease;
+    }
+
+    .strength-label {
+      min-width: 54px;
+
+      font-size: 9px;
+
+      text-align: right;
+
+      color: var(--auth-faint);
+    }
+
+    /* =========================================================
+       TERMS
+       ========================================================= */
+
+    .terms {
+      display: flex;
+      align-items: flex-start;
+      gap: 8px;
+
+      margin-top: 1px;
+
+      font-size: 11px;
+      line-height: 1.5;
+
+      color: var(--auth-muted);
+
+      cursor: pointer;
+    }
+
+    .terms input {
+      width: 14px;
+      height: 14px;
+
+      flex: 0 0 auto;
+
+      margin-top: 1px;
+
+      accent-color: var(--auth-brand);
+    }
+
+    .terms a {
+      color: var(--auth-brand);
+      font-weight: 650;
+      text-decoration: none;
+    }
+
+    .terms a:hover {
+      text-decoration: underline;
+    }
+
+    /* =========================================================
+       BUTTON
+       ========================================================= */
+
+    .signup-btn {
+      width: 100%;
+      min-height: 48px;
+
+      margin-top: 2px;
+    }
+
+    /* =========================================================
+       DIVIDER
+       ========================================================= */
+
+    .auth-divider {
+      display: flex;
+      align-items: center;
+
+      gap: 12px;
+
+      margin: 22px 0;
+    }
+
+    .auth-divider::before,
+    .auth-divider::after {
+      content: "";
+
+      height: 1px;
+
+      flex: 1;
+
+      background: var(--auth-border);
+    }
+
+    .auth-divider span {
+      font-size: 10px;
+
+      color: var(--auth-faint);
+
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+    }
+
+    /* =========================================================
+       SIGN-IN PROMPT
+       ========================================================= */
+
+    .signin-prompt {
+      text-align: center;
+
+      font-size: 12px;
+
+      color: var(--auth-muted);
+    }
+
+    .signin-prompt a {
+      font-weight: 700;
+
+      color: var(--auth-brand);
+
+      text-decoration: none;
+    }
+
+    .signin-prompt a:hover {
+      text-decoration: underline;
+    }
+
+    /* =========================================================
+       SECURITY
+       ========================================================= */
+
+    .auth-security {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+
+      gap: 6px;
+
+      margin-top: 25px;
+
+      font-size: 10px;
+
+      color: #aaa9b6;
+    }
+
+    .auth-security svg {
+      width: 12px;
+      height: 12px;
+    }
+
+    /* =========================================================
+       VALIDATION
+       ========================================================= */
+
+    .field-control.invalid {
+      border-color: #c65454;
+    }
+
+    .field-control.valid {
+      border-color: #5b9b79;
+    }
+
+    .form-error {
+      display: none;
+
+      margin-top: -8px;
+
+      font-size: 10px;
+
+      color: #c65454;
+    }
+
+    .form-error.visible {
+      display: block;
+    }
+
+    /* =========================================================
+       TABLET
+       ========================================================= */
+
+    @media (max-width: 900px) {
+      .auth-page {
+        grid-template-columns: 1.2fr 1fr;
+      }
+
+      .visual-header,
+      .visual-copy {
+        left: 32px;
+      }
+
+      .conversion-zone {
+        left: 32px;
+        right: 32px;
+      }
+
+      .stream-status {
+        left: 32px;
+      }
+    }
+
+    /* =========================================================
+       MOBILE
+       ========================================================= */
+
+    @media (max-width: 700px) {
+      .auth-page {
+        grid-template-columns: 1fr;
+      }
+
+      .auth-visual {
+        min-height: 470px;
+        height: 470px;
+
+        border-right: 0;
+        border-bottom: 1px solid var(--auth-border);
+      }
+
+      .auth-panel {
+        min-height: auto;
+      }
+
+      .visual-copy {
+        top: 105px;
+      }
+
+      .log-stream {
+        top: calc(58% + 8px);
+        bottom: 30px;
+      }
+
+      .conversion-zone {
+        bottom: 39%;
+      }
+    }
+
+    @media (max-width: 600px) {
+      .auth-visual {
+        min-height: 400px;
+        height: 400px;
+      }
+
+      .visual-header {
+        top: 24px;
+        left: 24px;
+      }
+
+      .visual-copy {
+        left: 24px;
+        top: 82px;
+        right: 24px;
+      }
+
+      .visual-copy h1 {
+        font-size: 29px;
+      }
+
+      .visual-copy p {
+        font-size: 12px;
+      }
+
+      .conversion-zone {
+        left: 24px;
+        right: 24px;
+        bottom: 40%;
+      }
+
+      .log-stream {
+        left: 0;
+        right: 0;
+
+        top: calc(60% + 8px);
+        bottom: 24px;
+
+        width: 100%;
+      }
+
+      .log-list {
+        width: 100%;
+      }
+
+      .live-log {
+        max-width: 94vw;
+
+        gap: 7px;
+
+        font-size: 7px;
+      }
+
+      .auth-panel {
+        padding: 40px 24px;
+      }
+
+      .mobile-brand {
+        display: flex;
+      }
+
+      .stream-status {
+        left: 24px;
+        bottom: 10px;
+      }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .rain-particle,
+      .conversion-flash,
+      .live-log,
+      .stream-status-dot {
+        animation: none !important;
+      }
+    }
+  </style>
 </head>
+
 <body>
-<div class="auth-card">
-  <div class="auth-brand">
-    <div class="auth-brand-mark"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg></div>
-    <span style="font-family:var(--font-display);font-weight:800;font-size:var(--text-md);">Intelligent Log Forensic</span>
-  </div>
 
-  <!-- Step indicator -->
-  <div class="step-indicator">
-    <div class="step active" id="step1">1</div>
-    <div class="step-line" id="line1"></div>
-    <div class="step" id="step2">2</div>
-  </div>
+  <main class="auth-page">
 
-  <!-- Step 1: Details -->
-  <div id="signupSection">
-    <h2 class="t-heading" style="margin-bottom:4px;">Create your account</h2>
-    <p style="margin-bottom:var(--sp-6);">Already have one? <a class="auth-link" href="index.html" style="color:var(--brand-primary);font-weight:600;">Sign in</a></p>
+    <!-- =======================================================
+         LEFT — SAME FORENSIC LIVE STREAM AS SIGN-IN
+         ======================================================= -->
 
-    <div style="display:flex;flex-direction:column;gap:var(--sp-4);">
-      <div class="form-group">
-        <label class="form-label">Full name</label>
-        <input id="nameInput" type="text" class="input" placeholder="Your full name"/>
+    <section
+      class="auth-visual"
+      aria-hidden="true"
+    >
+
+      <!-- BRAND -->
+
+      <div class="visual-header">
+
+        
+         
+        <div class="visual-brand">
+          Intelligent Log Forensic
+        </div>
+
       </div>
-      <div class="form-group">
-        <label class="form-label">Email address</label>
-        <input id="emailInput" type="email" class="input" placeholder="you@company.io"/>
+
+      <!-- COPY -->
+
+      <div class="visual-copy">
+
+        <div class="visual-eyebrow">
+          <span class="visual-eyebrow-dot"></span>
+          Live forensic pipeline
+        </div>
+
+        <h1>
+          Every event leaves a trace.<br />
+          <span>ILF finds it.</span>
+        </h1>
+
+        <p>
+          Watch raw security events arrive, transform into
+          structured logs, and flow into the forensic analysis
+          pipeline.
+        </p>
+
       </div>
-      <div class="form-group">
-        <label class="form-label">Password</label>
-        <input id="pwInput" type="password" class="input" placeholder="At least 8 characters"/>
-        <span class="form-hint">Min 8 characters</span>
+
+      <!-- PARTICLES -->
+
+      <div
+        id="logRain"
+        class="log-rain"
+      ></div>
+
+      <!-- CONVERSION LINE -->
+
+      <div
+        id="conversionZone"
+        class="conversion-zone"
+      ></div>
+
+      <!-- LOG STREAM -->
+
+      <div class="log-stream">
+        <div
+          id="logList"
+          class="log-list"
+        ></div>
       </div>
-    </div>
-    <div class="err-box" id="signupErr" style="display:none;background:var(--danger-light);border:1px solid rgba(192,57,43,0.2);border-radius:var(--r-md);padding:var(--sp-3) var(--sp-4);font-size:var(--text-sm);color:var(--danger);margin-top:var(--sp-4);"></div>
-    <button class="btn btn-primary btn-block btn-lg" id="signupBtn" onclick="doSignup()" style="margin-top:var(--sp-5);">
-      <span id="signupText">Continue</span>
-      <span id="signupSpin" class="spinner spinner-sm" style="display:none;border-color:rgba(255,255,255,0.3);border-top-color:#fff;"></span>
-    </button>
-  </div>
 
-  <!-- Step 2: OTP -->
-  <div id="otpSection" class="otp-section">
-    <h2 class="t-heading" style="margin-bottom:4px;">Verify your email</h2>
-    <p style="margin-bottom:var(--sp-6);">We sent a 6-digit code to <strong id="otpEmailDisplay">your email</strong>. Enter it below.</p>
+      <!-- STATUS -->
 
-    <div class="otp-row" id="otpRow">
-      <input class="otp-digit" type="text" maxlength="1" inputmode="numeric" pattern="[0-9]"/>
-      <input class="otp-digit" type="text" maxlength="1" inputmode="numeric" pattern="[0-9]"/>
-      <input class="otp-digit" type="text" maxlength="1" inputmode="numeric" pattern="[0-9]"/>
-      <input class="otp-digit" type="text" maxlength="1" inputmode="numeric" pattern="[0-9]"/>
-      <input class="otp-digit" type="text" maxlength="1" inputmode="numeric" pattern="[0-9]"/>
-      <input class="otp-digit" type="text" maxlength="1" inputmode="numeric" pattern="[0-9]"/>
-    </div>
+      <div class="stream-status">
+        <span class="stream-status-dot"></span>
+        PIPELINE ACTIVE
+      </div>
 
-    <div class="otp-timer" id="otpTimer">Code expires in <strong id="timerVal">30:00</strong></div>
-    <div class="err-box" id="otpErr" style="display:none;background:var(--danger-light);border:1px solid rgba(192,57,43,0.2);border-radius:var(--r-md);padding:var(--sp-3) var(--sp-4);font-size:var(--text-sm);color:var(--danger);margin-top:var(--sp-3);"></div>
-    <button class="btn btn-primary btn-block btn-lg" id="verifyBtn" onclick="doVerify()" style="margin-top:var(--sp-5);">
-      <span id="verifyText">Verify & Create Account</span>
-      <span id="verifySpin" class="spinner spinner-sm" style="display:none;border-color:rgba(255,255,255,0.3);border-top-color:#fff;"></span>
-    </button>
-    <p class="otp-timer" style="margin-top:var(--sp-4);">Didn't receive it? <span class="resend-link" onclick="doResend()">Resend code</span></p>
-  </div>
-</div>
+    </section>
 
-<script src="assets/js/api.js"></script>
-<script>
-let pendingEmail = '';
-let timerInterval;
 
-/* ── OTP digit keyboard flow ─────────────── */
-document.querySelectorAll('.otp-digit').forEach((inp, i, all) => {
-  inp.addEventListener('input', () => {
-    inp.classList.toggle('filled', inp.value.length > 0);
-    if (inp.value && i < all.length - 1) all[i + 1].focus();
-  });
-  inp.addEventListener('keydown', e => {
-    if (e.key === 'Backspace' && !inp.value && i > 0) all[i - 1].focus();
-  });
+    <!-- =======================================================
+         RIGHT — SIGN UP
+         ======================================================= -->
+
+    <section class="auth-panel">
+
+      <div class="auth-card">
+
+        <!-- MOBILE BRAND -->
+
+        <div class="mobile-brand">
+
+          <div class="mobile-brand-mark">
+            <svg
+              viewBox="0 0 24 24"
+              fill="currentColor"
+            >
+              <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/>
+            </svg>
+          </div>
+
+          <span>
+            Intelligent Log Forensic
+          </span>
+
+        </div>
+
+
+        <!-- HEADING -->
+
+        <div class="auth-heading">
+
+          <h2>
+            Create your account
+          </h2>
+
+          <p>
+            Create an account to access your forensic workspace.
+          </p>
+
+        </div>
+
+
+        <!-- FORM -->
+
+        <form
+          class="auth-form"
+          id="signupForm"
+          method="POST"
+          action=""
+          novalidate
+        >
+
+          <!-- NAME -->
+
+          <div class="field">
+
+            <label
+              class="field-label"
+              for="name"
+            >
+              Full name
+            </label>
+
+            <input
+              class="field-control"
+              id="name"
+              name="name"
+              type="text"
+              autocomplete="name"
+              placeholder="Your full name"
+              required
+            />
+
+          </div>
+
+
+          <!-- EMAIL -->
+
+          <div class="field">
+
+            <label
+              class="field-label"
+              for="email"
+            >
+              Email address
+            </label>
+
+            <input
+              class="field-control"
+              id="email"
+              name="email"
+              type="email"
+              autocomplete="email"
+              placeholder="you@company.com"
+              required
+            />
+
+          </div>
+
+
+          <!-- PASSWORD -->
+
+          <div class="field">
+
+            <label
+              class="field-label"
+              for="password"
+            >
+              Password
+            </label>
+
+            <div class="password-wrap">
+
+              <input
+                class="field-control"
+                id="password"
+                name="password"
+                type="password"
+                autocomplete="new-password"
+                placeholder="Create a password"
+                minlength="8"
+                required
+              />
+
+              <button
+                type="button"
+                class="password-toggle"
+                id="passwordToggle"
+                aria-label="Show password"
+              >
+
+                <svg
+                  id="eyeIcon"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="1.8"
+                >
+                  <path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12z"/>
+                  <circle
+                    cx="12"
+                    cy="12"
+                    r="3"
+                  />
+                </svg>
+
+              </button>
+
+            </div>
+
+            <div class="password-strength">
+
+              <div class="strength-track">
+                <div
+                  id="strengthBar"
+                  class="strength-bar"
+                ></div>
+              </div>
+
+              <span
+                id="strengthLabel"
+                class="strength-label"
+              >
+                Password
+              </span>
+
+            </div>
+
+          </div>
+
+
+          <!-- CONFIRM PASSWORD -->
+
+          <div class="field">
+
+            <label
+              class="field-label"
+              for="confirmPassword"
+            >
+              Confirm password
+            </label>
+
+            <div class="password-wrap">
+
+              <input
+                class="field-control"
+                id="confirmPassword"
+                name="confirm_password"
+                type="password"
+                autocomplete="new-password"
+                placeholder="Repeat your password"
+                minlength="8"
+                required
+              />
+
+              <button
+                type="button"
+                class="password-toggle"
+                id="confirmPasswordToggle"
+                aria-label="Show password"
+              >
+
+                <svg
+                  id="confirmEyeIcon"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="1.8"
+                >
+                  <path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12z"/>
+                  <circle
+                    cx="12"
+                    cy="12"
+                    r="3"
+                  />
+                </svg>
+
+              </button>
+
+            </div>
+
+            <span
+              id="matchError"
+              class="form-error"
+            >
+              Passwords do not match.
+            </span>
+
+          </div>
+
+
+          <!-- TERMS -->
+
+          <label class="terms">
+
+            <input
+              id="terms"
+              name="terms"
+              type="checkbox"
+              required
+            />
+
+            <span>
+              I agree to the
+              <a href="terms.html">
+                Terms of Service
+              </a>
+              and
+              <a href="privacy.html">
+                Privacy Policy
+              </a>.
+            </span>
+
+          </label>
+
+
+          <!-- SUBMIT -->
+
+          <button
+            type="submit"
+            class="btn btn-primary btn-lg signup-btn"
+          >
+            Create account
+          </button>
+
+        </form>
+
+
+        <!-- DIVIDER -->
+
+        <div class="auth-divider">
+          <span>or</span>
+        </div>
+
+
+        <!-- SIGN IN -->
+
+        <div class="signin-prompt">
+
+          Already have an account?
+
+          <a href="signin.html">
+            Sign in
+          </a>
+
+        </div>
+
+
+        <!-- SECURITY -->
+
+        <div class="auth-security">
+
+          <svg
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.8"
+          >
+            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+          </svg>
+
+          Secure forensic workspace
+
+        </div>
+
+      </div>
+
+    </section>
+
+  </main>
+
+
+  <script>
+    /* =========================================================
+       ILF SYNCHRONIZED LOG RAIN
+
+       Same animation system as the sign-in page.
+       ========================================================= */
+
+    const LOG_EVENTS = [
+
+      {
+        severity: "INFO",
+        source: "nginx",
+        message: "GET /api/health 200 {{LATENCY}}ms"
+      },
+
+      {
+        severity: "DEBUG",
+        source: "redis",
+        message: "PING latency={{LATENCY}}ms"
+      },
+
+      {
+        severity: "INFO",
+        source: "syslog",
+        message: "Cron backup completed exit=0"
+      },
+
+      {
+        severity: "WARN",
+        source: "auth",
+        message: "Login attempt from {{IP}}"
+      },
+
+      {
+        severity: "INFO",
+        source: "kernel",
+        message: "process spawned pid={{PID}}"
+      },
+
+      {
+        severity: "WARN",
+        source: "nginx",
+        message: "request latency exceeded {{LATENCY}}ms"
+      },
+
+      {
+        severity: "ERROR",
+        source: "auth",
+        message: "authentication failure user=admin from {{IP}}"
+      },
+
+      {
+        severity: "INFO",
+        source: "systemd",
+        message: "service worker started"
+      },
+
+      {
+        severity: "WARN",
+        source: "firewall",
+        message: "connection from {{IP}} threshold reached"
+      },
+
+      {
+        severity: "ERROR",
+        source: "ssh",
+        message: "failed publickey for root from {{IP}}"
+      },
+
+      {
+        severity: "INFO",
+        source: "api",
+        message: "POST /events accepted 201"
+      },
+
+      {
+        severity: "DEBUG",
+        source: "parser",
+        message: "event schema validated"
+      },
+
+      {
+        severity: "CRITICAL",
+        source: "iptables",
+        message: "suspicious SYN rate from {{IP}}"
+      },
+
+      {
+        severity: "WARN",
+        source: "fail2ban",
+        message: "repeated authentication failures from {{IP}}"
+      },
+
+      {
+        severity: "ERROR",
+        source: "apache2",
+        message: "directory traversal pattern from {{IP}}"
+      },
+
+      {
+        severity: "INFO",
+        source: "collector",
+        message: "batch received records={{RECORDS}}"
+      }
+
+    ];
+
+
+    /* =========================================================
+       SEVERITY COLORS
+       ========================================================= */
+
+    const SEVERITY_COLOR = {
+
+      INFO:
+        "var(--log-info)",
+
+      DEBUG:
+        "var(--log-debug)",
+
+      WARN:
+        "var(--log-warn)",
+
+      ERROR:
+        "var(--log-error)",
+
+      CRITICAL:
+        "var(--log-critical)"
+
+    };
+
+
+    /* =========================================================
+       DOM
+       ========================================================= */
+
+    const rain =
+      document.getElementById("logRain");
+
+    const logList =
+      document.getElementById("logList");
+
+    const conversionZone =
+      document.getElementById("conversionZone");
+
+
+    /* =========================================================
+       STATE
+       ========================================================= */
+
+    let eventId = 0;
+
+    const MAX_LOGS = 15;
+
+    let eventPool = [];
+
+
+    /* =========================================================
+       RANDOM IP
+       ========================================================= */
+
+    function generateRandomIP() {
+
+      let first;
+
+      do {
+
+        first =
+          Math.floor(
+            Math.random() * 223
+          ) + 1;
+
+      } while (
+        first === 127
+      );
+
+      const second =
+        Math.floor(
+          Math.random() * 256
+        );
+
+      const third =
+        Math.floor(
+          Math.random() * 256
+        );
+
+      const fourth =
+        Math.floor(
+          Math.random() * 254
+        ) + 1;
+
+      return [
+        first,
+        second,
+        third,
+        fourth
+      ].join(".");
+
+    }
+
+
+    /* =========================================================
+       SHUFFLE
+       ========================================================= */
+
+    function shuffleEvents() {
+
+      eventPool = [
+        ...LOG_EVENTS
+      ];
+
+      for (
+        let i = eventPool.length - 1;
+        i > 0;
+        i--
+      ) {
+
+        const j =
+          Math.floor(
+            Math.random() * (i + 1)
+          );
+
+        [
+          eventPool[i],
+          eventPool[j]
+        ] = [
+          eventPool[j],
+          eventPool[i]
+        ];
+
+      }
+
+    }
+
+
+    /* =========================================================
+       NEXT EVENT
+       ========================================================= */
+
+    function getNextEvent() {
+
+      if (
+        eventPool.length === 0
+      ) {
+        shuffleEvents();
+      }
+
+      const baseEvent =
+        eventPool.pop();
+
+      const randomIP =
+        generateRandomIP();
+
+      const randomPID =
+        Math.floor(
+          Math.random() * 9000
+        ) + 1000;
+
+      const randomLatency =
+        Math.floor(
+          Math.random() * 500
+        ) + 100;
+
+      const randomRecords =
+        Math.floor(
+          Math.random() * 900
+        ) + 100;
+
+      const message =
+        baseEvent.message
+
+          .replaceAll(
+            "{{IP}}",
+            randomIP
+          )
+
+          .replaceAll(
+            "{{PID}}",
+            randomPID
+          )
+
+          .replaceAll(
+            "{{LATENCY}}",
+            randomLatency
+          )
+
+          .replaceAll(
+            "{{RECORDS}}",
+            randomRecords
+          );
+
+      return {
+
+        ...baseEvent,
+
+        message,
+
+        id:
+          ++eventId,
+
+        timestamp:
+          new Date()
+
+      };
+
+    }
+
+
+    /* =========================================================
+       TIME
+       ========================================================= */
+
+    function formatTime(date) {
+
+      return date.toLocaleTimeString(
+        "en-IN",
+        {
+          hour12: false
+        }
+      );
+
+    }
+
+
+    /* =========================================================
+       MATERIALIZE LOG
+       ========================================================= */
+
+    function materializeLog(event) {
+
+      const log =
+        document.createElement("div");
+
+      log.className =
+        "live-log";
+
+      const severityColor =
+        SEVERITY_COLOR[event.severity] ||
+        "var(--auth-brand)";
+
+      const time =
+        document.createElement("span");
+
+      time.className =
+        "log-time";
+
+      time.textContent =
+        formatTime(event.timestamp);
+
+      const severity =
+        document.createElement("span");
+
+      severity.className =
+        "log-severity";
+
+      severity.style.color =
+        severityColor;
+
+      severity.textContent =
+        event.severity;
+
+      const source =
+        document.createElement("span");
+
+      source.className =
+        "log-source";
+
+      source.textContent =
+        event.source;
+
+      const message =
+        document.createElement("span");
+
+      message.className =
+        "log-message";
+
+      message.textContent =
+        event.message;
+
+      log.appendChild(time);
+      log.appendChild(severity);
+      log.appendChild(source);
+      log.appendChild(message);
+
+      logList.appendChild(log);
+
+      while (
+        logList.children.length >
+        MAX_LOGS
+      ) {
+
+        logList.firstElementChild.remove();
+
+      }
+
+    }
+
+
+    /* =========================================================
+       CONVERSION FLASH
+       ========================================================= */
+
+    function createConversionFlash(
+      x,
+      color
+    ) {
+
+      const flash =
+        document.createElement("div");
+
+      flash.className =
+        "conversion-flash";
+
+      flash.style.left =
+        `${x}px`;
+
+      flash.style.top =
+        `${conversionZone.offsetTop}px`;
+
+      flash.style.setProperty(
+        "--flash-color",
+        color
+      );
+
+      rain.appendChild(
+        flash
+      );
+
+      flash.addEventListener(
+        "animationend",
+        () => {
+          flash.remove();
+        },
+        {
+          once: true
+        }
+      );
+
+    }
+
+
+    /* =========================================================
+       PARTICLE
+       ========================================================= */
+
+    function createParticle(event) {
+
+      const particle =
+        document.createElement("div");
+
+      particle.className =
+        "rain-particle";
+
+      const minX = 90;
+
+      const maxX =
+        Math.max(
+          minX + 1,
+          rain.clientWidth - 90
+        );
+
+      const x =
+        minX +
+        Math.random() *
+        (maxX - minX);
+
+      const startY = -20;
+
+      const targetY =
+        conversionZone.offsetTop;
+
+      const duration =
+        2300 +
+        Math.random() * 450;
+
+      const color =
+        SEVERITY_COLOR[event.severity] ||
+        "var(--auth-brand)";
+
+      particle.style.left =
+        `${x}px`;
+
+      particle.style.top =
+        `${startY}px`;
+
+      particle.style.setProperty(
+        "--particle-color",
+        color
+      );
+
+      rain.appendChild(
+        particle
+      );
+
+      const animation =
+        particle.animate(
+
+          [
+
+            {
+              transform:
+                "translate3d(-50%, 0, 0)",
+
+              opacity: 0
+            },
+
+            {
+              transform:
+                "translate3d(-50%, 0, 0)",
+
+              opacity: 1,
+
+              offset: 0.05
+            },
+
+            {
+              transform:
+                `translate3d(
+                  -50%,
+                  ${targetY - startY - 8}px,
+                  0
+                )`,
+
+              opacity: 1,
+
+              offset: 0.90
+            },
+
+            {
+              transform:
+                `translate3d(
+                  -50%,
+                  ${targetY - startY}px,
+                  0
+                ) scale(0.25)`,
+
+              opacity: 0
+            }
+
+          ],
+
+          {
+
+            duration,
+
+            easing:
+              "cubic-bezier(0.35, 0, 0.65, 1)",
+
+            fill:
+              "forwards"
+
+          }
+
+        );
+
+
+      animation.finished
+
+        .then(() => {
+
+          createConversionFlash(
+            x,
+            color
+          );
+
+          materializeLog(
+            event
+          );
+
+          particle.remove();
+
+        })
+
+        .catch(() => {
+
+          particle.remove();
+
+        });
+
+    }
+
+
+    /* =========================================================
+       EVENT
+       ========================================================= */
+
+    function createEvent() {
+
+      const event =
+        getNextEvent();
+
+      createParticle(
+        event
+      );
+
+    }
+
+
+    /* =========================================================
+       START
+       ========================================================= */
+
+    function startRain() {
+
+      shuffleEvents();
+
+      const initialCount = 4;
+
+      for (
+        let i = 0;
+        i < initialCount;
+        i++
+      ) {
+
+        setTimeout(
+          () => {
+            createEvent();
+          },
+          i * 650
+        );
+
+      }
+
+      setInterval(
+        createEvent,
+        1100
+      );
+
+    }
+
+
+    window.addEventListener(
+      "load",
+      () => {
+
+        requestAnimationFrame(
+          () => {
+            startRain();
+          }
+        );
+
+      }
+    );
+
+
+    /* =========================================================
+       PASSWORD TOGGLE HELPER
+       ========================================================= */
+
+    function setupPasswordToggle(
+      input,
+      button,
+      icon
+    ) {
+
+      if (
+        !input ||
+        !button
+      ) {
+        return;
+      }
+
+      button.addEventListener(
+        "click",
+        () => {
+
+          const isVisible =
+            input.type === "text";
+
+          input.type =
+            isVisible
+              ? "password"
+              : "text";
+
+          button.setAttribute(
+            "aria-label",
+            isVisible
+              ? "Show password"
+              : "Hide password"
+          );
+
+          if (icon) {
+
+            icon.innerHTML =
+              isVisible
+
+                ? `
+                  <path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12z"/>
+                  <circle
+                    cx="12"
+                    cy="12"
+                    r="3"
+                  />
+                `
+
+                : `
+                  <path d="M3 3l18 18"/>
+                  <path d="M10.6 10.6a2 2 0 0 0 2.8 2.8"/>
+                  <path d="M9.9 5.2A10.7 10.7 0 0 1 12 5c6.5 0 10 7 10 7a17.4 17.4 0 0 1-3.2 4.1"/>
+                  <path d="M6.6 6.6C3.7 8.5 2 12 2 12s3.5 7 10 7a10.8 10.8 0 0 0 4-.8"/>
+                `;
+
+          }
+
+        }
+      );
+
+    }
+
+
+    /* =========================================================
+       PASSWORD VISIBILITY
+       ========================================================= */
+
+    setupPasswordToggle(
+
+      document.getElementById(
+        "password"
+      ),
+
+      document.getElementById(
+        "passwordToggle"
+      ),
+
+      document.getElementById(
+        "eyeIcon"
+      )
+
+    );
+
+
+    setupPasswordToggle(
+
+      document.getElementById(
+        "confirmPassword"
+      ),
+
+      document.getElementById(
+        "confirmPasswordToggle"
+      ),
+
+      document.getElementById(
+        "confirmEyeIcon"
+      )
+
+    );
+
+
+    /* =========================================================
+       PASSWORD STRENGTH
+       ========================================================= */
+
+    const passwordInput =
+      document.getElementById(
+        "password"
+      );
+
+    const strengthBar =
+      document.getElementById(
+        "strengthBar"
+      );
+
+    const strengthLabel =
+      document.getElementById(
+        "strengthLabel"
+      );
+
+
+    function calculatePasswordStrength(
+      value
+    ) {
+
+      let score = 0;
+
+      if (value.length >= 8) {
+        score++;
+      }
+
+      if (value.length >= 12) {
+        score++;
+      }
+
+      if (/[a-z]/.test(value)) {
+        score++;
+      }
+
+      if (/[A-Z]/.test(value)) {
+        score++;
+      }
+
+      if (/[0-9]/.test(value)) {
+        score++;
+      }
+
+      if (
+        /[^A-Za-z0-9]/.test(value)
+      ) {
+        score++;
+      }
+
+      return Math.min(
+        score,
+        5
+      );
+
+    }
+
+
+    function updatePasswordStrength() {
+
+      if (!passwordInput) {
+        return;
+      }
+
+      const value =
+        passwordInput.value;
+
+      const score =
+        calculatePasswordStrength(
+          value
+        );
+
+
+      const widths = [
+        "0%",
+        "20%",
+        "40%",
+        "60%",
+        "80%",
+        "100%"
+      ];
+
+
+      const labels = [
+        "Password",
+        "Very weak",
+        "Weak",
+        "Fair",
+        "Strong",
+        "Very strong"
+      ];
+
+
+      strengthBar.style.width =
+        widths[score];
+
+      strengthLabel.textContent =
+        labels[score];
+
+
+      if (score <= 1) {
+
+        strengthBar.style.background =
+          "#c65454";
+
+      } else if (score <= 3) {
+
+        strengthBar.style.background =
+          "#b08420";
+
+      } else {
+
+        strengthBar.style.background =
+          "#5b9b79";
+
+      }
+
+    }
+
+
+    passwordInput.addEventListener(
+      "input",
+      updatePasswordStrength
+    );
+
+
+    /* =========================================================
+       CONFIRM PASSWORD
+       ========================================================= */
+
+    const confirmPassword =
+      document.getElementById(
+        "confirmPassword"
+      );
+
+    const matchError =
+      document.getElementById(
+        "matchError"
+      );
+
+
+    function validatePasswords() {
+
+      if (
+        !confirmPassword.value
+      ) {
+
+        confirmPassword.classList.remove(
+          "valid",
+          "invalid"
+        );
+
+        matchError.classList.remove(
+          "visible"
+        );
+
+        return false;
+
+      }
+
+
+      const matches =
+        passwordInput.value ===
+        confirmPassword.value;
+
+
+      confirmPassword.classList.toggle(
+        "valid",
+        matches
+      );
+
+      confirmPassword.classList.toggle(
+        "invalid",
+        !matches
+      );
+
+      matchError.classList.toggle(
+        "visible",
+        !matches
+      );
+
+
+      return matches;
+
+    }
+
+
+    confirmPassword.addEventListener(
+      "input",
+      validatePasswords
+    );
+
+    passwordInput.addEventListener(
+      "input",
+      () => {
+
+        if (
+          confirmPassword.value
+        ) {
+          validatePasswords();
+        }
+
+      }
+    );
+
+
+    /* =========================================================
+       FORM VALIDATION
+       ========================================================= */
+
+    const signupForm =
+      document.getElementById(
+        "signupForm"
+      );
+
+signupForm.addEventListener("submit", async (event) => {
+  event.preventDefault();
+
+  const passwordsMatch = validatePasswords();
+
+  if (!signupForm.checkValidity() || !passwordsMatch) {
+    signupForm.reportValidity();
+    return;
+  }
+
+  const name =
+    document.getElementById("name").value.trim();
+
+  const email =
+    document.getElementById("email").value.trim();
+
+  const password =
+    document.getElementById("password").value;
+
+  const submitButton =
+    signupForm.querySelector('button[type="submit"]');
+
+  try {
+
+    submitButton.disabled = true;
+    submitButton.textContent = "Creating account...";
+
+    const response = await fetch("/api/auth/signup", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        name,
+        email,
+        password
+      })
+    });
+
+    const data = await response.json();
+
+    console.log("Signup response:", data);
+
+    if (!response.ok) {
+      alert(data.message || "Signup failed");
+      return;
+    }
+
+    /*
+     * Account successfully created.
+     * Backend returns JWT token.
+     */
+    localStorage.setItem("ilf_token", data.token);
+
+    /*
+     * Store user information if the dashboard needs it.
+     */
+    localStorage.setItem(
+      "ilf_user",
+      JSON.stringify(data.user)
+    );
+
+    /*
+     * Go directly to dashboard.
+     */
+    window.location.href = "/dashboard.html";
+
+  } catch (error) {
+
+    console.error("Signup error:", error);
+
+    alert("Unable to connect to the server.");
+
+  } finally {
+
+    submitButton.disabled = false;
+    submitButton.textContent = "Create account";
+
+  }
 });
 
-function getOtpValue() {
-  return [...document.querySelectorAll('.otp-digit')].map(i => i.value).join('');
-}
 
-function startTimer(seconds = 1800) {
-  clearInterval(timerInterval);
-  let rem = seconds;
-  timerInterval = setInterval(() => {
-    const m = String(Math.floor(rem / 60)).padStart(2, '0');
-    const s = String(rem % 60).padStart(2, '0');
-    document.getElementById('timerVal').textContent = `${m}:${s}`;
-    if (rem-- <= 0) {
-      clearInterval(timerInterval);
-      document.getElementById('timerVal').textContent = 'Expired';
-    }
-  }, 1000);
-}
+  </script>
 
-async function doSignup() {
-  const name  = document.getElementById('nameInput').value.trim();
-  const email = document.getElementById('emailInput').value.trim();
-  const pw    = document.getElementById('pwInput').value;
-  const err   = document.getElementById('signupErr');
-  const btn   = document.getElementById('signupBtn');
-
-  err.style.display = 'none';
-  if (!name || !email || !pw) { err.textContent = 'All fields are required.'; err.style.display = 'block'; return; }
-  if (pw.length < 8) { err.textContent = 'Password must be at least 8 characters.'; err.style.display = 'block'; return; }
-
-  btn.disabled = true;
-  document.getElementById('signupText').textContent = 'Sending code…';
-  document.getElementById('signupSpin').style.display = 'inline-block';
-
-  const res = await Api.signup(name, email, pw);
-  btn.disabled = false;
-  document.getElementById('signupText').textContent = 'Continue';
-  document.getElementById('signupSpin').style.display = 'none';
-
-  if (res.ok && res.data?.success) {
-    pendingEmail = email;
-    document.getElementById('otpEmailDisplay').textContent = email;
-    document.getElementById('signupSection').style.display = 'none';
-    document.getElementById('otpSection').style.display = 'block';
-    document.getElementById('step1').textContent = '✓'; document.getElementById('step1').className = 'step done';
-    document.getElementById('step2').className = 'step active';
-    document.getElementById('line1').className = 'step-line done';
-    document.querySelectorAll('.otp-digit')[0].focus();
-    startTimer();
-  } else {
-    err.textContent = res.data?.message || 'Signup failed. Please try again.';
-    err.style.display = 'block';
-  }
-}
-
-async function doVerify() {
-  const otp = getOtpValue();
-  const err = document.getElementById('otpErr');
-  const btn = document.getElementById('verifyBtn');
-  err.style.display = 'none';
-
-  if (otp.length !== 6) { err.textContent = 'Please enter all 6 digits.'; err.style.display = 'block'; return; }
-
-  btn.disabled = true;
-  document.getElementById('verifyText').textContent = 'Verifying…';
-  document.getElementById('verifySpin').style.display = 'inline-block';
-
-  const res = await Api.verifyOtp(pendingEmail, otp, 'signup');
-  btn.disabled = false;
-  document.getElementById('verifyText').textContent = 'Verify & Create Account';
-  document.getElementById('verifySpin').style.display = 'none';
-
-  if (res.ok && res.data?.success) {
-    Api.setAuth(res.data.token, res.data.user);
-    clearInterval(timerInterval);
-    window.location.href = 'dashboard.html';
-  } else {
-    err.textContent = res.data?.message || 'Invalid OTP. Please try again.';
-    err.style.display = 'block';
-    document.querySelectorAll('.otp-digit').forEach(i => { i.value = ''; i.classList.remove('filled'); });
-    document.querySelectorAll('.otp-digit')[0].focus();
-  }
-}
-
-async function doResend() {
-  await Api.resendOtp(pendingEmail, 'signup');
-  startTimer();
-  document.querySelectorAll('.otp-digit').forEach(i => { i.value = ''; i.classList.remove('filled'); });
-  document.querySelectorAll('.otp-digit')[0].focus();
-  document.getElementById('otpErr').style.display = 'none';
-}
-</script>
 </body>
 </html>

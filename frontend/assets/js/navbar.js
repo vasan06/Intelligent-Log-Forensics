@@ -37,7 +37,7 @@ const NAV_LINKS = [
 function injectNavbar() {
   const user     = Api.user();
   const initials = (user.name || 'U').split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase();
-  const page     = location.pathname.split('/').pop() || 'index.html';
+  const page     = location.pathname.split('/').pop() || 'signin.html';
 
   const linksHtml = NAV_LINKS.map(l => {
     const active = page === l.href ? 'active' : '';
@@ -118,5 +118,5 @@ function refreshNavUser() {
 async function doLogout() {
   await Api.logout();
   Api.clearAuth();
-  window.location.href = 'index.html';
+  window.location.href = 'signin.html';
 }

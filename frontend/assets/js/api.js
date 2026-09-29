@@ -40,7 +40,7 @@ const Api = {
 
       if (res.status === 401) {
         Api.clearAuth();
-        window.location.href = '/index.html';
+        window.location.href = '/signin.html';
         return { ok: false, data: null };
       }
       return { ok: res.ok, status: res.status, data };

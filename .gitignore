@@ -1,2 +1,11 @@
 instance/ilf.db
 instance/ilf.db
+
+# Ignore Python bytecode and cache files
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Ignore root or directory-specific bytecode
+**/*.cpython-*.pyc
