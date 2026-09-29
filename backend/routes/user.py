@@ -283,7 +283,7 @@ def export_user_data():
         "success": True,
         "exported_at": __import__("datetime").datetime.now(__import__("datetime").timezone.utc).isoformat(),
         "user": safe_user(user),
-        "files": [dict(x) for x in files],
-        "analyses": [dict(x) for x in analyses],
-        "reports": [dict(x) for x in report_rows],
+        "files": [{"id": str(x["id"]), "filename": x["filename"], "size": x["size"], "status": x["status"], "created_at": x["created_at"].isoformat() if x["created_at"] else None} for x in files],
+        "analyses": [{"id": str(x["id"]), "file_id": str(x["file_id"]), "status": x["status"], "results": x["results"], "created_at": x["created_at"].isoformat() if x["created_at"] else None} for x in analyses],
+        "reports": [{"id": str(x["id"]), "analysis_id": str(x["analysis_id"]), "report_type": x["report_type"], "created_at": x["created_at"].isoformat() if x["created_at"] else None} for x in report_rows],
     })
