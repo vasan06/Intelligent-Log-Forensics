@@ -11,6 +11,7 @@ from backend import config
 from backend.database import get_db
 from backend.models.log_analysis import log_analyses
 from backend.models.uploaded_file import uploaded_files
+from backend.models.user import users
 
 
 dash_bp = Blueprint("dashboard", __name__)
