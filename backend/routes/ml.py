@@ -4,6 +4,11 @@ from flask import Blueprint, request, jsonify
 
 from backend.services.ml_service import run_ensemble
 from backend.services.log_simulator import generate_logs
+from backend import config
+from backend.database import get_db
+from backend.models.user import users
+from sqlalchemy import select
+import jwt
 
 
 ml_bp = Blueprint("ml", __name__)
@@ -46,6 +51,17 @@ def algorithms():
 
 @ml_bp.route("/ml/analyze", methods=["POST"])
 def analyze():
+    auth = request.headers.get("Authorization", "")
+    if not auth.startswith("Bearer "):
+        return jsonify({"success": False, "message": "Authentication required"}), 401
+    try:
+        payload = jwt.decode(auth[7:].strip(), config.JWT_SECRET_KEY, algorithms=[config.JWT_ALGORITHM])
+        uid = payload.get("sub") if payload.get("type") == "access" else None
+        with get_db() as db:
+            active = uid and db.execute(select(users.c.id).where(users.c.id == str(uid), users.c.verified.is_(True))).first()
+        if not active: return jsonify({"success": False, "message": "Authentication required"}), 401
+    except jwt.InvalidTokenError:
+        return jsonify({"success": False, "message": "Authentication required"}), 401
 
     data = request.get_json(silent=True) or {}
 
