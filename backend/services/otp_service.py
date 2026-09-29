@@ -52,9 +52,7 @@ def _send_otp_email(email, code, otp_type):
       <p>This code expires in 30 minutes. If you did not request it, ignore this email.</p>
     </div>"""
     if not config.EMAIL_ENABLED:
-        print(f"[ILF DEV] OTP issued for {email} ({otp_type}); value is intentionally not exposed by the API.")
-        # Development mode still needs a usable delivery channel. The code is stored in memory;
-        # configure SMTP for real email delivery. Do not print the OTP itself.
+        print(f"\n[ILF DEV] OTP for {email} ({otp_type}): {code} [expires in 30m]\n")
         return True
     try:
         msg = MIMEMultipart("alternative")
