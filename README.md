@@ -18,7 +18,7 @@ Backend runs at **http://localhost:5000**
 
 ### 2. Frontend
 
-Open `frontend/landing.html` in any browser (or `frontend/index.html` to go straight to login).
+Open `frontend/landing.html` in any browser (or `frontend/signin.html` to go straight to login).
 
 **Demo login:** `admin@ilf.io` / `ilf2026`
 
@@ -29,7 +29,7 @@ Open `frontend/landing.html` in any browser (or `frontend/index.html` to go stra
 | Page | File | Description |
 |------|------|-------------|
 | Landing | `landing.html` | Product page with live demo terminal |
-| Login | `index.html` | Auth with 3D helix scene |
+| Login | `signin.html` | Auth with 3D helix scene |
 | Signup | `signup.html` | Registration with OTP email verify |
 | Forgot PW | `forgot-password.html` | OTP-based password reset |
 | Dashboard | `dashboard.html` | KPIs, charts, ML summary ribbon |

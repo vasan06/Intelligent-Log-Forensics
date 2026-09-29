@@ -1,0 +1,15 @@
+1. new acc created while logging in works after logout and re-login cannot allowed 405
+
+2. while uploading file in response it says 200 and success but it can't  allowed the file for further processing
+
+3. redesign the MITRE mapping & catalog, live monitor page and report generation format need to be changed
+
+4. it dont have any db i think so need to implement for storing user details, logs, session. report etc
+
+5. Implement the forgot password. if we didn'thave the credentials in terminal we have the code but after adding the cred the it could not send the code for the email.
+
+and here one logic is need to be added, while new user click the forgot password it checks the db and then validate there if user not then redirect to create page if exists tell the user your reset password were send as a code in your email etc
+
+and also for new user try signin then redirect to signup page with autofilled email.
+
+6. Need to implement the JWT for authentication

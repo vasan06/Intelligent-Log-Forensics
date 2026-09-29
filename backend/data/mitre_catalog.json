@@ -1429,7 +1429,7 @@
       "severity": "HIGH",
       "description": "Modify visual content to deliver a message or intimidate.",
       "log_patterns": [
-        "index.html modified",
+        "signin.html modified",
         "web defacement",
         "website changed",
         "home page altered"

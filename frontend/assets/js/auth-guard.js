@@ -6,7 +6,7 @@
 /* ── Auth guard ────────────────────────────── */
 function requireAuth() {
   if (!Api.token()) {
-    window.location.href = 'index.html';
+    window.location.href = 'signin.html';
     return false;
   }
   return true;

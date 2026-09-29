@@ -8,6 +8,7 @@ Run from project root:
 
 from pathlib import Path
 
+from backend.database import check_database_connection
 from flask import Flask, send_from_directory
 from flask_cors import CORS
 
@@ -65,11 +66,13 @@ def create_app():
 
     @app.route("/api/health")
     def health():
-        return {
-            "status": "ok",
-            "service": "ILF Backend v2.0",
-        }
+        db_ok = check_database_connection()
 
+        return {
+        "status": "ok" if db_ok else "degraded",
+        "service": "ILF Backend v2.0",
+        "database": "connected" if db_ok else "unavailable",
+    }, 200 if db_ok else 503
     # -------------------------------------------------
     # Frontend pages
     # -------------------------------------------------
@@ -80,7 +83,7 @@ def create_app():
 
     @app.route("/login")
     def login():
-        return send_from_directory(FRONTEND_DIR, "index.html")
+        return send_from_directory(FRONTEND_DIR, "signin.html")
 
     @app.route("/signup")
     def signup():
