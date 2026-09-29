@@ -2584,7 +2584,9 @@ signupForm.addEventListener("submit", async (event) => {
 });
 
 
-  \nconst prefillEmail=new URLSearchParams(location.search).get('email');if(prefillEmail){const emailEl=document.querySelector('input[type="email"]');if(emailEl)emailEl.value=prefillEmail;}\n</script>
+  const prefillEmail=new URLSearchParams(location.search).get('email');if(prefillEmail)
+  {const emailEl=document.querySelector('input[type="email"]');if(emailEl)emailEl.value=prefillEmail;}
+  </script>
 
 </body>
 </html>

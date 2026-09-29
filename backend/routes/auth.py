@@ -814,8 +814,18 @@ def refresh():
         or ""
     ).strip()
 
-    # Browser sessions require the access-token cookie to still exist.\n    # This lets a user deleting the access cookie in DevTools immediately\n    # invalidate the browser session instead of silently refreshing it.\n    if not request.cookies.get(ACCESS_COOKIE_NAME):\n        return jsonify({"success": False, "message": "Access session is missing"}), 401\n\n    if not refresh_token:
+        # Browser sessions require the access-token cookie to still exist.
+    # This lets a user deleting the access cookie in DevTools immediately
+    # invalidate the browser session instead of silently refreshing it.
+    if not request.cookies.get(ACCESS_COOKIE_NAME):
+        return jsonify(
+            {
+                "success": False,
+                "message": "Access session is missing",
+            }
+        ), 401
 
+    if not refresh_token:
         return jsonify(
             {
                 "success": False,
