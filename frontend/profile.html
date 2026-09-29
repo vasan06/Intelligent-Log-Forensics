@@ -247,7 +247,7 @@ async function saveProfile() {
     document.getElementById('profileName').textContent  = u.name;
     document.getElementById('profileEmail').textContent = u.email;
     document.getElementById('profileAvatar').textContent= u.avatar;
-    const stored = Api.user(); Api.setAuth(Api.token(), {...stored, name:u.name, email:u.email});
+    const stored = Api.user(); Api.setAuth(Api.accessToken(), Api.refreshToken(), {...stored, name:u.name, email:u.email});
     refreshNavUser();
     toast('Profile saved', 'success');
   } else { toast('Save failed', 'error'); }
