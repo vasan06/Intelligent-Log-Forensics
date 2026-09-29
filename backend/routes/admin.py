@@ -25,7 +25,7 @@ def current_user():
         if payload.get("type") != "access":
             return None
         with get_db() as db:
-            return db.execute(select(users).where(users.c.id == str(payload.get("sub")))).mappings().first()
+            return db.execute(select(users).where(users.c.id == str(payload.get("sub")), users.c.verified.is_(True))).mappings().first()
     except jwt.InvalidTokenError:
         return None
 
