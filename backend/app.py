@@ -8,7 +8,7 @@ Run from project root:
 
 from pathlib import Path
 
-from backend.database import check_database_connection
+from backend.database import check_database_connection, init_database
 from flask import Flask, send_from_directory
 from flask_cors import CORS
 
@@ -44,6 +44,12 @@ def create_app():
         origins=config.CORS_ORIGINS,
         supports_credentials=True,
     )
+
+    # Initialize schema on startup for development. Production deployments should use migrations.
+    try:
+        init_database()
+    except Exception as exc:
+        app.logger.warning("Database initialization skipped: %s", exc)
 
     # -------------------------------------------------
     # API blueprints
