@@ -89,7 +89,7 @@ def upload():
             "ml": ml, "ml_analysis": ml,
             "log_volume": {level: [0]*24 for level in ("INFO","WARN","ERROR","CRITICAL","DEBUG")},
             "activity": {"days": ["Mon","Tue","Wed","Thu","Fri","Sat","Sun"], "hours": [f"{h:02d}h" for h in range(0,24,2)], "data": [[0]*12 for _ in range(7)]},
-            "preview": parsed[:20],
+            "preview": parsed[:20], "logs": parsed[:5000],
         }
         now = datetime.datetime.now(datetime.timezone.utc)
         for entry in parsed:
