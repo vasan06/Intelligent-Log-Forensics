@@ -12,7 +12,7 @@ from backend.database import check_database_connection
 from flask import Flask, send_from_directory
 from flask_cors import CORS
 
-from backend.config import Config
+from backend import config
 
 from backend.routes.auth import auth_bp
 from backend.routes.dashboard import dash_bp
@@ -36,11 +36,12 @@ def create_app():
         static_url_path="/assets",
     )
 
-    app.config.from_object(Config)
+    # Use the existing config module.
+    app.config.from_object(config)
 
     CORS(
         app,
-        origins=Config.CORS_ORIGINS,
+        origins=config.CORS_ORIGINS,
         supports_credentials=True,
     )
 
@@ -69,10 +70,11 @@ def create_app():
         db_ok = check_database_connection()
 
         return {
-        "status": "ok" if db_ok else "degraded",
-        "service": "ILF Backend v2.0",
-        "database": "connected" if db_ok else "unavailable",
-    }, 200 if db_ok else 503
+            "status": "ok" if db_ok else "degraded",
+            "service": "ILF Backend v2.0",
+            "database": "connected" if db_ok else "unavailable",
+        }, 200 if db_ok else 503
+
     # -------------------------------------------------
     # Frontend pages
     # -------------------------------------------------

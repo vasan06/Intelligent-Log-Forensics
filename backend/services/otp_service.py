@@ -7,7 +7,7 @@ Expiry: 30 minutes (Config.OTP_EXPIRY_SECONDS).
 import random, string, time, smtplib, logging
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
-from backend.config import Config
+from backend import config
 
 # In-memory OTP store { email -> {hash, expires, type, attempts} }
 # Replace with Redis in production.

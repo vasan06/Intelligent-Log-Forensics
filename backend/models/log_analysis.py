@@ -1,63 +1,73 @@
 """
-Log analysis model.
+Log analysis database table.
+
+Functional database definition.
+No ORM model class is used.
 """
 
 import uuid
-from datetime import datetime
 
-from sqlalchemy import DateTime, ForeignKey, JSON, String, func
-from sqlalchemy.orm import Mapped, mapped_column, relationship
+from sqlalchemy import (
+    Column,
+    DateTime,
+    ForeignKey,
+    JSON,
+    MetaData,
+    String,
+    Table,
+    func,
+)
 
 from backend.database import Base
 
 
-class LogAnalysis(Base):
-    __tablename__ = "log_analyses"
+metadata = Base.metadata
 
-    id: Mapped[str] = mapped_column(
+
+log_analyses = Table(
+    "log_analyses",
+    metadata,
+
+    Column(
+        "id",
         String(36),
         primary_key=True,
         default=lambda: str(uuid.uuid4()),
-    )
+    ),
 
-    user_id: Mapped[str] = mapped_column(
+    Column(
+        "user_id",
         String(36),
         ForeignKey("users.id", ondelete="CASCADE"),
         nullable=False,
         index=True,
-    )
+    ),
 
-    file_id: Mapped[str] = mapped_column(
+    Column(
+        "file_id",
         String(36),
         ForeignKey("uploaded_files.id", ondelete="CASCADE"),
         nullable=False,
         index=True,
-    )
+    ),
 
-    status: Mapped[str] = mapped_column(
+    Column(
+        "status",
         String(30),
         nullable=False,
         default="pending",
-    )
+    ),
 
-    results: Mapped[dict | None] = mapped_column(
+    Column(
+        "results",
         JSON,
         nullable=True,
-    )
+    ),
 
-    created_at: Mapped[datetime] = mapped_column(
+    Column(
+        "created_at",
         DateTime(timezone=True),
         nullable=False,
         server_default=func.now(),
-    )
-
-    file = relationship(
-        "UploadedFile",
-        back_populates="analyses",
-    )
-
-    reports = relationship(
-        "Report",
-        back_populates="analysis",
-        cascade="all, delete-orphan",
-    )
+    ),
+)

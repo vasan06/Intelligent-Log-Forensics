@@ -4,6 +4,84 @@
 
 ---
 
+### Folder structure
+
+Directory structure:
+└── vasan06-intelligent-log-forensics/
+    ├── README.md
+    ├── app.py
+    ├── docker-compose.yml
+    ├── Dockerfile
+    ├── requirements.txt
+    ├── start.bat
+    ├── start.sh
+    ├── todo.txt
+    ├── .dockerignore
+    ├── .env.example
+    ├── backend/
+    │   ├── __init__.py
+    │   ├── app.py
+    │   ├── config.py
+    │   ├── database.py
+    │   ├── requirements.txt
+    │   ├── data/
+    │   │   └── mitre_catalog.json
+    │   ├── models/
+    │   │   ├── __init__.py
+    │   │   ├── log_analysis.py
+    │   │   ├── report.py
+    │   │   ├── session.py
+    │   │   ├── uploaded_file.py
+    │   │   └── user.py
+    │   ├── routes/
+    │   │   ├── __init__.py
+    │   │   ├── admin.py
+    │   │   ├── auth.py
+    │   │   ├── dashboard.py
+    │   │   ├── logs.py
+    │   │   ├── mitre.py
+    │   │   ├── ml.py
+    │   │   ├── reports.py
+    │   │   └── user.py
+    │   └── services/
+    │       ├── __init__.py
+    │       ├── log_simulator.py
+    │       ├── ml_service.py
+    │       └── otp_service.py
+    ├── frontend/
+    │   ├── admin.html
+    │   ├── dashboard.html
+    │   ├── forgot-password.html
+    │   ├── landing.html
+    │   ├── live-monitor.html
+    │   ├── log-explorer.html
+    │   ├── mitre-catalog.html
+    │   ├── mitre-tracker.html
+    │   ├── ml-analysis.html
+    │   ├── profile.html
+    │   ├── reports.html
+    │   ├── signin.html
+    │   ├── signup.html
+    │   └── assets/
+    │       ├── css/
+    │       │   ├── animations.css
+    │       │   ├── components.css
+    │       │   ├── global.css
+    │       │   ├── navbar.css
+    │       │   └── tokens.css
+    │       └── js/
+    │           ├── api.js
+    │           ├── auth-guard.js
+    │           ├── navbar.js
+    │           └── three/
+    │               ├── scene-dashboard.js
+    │               ├── scene-explorer.js
+    │               └── scene-login.js
+    └── instance/
+        └── uploads/
+            └── 1790188819.854983-sample.txt
+
+
 ## Quick Start
 
 ### 1. Backend
