@@ -1,121 +1,16 @@
-1. new acc created while logging in works after logout and re-login cannot allowed 405
+# ILF implementation status
 
-2. while uploading file in response it says 200 and success but it can't  allowed the file for further processing
+1. Authentication re-login / session lifecycle — fixed with persistent DB sessions, refresh-token rotation and clean logout.
+2. Upload processing — fixed API response handling and persistent per-user analysis records.
+3. MITRE catalog/tracker — redesigned and latest user analysis can be mapped through the user-scoped tracker endpoint.
+4. PostgreSQL persistence — fixed shared SQLAlchemy metadata and startup schema initialization.
+5. Forgot password — implemented account lookup, OTP delivery, OTP verification and password reset; unknown emails redirect to signup with the email prefilled.
+6. JWT authentication — hardened access/refresh flow, refresh rotation and active-user checks.
+7. Per-user dashboard + admin global statistics — implemented.
+8. Admin real-user CRUD and role/status control — implemented.
+9. Reports — added user-scoped preview, ML/severity charts, PDF generation and persisted history.
+10. Profile export — added authenticated JSON data export.
+11. Clean browser routes — primary navigation now uses extensionless routes and legacy .html URLs redirect to clean routes.
+12. DevTools Network log persistence — browser DevTools controls this. The application cannot force Chrome/Edge to preserve Network logs across full document navigations; enable Network -> Preserve log. Startup messages now point this out.
 
-3. redesign the MITRE mapping & catalog, live monitor page and report generation format need to be changed
-
-4. it dont have any db i think so need to implement for storing user details, logs, session. report etc
-
-5. Implement the forgot password. if we didn'thave the credentials in terminal we have the code but after adding the cred the it could not send the code for the email.
-
-and here one logic is need to be added, while new user click the forgot password it checks the db and then validate there if user not then redirect to create page if exists tell the user your reset password were send as a code in your email etc
-
-and also for new user try signin then redirect to signup page with autofilled email.
-
-6. Need to implement the JWT for authentication
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-hey still i ahve some issues they are
-
-1. for every user the stat is samebut i want individual users stat to be displayed in heri dashboard and the global stat is managed by admin
-2. currently all users were admin so that must be replaced with particular and that can also managed by admin like change user to admin control
-3. while uploading the file not working but response is 200
-4. redesign the mitre tracker and clatalog and report pages
-5. also the report i need preview before downloading and in that i want usual data and ml analysis data with charts also to be available
-6. in admin must list the real users not static hard-codded ones with crud operation
-7. and make to work the export button in profiel page.
-8. in JWT while manually update the access_token it try to regen with help of refresh token but after some time it completely disappears . after modified the token must regenerate and update instantly, while delete the access token in networktab the user must logged out.
-9. then in network tab for each page we have requests seperately while changing otherpages the old requests were gine so it is hard for debugging. so i want all requests must available it can onl dissappear while refreshing the page untill all kind of requess must visible in networktab.
-10. in browser route conatins complete file name with extension for ex: landing.html bu iwant only the route so file name with extension
-
-so these are all the todo's to be done so tell me where to start before thar here the complete file structure
-Directory structure:
-└── vasan06-intelligent-log-forensics/
-    ├── README.md
-    ├── app.py
-    ├── docker-compose.yml
-    ├── Dockerfile
-    ├── requirements.txt
-    ├── start.bat
-    ├── start.sh
-    ├── todo.txt
-    ├── .dockerignore
-    ├── .env.example
-    ├── backend/
-    │   ├── __init__.py
-    │   ├── app.py
-    │   ├── config.py
-    │   ├── database.py
-    │   ├── requirements.txt
-    │   ├── data/
-    │   │   └── mitre_catalog.json
-    │   ├── models/
-    │   │   ├── __init__.py
-    │   │   ├── log_analysis.py
-    │   │   ├── report.py
-    │   │   ├── session.py
-    │   │   ├── uploaded_file.py
-    │   │   └── user.py
-    │   ├── routes/
-    │   │   ├── __init__.py
-    │   │   ├── admin.py
-    │   │   ├── auth.py
-    │   │   ├── dashboard.py
-    │   │   ├── logs.py
-    │   │   ├── mitre.py
-    │   │   ├── ml.py
-    │   │   ├── reports.py
-    │   │   └── user.py
-    │   └── services/
-    │       ├── __init__.py
-    │       ├── log_simulator.py
-    │       ├── ml_service.py
-    │       └── otp_service.py
-    ├── frontend/
-    │   ├── admin.html
-    │   ├── dashboard.html
-    │   ├── forgot-password.html
-    │   ├── landing.html
-    │   ├── live-monitor.html
-    │   ├── log-explorer.html
-    │   ├── mitre-catalog.html
-    │   ├── mitre-tracker.html
-    │   ├── ml-analysis.html
-    │   ├── profile.html
-    │   ├── reports.html
-    │   ├── signin.html
-    │   ├── signup.html
-    │   └── assets/
-    │       ├── css/
-    │       │   ├── animations.css
-    │       │   ├── components.css
-    │       │   ├── global.css
-    │       │   ├── navbar.css
-    │       │   └── tokens.css
-    │       └── js/
-    │           ├── api.js
-    │           ├── auth-guard.js
-    │           ├── navbar.js
-    │           └── three/
-    │               ├── scene-dashboard.js
-    │               ├── scene-explorer.js
-    │               └── scene-login.js
-    └── instance/
-        └── uploads/
-            └── 1790188819.854983-sample.txt
+Security note: the tracked .env file was removed from the public repository. Configure secrets through a local .env that is ignored by Git.
