@@ -108,11 +108,10 @@ def init_database():
     Intended for development/initial setup.
     """
 
-    # Import models so SQLAlchemy registers their tables.
-    from backend.models.user import User
-    from backend.models.session import Session
-    from backend.models.uploaded_file import UploadedFile
-    from backend.models.log_analysis import LogAnalysis
-    from backend.models.report import Report
-
+    # Import table modules so SQLAlchemy registers every table on Base.metadata.
+    from backend.models.user import users
+    from backend.models.session import sessions
+    from backend.models.uploaded_file import uploaded_files
+    from backend.models.log_analysis import log_analyses
+    from backend.models.report import reports
     Base.metadata.create_all(bind=engine)
