@@ -8,7 +8,6 @@ Uses SQLAlchemy Core Table definitions only.
 from sqlalchemy import (
     Boolean,
     DateTime,
-    MetaData,
     String,
     Table,
     Column,
@@ -16,7 +15,9 @@ from sqlalchemy import (
 )
 
 
-metadata = MetaData()
+from backend.database import Base
+
+metadata = Base.metadata
 
 
 users = Table(
