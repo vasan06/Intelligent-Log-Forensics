@@ -4,9 +4,10 @@ config.py — ILF Backend Configuration
 
 import os
 from backend import config
+from pathlib import Path
 from dotenv import load_dotenv
 
-load_dotenv()
+load_dotenv()\n\nBASE_DIR = Path(__file__).resolve().parent.parent
 
 
 # =========================================================
