@@ -84,7 +84,7 @@ const Api = {
   streamLogs:(p={})=>Api.get('/logs/stream?'+new URLSearchParams(p)),
   uploadLog:f=>Api.form('/logs/upload',f), pipelineStatus:id=>Api.get('/logs/pipeline/'+id),
   mlAnalyze:b=>Api.post('/ml/analyze',b), mlAlgos:()=>Api.get('/ml/algorithms'),
-  mitreCatalog:(p={})=>Api.get('/mitre/catalog?'+new URLSearchParams(p)), mitreMap:b=>Api.post('/mitre/map',b), mitreTechnique:id=>Api.get('/mitre/technique/'+id), mitreTactics:()=>Api.get('/mitre/tactics'),
+  mitreCatalog:(p={})=>Api.get('/mitre/catalog?'+new URLSearchParams(p)), mitreMap:b=>Api.post('/mitre/map',b), mitreTechnique:id=>Api.get('/mitre/technique/'+id), mitreTactics:()=>Api.get('/mitre/tactics'), mitreUserLatest:()=>Api.get('/mitre/user-latest'),
   generateReport:b=>Api._reqBlob('POST','/reports/generate',b), reportPreview:b=>Api.post('/reports/preview',b), reportHistory:()=>Api.get('/reports/history'),
   adminStats:()=>Api.get('/admin/stats'), adminUsers:()=>Api.get('/admin/users'), adminCreateUser:b=>Api.post('/admin/users',b), adminUpdateUser:(id,b)=>Api.put('/admin/users/'+id,b), adminDeleteUser:id=>Api.del('/admin/users/'+id),
   getProfile:()=>Api.get('/user/profile'), updateProfile:b=>Api.put('/user/profile',b), exportData:()=>Api.get('/user/export'),
