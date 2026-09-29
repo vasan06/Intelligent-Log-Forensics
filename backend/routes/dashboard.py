@@ -37,8 +37,12 @@ def get_authenticated_user_id():
 
         if payload.get("type") != "access":
             return None
-
-        return payload.get("sub")
+        user_id = payload.get("sub")
+        if not user_id:
+            return None
+        with get_db() as db:
+            exists = db.execute(select(users.c.id).where(users.c.id == str(user_id), users.c.verified.is_(True))).first()
+        return user_id if exists else None
 
     except (jwt.ExpiredSignatureError, jwt.InvalidTokenError):
         return None
