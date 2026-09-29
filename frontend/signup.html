@@ -1505,7 +1505,7 @@
 
           Already have an account?
 
-          <a href="signin.html">
+          <a href="/login">
             Sign in
           </a>
 
@@ -2553,7 +2553,8 @@ signupForm.addEventListener("submit", async (event) => {
      * Account successfully created.
      * Backend returns JWT token.
      */
-    localStorage.setItem("ilf_token", data.token);
+    localStorage.setItem("ilf_access_token", data.token);
+      if (result.refresh_token) localStorage.setItem("ilf_refresh_token", result.refresh_token);
 
     /*
      * Store user information if the dashboard needs it.
@@ -2583,6 +2584,8 @@ signupForm.addEventListener("submit", async (event) => {
 });
 
 
+  const prefillEmail=new URLSearchParams(location.search).get('email');if(prefillEmail)
+  {const emailEl=document.querySelector('input[type="email"]');if(emailEl)emailEl.value=prefillEmail;}
   </script>
 
 </body>

@@ -180,7 +180,7 @@ async function loadDash() {
   const [statsRes, mlRes] = await Promise.all([Api.dashStats(), Api.dashMlSummary()]);
   if (!statsRes.ok) { toast('Failed to load dashboard', 'error'); return; }
 
-  const d = statsRes.data;
+  const d = statsRes.data?.data || statsRes.data;
   animateCount(document.getElementById('kv-total'),    d.kpis.total_logs);
   animateCount(document.getElementById('kv-anomalies'),d.kpis.anomalies);
   animateCount(document.getElementById('kv-sources'),  d.kpis.active_sources);

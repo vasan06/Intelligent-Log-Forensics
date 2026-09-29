@@ -8,7 +8,7 @@ Run from project root:
 
 from pathlib import Path
 
-from backend.database import check_database_connection
+from backend.database import check_database_connection, init_database
 from flask import Flask, send_from_directory
 from flask_cors import CORS
 
@@ -44,6 +44,12 @@ def create_app():
         origins=config.CORS_ORIGINS,
         supports_credentials=True,
     )
+
+    # Initialize schema on startup for development. Production deployments should use migrations.
+    try:
+        init_database()
+    except Exception as exc:
+        app.logger.warning("Database initialization skipped: %s", exc)
 
     # -------------------------------------------------
     # API blueprints
@@ -84,6 +90,7 @@ def create_app():
         return send_from_directory(FRONTEND_DIR, "landing.html")
 
     @app.route("/login")
+    @app.route("/signin")
     def login():
         return send_from_directory(FRONTEND_DIR, "signin.html")
 
@@ -137,12 +144,12 @@ def create_app():
 
     @app.route("/<page>.html")
     def html_page(page):
+        from flask import redirect
+        aliases = {"signin": "login"}
         filename = f"{page}.html"
         filepath = FRONTEND_DIR / filename
-
         if filepath.is_file():
-            return send_from_directory(FRONTEND_DIR, filename)
-
+            return redirect("/" + aliases.get(page, page), code=301)
         return {"error": "Page not found"}, 404
 
     return app

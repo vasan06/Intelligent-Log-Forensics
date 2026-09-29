@@ -16,18 +16,16 @@ sleep 1.5
 echo ""
 echo "  Opening frontend..."
 if command -v open &>/dev/null; then
-  open frontend/landing.html
+  open http://localhost:5000/
 elif command -v xdg-open &>/dev/null; then
-  xdg-open frontend/landing.html
+  xdg-open http://localhost:5000/
 else
-  echo "  Open frontend/landing.html in your browser"
+  echo "  Open http://localhost:5000/ in your browser"
 fi
 echo ""
 echo "  ILF is running!"
-echo "  Landing  : frontend/landing.html"
+echo "  Landing  : http://localhost:5000/"
 echo "  Backend  : http://localhost:5000"
-echo "  Login    : admin@ilf.io / ilf2026"
-echo "  DevTools : Network tab shows all API calls"
-echo ""
+  DevTools: enable "Preserve log" to keep requests across navigations\necho ""
 echo "  Press Ctrl+C to stop..."
 wait $BACKEND_PID

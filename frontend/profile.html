@@ -129,7 +129,7 @@
                 <div class="font-600 text-sm">Export all data</div>
                 <p class="text-xs">Download full archive of your data</p>
               </div>
-              <button class="btn btn-ghost btn-sm" onclick="toast('Export started','info')">Export</button>
+              <button class="btn btn-ghost btn-sm" onclick="exportMyData()">Export</button>
             </div>
             <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:var(--sp-3);">
               <div>
@@ -247,13 +247,21 @@ async function saveProfile() {
     document.getElementById('profileName').textContent  = u.name;
     document.getElementById('profileEmail').textContent = u.email;
     document.getElementById('profileAvatar').textContent= u.avatar;
-    const stored = Api.user(); Api.setAuth(Api.token(), {...stored, name:u.name, email:u.email});
+    const stored = Api.user(); Api.setAuth(Api.accessToken(), Api.refreshToken(), {...stored, name:u.name, email:u.email});
     refreshNavUser();
     toast('Profile saved', 'success');
   } else { toast('Save failed', 'error'); }
 }
 
 loadProfile();
+
+async function exportMyData(){
+  const r=await Api.exportData();
+  if(!r.ok){toast(r.data?.message||'Export failed','error');return;}
+  const blob=new Blob([JSON.stringify(r.data,null,2)],{type:'application/json'});
+  downloadBlob(blob,'ILF_User_Data.json');
+  toast('Your data export is ready','success');
+}
 </script>
 </body>
 </html>

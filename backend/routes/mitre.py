@@ -1,5 +1,9 @@
 """routes/mitre.py — MITRE ATT&CK catalog, mapping, and technique detail"""
-import json, os, re
+import json, os, re, jwt
+from sqlalchemy import select
+from backend import config
+from backend.database import get_db
+from backend.models.log_analysis import log_analyses
 from flask import Blueprint, request, jsonify
 
 mitre_bp = Blueprint('mitre', __name__)
@@ -105,3 +109,35 @@ def map_logs():
             for tid, cnt in sorted(tactic_counts.items(), key=lambda x: -x[1])
         ],
     })
+
+
+@mitre_bp.route('/mitre/user-latest')
+def user_latest():
+    auth = request.headers.get('Authorization','')
+    if not auth.startswith('Bearer '): return jsonify({'success':False,'message':'Authentication required'}),401
+    try:
+        payload = jwt.decode(auth[7:].strip(), config.JWT_SECRET_KEY, algorithms=[config.JWT_ALGORITHM])
+        if payload.get('type') != 'access': raise ValueError()
+        uid = str(payload.get('sub'))
+    except (jwt.InvalidTokenError, ValueError):
+        return jsonify({'success':False,'message':'Authentication required'}),401
+    with get_db() as db:
+        row = db.execute(select(log_analyses.c.id, log_analyses.c.results).where(log_analyses.c.user_id==uid).order_by(log_analyses.c.created_at.desc()).limit(1)).mappings().first()
+    logs = ((row['results'] or {}).get('logs', []) if row else [])
+    if not logs: return jsonify({'success':True,'matches':[],'total_matches':0,'tactic_summary':[],'message':'No retained log events in the latest analysis.'})
+    data = map_logs_internal(logs)
+    return jsonify({'success':True,**data})
+
+def map_logs_internal(logs):
+    matches=[]; tactic_counts={}
+    for log in logs:
+        text=((log.get('message') or '')+' '+(log.get('source') or '')).lower()
+        for tech in _CATALOG['techniques']:
+            hit=[p for p in tech.get('log_patterns',[]) if p.lower() in text]
+            if hit:
+                tid=tech['tactic']; tactic_counts[tid]=tactic_counts.get(tid,0)+1
+                matches.append({'log_id':log.get('id','?'),'log_msg':(log.get('message') or '')[:100],'technique':tech['id'],'name':tech['name'],'tactic':tid,'tactic_name':_TACTICS.get(tid,{}).get('name',''),'severity':tech['severity'],'patterns_hit':hit,'mitre_url':tech['mitre_url']})
+    seen=set(); deduped=[]
+    for m in matches:
+        if m['technique'] not in seen: seen.add(m['technique']); deduped.append(m)
+    return {'matches':deduped,'total_matches':len(deduped),'tactic_summary':[{'tactic':k,'name':_TACTICS.get(k,{}).get('name',k),'count':v} for k,v in sorted(tactic_counts.items(),key=lambda x:-x[1])]}

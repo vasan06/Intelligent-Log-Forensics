@@ -32,6 +32,7 @@ from backend import config
 from backend.database import get_db
 from backend.models.session import sessions
 from backend.models.user import users
+from backend.services.otp_service import issue_otp, verify_otp
 
 
 auth_bp = Blueprint(
@@ -813,8 +814,18 @@ def refresh():
         or ""
     ).strip()
 
-    if not refresh_token:
+        # Browser sessions require the access-token cookie to still exist.
+    # This lets a user deleting the access cookie in DevTools immediately
+    # invalidate the browser session instead of silently refreshing it.
+    if not request.cookies.get(ACCESS_COOKIE_NAME):
+        return jsonify(
+            {
+                "success": False,
+                "message": "Access session is missing",
+            }
+        ), 401
 
+    if not refresh_token:
         return jsonify(
             {
                 "success": False,
@@ -1156,3 +1167,67 @@ def logout_all():
     )
 
     return response, 200
+
+# =========================================================
+# PASSWORD RECOVERY
+# =========================================================
+
+@auth_bp.route("/auth/forgot-password", methods=["POST"])
+def forgot_password():
+    data = request.get_json(silent=True) or {}
+    email = str(data.get("email") or "").strip().lower()
+    if not email:
+        return jsonify({"success": False, "message": "Email is required"}), 400
+    with get_db() as db:
+        user = find_user_by_email(db, email)
+    if not user:
+        return jsonify({
+            "success": False,
+            "message": "No account exists for this email. Redirect to signup.",
+            "redirect": "/signup",
+            "exists": False,
+        }), 404
+    if not user["verified"]:
+        return jsonify({"success": False, "message": "Account is not verified", "exists": True}), 403
+    if not issue_otp(email, "reset"):
+        return jsonify({"success": False, "message": "Unable to send reset code. Check SMTP configuration."}), 503
+    return jsonify({
+        "success": True,
+        "message": "Your password reset code was sent to your email.",
+        "email": email,
+        "expires_in": config.OTP_EXPIRY_SECONDS,
+        "exists": True,
+    }), 200
+
+
+@auth_bp.route("/auth/verify-otp", methods=["POST"])
+def verify_otp_route():
+    data = request.get_json(silent=True) or {}
+    email = str(data.get("email") or "").strip().lower()
+    otp = str(data.get("otp") or "").strip()
+    otp_type = str(data.get("type") or "reset").strip()
+    if not email or not otp:
+        return jsonify({"success": False, "message": "Email and OTP are required"}), 400
+    ok, message = verify_otp(email, otp, otp_type)
+    return jsonify({"success": ok, "message": message}), 200 if ok else 400
+
+
+@auth_bp.route("/auth/reset-password", methods=["POST"])
+def reset_password():
+    data = request.get_json(silent=True) or {}
+    email = str(data.get("email") or "").strip().lower()
+    otp = str(data.get("otp") or "").strip()
+    new_password = str(data.get("new_password") or "")
+    if not email or not otp or len(new_password) < 8:
+        return jsonify({"success": False, "message": "Email, OTP and a password of at least 8 characters are required"}), 400
+    ok, message = verify_otp(email, otp, "reset")
+    if not ok:
+        return jsonify({"success": False, "message": message}), 400
+    password_hash = bcrypt.hashpw(new_password.encode("utf-8"), bcrypt.gensalt()).decode("utf-8")
+    with get_db() as db:
+        user = find_user_by_email(db, email)
+        if not user:
+            return jsonify({"success": False, "message": "Account not found"}), 404
+        db.execute(update(users).where(users.c.id == str(user["id"])).values(password_hash=password_hash))
+        revoke_all_sessions(db, user["id"])
+    return jsonify({"success": True, "message": "Password reset successfully. Please sign in again."}), 200

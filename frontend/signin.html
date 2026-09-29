@@ -1390,7 +1390,7 @@
 
             <a
               class="forgot"
-              href="forgot-password.html"
+              href="/forgot-password"
             >
               Forgot password?
             </a>
@@ -1427,7 +1427,7 @@
 
           Don't have an account?
 
-          <a href="signup.html">
+          <a href="/signup">
             Create one
           </a>
 
@@ -1719,7 +1719,7 @@
       }
 
       if (response?.status === 404) {
-        return "Authentication service was not found.";
+        return "No account found. Redirecting to account creation…";
       }
 
       if (
@@ -1979,6 +1979,13 @@
                HTTP FAILURE
                ------------------------------------------------- */
 
+            if (response.status === 404 && result?.redirect) {
+              const signupUrl = new URL(result.redirect, window.location.origin);
+              signupUrl.searchParams.set("email", email);
+              window.location.href = signupUrl.pathname + signupUrl.search;
+              return;
+            }
+
             if (!response.ok) {
 
               showSigninError(
@@ -2050,10 +2057,9 @@
                SAVE TOKEN
                ------------------------------------------------- */
 
-            localStorage.setItem(
-              "ilf_token",
-              accessToken
-            );
+            localStorage.setItem("ilf_access_token", accessToken);
+            localStorage.removeItem("ilf_token");
+            if (result.refresh_token) localStorage.setItem("ilf_refresh_token", result.refresh_token);
 
 
             /* -------------------------------------------------
@@ -2112,8 +2118,7 @@
             );
 
 
-            window.location.href =
-              "dashboard.html";
+            window.location.href = "/dashboard";
 
 
           } catch (error) {

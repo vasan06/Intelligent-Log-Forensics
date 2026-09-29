@@ -23,24 +23,24 @@ const ICONS = {
 
 /* ── Nav link definitions ──────────────────── */
 const NAV_LINKS = [
-  { href: 'dashboard.html',     label: 'Dashboard',      icon: 'home'    },
-  { href: 'live-monitor.html',  label: 'Live Monitor',   icon: 'monitor', badge: 'LIVE' },
-  { href: 'log-explorer.html',  label: 'Log Explorer',   icon: 'folder'  },
-  { href: 'ml-analysis.html',   label: 'ML Analysis',    icon: 'brain'   },
-  { href: 'mitre-tracker.html', label: 'MITRE Tracker',  icon: 'shield'  },
-  { href: 'mitre-catalog.html', label: 'ATT&CK Catalog', icon: 'book'    },
-  { href: 'reports.html',       label: 'Reports',        icon: 'file'    },
-  { href: 'admin.html',         label: 'Admin',          icon: 'settings'},
+  { href: '/dashboard',     label: 'Dashboard',      icon: 'home'    },
+  { href: '/live-monitor',  label: 'Live Monitor',   icon: 'monitor', badge: 'LIVE' },
+  { href: '/log-explorer',  label: 'Log Explorer',   icon: 'folder'  },
+  { href: '/ml-analysis',   label: 'ML Analysis',    icon: 'brain'   },
+  { href: '/mitre-tracker', label: 'MITRE Tracker',  icon: 'shield'  },
+  { href: '/mitre-catalog', label: 'ATT&CK Catalog', icon: 'book'    },
+  { href: '/reports',       label: 'Reports',        icon: 'file'    },
+  { href: '/admin',         label: 'Admin',          icon: 'settings'},
 ];
 
 /* ── Inject navbar ─────────────────────────── */
 function injectNavbar() {
   const user     = Api.user();
   const initials = (user.name || 'U').split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase();
-  const page     = location.pathname.split('/').pop() || 'signin.html';
+  const page = location.pathname.replace(/\/\$/, '') || '/';
 
   const linksHtml = NAV_LINKS.map(l => {
-    const active = page === l.href ? 'active' : '';
+    const active = page === l.href.replace(/\/\$/, '') ? 'active' : '';
     const badge  = l.badge ? `<span class="nav-badge">${l.badge}</span>` : '';
     return `<a href="${l.href}" class="nav-link ${active}" data-page="${l.href}">
       ${ICONS[l.icon]} <span>${l.label}</span>${badge}
@@ -48,14 +48,14 @@ function injectNavbar() {
   }).join('');
 
   const drawerHtml = NAV_LINKS.map(l => {
-    const active = page === l.href ? 'active' : '';
+    const active = page === l.href.replace(/\/$/, '') ? 'active' : '';
     return `<a href="${l.href}" class="nav-link ${active}">${ICONS[l.icon]} <span>${l.label}</span></a>`;
   }).join('');
 
   const nav = document.createElement('header');
   nav.innerHTML = `
     <nav class="nav" id="mainNav" role="navigation">
-      <a href="landing.html" class="nav-brand">
+      <a href="/" class="nav-brand">
         <div class="nav-brand-mark">${ICONS.ilf}</div>
         <div>
           <div class="nav-brand-name">ILF</div>
@@ -74,7 +74,7 @@ function injectNavbar() {
             <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
           </div>
           <div class="nav-user-dropdown" id="navDropdown">
-            <a href="profile.html" class="dropdown-item">${ICONS.user} <span>My Profile</span></a>
+            <a href="/profile" class="dropdown-item">${ICONS.user} <span>My Profile</span></a>
             <div class="dropdown-sep"></div>
             <div class="dropdown-item danger" onclick="doLogout()">${ICONS.logout} <span>Sign Out</span></div>
           </div>
