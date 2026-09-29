@@ -264,3 +264,26 @@ def update_profile():
                 "user": safe_user(user),
             }
         ), 200
+
+
+@user_bp.route("/user/export", methods=["GET"])
+def export_user_data():
+    user_id = get_authenticated_user_id()
+    if not user_id:
+        return jsonify({"success": False, "message": "Authentication required"}), 401
+    from backend.models.uploaded_file import uploaded_files
+    from backend.models.log_analysis import log_analyses
+    from backend.models.report import reports
+    with get_db() as db:
+        user = db.execute(select(users).where(users.c.id == str(user_id))).mappings().first()
+        files = db.execute(select(uploaded_files).where(uploaded_files.c.user_id == str(user_id)).order_by(uploaded_files.c.created_at.desc())).mappings().all()
+        analyses = db.execute(select(log_analyses).where(log_analyses.c.user_id == str(user_id)).order_by(log_analyses.c.created_at.desc())).mappings().all()
+        report_rows = db.execute(select(reports).where(reports.c.user_id == str(user_id)).order_by(reports.c.created_at.desc())).mappings().all()
+    return jsonify({
+        "success": True,
+        "exported_at": __import__("datetime").datetime.now(__import__("datetime").timezone.utc).isoformat(),
+        "user": safe_user(user),
+        "files": [dict(x) for x in files],
+        "analyses": [dict(x) for x in analyses],
+        "reports": [dict(x) for x in report_rows],
+    })
