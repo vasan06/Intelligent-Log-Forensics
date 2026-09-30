@@ -1,1 +1,103 @@
-<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>ATT&CK Catalog — ILF</title><link rel="stylesheet" href="assets/css/tokens.css"><link rel="stylesheet" href="assets/css/global.css"><link rel="stylesheet" href="assets/css/components.css"><link rel="stylesheet" href="assets/css/navbar.css"></head><body><div class="page-wrap with-nav"><main class="content-area"><div class="page-header"><div><div class="breadcrumb"></div><div class="page-title">ATT&CK Catalog</div><div class="page-subtitle">Search techniques, tactics and detection patterns</div></div></div><div class="card" style="padding:20px;margin-bottom:18px;display:grid;grid-template-columns:1fr 220px auto;gap:12px"><input class="input" id="q" placeholder="Search technique, description or log pattern"><select class="select" id="sev"><option value="">All severities</option><option>LOW</option><option>MEDIUM</option><option>HIGH</option><option>CRITICAL</option></select><button class="btn btn-primary" onclick="load()">Search</button></div><div id="grid" class="grid-2"></div></main></div><script src="assets/js/api.js"></script><script src="assets/js/auth-guard.js"></script><script src="assets/js/navbar.js"></script><script>requireAuth();function esc(s){return String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}async function load(){const r=await Api.mitreCatalog({q:q.value,severity:sev.value,limit:50});if(!r.ok){grid.innerHTML='<p>'+esc(r.data?.message||'Unable to load catalog')+'</p>';return;}grid.innerHTML=(r.data.techniques||[]).map(t=>'<article class="card" style="padding:20px"><div style="display:flex;justify-content:space-between;gap:10px"><strong>'+esc(t.id)+' · '+esc(t.name)+'</strong><span class="badge">'+esc(t.severity)+'</span></div><p class="text-sm text-muted">'+esc(t.description)+'</p><div class="text-xs">Tactic: '+esc(t.tactic)+'</div><div style="margin-top:10px">'+(t.log_patterns||[]).slice(0,5).map(p=>'<span class="badge" style="margin:2px">'+esc(p)+'</span>').join('')+'</div></article>').join('')||'<p>No techniques matched.</p>';}load();</script></body></html>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>MITRE ATT&CK Catalog — Intelligent Log Forensic</title>
+<link rel="stylesheet" href="assets/css/tokens.css"/>
+<link rel="stylesheet" href="assets/css/global.css"/>
+<link rel="stylesheet" href="assets/css/components.css"/>
+<link rel="stylesheet" href="assets/css/navbar.css"/>
+<link rel="stylesheet" href="assets/css/animations.css"/>
+<link rel="stylesheet" href="assets/css/mitre-catalog.css"/>
+</head>
+<body>
+<div class="page-wrap with-nav">
+  <main class="content-area">
+    <nav id="navMount"></nav>
+
+    <div class="page-header">
+      <div>
+        <div class="breadcrumb" id="breadcrumb"></div>
+        <div class="page-title">MITRE ATT&CK Catalog</div>
+        <div class="page-subtitle">Categorical attack matrix, tactical descriptions, example scenarios, and detection signatures</div>
+      </div>
+    </div>
+
+    <!-- Search & Filter Controls -->
+    <div class="card mb-6" style="padding:var(--sp-4);">
+      <div class="grid-3" style="gap:var(--sp-3);align-items:center;">
+        <div class="form-group" style="margin:0;grid-column:span 2;">
+          <input class="input" id="searchQuery" placeholder="Search by technique ID (e.g. T1190), keyword, or payload pattern…" oninput="filterCatalog()"/>
+        </div>
+        <div class="form-group" style="margin:0;">
+          <select class="select" id="filterSev" onchange="filterCatalog()">
+            <option value="">All Threat Severities</option>
+            <option value="CRITICAL">CRITICAL</option>
+            <option value="HIGH">HIGH</option>
+            <option value="MEDIUM">MEDIUM</option>
+            <option value="LOW">LOW</option>
+          </select>
+        </div>
+      </div>
+    </div>
+
+    <!-- Tactic Category Tabs -->
+    <div class="tactic-nav" id="tacticNav">
+      <button class="tactic-chip active" onclick="selectTactic('ALL')">All Categories</button>
+    </div>
+
+    <!-- Categorical Container -->
+    <div id="catalogContainer">
+      <div style="padding:40px;text-align:center;color:var(--ink-3);">Loading MITRE ATT&CK taxonomy…</div>
+    </div>
+  </main>
+</div>
+
+<!-- Technique Drill-down Modal -->
+<div class="modal-backdrop" id="techModal" onclick="if(event.target===this)closeModal()">
+  <div class="modal-card">
+    <button class="modal-close" onclick="closeModal()">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+    </button>
+
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px;">
+      <span class="tech-id" id="modalId">T1000</span>
+      <span class="badge" id="modalSev">HIGH</span>
+      <span class="badge badge-neutral" id="modalTactic">Initial Access</span>
+    </div>
+
+    <h2 id="modalName" style="font-size:1.35rem;font-weight:700;color:var(--ink-0);margin-bottom:12px;line-height:1.3;">Technique Title</h2>
+
+    <div class="section-label">Description</div>
+    <p id="modalDesc" style="font-size:var(--text-sm);color:var(--ink-1);line-height:1.6;margin-bottom:var(--sp-4);">
+      Technique operational description.
+    </p>
+
+    <div class="section-label">Real-World Attack Scenarios</div>
+    <div id="modalExamples" style="margin-bottom:var(--sp-4);"></div>
+
+    <div class="section-label">Forensic Log Detection Signatures</div>
+    <div id="modalPatterns" style="margin-bottom:var(--sp-6);"></div>
+
+    <div style="display:flex;justify-content:space-between;align-items:center;border-top:1px solid var(--surface-2);padding-top:var(--sp-4);">
+      <span style="font-size:11px;color:var(--ink-3);">Official ATT&CK Enterprise Matrix</span>
+      <a class="btn btn-primary" id="modalLink" href="#" target="_blank" rel="noopener noreferrer">
+        <span>View on attack.mitre.org</span>
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+      </a>
+    </div>
+  </div>
+</div>
+
+<div id="toast-container"></div>
+<script src="assets/js/api.js"></script>
+<script src="assets/js/auth-guard.js"></script>
+<script src="assets/js/navbar.js"></script>
+<script src="assets/js/mitre-catalog.js"></script>
+<script>
+window.addEventListener('DOMContentLoaded', () => {
+  initCatalog();
+});
+</script>
+</body>
+</html>

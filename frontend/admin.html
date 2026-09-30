@@ -1,1 +1,240 @@
-<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Admin — ILF</title><link rel="stylesheet" href="assets/css/tokens.css"><link rel="stylesheet" href="assets/css/global.css"><link rel="stylesheet" href="assets/css/components.css"><link rel="stylesheet" href="assets/css/navbar.css"></head><body><div class="page-wrap with-nav"><main class="content-area"><div class="page-header"><div><div class="breadcrumb" id="breadcrumb"></div><div class="page-title">Administration</div><div class="page-subtitle">Global system controls and real database users</div></div><button class="btn btn-ghost" onclick="loadAll()">Refresh</button></div><div class="grid-4 mb-6"><div class="kpi-card"><div class="kpi-label">Users</div><div class="kpi-value" id="uCount">—</div></div><div class="kpi-card"><div class="kpi-label">Active Users</div><div class="kpi-value" id="uActive">—</div></div><div class="kpi-card"><div class="kpi-label">Uploaded Files</div><div class="kpi-value" id="fCount">—</div></div><div class="kpi-card"><div class="kpi-label">Analyses</div><div class="kpi-value" id="aCount">—</div></div></div><div class="card" style="padding:24px;margin-bottom:20px"><div style="display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap"><div><div class="section-label">Create User</div><p class="text-sm text-muted">Add an account directly from the administration panel.</p></div></div><div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px"><input class="input" id="newName" placeholder="Name"><input class="input" id="newEmail" type="email" placeholder="Email"><input class="input" id="newPassword" type="password" placeholder="Password (8+)"><select class="select" id="newRole"><option>Analyst</option><option>Viewer</option><option>Admin</option></select></div><button class="btn btn-primary" style="margin-top:14px" onclick="createUser()">Create user</button></div><div class="card" style="padding:24px"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px"><div><div class="section-label">Users</div><div class="text-sm text-muted">Every row below comes from PostgreSQL.</div></div><input class="input" style="max-width:260px" id="search" placeholder="Search users" oninput="renderUsers()"></div><div style="overflow:auto"><table class="data-table" style="width:100%"><thead><tr><th>User</th><th>Role</th><th>Status</th><th>Created</th><th>Actions</th></tr></thead><tbody id="usersBody"></tbody></table></div></div></main></div><script src="assets/js/api.js"></script><script src="assets/js/auth-guard.js"></script><script src="assets/js/navbar.js"></script><script>requireAuth();let users=[];function esc(s){return String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}function renderUsers(){const q=(document.getElementById('search').value||'').toLowerCase();document.getElementById('usersBody').innerHTML=users.filter(u=>(u.name+' '+u.email).toLowerCase().includes(q)).map(u=>`<tr><td><strong>${esc(u.name)}</strong><div class="text-xs text-muted">${esc(u.email)}</div></td><td><select class="select" onchange="updateUser('${u.id}',{role:this.value})"><option ${u.role==='Admin'?'selected':''}>Admin</option><option ${u.role==='Analyst'?'selected':''}>Analyst</option><option ${u.role==='Viewer'?'selected':''}>Viewer</option></select></td><td><select class="select" onchange="updateUser('${u.id}',{status:this.value})"><option value="active" ${u.status==='active'?'selected':''}>active</option><option value="inactive" ${u.status==='inactive'?'selected':''}>inactive</option></select></td><td class="text-xs">${u.created_at?new Date(u.created_at).toLocaleString():''}</td><td><button class="btn btn-ghost btn-xs" onclick="editUser('${u.id}')">Edit</button> <button class="btn btn-danger btn-xs" onclick="deleteUser('${u.id}')">Delete</button></td></tr>`).join('');}async function loadAll(){const [s,u]=await Promise.all([Api.adminStats(),Api.adminUsers()]);if(!s.ok||!u.ok){toast(s.data?.message||u.data?.message||'Admin access required','error');return;}const d=s.data;document.getElementById('uCount').textContent=d.total_users;document.getElementById('uActive').textContent=d.active_users;document.getElementById('fCount').textContent=d.total_files;document.getElementById('aCount').textContent=d.total_analyses;users=u.data.users||[];renderUsers();}async function createUser(){const body={name:newName.value.trim(),email:newEmail.value.trim(),password:newPassword.value,role:newRole.value};const r=await Api.adminCreateUser(body);if(!r.ok){toast(r.data?.message||'Create failed','error');return;}newName.value=newEmail.value=newPassword.value='';toast('User created','success');loadAll();}async function updateUser(id,data){const r=await Api.adminUpdateUser(id,data);toast(r.ok?'User updated':(r.data?.message||'Update failed'),r.ok?'success':'error');if(r.ok)loadAll();}async function editUser(id){const u=users.find(x=>x.id===id);if(!u)return;const name=prompt('Name',u.name);if(name===null)return;const email=prompt('Email',u.email);if(email===null)return;updateUser(id,{name,email});}async function deleteUser(id){if(!confirm('Delete this user and all dependent data?'))return;const r=await Api.adminDeleteUser(id);toast(r.ok?'User deleted':(r.data?.message||'Delete failed'),r.ok?'success':'error');if(r.ok)loadAll();}setBreadcrumb([{label:'Home',href:'/dashboard'},{label:'Admin'}]);loadAll();</script></body></html>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Admin Operations — Intelligent Log Forensic</title>
+<link rel="stylesheet" href="assets/css/tokens.css"/>
+<link rel="stylesheet" href="assets/css/global.css"/>
+<link rel="stylesheet" href="assets/css/components.css"/>
+<link rel="stylesheet" href="assets/css/navbar.css"/>
+<link rel="stylesheet" href="assets/css/animations.css"/>
+<style>
+.admin-tabs {
+  display: flex;
+  gap: 4px;
+  background: var(--surface-2);
+  border-radius: var(--r-md);
+  padding: 4px;
+  width: fit-content;
+  margin-bottom: var(--sp-6);
+  border: 1px solid var(--surface-3);
+}
+.admin-tab {
+  padding: 8px 20px;
+  border-radius: calc(var(--r-md) - 2px);
+  font-size: var(--text-sm);
+  font-weight: 500;
+  color: var(--ink-2);
+  cursor: pointer;
+  transition: all var(--t-fast);
+  background: transparent;
+}
+.admin-tab:hover { color: var(--ink-0); }
+.admin-tab.active {
+  background: var(--surface-0);
+  color: var(--brand-primary);
+  font-weight: 700;
+  box-shadow: var(--shadow-xs);
+}
+
+.tab-pane { display: none; }
+.tab-pane.active { display: block; animation: fadeIn 0.2s ease; }
+
+.inspector-card {
+  background: #F8FAFC;
+  border: 1px solid var(--surface-3);
+  border-radius: var(--r-xl);
+  padding: var(--sp-6);
+  margin-bottom: var(--sp-6);
+}
+</style>
+</head>
+<body>
+<div class="page-wrap with-nav">
+  <main class="content-area">
+    <nav id="navMount"></nav>
+
+    <div class="page-header">
+      <div>
+        <div class="breadcrumb" id="breadcrumb"></div>
+        <div class="page-title">Enterprise Administration</div>
+        <div class="page-subtitle">User provisioning, multi-tenant log streams, and individual forensic audit inspection</div>
+      </div>
+      <div class="page-actions">
+        <button class="btn btn-ghost" onclick="refreshCurrentTab()">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
+          Refresh Data
+        </button>
+      </div>
+    </div>
+
+    <!-- Administrative KPI Overview -->
+    <div class="grid-4 mb-6">
+      <div class="kpi-card">
+        <div class="kpi-label">Registered Users</div>
+        <div class="kpi-value" id="kpiUsers">—</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-label">Active Users</div>
+        <div class="kpi-value" style="color:#10B981;" id="kpiActive">—</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-label">Total Ingested Files</div>
+        <div class="kpi-value" id="kpiFiles">—</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-label">Ensemble Analyses</div>
+        <div class="kpi-value" style="color:var(--brand-primary);" id="kpiAnalyses">—</div>
+      </div>
+    </div>
+
+    <!-- Admin Navigation Tabs -->
+    <div class="admin-tabs">
+      <button class="admin-tab active" id="tabBtnUsers" onclick="switchTab('users')">User Management</button>
+      <button class="admin-tab" id="tabBtnLogs" onclick="switchTab('logs')">Overall System Logs</button>
+      <button class="admin-tab" id="tabBtnInspector" onclick="switchTab('inspector')">User Activity Inspector</button>
+    </div>
+
+    <!-- TAB 1: User Management -->
+    <div class="tab-pane active" id="paneUsers">
+      <!-- Create User Card -->
+      <div class="card mb-6" style="padding:var(--sp-6);">
+        <div class="section-label">Provision New User Account</div>
+        <p style="font-size:var(--text-xs);color:var(--ink-2);margin-bottom:var(--sp-4);">
+          Accounts created here are immediately verified and active in the database.
+        </p>
+        <div class="grid-4" style="gap:var(--sp-3);align-items:end;">
+          <div class="form-group" style="margin:0;">
+            <label class="form-label">Full Name</label>
+            <input class="input" id="newUserName" placeholder="Officer Name"/>
+          </div>
+          <div class="form-group" style="margin:0;">
+            <label class="form-label">Email Address</label>
+            <input class="input" id="newUserEmail" type="email" placeholder="user@domain.com"/>
+          </div>
+          <div class="form-group" style="margin:0;">
+            <label class="form-label">Password</label>
+            <input class="input" id="newUserPassword" type="password" placeholder="At least 6 chars"/>
+          </div>
+          <div class="form-group" style="margin:0;">
+            <label class="form-label">System Role</label>
+            <select class="select" id="newUserRole">
+              <option value="User">User</option>
+              <option value="Admin">Admin</option>
+            </select>
+          </div>
+        </div>
+        <button class="btn btn-primary" style="margin-top:var(--sp-4);" onclick="createUser()">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          Create User Account
+        </button>
+      </div>
+
+      <!-- Users Directory Table -->
+      <div class="card mb-6">
+        <div style="padding:var(--sp-5) var(--sp-5) 0;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;">
+          <div>
+            <div class="section-label" style="margin:0;">PostgreSQL User Directory</div>
+            <p style="font-size:12px;color:var(--ink-3);margin-top:2px;">Live synchronization with PostgreSQL database.</p>
+          </div>
+          <input class="input" style="max-width:260px;" id="userSearch" placeholder="Search by name or email…" oninput="renderUsers()"/>
+        </div>
+        <div class="table-wrap">
+          <table class="table">
+            <thead>
+              <tr>
+                <th>User Identity</th>
+                <th>Assigned Role</th>
+                <th>Account Status</th>
+                <th>Registered At</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="usersTableBody">
+              <tr><td colspan="5" style="text-align:center;color:var(--ink-3);padding:24px;">Loading user records…</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB 2: Overall Multi-Tenant System Logs -->
+    <div class="tab-pane" id="paneLogs">
+      <div class="card mb-6" style="padding:var(--sp-4);">
+        <div class="grid-3" style="gap:var(--sp-3);align-items:end;">
+          <div class="form-group" style="margin:0;">
+            <label class="form-label">Min Severity</label>
+            <select class="select" id="logFilterSev" onchange="loadAdminLogs()">
+              <option value="">All Severities</option>
+              <option value="CRITICAL">CRITICAL</option>
+              <option value="ERROR">ERROR</option>
+              <option value="WARN">WARN</option>
+              <option value="INFO">INFO</option>
+            </select>
+          </div>
+          <div class="form-group" style="margin:0;">
+            <label class="form-label">Facility Source</label>
+            <select class="select" id="logFilterSrc" onchange="loadAdminLogs()">
+              <option value="">All Sources</option>
+              <option value="nginx">nginx</option>
+              <option value="auth">auth</option>
+              <option value="kernel">kernel</option>
+              <option value="iptables">iptables</option>
+              <option value="syslog">syslog</option>
+            </select>
+          </div>
+          <button class="btn btn-outline" onclick="loadAdminLogs()">Apply Filters</button>
+        </div>
+      </div>
+
+      <div class="card mb-6">
+        <div style="padding:var(--sp-5) var(--sp-5) 0;">
+          <div class="section-label">Global Multi-Tenant Log Stream</div>
+        </div>
+        <div class="table-wrap">
+          <table class="table">
+            <thead>
+              <tr>
+                <th>Timestamp</th>
+                <th>Severity</th>
+                <th>Source</th>
+                <th>IP Address</th>
+                <th>Message Content</th>
+              </tr>
+            </thead>
+            <tbody id="adminLogsBody">
+              <tr><td colspan="5" style="text-align:center;color:var(--ink-3);padding:24px;">Click "Overall System Logs" to stream records.</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB 3: Individual User Activity Inspector -->
+    <div class="tab-pane" id="paneInspector">
+      <div class="card mb-6" style="padding:var(--sp-5);">
+        <div class="form-group" style="margin:0;max-width:400px;">
+          <label class="form-label">Select User to Inspect</label>
+          <select class="select" id="inspectUserSelect" onchange="inspectUser(this.value)">
+            <option value="">-- Choose a user account --</option>
+          </select>
+        </div>
+      </div>
+
+      <div id="inspectorContent">
+        <div class="card" style="padding:48px;text-align:center;color:var(--ink-3);">
+          Select a user above or click "Inspect" on any user from the User Management directory.
+        </div>
+      </div>
+    </div>
+
+  </main>
+</div>
+
+<div id="toast-container"></div>
+<script src="assets/js/api.js"></script>
+<script src="assets/js/auth-guard.js"></script>
+<script src="assets/js/navbar.js"></script>
+<script src="assets/js/admin.js"></script>
+</body>
+</html>

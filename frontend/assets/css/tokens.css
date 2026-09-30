@@ -8,56 +8,60 @@
 @import url('https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;0,9..40,800;1,9..40,400&family=Space+Grotesk:wght@300;400;500;600;700&family=Fira+Code:wght@400;500&display=swap');
 
 :root {
-  /* ── Colour Palette ──────────────────────── */
+  /* ── Modern High-Contrast Light Colour Palette ── */
   --surface-0:     #FFFFFF;       /* pure white — cards */
-  --surface-1:     #F7F6F3;       /* page background */
-  --surface-2:     #EEECEA;       /* elevated cards */
-  --surface-3:     #E4E2DE;       /* borders, dividers */
-  --surface-4:     #D5D3CE;       /* strong dividers */
+  --surface-1:     #F8FAFC;       /* clean crisp slate background */
+  --surface-2:     #F1F5F9;       /* elevated surfaces */
+  --surface-3:     #E2E8F0;       /* borders & subtle dividers */
+  --surface-4:     #CBD5E1;       /* active dividers */
 
-  --ink-0:         #1C1B20;       /* headlines */
-  --ink-1:         #3A3845;       /* body text */
-  --ink-2:         #6B6880;       /* secondary text */
-  --ink-3:         #9C99AC;       /* placeholders */
-  --ink-inv:       #FFFFFF;       /* text on dark backgrounds */
+  --ink-0:         #0F172A;       /* deep slate headlines */
+  --ink-1:         #334155;       /* primary body text */
+  --ink-2:         #64748B;       /* secondary text */
+  --ink-3:         #94A3B8;       /* placeholders & muted text */
+  --ink-inv:       #FFFFFF;       /* text on dark / badge fills */
 
-  --brand-primary: #2D2B6B;       /* deep indigo — trust */
-  --brand-light:   #4340A8;       /* lighter indigo */
-  --brand-dim:     #E8E7F8;       /* tinted indigo bg */
+  --brand-primary:   #2563EB;     /* Royal Cobalt — clarity, focus */
+  --brand-light:     #3B82F6;     /* lighter blue */
+  --brand-dim:       #EFF6FF;     /* soft blue tinted bg */
 
-  --accent:        #E8903A;       /* warm amber — alerts, CTAs */
-  --accent-light:  #FDF3E8;       /* tinted amber bg */
-  --accent-dim:    #FAE3C8;
+  --brand-secondary: #7C3AED;     /* Electric Violet — ML & intelligence */
+  --brand-secondary-light: #8B5CF6;
+  --brand-secondary-dim:   #F5F3FF;
 
-  --slate:         #4A6FA5;       /* slate blue — info */
-  --slate-light:   #E8EEF7;
+  --accent:        #F59E0B;       /* vibrant amber — alerts */
+  --accent-light:  #FFFBEB;       /* tinted amber bg */
+  --accent-dim:    #FEF3C7;
 
-  --success:       #2E8B6E;       /* muted teal */
-  --success-light: #E5F4F0;
+  --slate:         #0284C7;       /* cyber cyan — network telemetry */
+  --slate-light:   #F0F9FF;
 
-  --danger:        #C0392B;       /* deep rose */
-  --danger-light:  #FAEAE8;
+  --success:       #10B981;       /* emerald green — safe / verified */
+  --success-light: #ECFDF5;
 
-  --warn:          #B87333;       /* copper */
-  --warn-light:    #FBF1E6;
+  --danger:        #EF4444;       /* crimson red — high threats */
+  --danger-light:  #FEF2F2;
 
-  --critical:      #7B2D8B;       /* deep purple */
-  --critical-light:#F2E8F5;
+  --warn:          #F59E0B;       /* warm amber */
+  --warn-light:    #FFFBEB;
 
-  /* ── Glassmorphism (warm) ────────────────── */
-  --glass-bg:      rgba(255,255,255,0.72);
-  --glass-border:  rgba(44,43,107,0.10);
-  --glass-shadow:  0 4px 24px rgba(44,43,107,0.08), 0 1px 4px rgba(0,0,0,0.04);
-  --glass-blur:    blur(18px);
+  --critical:      #DC2626;       /* deep ruby red */
+  --critical-light:#FEF2F2;
+
+  /* ── Modern Glassmorphism ────────────────── */
+  --glass-bg:      rgba(255, 255, 255, 0.82);
+  --glass-border:  rgba(226, 232, 240, 0.85);
+  --glass-shadow:  0 8px 32px rgba(15, 23, 42, 0.05), 0 1px 3px rgba(0, 0, 0, 0.02);
+  --glass-blur:    blur(20px) saturate(180%);
 
   /* ── Shadows ─────────────────────────────── */
-  --shadow-xs:  0 1px 3px rgba(28,27,32,0.06);
-  --shadow-sm:  0 2px 8px rgba(28,27,32,0.08), 0 1px 3px rgba(28,27,32,0.04);
-  --shadow-md:  0 4px 20px rgba(28,27,32,0.10), 0 2px 6px rgba(28,27,32,0.06);
-  --shadow-lg:  0 8px 40px rgba(28,27,32,0.12), 0 4px 12px rgba(28,27,32,0.06);
-  --shadow-xl:  0 20px 60px rgba(28,27,32,0.14), 0 8px 20px rgba(28,27,32,0.08);
-  --shadow-brand: 0 4px 20px rgba(45,43,107,0.25);
-  --shadow-accent: 0 4px 20px rgba(232,144,58,0.30);
+  --shadow-xs:  0 1px 2px rgba(15, 23, 42, 0.04);
+  --shadow-sm:  0 2px 6px rgba(15, 23, 42, 0.06), 0 1px 2px rgba(15, 23, 42, 0.02);
+  --shadow-md:  0 4px 16px rgba(15, 23, 42, 0.08), 0 2px 4px rgba(15, 23, 42, 0.04);
+  --shadow-lg:  0 8px 30px rgba(15, 23, 42, 0.10), 0 4px 8px rgba(15, 23, 42, 0.04);
+  --shadow-xl:  0 16px 48px rgba(15, 23, 42, 0.12), 0 6px 16px rgba(15, 23, 42, 0.06);
+  --shadow-brand: 0 4px 16px rgba(37, 99, 235, 0.22);
+  --shadow-accent: 0 4px 16px rgba(245, 158, 11, 0.25);
 
   /* ── Border Radius ───────────────────────── */
   --r-xs: 4px;

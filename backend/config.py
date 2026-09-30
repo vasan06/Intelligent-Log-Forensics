@@ -38,3 +38,6 @@ CORS_ORIGINS = [x.strip() for x in os.getenv(
 ).split(",") if x.strip()]
 LOG_LEVEL = os.getenv("ILF_LOG_LEVEL", "INFO")
 SUPPRESS_OTP_LOGS = True
+
+ADMIN_EMAIL = os.getenv("ILF_ADMIN_EMAIL", "vasan83000@gmail.com").strip().lower()
+ADMIN_PASSWORD = os.getenv("ILF_ADMIN_PASSWORD", "Vasan@83000")

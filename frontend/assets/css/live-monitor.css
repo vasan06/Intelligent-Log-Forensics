@@ -1,0 +1,71 @@
+/* frontend/assets/css/live-monitor.css — Live Telemetry Monitor Styles */
+
+.monitor-hero {
+  display: grid;
+  grid-template-columns: 1fr 340px;
+  gap: var(--sp-6);
+  background: linear-gradient(135deg, #FFFFFF 0%, #F8FAFC 100%);
+  border: 1px solid var(--surface-3);
+  border-radius: var(--r-xl);
+  padding: var(--sp-5) var(--sp-6);
+  box-shadow: 0 4px 20px -2px rgba(15, 23, 42, 0.04);
+  margin-bottom: var(--sp-5);
+  align-items: center;
+}
+@media(max-width: 900px) {
+  .monitor-hero { grid-template-columns: 1fr; }
+}
+
+.monitor-layout { display: flex; gap: var(--sp-5); height: calc(100vh - 340px); min-height: 480px; }
+@media(max-width: 860px) {
+  .monitor-layout { flex-direction: column; height: auto; }
+}
+.monitor-sidebar { width: 280px; flex-shrink: 0; display: flex; flex-direction: column; gap: var(--sp-4); }
+.monitor-main   { flex: 1; display: flex; flex-direction: column; min-width: 0; }
+
+/* Mode buttons */
+.mode-btn {
+  width: 100%; display: flex; align-items: center; justify-content: space-between;
+  padding: 9px 12px; border-radius: var(--r-md);
+  font-size: var(--text-sm); font-weight: 500; color: var(--ink-1);
+  cursor: pointer; text-align: left; transition: all var(--t-fast);
+  border: 1.5px solid transparent; background: var(--surface-1);
+}
+.mode-btn:hover { background: var(--surface-0); border-color: var(--surface-3); }
+.mode-btn.active { background: var(--brand-dim); border-color: rgba(45,43,107,0.3); color: var(--brand-primary); font-weight: 600; }
+.mode-btn.active.danger-mode { background: #FEF2F2; border-color: #FCA5A5; color: #DC2626; }
+.mode-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+
+/* Controls */
+.controls-row { display: flex; align-items: center; gap: var(--sp-3); flex-wrap: wrap; padding: var(--sp-4) var(--sp-5); background: var(--surface-0); border: 1px solid var(--surface-3); border-radius: var(--r-lg); margin-bottom: var(--sp-4); }
+.start-btn {
+  display: flex; align-items: center; gap: var(--sp-2);
+  padding: 8px 18px; border-radius: var(--r-md);
+  font-size: var(--text-sm); font-weight: 700; cursor: pointer;
+  background: #10B981; color: #fff;
+  transition: all var(--t-base) var(--ease-out);
+  box-shadow: 0 2px 8px rgba(16, 185, 129, 0.25);
+  border: none;
+}
+.start-btn.running { background: #DC2626; box-shadow: 0 2px 8px rgba(220, 38, 38, 0.25); }
+.start-btn:hover { filter: brightness(1.05); }
+
+.live-indicator { display: flex; align-items: center; gap: var(--sp-2); font-size: var(--text-sm); font-weight: 600; }
+.live-label { color: var(--ink-3); }
+.live-label.active { color: #DC2626; }
+
+/* Severity counters */
+.sev-counters { display: grid; grid-template-columns: repeat(4, 1fr); gap: var(--sp-2); }
+.sev-counter { display: flex; flex-direction: column; align-items: center; background: var(--surface-1); padding: 8px 4px; border-radius: var(--r-md); border: 1px solid var(--surface-2); }
+.sev-counter-val { font-family: var(--font-display); font-weight: 800; font-size: var(--text-base); }
+.sev-counter-lbl { font-size: 10px; font-weight: 700; letter-spacing: 0.04em; }
+
+/* Terminal */
+.log-terminal { flex: 1; overflow-y: auto; background: #FFFFFF; border: 1px solid var(--surface-3); border-radius: var(--r-lg); }
+.log-row { display: grid; grid-template-columns: 80px 76px 90px 115px 1fr; gap: 10px; padding: 5px 10px; border-bottom: 1px solid rgba(0,0,0,0.03); animation: fadeIn 0.15s ease both; align-items: start; font-size: 12px; }
+.log-row:hover { background: #F8FAFC; }
+.log-row.row-CRITICAL { background: #FFF5F5; }
+.log-row.row-ERROR    { background: #FFFDF5; }
+
+.speed-wrap { display: flex; align-items: center; gap: var(--sp-2); font-size: var(--text-xs); color: var(--ink-2); }
+.speed-wrap input[type=range] { accent-color: var(--brand-primary); width: 80px; }

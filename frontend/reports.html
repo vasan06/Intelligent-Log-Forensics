@@ -1,1 +1,108 @@
-<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Reports — ILF</title><link rel="stylesheet" href="assets/css/tokens.css"><link rel="stylesheet" href="assets/css/global.css"><link rel="stylesheet" href="assets/css/components.css"><link rel="stylesheet" href="assets/css/navbar.css"></head><body><div class="page-wrap with-nav"><main class="content-area"><div class="page-header"><div><div class="breadcrumb" id="breadcrumb"></div><div class="page-title">Forensic Reports</div><div class="page-subtitle">Preview the latest user-scoped analysis before exporting PDF</div></div><button class="btn btn-primary" onclick="downloadReport()">Download PDF</button></div><div id="preview" class="card" style="padding:24px;margin-bottom:20px"><div class="text-muted">Loading latest analysis…</div></div><div class="card" style="padding:24px"><div class="section-label">Report History</div><div id="history" class="text-sm text-muted">Loading…</div></div></main></div><script src="assets/js/api.js"></script><script src="assets/js/auth-guard.js"></script><script src="assets/js/navbar.js"></script><script>requireAuth();let latest=null;function esc(s){return String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}function chart(title,labels,values){const max=Math.max(...values,1);return '<div style="margin-top:20px"><div class="section-label">'+esc(title)+'</div>'+labels.map((l,i)=>'<div style="display:grid;grid-template-columns:180px 1fr 60px;gap:10px;align-items:center;margin:8px 0"><span class="text-xs">'+esc(l)+'</span><div style="height:10px;background:var(--surface-2);border-radius:8px"><div style="height:100%;width:'+Math.round((Number(values[i]||0)/max)*100)+'%;background:var(--brand-primary);border-radius:8px"></div></div><span class="text-xs">'+Number(values[i]||0).toFixed(2)+'</span></div>').join('')+'</div>';}async function load(){const r=await Api.reportPreview({type:'overall'});if(!r.ok){preview.innerHTML='<p>'+esc(r.data?.message||'Unable to load report')+'</p>';return;}latest=r.data;const d=latest.report,s= d.summary||{};preview.innerHTML='<div class="grid-4"><div class="kpi-card"><div class="kpi-label">Logs</div><div class="kpi-value">'+Number(s.total_logs||0).toLocaleString()+'</div></div><div class="kpi-card"><div class="kpi-label">Anomalies</div><div class="kpi-value">'+Number(s.anomalies||0).toLocaleString()+'</div></div><div class="kpi-card"><div class="kpi-label">Score</div><div class="kpi-value">'+Number(s.anomaly_score||0).toFixed(2)+'</div></div><div class="kpi-card"><div class="kpi-label">Risk</div><div class="kpi-value">'+esc(s.risk_level||'LOW')+'</div></div></div><h3 style="margin-top:24px">ML analysis</h3><p class="text-sm">Primary algorithm: <strong>'+esc(d.best_algorithm)+'</strong></p>'+chart('Algorithm scores',latest.charts.algorithms.labels,latest.charts.algorithms.values)+chart('Severity distribution',latest.charts.severity.labels,latest.charts.severity.values)+'<h3 style="margin-top:24px">Flagged evidence</h3><div style="overflow:auto"><table class="data-table"><thead><tr><th>Severity</th><th>Source</th><th>Message</th></tr></thead><tbody>'+(d.flagged_entries||[]).map(x=>'<tr><td>'+esc(x.severity)+'</td><td>'+esc(x.source)+'</td><td>'+esc(x.message)+'</td></tr>').join('')+'</tbody></table></div>';}async function downloadReport(){const r=await Api.generateReport({type:'overall'});if(!r.ok){toast('Report generation failed','error');return;}downloadBlob(r.blob,'ILF_Report.pdf');toast('PDF downloaded','success');}async function historyLoad(){const r=await Api.reportHistory();history.innerHTML=r.ok&&r.data.reports.length?r.data.reports.map(x=>'<div style="padding:10px 0;border-bottom:1px solid var(--surface-2)">'+esc(x.type)+' · '+new Date(x.created_at).toLocaleString()+'</div>').join(''):'No reports generated yet.';}setBreadcrumb([{label:'Home',href:'/dashboard'},{label:'Reports'}]);load();historyLoad();</script></body></html>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Forensic Reports — Intelligent Log Forensic</title>
+<link rel="stylesheet" href="assets/css/tokens.css"/>
+<link rel="stylesheet" href="assets/css/global.css"/>
+<link rel="stylesheet" href="assets/css/components.css"/>
+<link rel="stylesheet" href="assets/css/navbar.css"/>
+<link rel="stylesheet" href="assets/css/animations.css"/>
+<link rel="stylesheet" href="assets/css/reports.css"/>
+</head>
+<body>
+<div class="page-wrap with-nav">
+  <main class="content-area">
+    <nav id="navMount"></nav>
+
+    <div class="page-header">
+      <div>
+        <div class="breadcrumb" id="breadcrumb"></div>
+        <div class="page-title">Executive Forensic Reports</div>
+        <div class="page-subtitle">Activity-based incident intelligence, consensus scoring, and automated containment rules</div>
+      </div>
+      <div class="page-actions">
+        <button class="btn btn-outline" id="btnPreview" onclick="generatePreview()">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+          Preview Report
+        </button>
+        <button class="btn btn-primary" id="btnDownload" onclick="downloadPdf()">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          Download PDF
+        </button>
+      </div>
+    </div>
+
+    <!-- Activity Selector Card -->
+    <div class="activity-card">
+      <div class="report-hero-badge">ACTIVITY-BASED AUDIT</div>
+      <h3 style="font-size:1.25rem;font-weight:700;margin-bottom:6px;color:var(--ink-0);">Select Investigation Activity</h3>
+      <p style="color:var(--ink-2);font-size:var(--text-sm);margin-bottom:var(--sp-4);">
+        Reports compile telemetry dynamically based on real forensic investigations (uploaded batches or threat simulations) without arbitrary log cutoffs.
+      </p>
+
+      <div class="grid-2" style="align-items:end;gap:var(--sp-4);">
+        <div class="form-group" style="margin:0;">
+          <label class="form-label">Investigation Activity</label>
+          <select class="select" id="activitySelect">
+            <option value="latest">Latest Security Telemetry (Consensus Baseline)</option>
+          </select>
+        </div>
+        <div style="display:flex;align-items:center;gap:var(--sp-3);">
+          <div class="db-storage-tag">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"/><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/></svg>
+            PostgreSQL BLOB Storage (Zero Disk Leakage)
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Preview Container (Initial Empty State) -->
+    <div id="previewContainer">
+      <div class="preview-empty" id="previewEmpty">
+        <svg width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="var(--ink-3)" stroke-width="1.5" style="margin-bottom:12px;"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+        <div style="font-size:1.1rem;font-weight:700;color:var(--ink-1);margin-bottom:6px;">No Report Preview Generated</div>
+        <div style="font-size:var(--text-sm);color:var(--ink-2);max-width:440px;margin:0 auto 18px;">
+          Choose an activity above and click <strong>Preview Report</strong> to examine the cross-model consensus and SOC mitigations before exporting.
+        </div>
+        <button class="btn btn-outline" onclick="generatePreview()">Generate Preview</button>
+      </div>
+
+      <!-- Preview Content (Populated on button click) -->
+      <div id="previewContent" style="display:none;"></div>
+    </div>
+
+    <!-- Report History Card -->
+    <div class="card mb-6">
+      <div style="padding:var(--sp-5) var(--sp-5) 0;">
+        <div class="section-label">Generated Reports History (Stored in Database)</div>
+      </div>
+      <div class="table-wrap">
+        <table class="table">
+          <thead>
+            <tr>
+              <th>Report ID</th>
+              <th>Investigation Type</th>
+              <th>Virtual DB Location</th>
+              <th>Timestamp</th>
+              <th>Action</th>
+            </tr>
+          </thead>
+          <tbody id="historyTable">
+            <tr><td colspan="5" style="text-align:center;color:var(--ink-3);padding:20px;">Loading report archive…</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+  </main>
+</div>
+
+<div id="toast-container"></div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+<script src="assets/js/api.js"></script>
+<script src="assets/js/auth-guard.js"></script>
+<script src="assets/js/navbar.js"></script>
+<script src="assets/js/reports.js"></script>
+</body>
+</html>

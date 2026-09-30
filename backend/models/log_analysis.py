@@ -47,7 +47,7 @@ log_analyses = Table(
         "file_id",
         String(36),
         ForeignKey("uploaded_files.id", ondelete="CASCADE"),
-        nullable=False,
+        nullable=True,
         index=True,
     ),
 

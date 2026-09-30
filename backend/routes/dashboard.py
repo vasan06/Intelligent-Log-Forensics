@@ -116,6 +116,9 @@ def _build_dashboard(rows):
     response_times = []
     total_logs = 0
     anomalies = 0
+    recent_cases = []
+    recent_incidents = []
+    seen_files = set()
 
     for row in rows:
         results = row["results"] or {}
@@ -189,6 +192,37 @@ def _build_dashboard(rows):
             block_index = min(local_hour // 2, 11)
             activity[day_index][block_index] += 1
 
+        fid = str(row.get("id") or "")
+        fname = row.get("filename") or "Uploaded Log"
+        status = row.get("status") or "completed"
+
+        if fid and fid not in seen_files and len(recent_cases) < 6:
+            seen_files.add(fid)
+            recent_cases.append({
+                "file_id": fid,
+                "analysis_id": str(row.get("analysis_id") or ""),
+                "filename": fname,
+                "status": status,
+                "total_logs": _analysis_value(results, "total_logs", "lines_parsed", default=0),
+                "anomalies": _analysis_value(results, "anomalies", "anomalies_found", default=0),
+                "created_at": created_at.isoformat() if created_at else "",
+                "db_location": row.get("db_location") or f"db://users/uploads/{fid}",
+            })
+
+        ml = results.get("ml") or results.get("ml_analysis") or {}
+        flagged = ml.get("flagged_entries") or []
+        for fl in flagged:
+            if len(recent_incidents) < 15:
+                recent_incidents.append({
+                    "timestamp": fl.get("timestamp") or (created_at.isoformat() if created_at else ""),
+                    "source": fl.get("source") or "system",
+                    "severity": fl.get("severity") or "ERROR",
+                    "message": fl.get("message") or "Anomaly detected in log pattern",
+                    "anomaly_score": fl.get("anomaly_score") or 0.85,
+                    "ip": fl.get("ip") or "-",
+                    "file_id": fid,
+                })
+
     # If an analysis does not expose a parsed-log count, each uploaded
     # analysis still represents one completed analysis, but we do not
     # invent a large log count.
@@ -228,7 +262,8 @@ def _build_dashboard(rows):
         "labels": [item[0] for item in top],
         "values": [item[1] for item in top],
     }
-    data["activity"]["data"] = activity
+    data["recent_cases"] = recent_cases
+    data["recent_incidents"] = recent_incidents
 
     return data
 
@@ -248,7 +283,11 @@ def stats():
         result = db.execute(
             select(
                 uploaded_files.c.id,
+                uploaded_files.c.filename,
+                uploaded_files.c.status,
+                uploaded_files.c.db_location,
                 uploaded_files.c.created_at,
+                log_analyses.c.id.label("analysis_id"),
                 log_analyses.c.results,
             )
             .select_from(
@@ -258,6 +297,7 @@ def stats():
                 )
             )
             .where(uploaded_files.c.user_id == str(user_id))
+            .order_by(uploaded_files.c.created_at.desc())
         )
 
         rows = result.mappings().all()

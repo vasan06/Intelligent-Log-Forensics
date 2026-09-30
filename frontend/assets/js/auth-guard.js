@@ -4,13 +4,19 @@
  */
 
 /* ── Auth guard ────────────────────────────── */
-function requireAuth() {
+async function requireAuth() {
   if (!Api.token()) {
-    window.location.href = 'signin.html';
+    if (Api.refreshToken()) {
+      const refreshed = await Api.refreshAccessToken();
+      if (refreshed.ok) return true;
+    }
+    Api.clearAuth();
+    window.location.replace('/login');
     return false;
   }
   return true;
 }
+
 
 /* ── Toast system ──────────────────────────── */
 const TOAST_ICONS = {
