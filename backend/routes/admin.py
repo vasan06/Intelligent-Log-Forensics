@@ -9,10 +9,11 @@ from backend.models.user import users
 from backend.models.uploaded_file import uploaded_files
 from backend.models.log_analysis import log_analyses
 from backend.models.session import sessions
+from backend.models.report import reports
 
 admin_bp = Blueprint("admin", __name__)
 
-ALLOWED_ROLES = {"Analyst", "Viewer", "Admin"}
+ALLOWED_ROLES = {"User", "Admin"}
 ALLOWED_STATUS = {"active", "inactive"}
 
 def current_user():
@@ -92,7 +93,7 @@ def create_user():
     data = request.get_json(silent=True) or {}
     name, email = str(data.get("name") or "").strip(), str(data.get("email") or "").strip().lower()
     password = str(data.get("password") or "")
-    role = str(data.get("role") or "Analyst").strip().title()
+    role = str(data.get("role") or "User").strip().title()
     if not name or not email or len(password) < 8:
         return jsonify({"success": False, "message": "Name, email and password (8+ characters) are required"}), 400
     if role not in ALLOWED_ROLES:
@@ -167,3 +168,190 @@ def delete_user(uid):
         if result.rowcount == 0:
             return jsonify({"success": False, "message": "User not found"}), 404
     return jsonify({"success": True, "message": "User deleted"})
+
+
+@admin_bp.route("/admin/logs", methods=["GET"])
+def all_logs():
+    admin, error = require_admin()
+    if error:
+        return error
+    
+    q = (request.args.get("q") or "").strip().lower()
+    sev = (request.args.get("severity") or "all").strip().upper()
+    target_uid = (request.args.get("user_id") or "").strip()
+    source_filter = (request.args.get("source") or "all").strip().lower()
+    limit = min(max(int(request.args.get("limit", 100)), 1), 500)
+
+    log_entries = []
+    with get_db() as db:
+        query = select(
+            log_analyses.c.id,
+            log_analyses.c.user_id,
+            log_analyses.c.file_id,
+            log_analyses.c.status,
+            log_analyses.c.results,
+            log_analyses.c.created_at,
+            users.c.name.label("user_name"),
+            users.c.email.label("user_email"),
+            uploaded_files.c.filename,
+        ).select_from(
+            log_analyses.join(users, users.c.id == log_analyses.c.user_id)
+            .outerjoin(uploaded_files, uploaded_files.c.id == log_analyses.c.file_id)
+        ).order_by(log_analyses.c.created_at.desc())
+
+        if target_uid:
+            query = query.where(log_analyses.c.user_id == target_uid)
+
+        rows = db.execute(query.limit(50)).mappings().all()
+
+        for r in rows:
+            results = r["results"] or {}
+            user_label = f"{r['user_name']} ({r['user_email']})"
+            is_sim = not bool(r["file_id"]) or (results.get("source") == "simulation")
+            src_type = ("Simulation: " + str(results.get("scenario_name", "Scenario"))) if is_sim else (r["filename"] or "Uploaded Log")
+            
+            if source_filter != "all":
+                if source_filter == "simulation" and not is_sim:
+                    continue
+                if source_filter == "upload" and is_sim:
+                    continue
+
+            raw_logs = results.get("logs") or results.get("preview") or []
+            if not raw_logs and "ml" in results and isinstance(results["ml"], dict):
+                raw_logs = results["ml"].get("flagged_entries") or []
+
+            for entry in raw_logs:
+                if not isinstance(entry, dict):
+                    continue
+                entry_sev = str(entry.get("severity") or "INFO").upper()
+                if sev != "ALL" and entry_sev != sev:
+                    continue
+                msg = str(entry.get("message") or "")
+                src_name = str(entry.get("source") or src_type)
+                if q and (q not in msg.lower() and q not in src_name.lower() and q not in user_label.lower()):
+                    continue
+                
+                log_entries.append({
+                    "analysis_id": str(r["id"]),
+                    "user_id": str(r["user_id"]),
+                    "user_name": r["user_name"],
+                    "user_email": r["user_email"],
+                    "activity_source": src_type,
+                    "is_simulation": is_sim,
+                    "timestamp": entry.get("timestamp") or (r["created_at"].isoformat() if r["created_at"] else None),
+                    "severity": entry_sev,
+                    "source": src_name,
+                    "ip": entry.get("ip") or "-",
+                    "pid": entry.get("pid") or "-",
+                    "message": msg,
+                })
+                if len(log_entries) >= limit:
+                    break
+            if len(log_entries) >= limit:
+                break
+
+    return jsonify({
+        "success": True,
+        "logs": log_entries,
+        "total": len(log_entries),
+    })
+
+
+@admin_bp.route("/admin/users/<uid>/activity", methods=["GET"])
+def user_activity(uid):
+    admin, error = require_admin()
+    if error:
+        return error
+
+    with get_db() as db:
+        user = db.execute(select(users).where(users.c.id == str(uid))).mappings().first()
+        if not user:
+            return jsonify({"success": False, "message": "User not found"}), 404
+
+        files = db.execute(
+            select(uploaded_files).where(uploaded_files.c.user_id == str(uid)).order_by(uploaded_files.c.created_at.desc())
+        ).mappings().all()
+
+        analyses = db.execute(
+            select(
+                log_analyses.c.id,
+                log_analyses.c.file_id,
+                log_analyses.c.status,
+                log_analyses.c.results,
+                log_analyses.c.created_at,
+                uploaded_files.c.filename,
+            ).select_from(
+                log_analyses.outerjoin(uploaded_files, uploaded_files.c.id == log_analyses.c.file_id)
+            ).where(log_analyses.c.user_id == str(uid)).order_by(log_analyses.c.created_at.desc())
+        ).mappings().all()
+
+        user_reports = db.execute(
+            select(reports).where(reports.c.user_id == str(uid)).order_by(reports.c.created_at.desc())
+        ).mappings().all()
+
+        user_sessions = db.execute(
+            select(sessions).where(sessions.c.user_id == str(uid)).order_by(sessions.c.expires_at.desc())
+        ).mappings().all()
+
+    analyses_data = []
+    simulations_count = 0
+    uploads_count = len(files)
+
+    for a in analyses:
+        res = a["results"] or {}
+        is_sim = not bool(a["file_id"]) or (res.get("source") == "simulation")
+        if is_sim:
+            simulations_count += 1
+        
+        ml = res.get("ml") or res.get("ml_analysis") or {}
+        analyses_data.append({
+            "id": str(a["id"]),
+            "file_id": str(a["file_id"]) if a["file_id"] else None,
+            "filename": ("Simulation: " + str(res.get("scenario_name", "Scenario"))) if is_sim else (a["filename"] or "Uploaded Log"),
+            "is_simulation": is_sim,
+            "status": a["status"],
+            "total_logs": int(res.get("total_logs", res.get("lines_parsed", 0)) or 0),
+            "anomalies": int(res.get("anomalies", res.get("anomalies_found", 0)) or 0),
+            "risk_level": ml.get("risk_level", "LOW"),
+            "anomaly_score": ml.get("anomaly_score", 0),
+            "created_at": a["created_at"].isoformat() if a["created_at"] else None,
+        })
+
+    now = datetime.datetime.now(datetime.timezone.utc)
+    active_sess_count = 0
+    for s in user_sessions:
+        if s["revoked_at"] is None:
+            exp = s["expires_at"]
+            if exp.tzinfo is None:
+                exp = exp.replace(tzinfo=datetime.timezone.utc)
+            if exp > now:
+                active_sess_count += 1
+
+    return jsonify({
+        "success": True,
+        "user": safe_user(user),
+        "summary": {
+            "total_files": uploads_count,
+            "total_analyses": len(analyses),
+            "total_simulations": simulations_count,
+            "total_reports": len(user_reports),
+            "active_sessions": active_sess_count,
+        },
+        "files": [{
+            "id": str(f["id"]),
+            "filename": f["filename"],
+            "size": f["size"],
+            "db_location": f.get("db_location") or f"db://users/{uid}/uploads/{f['id']}",
+            "status": f["status"],
+            "created_at": f["created_at"].isoformat() if f["created_at"] else None,
+        } for f in files],
+        "analyses": analyses_data,
+        "reports": [{
+            "id": str(r["id"]),
+            "report_type": r["report_type"],
+            "analysis_id": str(r["analysis_id"]),
+            "db_location": r.get("db_location") or f"db://users/{uid}/reports/{r['id']}",
+            "created_at": r["created_at"].isoformat() if r["created_at"] else None,
+        } for r in user_reports],
+    })
+

@@ -1,0 +1,233 @@
+/* frontend/assets/css/mitre-catalog.css — MITRE ATT&CK Catalog Styles */
+
+/* Tactic Category Navigation Tabs */
+.tactic-nav {
+  display: flex;
+  gap: 6px;
+  overflow-x: auto;
+  padding-bottom: 8px;
+  margin-bottom: var(--sp-6);
+  border-bottom: 1px solid var(--surface-3);
+  scrollbar-width: thin;
+}
+.tactic-chip {
+  white-space: nowrap;
+  padding: 6px 14px;
+  border-radius: var(--r-full);
+  font-size: var(--text-xs);
+  font-weight: 600;
+  cursor: pointer;
+  background: var(--surface-1);
+  border: 1px solid var(--surface-3);
+  color: var(--ink-1);
+  transition: all var(--t-fast);
+}
+.tactic-chip:hover {
+  background: var(--surface-0);
+  border-color: var(--brand-primary);
+  color: var(--brand-primary);
+}
+.tactic-chip.active {
+  background: var(--brand-primary);
+  border-color: var(--brand-primary);
+  color: #FFFFFF;
+}
+
+/* Category Sections */
+.tactic-section {
+  margin-bottom: var(--sp-8);
+}
+.tactic-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: var(--sp-4);
+  padding-bottom: 8px;
+  border-bottom: 2px solid var(--surface-2);
+}
+.tactic-title {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: var(--ink-0);
+}
+.tactic-badge {
+  font-size: 11px;
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: var(--r-full);
+  background: var(--surface-2);
+  color: var(--ink-2);
+}
+
+/* Technique Cards */
+.tech-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: var(--sp-4);
+}
+.tech-card {
+  background: var(--surface-0);
+  border: 1px solid var(--surface-3);
+  border-radius: var(--r-lg);
+  padding: var(--sp-4);
+  cursor: pointer;
+  transition: transform var(--t-fast), box-shadow var(--t-fast), border-color var(--t-fast);
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+.tech-card:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-sm);
+  border-color: var(--brand-primary);
+}
+.tech-top {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+.tech-id {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--brand-primary);
+  background: var(--brand-dim);
+  padding: 2px 6px;
+  border-radius: 4px;
+}
+.tech-name {
+  font-size: var(--text-sm);
+  font-weight: 700;
+  color: var(--ink-0);
+  margin-bottom: 6px;
+  line-height: 1.3;
+}
+.tech-desc {
+  font-size: 12px;
+  color: var(--ink-2);
+  line-height: 1.5;
+  margin-bottom: 12px;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+.tech-foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 11px;
+  color: var(--ink-3);
+  border-top: 1px solid var(--surface-2);
+  padding-top: 8px;
+  margin-top: auto;
+}
+
+/* Modal */
+.modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.45);
+  backdrop-filter: blur(4px);
+  z-index: 100;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+}
+.modal-backdrop.show { display: flex; animation: fadeIn 0.2s ease; }
+.modal-card {
+  background: #FFFFFF;
+  border-radius: var(--r-xl);
+  max-width: 680px;
+  width: 100%;
+  max-height: 90vh;
+  overflow-y: auto;
+  box-shadow: var(--shadow-lg);
+  border: 1px solid var(--surface-3);
+  padding: var(--sp-6);
+  position: relative;
+}
+.modal-close {
+  position: absolute;
+  top: 18px;
+  right: 18px;
+  background: var(--surface-2);
+  border: none;
+  border-radius: 50%;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  color: var(--ink-1);
+}
+.modal-close:hover { background: var(--surface-3); }
+
+.example-box {
+  background: #F8FAFC;
+  border-left: 3px solid #6366F1;
+  padding: 10px 14px;
+  border-radius: 0 var(--r-md) var(--r-md) 0;
+  font-size: 12.5px;
+  color: var(--ink-1);
+  margin-bottom: 8px;
+  line-height: 1.5;
+}
+.pattern-badge {
+  display: inline-block;
+  background: #F1F5F9;
+  color: #334155;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  padding: 3px 8px;
+  border-radius: 4px;
+  margin: 2px 4px 2px 0;
+  border: 1px solid #CBD5E1;
+}
+
+/* Step-by-Step Flow */
+.attack-steps-flow {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin: 10px 0;
+}
+.attack-step-item {
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+  background: var(--surface-1);
+  border: 1px solid var(--surface-2);
+  border-radius: var(--r-md);
+  padding: 8px 12px;
+  font-size: 12px;
+  line-height: 1.5;
+}
+.attack-step-num {
+  font-size: 10px;
+  font-weight: 800;
+  padding: 2px 7px;
+  border-radius: 4px;
+  background: rgba(37, 99, 235, 0.1);
+  color: var(--brand-primary);
+  white-space: nowrap;
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+.sol-box {
+  background: #ECFDF5;
+  border: 1px solid #A7F3D0;
+  border-radius: var(--r-md);
+  padding: 10px 14px;
+  margin-top: 10px;
+  color: #064E3B;
+  font-size: 12.5px;
+  line-height: 1.5;
+}

@@ -11,6 +11,7 @@ from sqlalchemy import (
     Column,
     DateTime,
     ForeignKey,
+    LargeBinary,
     String,
     Table,
     func,
@@ -58,7 +59,19 @@ reports = Table(
     Column(
         "file_path",
         String(1000),
-        nullable=False,
+        nullable=True,
+    ),
+
+    Column(
+        "pdf_data",
+        LargeBinary,
+        nullable=True,
+    ),
+
+    Column(
+        "db_location",
+        String(500),
+        nullable=True,
     ),
 
     Column(

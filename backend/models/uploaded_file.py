@@ -12,6 +12,7 @@ from sqlalchemy import (
     Column,
     DateTime,
     ForeignKey,
+    LargeBinary,
     String,
     Table,
     func,
@@ -51,7 +52,19 @@ uploaded_files = Table(
     Column(
         "storage_path",
         String(1000),
-        nullable=False,
+        nullable=True,
+    ),
+
+    Column(
+        "content_data",
+        LargeBinary,
+        nullable=True,
+    ),
+
+    Column(
+        "db_location",
+        String(500),
+        nullable=True,
     ),
 
     Column(

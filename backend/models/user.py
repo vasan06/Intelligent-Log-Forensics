@@ -54,7 +54,7 @@ users = Table(
         "role",
         String(30),
         nullable=False,
-        default="Analyst",
+        default="User",
     ),
 
     Column(

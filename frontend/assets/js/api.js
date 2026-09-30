@@ -13,6 +13,14 @@ const Api = {
   },
   clearAuth: () => {
     ['ilf_access_token','ilf_refresh_token','ilf_token','ilf_user'].forEach(k => localStorage.removeItem(k));
+    try {
+      fetch(API_BASE + '/auth/logout', {
+        method: 'POST',
+        credentials: 'include',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ refresh_token: '' })
+      }).catch(() => {});
+    } catch {}
   },
   migrateLegacyToken: () => {
     if (!localStorage.getItem('ilf_access_token')) {
@@ -29,11 +37,13 @@ const Api = {
   },
   _redirectLogin: () => {
     Api.clearAuth();
-    if (!location.pathname.endsWith('/signin') && !location.pathname.endsWith('/login')) location.replace('/login');
+    if (!location.pathname.endsWith('/signin') && !location.pathname.endsWith('/login')) {
+      window.location.replace('/login');
+    }
   },
   refreshAccessToken: async () => {
     const refresh = Api.refreshToken();
-    if (!refresh || !Api.accessToken()) return {ok:false,status:401,data:null};
+    if (!refresh) return {ok:false,status:401,data:null};
     try {
       const res = await fetch(API_BASE + '/auth/refresh', {
         method:'POST', credentials:'include',
@@ -42,15 +52,21 @@ const Api = {
       });
       const data = await res.json().catch(() => null);
       if (!res.ok || !data?.access_token) { Api.clearAuth(); return {ok:false,status:res.status,data}; }
-      Api.setAuth(data.access_token, data.refresh_token, data.user);
+      Api.setAuth(data.access_token, data.refresh_token, data.user || Api.user());
       return {ok:true,status:res.status,data};
     } catch (e) { return {ok:false,status:0,data:null,error:e.message}; }
   },
   _req: async (method, path, body=null, isForm=false, retry=true) => {
     Api.migrateLegacyToken();
-    // A missing access token is treated as an explicit logout. Never silently
-    // resurrect a session using only the refresh token.
-    if (!Api.accessToken()) { Api._redirectLogin(); return {ok:false,status:401,data:null}; }
+    if (!Api.accessToken()) {
+      if (Api.refreshToken()) {
+        const refreshed = await Api.refreshAccessToken();
+        if (!refreshed.ok) { Api._redirectLogin(); return {ok:false,status:401,data:null}; }
+      } else {
+        Api._redirectLogin();
+        return {ok:false,status:401,data:null};
+      }
+    }
     const makeOptions = () => {
       const headers = {...Api.authHeaders()};
       if (!isForm) headers['Content-Type'] = 'application/json';
@@ -81,15 +97,23 @@ const Api = {
   forgotPassword:email=>fetch(API_BASE+'/auth/forgot-password',{method:'POST',credentials:'include',headers:{'Content-Type':'application/json'},body:JSON.stringify({email})}).then(async r=>({ok:r.ok,status:r.status,data:await r.json().catch(()=>null)})),
   resetPassword:(email,otp,password)=>fetch(API_BASE+'/auth/reset-password',{method:'POST',credentials:'include',headers:{'Content-Type':'application/json'},body:JSON.stringify({email,otp,new_password:password})}).then(async r=>({ok:r.ok,status:r.status,data:await r.json().catch(()=>null)})),
   dashStats:()=>Api.get('/dashboard/stats'), dashMlSummary:()=>Api.get('/dashboard/ml-summary'),
-  streamLogs:(p={})=>Api.get('/logs/stream?'+new URLSearchParams(p)),
+  streamLogs:(p={})=>Api.get('/logs/stream?'+new URLSearchParams(p)), saveSimulation:b=>Api.post('/logs/simulation',b),
   uploadLog:f=>Api.form('/logs/upload',f), pipelineStatus:id=>Api.get('/logs/pipeline/'+id),
-  mlAnalyze:b=>Api.post('/ml/analyze',b), mlAlgos:()=>Api.get('/ml/algorithms'),
+  mlAnalyze:b=>Api.post('/ml/analyze',b), mlAlgos:()=>Api.get('/ml/algorithms'), getMlEvent:id=>Api.get('/ml/load-event/'+id),
   mitreCatalog:(p={})=>Api.get('/mitre/catalog?'+new URLSearchParams(p)), mitreMap:b=>Api.post('/mitre/map',b), mitreTechnique:id=>Api.get('/mitre/technique/'+id), mitreTactics:()=>Api.get('/mitre/tactics'), mitreUserLatest:()=>Api.get('/mitre/user-latest'),
-  generateReport:b=>Api._reqBlob('POST','/reports/generate',b), reportPreview:b=>Api.post('/reports/preview',b), reportHistory:()=>Api.get('/reports/history'),
+  generateReport:b=>Api._reqBlob('POST','/reports/generate',b), reportPreview:b=>Api.post('/reports/preview',b), reportHistory:()=>Api.get('/reports/history'), reportActivities:()=>Api.get('/reports/activities'), downloadReport:id=>Api._reqBlob('GET','/reports/download/'+id),
   adminStats:()=>Api.get('/admin/stats'), adminUsers:()=>Api.get('/admin/users'), adminCreateUser:b=>Api.post('/admin/users',b), adminUpdateUser:(id,b)=>Api.put('/admin/users/'+id,b), adminDeleteUser:id=>Api.del('/admin/users/'+id),
-  getProfile:()=>Api.get('/user/profile'), updateProfile:b=>Api.put('/user/profile',b), exportData:()=>Api.get('/user/export'),
+  adminLogs:(p={})=>Api.get('/admin/logs?'+new URLSearchParams(p)), adminUserActivity:uid=>Api.get('/admin/users/'+uid+'/activity'),
+  getProfile:()=>Api.get('/user/profile'), updateProfile:b=>Api.put('/user/profile',b), exportData:()=>Api.get('/user/export'), exportPdf:()=>Api._reqBlob('GET','/user/export-pdf'),
   _reqBlob:async(method,path,body,retry=true)=>{
-    if (!Api.accessToken()) { Api._redirectLogin(); return {ok:false,status:401,blob:null}; }
+    if (!Api.accessToken()) {
+      if (Api.refreshToken()) {
+        const refreshed = await Api.refreshAccessToken();
+        if (!refreshed.ok) { Api._redirectLogin(); return {ok:false,status:401,blob:null}; }
+      } else {
+        Api._redirectLogin(); return {ok:false,status:401,blob:null};
+      }
+    }
     const make=()=>({method,credentials:'include',headers:{'Content-Type':'application/json','X-ILF-Client':'web/2.1',...Api.authHeaders()},body:JSON.stringify(body)});
     let res;
     try{res=await fetch(API_BASE+path,make());}catch(e){return {ok:false,status:0,blob:null,error:e.message};}

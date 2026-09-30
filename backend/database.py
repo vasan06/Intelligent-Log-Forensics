@@ -103,10 +103,11 @@ def check_database_connection() -> bool:
 
 def init_database():
     """
-    Create all registered database tables.
-
-    Intended for development/initial setup.
+    Create all registered database tables, apply non-destructive column migrations,
+    normalize roles strictly to 'User' and 'Admin', and auto-seed/promote the administrator.
     """
+    import uuid
+    import bcrypt
 
     # Import table modules so SQLAlchemy registers every table on Base.metadata.
     from backend.models.user import users
@@ -114,4 +115,52 @@ def init_database():
     from backend.models.uploaded_file import uploaded_files
     from backend.models.log_analysis import log_analyses
     from backend.models.report import reports
+
     Base.metadata.create_all(bind=engine)
+
+    with engine.begin() as conn:
+        # Non-destructive migrations for in-DB storage
+        try:
+            conn.execute(text("ALTER TABLE uploaded_files ADD COLUMN IF NOT EXISTS content_data BYTEA;"))
+            conn.execute(text("ALTER TABLE uploaded_files ADD COLUMN IF NOT EXISTS db_location VARCHAR(500);"))
+            conn.execute(text("ALTER TABLE uploaded_files ALTER COLUMN storage_path DROP NOT NULL;"))
+        except Exception:
+            pass
+
+        try:
+            conn.execute(text("ALTER TABLE reports ADD COLUMN IF NOT EXISTS pdf_data BYTEA;"))
+            conn.execute(text("ALTER TABLE reports ADD COLUMN IF NOT EXISTS db_location VARCHAR(500);"))
+            conn.execute(text("ALTER TABLE reports ALTER COLUMN file_path DROP NOT NULL;"))
+            conn.execute(text("ALTER TABLE log_analyses ALTER COLUMN file_id DROP NOT NULL;"))
+        except Exception:
+            pass
+
+        # Normalize roles strictly to 'User' and 'Admin'
+        try:
+            conn.execute(text("UPDATE users SET role = 'User' WHERE role NOT IN ('Admin');"))
+        except Exception:
+            pass
+
+        # Auto-seed / Auto-promote configured admin
+        admin_email = getattr(config, "ADMIN_EMAIL", "vasan83000@gmail.com").strip().lower()
+        admin_pass = getattr(config, "ADMIN_PASSWORD", "Vasan@83000")
+        admin_hash = bcrypt.hashpw(admin_pass.encode("utf-8"), bcrypt.gensalt()).decode("utf-8")
+
+        existing_admin = conn.execute(
+            text("SELECT id FROM users WHERE email = :email"),
+            {"email": admin_email}
+        ).fetchone()
+
+        if existing_admin:
+            conn.execute(
+                text("UPDATE users SET role = 'Admin', verified = True, password_hash = :p_hash WHERE email = :email"),
+                {"email": admin_email, "p_hash": admin_hash}
+            )
+        else:
+            conn.execute(
+                text("""
+                    INSERT INTO users (id, name, email, password_hash, role, verified)
+                    VALUES (:id, 'Admin', :email, :p_hash, 'Admin', True)
+                """),
+                {"id": str(uuid.uuid4()), "email": admin_email, "p_hash": admin_hash}
+            )

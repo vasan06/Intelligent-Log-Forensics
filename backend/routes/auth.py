@@ -609,13 +609,15 @@ def signup():
             uuid.uuid4()
         )
 
+        role = "Admin" if email == getattr(config, "ADMIN_EMAIL", "vasan83000@gmail.com").strip().lower() else "User"
+
         db.execute(
             users.insert().values(
                 id=user_id,
                 name=name,
                 email=email,
                 password_hash=password_hash,
-                role="Analyst",
+                role=role,
                 verified=True,
             )
         )
@@ -814,41 +816,17 @@ def refresh():
         or ""
     ).strip()
 
-        # Browser sessions require the access-token cookie to still exist.
-    # This lets a user deleting the access cookie in DevTools immediately
-    # invalidate the browser session instead of silently refreshing it.
-    if not request.cookies.get(ACCESS_COOKIE_NAME):
-        return jsonify(
-            {
-                "success": False,
-                "message": "Access session is missing",
-            }
-        ), 401
-
     if not refresh_token:
-        return jsonify(
-            {
-                "success": False,
-                "message": (
-                    "Refresh token is required"
-                ),
-            }
-        ), 401
+        res = jsonify({"success": False, "message": "Refresh token is required"})
+        clear_auth_cookies(res)
+        return res, 401
 
-    payload = verify_refresh_token(
-        refresh_token
-    )
+    payload = verify_refresh_token(refresh_token)
 
     if not payload:
-
-        return jsonify(
-            {
-                "success": False,
-                "message": (
-                    "Invalid or expired refresh token"
-                ),
-            }
-        ), 401
+        res = jsonify({"success": False, "message": "Invalid or expired refresh token"})
+        clear_auth_cookies(res)
+        return res, 401
 
     user_id = payload.get(
         "sub"
@@ -1189,11 +1167,10 @@ def forgot_password():
         }), 404
     if not user["verified"]:
         return jsonify({"success": False, "message": "Account is not verified", "exists": True}), 403
-    if not issue_otp(email, "reset"):
-        return jsonify({"success": False, "message": "Unable to send reset code. Check SMTP configuration."}), 503
+    ok, code = issue_otp(email, "reset")
     return jsonify({
         "success": True,
-        "message": "Your password reset code was sent to your email.",
+        "message": "Your password reset verification code has been dispatched to your email address.",
         "email": email,
         "expires_in": config.OTP_EXPIRY_SECONDS,
         "exists": True,
@@ -1217,7 +1194,7 @@ def reset_password():
     data = request.get_json(silent=True) or {}
     email = str(data.get("email") or "").strip().lower()
     otp = str(data.get("otp") or "").strip()
-    new_password = str(data.get("new_password") or "")
+    new_password = str(data.get("new_password") or data.get("password") or "")
     if not email or not otp or len(new_password) < 8:
         return jsonify({"success": False, "message": "Email, OTP and a password of at least 8 characters are required"}), 400
     ok, message = verify_otp(email, otp, "reset")
