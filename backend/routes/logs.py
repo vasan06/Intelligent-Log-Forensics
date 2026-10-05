@@ -320,20 +320,12 @@ def stream():
             severity_filter=sev
         )
 
-        # Persist this live batch immediately.
-        analysis_id = persist_live_stream_batch(
-            uid=uid,
-            logs=logs,
-            mode=mode
-        )
-
         return jsonify({
             "success": True,
             "logs": logs,
             "mode": mode,
             "count": len(logs),
-            "analysis_id": analysis_id,
-            "persisted": True
+            "persisted": False
         })
 
     except Exception as exc:
@@ -518,7 +510,7 @@ def demo_sample(sample_type):
     """Provides 3 realistic attack datasets for 1-click testing."""
     now = datetime.datetime.now(datetime.timezone.utc)
 
-    if sample_type == "web_attack":
+    if sample_type in ("web_attack", "web_exploit"):
         sample_logs = [
             {"timestamp": (now - datetime.timedelta(minutes=15)).isoformat(), "severity": "INFO", "source": "nginx", "ip": "192.168.1.10", "pid": "1024", "message": '192.168.1.10 - - [12/Oct/2026:10:00:01] "GET /index.html HTTP/1.1" 200 4520'},
             {"timestamp": (now - datetime.timedelta(minutes=14)).isoformat(), "severity": "INFO", "source": "nginx", "ip": "192.168.1.10", "pid": "1024", "message": '192.168.1.10 - - [12/Oct/2026:10:01:05] "GET /products.php?id=12 HTTP/1.1" 200 8920'},
@@ -530,7 +522,7 @@ def demo_sample(sample_type):
         ]
         filename = "web_attack_sample.log"
 
-    elif sample_type == "ssh_brute":
+    elif sample_type in ("ssh_brute", "brute_force"):
         sample_logs = [
             {"timestamp": (now - datetime.timedelta(minutes=20)).isoformat(), "severity": "INFO", "source": "sshd", "ip": "10.0.0.5", "pid": "8812", "message": "Accepted publickey for deploy from 10.0.0.5 port 54120 ssh2: RSA SHA256:abc1234"},
             {"timestamp": (now - datetime.timedelta(minutes=16)).isoformat(), "severity": "ERROR", "source": "sshd", "ip": "203.0.113.88", "pid": "9120", "message": "Failed password for root from 203.0.113.88 port 48122 ssh2"},

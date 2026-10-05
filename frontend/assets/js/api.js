@@ -96,14 +96,15 @@ const Api = {
   resendOtp:(email,type='reset')=>Api.post('/auth/resend-otp',{email,type}),
   forgotPassword:email=>fetch(API_BASE+'/auth/forgot-password',{method:'POST',credentials:'include',headers:{'Content-Type':'application/json'},body:JSON.stringify({email})}).then(async r=>({ok:r.ok,status:r.status,data:await r.json().catch(()=>null)})),
   resetPassword:(email,otp,password)=>fetch(API_BASE+'/auth/reset-password',{method:'POST',credentials:'include',headers:{'Content-Type':'application/json'},body:JSON.stringify({email,otp,new_password:password})}).then(async r=>({ok:r.ok,status:r.status,data:await r.json().catch(()=>null)})),
-  dashStats:()=>Api.get('/dashboard/stats'), dashMlSummary:()=>Api.get('/dashboard/ml-summary'),
+  dashStats:(p={})=>Api.get('/dashboard/stats'+(Object.keys(p).length?'?'+new URLSearchParams(p):'')), dashMlSummary:()=>Api.get('/dashboard/ml-summary'),
   streamLogs:(p={})=>Api.get('/logs/stream?'+new URLSearchParams(p)), saveSimulation:b=>Api.post('/logs/simulation',b),
-  uploadLog:f=>Api.form('/logs/upload',f), pipelineStatus:id=>Api.get('/logs/pipeline/'+id),
+  uploadLog:f=>Api.form('/logs/upload',f), pipelineStatus:id=>Api.get('/logs/pipeline/'+id), sampleLogs:type=>Api.get('/logs/demo-sample/'+encodeURIComponent(type)),
   mlAnalyze:b=>Api.post('/ml/analyze',b), mlAlgos:()=>Api.get('/ml/algorithms'), getMlEvent:id=>Api.get('/ml/load-event/'+id),
   mitreCatalog:(p={})=>Api.get('/mitre/catalog?'+new URLSearchParams(p)), mitreMap:b=>Api.post('/mitre/map',b), mitreTechnique:id=>Api.get('/mitre/technique/'+id), mitreTactics:()=>Api.get('/mitre/tactics'), mitreUserLatest:()=>Api.get('/mitre/user-latest'),
   generateReport:b=>Api._reqBlob('POST','/reports/generate',b), reportPreview:b=>Api.post('/reports/preview',b), reportHistory:()=>Api.get('/reports/history'), reportActivities:()=>Api.get('/reports/activities'), downloadReport:id=>Api._reqBlob('GET','/reports/download/'+id),
   adminStats:()=>Api.get('/admin/stats'), adminUsers:()=>Api.get('/admin/users'), adminCreateUser:b=>Api.post('/admin/users',b), adminUpdateUser:(id,b)=>Api.put('/admin/users/'+id,b), adminDeleteUser:id=>Api.del('/admin/users/'+id),
   adminLogs:(p={})=>Api.get('/admin/logs?'+new URLSearchParams(p)), adminUserActivity:uid=>Api.get('/admin/users/'+uid+'/activity'),
+  adminSystemHealth:()=>Api.get('/admin/system-health'), adminRevokeUserSessions:uid=>Api.post('/admin/users/'+uid+'/revoke-sessions'),
   getProfile:()=>Api.get('/user/profile'), updateProfile:b=>Api.put('/user/profile',b), exportData:()=>Api.get('/user/export'), exportPdf:()=>Api._reqBlob('GET','/user/export-pdf'),
   _reqBlob:async(method,path,body,retry=true)=>{
     if (!Api.accessToken()) {
@@ -123,3 +124,104 @@ const Api = {
   }
 };
 Api.migrateLegacyToken();
+
+/* =========================================================
+   CUSTOM STYLED MODAL POPUP DIALOGS (Zero Native browser alert)
+   ========================================================= */
+function showModalAlert(message, title = 'Security Notice', type = 'info') {
+  return new Promise(resolve => {
+    let overlay = document.getElementById('ilfGlobalModalOverlay');
+    if (overlay) overlay.remove();
+
+    overlay = document.createElement('div');
+    overlay.id = 'ilfGlobalModalOverlay';
+    overlay.className = 'modal-overlay open';
+    overlay.style.cssText = 'position:fixed;inset:0;background:rgba(15,23,42,0.65);backdrop-filter:blur(6px);z-index:999999;display:flex;align-items:center;justify-content:center;padding:16px;opacity:1;';
+
+    const iconSvg = {
+      error: '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#DC2626" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>',
+      warn: '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#F59E0B" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>',
+      success: '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#10B981" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>',
+      info: '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#2563EB" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>'
+    }[type] || '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#2563EB" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>';
+
+    overlay.innerHTML = `
+      <div class="modal" style="max-width:440px;width:100%;padding:24px;background:#ffffff;border:1px solid #E2E8F0;border-radius:14px;box-shadow:0 20px 45px rgba(15,23,42,0.2);transform:none;">
+        <div style="display:flex;align-items:flex-start;gap:14px;margin-bottom:16px;">
+          <div style="flex-shrink:0;padding:8px;background:#F8FAFC;border:1px solid #E2E8F0;border-radius:10px;">${iconSvg}</div>
+          <div style="flex:1;">
+            <h3 style="margin:0 0 6px;font-size:16px;font-weight:700;color:#0F172A;font-family:inherit;">${title}</h3>
+            <p style="margin:0;font-size:13px;color:#475569;line-height:1.5;">${message}</p>
+          </div>
+        </div>
+        <div style="display:flex;justify-content:flex-end;gap:8px;margin-top:20px;">
+          <button class="btn btn-primary btn-sm" id="ilfModalOkBtn" style="min-width:80px;padding:8px 18px;border-radius:8px;font-weight:600;background:#2563EB;color:#fff;border:none;cursor:pointer;">OK</button>
+        </div>
+      </div>
+    `;
+
+    document.body.appendChild(overlay);
+
+    const closeDialog = () => {
+      overlay.remove();
+      resolve(true);
+    };
+
+    overlay.querySelector('#ilfModalOkBtn').onclick = closeDialog;
+    overlay.onclick = e => { if (e.target === overlay) closeDialog(); };
+  });
+}
+
+function showModalConfirm(message, title = 'Confirm Action', options = {}) {
+  const { confirmText = 'Confirm', cancelText = 'Cancel', danger = false } = options;
+  return new Promise(resolve => {
+    let overlay = document.getElementById('ilfGlobalModalOverlay');
+    if (overlay) overlay.remove();
+
+    overlay = document.createElement('div');
+    overlay.id = 'ilfGlobalModalOverlay';
+    overlay.className = 'modal-overlay open';
+    overlay.style.cssText = 'position:fixed;inset:0;background:rgba(15,23,42,0.65);backdrop-filter:blur(6px);z-index:999999;display:flex;align-items:center;justify-content:center;padding:16px;opacity:1;';
+
+    const iconSvg = danger
+      ? '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#DC2626" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>'
+      : '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#2563EB" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>';
+
+    const confirmBg = danger ? '#DC2626' : '#2563EB';
+
+    overlay.innerHTML = `
+      <div class="modal" style="max-width:440px;width:100%;padding:24px;background:#ffffff;border:1px solid #E2E8F0;border-radius:14px;box-shadow:0 20px 45px rgba(15,23,42,0.2);transform:none;">
+        <div style="display:flex;align-items:flex-start;gap:14px;margin-bottom:16px;">
+          <div style="flex-shrink:0;padding:8px;background:#F8FAFC;border:1px solid #E2E8F0;border-radius:10px;">${iconSvg}</div>
+          <div style="flex:1;">
+            <h3 style="margin:0 0 6px;font-size:16px;font-weight:700;color:#0F172A;font-family:inherit;">${title}</h3>
+            <p style="margin:0;font-size:13px;color:#475569;line-height:1.5;">${message}</p>
+          </div>
+        </div>
+        <div style="display:flex;justify-content:flex-end;gap:8px;margin-top:20px;">
+          <button class="btn btn-ghost btn-sm" id="ilfModalCancelBtn" style="padding:8px 16px;border-radius:8px;border:1px solid #CBD5E1;background:transparent;cursor:pointer;color:#475569;">${cancelText}</button>
+          <button class="btn btn-sm" id="ilfModalConfirmBtn" style="padding:8px 18px;border-radius:8px;font-weight:600;background:${confirmBg};color:#fff;border:none;cursor:pointer;">${confirmText}</button>
+        </div>
+      </div>
+    `;
+
+    document.body.appendChild(overlay);
+
+    const finish = result => {
+      overlay.remove();
+      resolve(result);
+    };
+
+    overlay.querySelector('#ilfModalConfirmBtn').onclick = () => finish(true);
+    overlay.querySelector('#ilfModalCancelBtn').onclick = () => finish(false);
+    overlay.onclick = e => { if (e.target === overlay) finish(false); };
+  });
+}
+
+if (typeof window !== 'undefined') {
+  window.showModalAlert = showModalAlert;
+  window.showModalConfirm = showModalConfirm;
+  window.alert = function(msg) {
+    showModalAlert(String(msg), 'Security Notice', 'error');
+  };
+}

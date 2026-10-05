@@ -74,7 +74,7 @@ def get_user_real_metrics(user_id):
 
         # Analyses and threat simulations
         analysis_rows = db.execute(
-            select(log_analyses.c.id, log_analyses.c.results, log_analyses.c.created_at)
+            select(log_analyses.c.id, log_analyses.c.file_id, log_analyses.c.results, log_analyses.c.created_at)
             .where(log_analyses.c.user_id == str(user_id))
             .order_by(log_analyses.c.created_at.desc())
         ).mappings().all()
@@ -93,17 +93,47 @@ def get_user_real_metrics(user_id):
     total_logs = 0
     threats_detected = 0
 
-    for f in file_rows:
-        total_logs += max(int(f.get("size") or 0) // 80, 1)
-
+    # Deduplicate analyses: keep latest analysis per uploaded file + distinct simulations
+    deduped_analyses = []
+    seen_fids = set()
     for a in analysis_rows:
+        fid = a.get("file_id")
         res = a.get("results") or {}
-        ml_obj = res.get("ml") or res.get("ml_analysis") or {}
-        risk_level = ml_obj.get("risk_level", "LOW")
-        total_logs += int(res.get("total_logs") or res.get("lines_parsed") or 0)
-        anom = int(res.get("anomalies") or res.get("anomalies_found") or 0)
-        if risk_level in ["HIGH", "CRITICAL"] or anom > 0:
-            threats_detected += anom if anom > 0 else 1
+        if not isinstance(res, dict):
+            res = {}
+        if res.get("stream_batch") is True and res.get("source") == "live_stream":
+            continue
+        if fid:
+            fid_str = str(fid)
+            if fid_str in seen_fids:
+                continue
+            seen_fids.add(fid_str)
+            deduped_analyses.append(a)
+        else:
+            deduped_analyses.append(a)
+
+    analyzed_fids = set()
+    for a in deduped_analyses:
+        fid = a.get("file_id")
+        if fid:
+            analyzed_fids.add(str(fid))
+        res = a.get("results") or {}
+        raw_logs = res.get("logs") or res.get("preview") or []
+        row_logs = len(raw_logs) or int(res.get("total_logs") or res.get("lines_parsed") or 0)
+        total_logs += row_logs
+
+        anom = int(res.get("anomalies") or res.get("anomalies_found") or len(res.get("flagged_entries", [])) or 0)
+        if anom == 0:
+            ml_obj = res.get("ml") or res.get("ml_analysis") or {}
+            anom = len(ml_obj.get("flagged_entries", []))
+            if not anom and ml_obj.get("risk_level") in ["HIGH", "CRITICAL"]:
+                anom = 1
+        threats_detected += anom
+
+    # Add any uploaded files not yet analyzed
+    for f in file_rows:
+        if str(f["id"]) not in analyzed_fids:
+            total_logs += max(int(f.get("size") or 0) // 80, 1)
 
     # Build chronological feed
     events = []

@@ -1006,7 +1006,7 @@ signupForm.addEventListener("submit", async (event) => {
     console.log("Signup response:", data);
 
     if (!response.ok) {
-      alert(data.message || "Signup failed");
+      showModalAlert(data.message || "Signup failed", "Signup Notice", "error");
       return;
     }
 
@@ -1040,7 +1040,7 @@ if (data.refresh_token) {
 
     console.error("Signup error:", error);
 
-    alert("Unable to connect to the server.");
+    showModalAlert("Unable to connect to the server.", "Connection Notice", "error");
 
   } finally {
 

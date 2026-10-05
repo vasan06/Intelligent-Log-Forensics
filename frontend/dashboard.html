@@ -39,6 +39,32 @@
 
       <select
         class="filter-select"
+        id="fTimeRange"
+        onchange="onTimeRangeChange()">
+        <option value="all">All Time</option>
+        <option value="today">Today</option>
+        <option value="24h">Last 24 Hours</option>
+        <option value="7d">Last 7 Days</option>
+        <option value="30d">Last 30 Days</option>
+        <option value="custom">Custom Date &amp; Time…</option>
+      </select>
+
+      <div id="customDateWrap" class="filter-custom-wrap" style="display:none;align-items:center;gap:8px;">
+        <div class="filter-group">
+          <label for="fStartDate" class="filter-sublabel">From</label>
+          <input type="date" class="filter-input" id="fStartDate" onchange="loadDash()"/>
+          <input type="time" class="filter-input" id="fStartTime" onchange="loadDash()"/>
+        </div>
+
+        <div class="filter-group">
+          <label for="fEndDate" class="filter-sublabel">To</label>
+          <input type="date" class="filter-input" id="fEndDate" onchange="loadDash()"/>
+          <input type="time" class="filter-input" id="fEndTime" onchange="loadDash()"/>
+        </div>
+      </div>
+
+      <select
+        class="filter-select"
         id="fSource"
         onchange="loadDash()">
 
@@ -64,6 +90,22 @@
         <option value="CRITICAL">CRITICAL</option>
 
       </select>
+
+      <button
+        class="btn btn-ghost btn-sm"
+        id="resetFiltersBtn"
+        onclick="resetDashFilters()">
+        <svg width="13"
+             height="13"
+             viewBox="0 0 24 24"
+             fill="none"
+             stroke="currentColor"
+             stroke-width="2">
+          <line x1="18" y1="6" x2="6" y2="18"></line>
+          <line x1="6" y1="6" x2="18" y2="18"></line>
+        </svg>
+        Reset
+      </button>
 
       <button
         class="btn btn-ghost btn-sm"

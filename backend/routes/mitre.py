@@ -192,7 +192,12 @@ def technique(tid):
 def map_logs():
     """Map a list of log entries to MITRE techniques by pattern matching."""
     data = request.json or {}
-    logs = data.get('logs', [])
+    if isinstance(data, list):
+        logs = data
+    elif isinstance(data, dict):
+        logs = data.get('logs', [])
+    else:
+        logs = []
     if not logs:
         return jsonify({'matches': [], 'summary': {}})
 

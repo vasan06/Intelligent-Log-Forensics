@@ -1,27 +1,54 @@
 /* frontend/assets/css/live-monitor.css — Live Telemetry Monitor Styles */
 
-.monitor-hero {
+.monitor-layout {
   display: grid;
-  grid-template-columns: 1fr 340px;
-  gap: var(--sp-6);
-  background: linear-gradient(135deg, #FFFFFF 0%, #F8FAFC 100%);
-  border: 1px solid var(--surface-3);
-  border-radius: var(--r-xl);
-  padding: var(--sp-5) var(--sp-6);
-  box-shadow: 0 4px 20px -2px rgba(15, 23, 42, 0.04);
-  margin-bottom: var(--sp-5);
-  align-items: center;
-}
-@media(max-width: 900px) {
-  .monitor-hero { grid-template-columns: 1fr; }
+  grid-template-columns: 260px 280px 1fr;
+  gap: var(--sp-4);
+  min-height: 520px;
+  align-items: start;
 }
 
-.monitor-layout { display: flex; gap: var(--sp-5); height: calc(100vh - 340px); min-height: 480px; }
-@media(max-width: 860px) {
-  .monitor-layout { flex-direction: column; height: auto; }
+.monitor-col-scenarios {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-4);
 }
-.monitor-sidebar { width: 280px; flex-shrink: 0; display: flex; flex-direction: column; gap: var(--sp-4); }
-.monitor-main   { flex: 1; display: flex; flex-direction: column; min-width: 0; }
+
+.monitor-col-filters {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-4);
+}
+
+.monitor-col-main {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+@media (max-width: 1200px) {
+  .monitor-layout {
+    grid-template-columns: 240px 260px 1fr;
+  }
+}
+
+@media (max-width: 960px) {
+  .monitor-layout {
+    grid-template-columns: 1fr 1fr;
+  }
+  .monitor-col-main {
+    grid-column: 1 / -1;
+  }
+}
+
+@media (max-width: 640px) {
+  .monitor-layout {
+    grid-template-columns: 1fr;
+  }
+  .monitor-col-main {
+    grid-column: auto;
+  }
+}
 
 /* Mode buttons */
 .mode-btn {

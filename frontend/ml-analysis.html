@@ -42,45 +42,51 @@
       <button class="btn btn-sm btn-outline" style="border-color:#C7D2FE;color:#3730A3;" onclick="clearHandover()">Reset to Live Stream</button>
     </div>
 
-    <!-- Neural Core Hero Card -->
-    <div class="neural-hero">
-      <div>
-        <div class="badge badge-primary mb-3">Ensemble Neural Core</div>
-        <h2 style="font-size:1.5rem;font-weight:700;margin-bottom:8px;color:var(--ink-0);">Multi-Algorithmic Consensus Engine</h2>
-        <p style="color:var(--ink-2);font-size:var(--text-sm);line-height:1.6;margin-bottom:var(--sp-4);">
-          Rather than relying on a single heuristic, ILF evaluates log telemetries simultaneously across 5 statistical and machine learning vectors.
-          The consensus consensus algorithm calculates agreement percentage, eliminates false positives, and synthesizes automated SOC mitigation scripts.
-        </p>
-        <div style="display:flex;gap:var(--sp-4);flex-wrap:wrap;">
-          <div><div style="font-size:11px;color:var(--ink-3);text-transform:uppercase;font-weight:600;">Models Active</div><div style="font-size:1.1rem;font-weight:700;color:var(--brand-primary);">5 Scikit-Learn</div></div>
-          <div style="border-left:1px solid var(--surface-3);padding-left:var(--sp-4);"><div style="font-size:11px;color:var(--ink-3);text-transform:uppercase;font-weight:600;">Storage Mode</div><div style="font-size:1.1rem;font-weight:700;color:#10B981;">PostgreSQL BLOB</div></div>
-          <div style="border-left:1px solid var(--surface-3);padding-left:var(--sp-4);"><div style="font-size:11px;color:var(--ink-3);text-transform:uppercase;font-weight:600;">Mitigation</div><div style="font-size:1.1rem;font-weight:700;color:#6366F1;">Instant SOC Rules</div></div>
+    <!-- Analysis Target & Pipeline Context Card -->
+    <div class="card mb-6" style="padding:var(--sp-5) var(--sp-6);">
+      <div class="grid-2" style="gap:var(--sp-6);align-items:center;">
+        <div>
+          <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;">
+            <span class="badge badge-primary">Active Analysis Scope</span>
+            <span class="badge badge-neutral" id="metaSourceBadge">Stream / Upload</span>
+          </div>
+          <h3 style="font-size:1.25rem;font-weight:700;margin-bottom:6px;color:var(--ink-0);" id="metaDatasetTitle">Production Log Stream</h3>
+          <p style="color:var(--ink-2);font-size:var(--text-sm);line-height:1.5;margin-bottom:var(--sp-4);" id="metaDatasetDesc">
+            Multi-model forensic pipeline evaluates log records across unsupervised spatial partitioning, density clustering, signature matching, and temporal sequence drift.
+          </p>
+          <div style="display:flex;gap:var(--sp-4);flex-wrap:wrap;">
+            <div><div style="font-size:11px;color:var(--ink-3);text-transform:uppercase;font-weight:600;">Analyzed Records</div><div style="font-size:1.15rem;font-weight:700;color:var(--brand-primary);" id="metaLogCount">—</div></div>
+            <div style="border-left:1px solid var(--surface-3);padding-left:var(--sp-4);"><div style="font-size:11px;color:var(--ink-3);text-transform:uppercase;font-weight:600;">Evaluation Mode</div><div style="font-size:1.15rem;font-weight:700;color:#10B981;" id="metaEngineMode">5-Model Consensus</div></div>
+            <div style="border-left:1px solid var(--surface-3);padding-left:var(--sp-4);"><div style="font-size:11px;color:var(--ink-3);text-transform:uppercase;font-weight:600;">SOC Rules Engine</div><div style="font-size:1.15rem;font-weight:700;color:#6366F1;" id="metaSocStatus">Real Dynamic IP Blocks</div></div>
+          </div>
         </div>
-      </div>
-      <div class="consensus-cockpit-box">
-        <div style="font-size:11px;font-weight:700;text-transform:uppercase;color:var(--ink-2);letter-spacing:0.05em;display:flex;justify-content:space-between;align-items:center;padding-bottom:4px;border-bottom:1px solid var(--surface-2);">
-          <span>Active Pipeline Models</span>
-          <span style="color:#10B981;font-weight:700;">100% Operational</span>
-        </div>
-        <div class="cockpit-model-row">
-          <div class="cockpit-model-name"><span class="cockpit-status-dot"></span>Isolation Forest</div>
-          <span class="cockpit-weight-badge">25% Wt</span>
-        </div>
-        <div class="cockpit-model-row">
-          <div class="cockpit-model-name"><span class="cockpit-status-dot"></span>Local Outlier Factor (LOF)</div>
-          <span class="cockpit-weight-badge">20% Wt</span>
-        </div>
-        <div class="cockpit-model-row">
-          <div class="cockpit-model-name"><span class="cockpit-status-dot"></span>One-Class SVM (OCSVM)</div>
-          <span class="cockpit-weight-badge">20% Wt</span>
-        </div>
-        <div class="cockpit-model-row">
-          <div class="cockpit-model-name"><span class="cockpit-status-dot"></span>Random Forest Estimator</div>
-          <span class="cockpit-weight-badge">20% Wt</span>
-        </div>
-        <div class="cockpit-model-row">
-          <div class="cockpit-model-name"><span class="cockpit-status-dot"></span>Temporal Drift & Burst</div>
-          <span class="cockpit-weight-badge">15% Wt</span>
+        <div style="background:var(--surface-1);border:1px solid var(--surface-3);border-radius:var(--r-lg);padding:var(--sp-4);">
+          <div style="font-size:11px;font-weight:700;text-transform:uppercase;color:var(--ink-2);letter-spacing:0.05em;display:flex;justify-content:space-between;align-items:center;padding-bottom:6px;border-bottom:1px solid var(--surface-2);margin-bottom:8px;">
+            <span>Ensemble Pipeline Architecture</span>
+            <span style="font-size:11px;font-weight:700;color:var(--brand-primary);">Scikit-Learn Core</span>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:6px;" id="metaModelRows">
+            <div style="display:flex;justify-content:space-between;align-items:center;font-size:0.8rem;padding:4px 0;">
+              <span style="font-weight:600;color:var(--ink-0);">Isolation Forest (Global Spatial Partitioning)</span>
+              <span class="badge badge-neutral" style="font-size:10px;">25% Weight</span>
+            </div>
+            <div style="display:flex;justify-content:space-between;align-items:center;font-size:0.8rem;padding:4px 0;">
+              <span style="font-weight:600;color:var(--ink-0);">Random Forest Classifier (Signature Matching)</span>
+              <span class="badge badge-neutral" style="font-size:10px;">25% Weight</span>
+            </div>
+            <div style="display:flex;justify-content:space-between;align-items:center;font-size:0.8rem;padding:4px 0;">
+              <span style="font-weight:600;color:var(--ink-0);">One-Class SVM (Non-Linear RBF Boundary)</span>
+              <span class="badge badge-neutral" style="font-size:10px;">20% Weight</span>
+            </div>
+            <div style="display:flex;justify-content:space-between;align-items:center;font-size:0.8rem;padding:4px 0;">
+              <span style="font-weight:600;color:var(--ink-0);">Local Outlier Factor (LOF Density Spikes)</span>
+              <span class="badge badge-neutral" style="font-size:10px;">15% Weight</span>
+            </div>
+            <div style="display:flex;justify-content:space-between;align-items:center;font-size:0.8rem;padding:4px 0;">
+              <span style="font-weight:600;color:var(--ink-0);">Temporal Sequence Drift (Burst Intervals)</span>
+              <span class="badge badge-neutral" style="font-size:10px;">15% Weight</span>
+            </div>
+          </div>
         </div>
       </div>
     </div>
@@ -239,6 +245,11 @@
               <pre id="ruleWinDef" style="margin:0;white-space:pre-wrap;"># Generating Windows Defender rule...</pre>
             </div>
           </div>
+        </div>
+
+        <div id="socChecklistWrap" style="margin-top:var(--sp-4);display:none;background:var(--surface-1);border:1px solid var(--surface-3);border-radius:var(--r-md);padding:12px 16px;">
+          <div style="font-size:12px;font-weight:700;color:var(--ink-0);margin-bottom:6px;text-transform:uppercase;letter-spacing:0.04em;">Remediation Directives & Hardening Directives</div>
+          <ul id="socChecklist" style="margin:0;padding-left:18px;font-size:0.85rem;color:var(--ink-1);display:flex;flex-direction:column;gap:4px;"></ul>
         </div>
       </div>
 

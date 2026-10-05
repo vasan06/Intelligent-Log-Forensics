@@ -221,14 +221,30 @@ async function loadDemoDataset(type) {
       container.innerHTML = '<div style="padding:32px;text-align:center;color:var(--ink-3);">Failed to load sample dataset.</div>';
       return;
     }
-    const mapRes = await Api.mitreMap(sampleRes.data.logs);
+    const mapRes = await Api.mitreMap({ logs: sampleRes.data.logs });
     if (mapRes.ok && mapRes.data) {
-      toast(`Loaded scenario '${type}' with ${mapRes.data.total_matches} detected ATT&CK techniques`, 'info');
+      toast(`Loaded scenario '${type}' with ${mapRes.data.total_matches || (mapRes.data.matches || []).length} detected ATT&CK techniques`, 'info');
       applyMappingResult(mapRes.data);
+    } else {
+      container.innerHTML = `<div style="padding:32px;text-align:center;color:#EF4444;">Failed to map scenario indicators.</div>`;
     }
   } catch (err) {
     container.innerHTML = `<div style="padding:32px;text-align:center;color:#EF4444;">Error mapping scenario: ${err.message}</div>`;
   }
+}
+
+function clearMitreActivity() {
+  currentMatches = [];
+  document.getElementById('kpiMatched').textContent = '0';
+  document.getElementById('kpiTactic').textContent = 'None';
+  const sevEl = document.getElementById('kpiSev');
+  sevEl.textContent = 'CLEARED';
+  sevEl.style.color = 'var(--ink-2)';
+  document.getElementById('kpiCorrelated').textContent = '0';
+  renderKillChain(new Set());
+  renderTacticsMatrix([]);
+  renderDossierCards([]);
+  toast('Previous ATT&CK correlation activity cleared', 'info');
 }
 
 function applyMappingResult(data) {

@@ -261,13 +261,6 @@ function injectNavbar() {
               ${userName}
             </span>
 
-            <span
-              class="nav-user-role-badge ${isAdmin ? "admin-badge" : ""}"
-              id="navUserRole"
-            >
-              ${isAdmin ? "Admin" : "User"}
-            </span>
-
             <svg
               class="nav-chevron"
               width="12"
@@ -293,8 +286,13 @@ function injectNavbar() {
 
             <div class="dropdown-header">
 
-              <div class="font-600">
-                ${userName}
+              <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:2px;">
+                <div class="font-600" style="font-size:13px;color:#0F172A;">
+                  ${userName}
+                </div>
+                <span class="nav-user-role-badge ${isAdmin ? "admin-badge" : ""}" id="navUserRole">
+                  ${isAdmin ? "Admin" : "User"}
+                </span>
               </div>
 
               <div class="text-xs text-muted">

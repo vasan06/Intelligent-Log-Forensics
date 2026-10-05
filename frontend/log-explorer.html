@@ -31,25 +31,40 @@
         </div>
         <span class="badge badge-success" style="font-size:10px;">POSTGRESQL INGESTION</span>
       </div>
-      <div class="pipeline-labels" id="pipelineLabels" style="position:static;display:grid;grid-template-columns:repeat(4,1fr);gap:var(--sp-4);padding:0;">
-        <div class="pipeline-label" id="pl-0" style="padding:12px;background:var(--surface-1);border:1px solid var(--surface-3);border-radius:var(--r-md);width:100%;">
+      <div class="pipeline-labels" id="pipelineLabels">
+        <div class="pipeline-label" id="pl-0">
           <div class="stage-dot"></div>
-          <div class="pipeline-label-name">1. Collect</div>
+          <div class="pipeline-label-name">1. Upload</div>
           <div class="pipeline-label-status">Waiting</div>
         </div>
-        <div class="pipeline-label" id="pl-1" style="padding:12px;background:var(--surface-1);border:1px solid var(--surface-3);border-radius:var(--r-md);width:100%;">
+        <div class="pipeline-label" id="pl-1">
           <div class="stage-dot"></div>
-          <div class="pipeline-label-name">2. Parse & Normalize</div>
+          <div class="pipeline-label-name">2. Parse</div>
           <div class="pipeline-label-status">Waiting</div>
         </div>
-        <div class="pipeline-label" id="pl-2" style="padding:12px;background:var(--surface-1);border:1px solid var(--surface-3);border-radius:var(--r-md);width:100%;">
+        <div class="pipeline-label" id="pl-2">
           <div class="stage-dot"></div>
-          <div class="pipeline-label-name">3. Categorise Severity</div>
+          <div class="pipeline-label-name">3. Normalize</div>
           <div class="pipeline-label-status">Waiting</div>
         </div>
-        <div class="pipeline-label" id="pl-3" style="padding:12px;background:var(--surface-1);border:1px solid var(--surface-3);border-radius:var(--r-md);width:100%;">
+        <div class="pipeline-label" id="pl-3">
           <div class="stage-dot"></div>
-          <div class="pipeline-label-name">4. Scikit Consensus</div>
+          <div class="pipeline-label-name">4. Analyze</div>
+          <div class="pipeline-label-status">Waiting</div>
+        </div>
+        <div class="pipeline-label" id="pl-4">
+          <div class="stage-dot"></div>
+          <div class="pipeline-label-name">5. Detect</div>
+          <div class="pipeline-label-status">Waiting</div>
+        </div>
+        <div class="pipeline-label" id="pl-5">
+          <div class="stage-dot"></div>
+          <div class="pipeline-label-name">6. Store</div>
+          <div class="pipeline-label-status">Waiting</div>
+        </div>
+        <div class="pipeline-label" id="pl-6">
+          <div class="stage-dot"></div>
+          <div class="pipeline-label-name">7. Complete</div>
           <div class="pipeline-label-status">Waiting</div>
         </div>
       </div>
@@ -81,26 +96,32 @@
       <div class="demo-samples-wrap">
         <div>
           <span class="demo-samples-title">Try Instant Demo Datasets</span>
-          <div class="text-xs text-muted">Test the pipeline instantly without uploading your own file:</div>
+          <div class="text-xs text-muted">Test the forensic pipeline instantly without uploading your own file:</div>
         </div>
-        <div class="demo-buttons-row" style="display:flex;flex-wrap:wrap;gap:8px;">
+        <div class="demo-buttons-row">
           <button class="demo-btn" onclick="loadDemoSample('web_attack')">
-            <span>🌐 Web Attack (SQLi & XSS)</span>
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+            <span>Web Attack (SQLi & XSS)</span>
           </button>
           <button class="demo-btn" onclick="loadDemoSample('ssh_brute')">
-            <span>🔑 SSH Brute Force & PrivEsc</span>
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+            <span>SSH Brute Force & PrivEsc</span>
           </button>
           <button class="demo-btn" onclick="loadDemoSample('ransomware')">
-            <span>☣️ Ransomware Encryption</span>
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+            <span>Ransomware Encryption</span>
           </button>
           <button class="demo-btn" onclick="loadDemoSample('cloud_iam_privesc')">
-            <span>☁️ Cloud IAM Privilege Escalation</span>
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 10h-1.26A8 8 0 1 0 9 20h9a5 5 0 0 0 0-10z"/></svg>
+            <span>Cloud IAM Privilege Escalation</span>
           </button>
           <button class="demo-btn" onclick="loadDemoSample('k8s_container_escape')">
-            <span>☸️ K8s Container Breakout</span>
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg>
+            <span>K8s Container Breakout</span>
           </button>
           <button class="demo-btn" onclick="loadDemoSample('ddos_syn_flood')">
-            <span>⚡ DDoS SYN Flood</span>
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+            <span>DDoS SYN Flood</span>
           </button>
         </div>
       </div>
@@ -144,7 +165,10 @@
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9.5 2A2.5 2.5 0 0 1 12 4.5v15a2.5 2.5 0 0 1-4.96-.44 2.5 2.5 0 0 1-2.96-3.08 3 3 0 0 1-.34-5.58 2.5 2.5 0 0 1 1.32-4.24 2.5 2.5 0 0 1 4.44-2.16z"/><path d="M14.5 2A2.5 2.5 0 0 0 12 4.5v15a2.5 2.5 0 0 0 4.96-.44 2.5 2.5 0 0 0 2.96-3.08 3 3 0 0 0 .34-5.58 2.5 2.5 0 0 0-1.32-4.24 2.5 2.5 0 0 0-4.44-2.16z"/></svg>
             Deep ML Analysis &rarr;
           </button>
-          <button class="btn btn-ghost btn-sm" onclick="resetUpload()">Upload Another</button>
+          <button class="btn btn-secondary btn-sm" onclick="resetUpload()" title="Clear current upload view and return to dropzone. Existing records in PostgreSQL database remain safe.">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"/></svg>
+            Clear View (Upload New)
+          </button>
         </div>
         <div class="table-wrap">
           <table class="table">
