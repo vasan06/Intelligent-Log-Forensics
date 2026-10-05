@@ -147,6 +147,36 @@ python3 -m venv .venv
 source .venv/bin/activate
 python -m pip install -r requirements.txt
 ```
+### Docker commands
+
+Rebuild after code changes
+
+Use:
+
+docker compose down
+docker compose build
+docker compose up -d
+
+If you want a completely fresh database/container environment:
+
+docker compose down -v
+docker compose build --no-cache
+docker compose up -d
+
+Be careful with -v: it removes Docker volumes, so PostgreSQL data stored in those volumes can be deleted.
+
+Recommended ILF workflow
+git pull
+docker compose down
+docker compose build
+docker compose up -d
+docker compose ps
+docker compose logs -f
+
+If the container fails, don't start changing files randomly. Run:
+
+docker compose ps
+docker compose logs --tail=100
 
 ### 2. Configure the application
 
