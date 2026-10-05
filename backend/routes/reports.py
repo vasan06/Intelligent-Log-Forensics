@@ -2,6 +2,7 @@
 import datetime
 import io
 import json
+import re
 import uuid
 import jwt
 from flask import Blueprint, jsonify, request, send_file
@@ -99,13 +100,15 @@ def build_report_data(user_id, supplied=None):
                     raw_text = uf["content_data"].decode("utf-8", errors="replace")
                     for idx, line in enumerate(raw_text.splitlines()[:500]):
                         if line.strip():
+                            m_ip = re.search(r'\b(?:\d{1,3}\.){3}\d{1,3}\b', line)
+                            ip_val = m_ip.group(0) if m_ip else "-"
                             logs.append({
                                 "id": str(idx),
                                 "timestamp": datetime.datetime.now(datetime.timezone.utc).isoformat(),
                                 "message": line.strip(),
                                 "severity": "ERROR" if "error" in line.lower() else "CRITICAL" if "fail" in line.lower() else "INFO",
                                 "source": uf["filename"],
-                                "ip": "192.168.1.100"
+                                "ip": ip_val
                             })
         elif activity_id:
             analysis_row = db.execute(
@@ -135,20 +138,42 @@ def build_report_data(user_id, supplied=None):
             "agreement_pct": float(consensus.get("algorithm_agreement_pct", 100.0)),
         }
 
-        severity = res.get("severity") or {
-            "CRITICAL": sum(1 for e in ml.get("flagged_entries", []) if e.get("severity") == "CRITICAL"),
-            "ERROR": sum(1 for e in ml.get("flagged_entries", []) if e.get("severity") == "ERROR"),
-            "WARN": 2,
-            "INFO": max(summary["total_logs"] - summary["anomalies"], 0),
-            "DEBUG": 0
-        }
+        if res.get("severity"):
+            severity = res.get("severity")
+        else:
+            flagged = ml.get("flagged_entries", [])
+            crit_count = sum(1 for e in flagged if e.get("severity") == "CRITICAL")
+            err_count = sum(1 for e in flagged if e.get("severity") == "ERROR")
+            warn_count = sum(1 for e in flagged if e.get("severity") == "WARN")
+            total_l = summary["total_logs"]
+            info_count = max(0, total_l - crit_count - err_count - warn_count)
+            severity = {
+                "CRITICAL": crit_count,
+                "ERROR": err_count,
+                "WARN": warn_count,
+                "INFO": info_count,
+                "DEBUG": 0
+            }
 
-        soc = res.get("soc_countermeasures") or ml.get("soc_countermeasures") or {
-            "target_ips": ["192.168.1.105"],
-            "iptables_rules": ["iptables -A INPUT -s 192.168.1.105 -j DROP"],
-            "windows_firewall_rules": ["New-NetFirewallRule -DisplayName 'ILF Block 192.168.1.105' -Direction Inbound -Action Block -RemoteAddress 192.168.1.105"],
-            "mitre_action": "Isolate host and block command-and-control ingress"
-        }
+        soc = res.get("soc_countermeasures") or ml.get("soc_countermeasures") or res.get("countermeasures") or ml.get("countermeasures")
+        if not soc:
+            flagged = ml.get("flagged_entries", [])
+            flagged_ips = [e.get("ip") for e in flagged if e.get("ip") and e.get("ip") not in ("-", "127.0.0.1", "localhost", "none", "", "null", "0.0.0.0")]
+            target_ips = list(dict.fromkeys(flagged_ips))[:6]
+            if target_ips:
+                soc = {
+                    "target_ips": target_ips,
+                    "iptables_rules": [f"iptables -A INPUT -s {ip} -j DROP" for ip in target_ips],
+                    "windows_firewall_rules": [f'netsh advfirewall firewall add rule name="Block-{ip}" dir=in action=block remoteip={ip}' for ip in target_ips],
+                    "mitre_action": "Isolate host and block command-and-control ingress"
+                }
+            else:
+                soc = {
+                    "target_ips": [],
+                    "iptables_rules": ["# No hostile IPs detected in current analysis window."],
+                    "windows_firewall_rules": ["# No hostile IPs detected in current analysis window."],
+                    "mitre_action": "Maintain continuous monitoring and baseline auditing."
+                }
 
         return {
             "title": f"Forensic Security Report — {target_label}",
@@ -181,7 +206,13 @@ def build_report_data(user_id, supplied=None):
             "activity_label": target_label,
             "analysis_id": None,
             "summary": summary,
-            "severity": {"INFO": len(logs) - c["anomaly_count"], "WARN": 1, "ERROR": c["anomaly_count"], "CRITICAL": 0, "DEBUG": 0},
+            "severity": {
+                "INFO": max(0, len(logs) - sum(1 for l in logs if l.get("severity") in ("WARN", "ERROR", "CRITICAL"))),
+                "WARN": sum(1 for l in logs if l.get("severity") == "WARN"),
+                "ERROR": sum(1 for l in logs if l.get("severity") == "ERROR"),
+                "CRITICAL": sum(1 for l in logs if l.get("severity") == "CRITICAL"),
+                "DEBUG": 0
+            },
             "ml_results": ml_res.get("all_results", []),
             "best_algorithm": ml_res.get("best_algorithm", "Isolation Forest"),
             "flagged_entries": ml_res.get("flagged_entries", [])[:15],
@@ -208,6 +239,179 @@ def build_report_data(user_id, supplied=None):
         "feature_importance": {"labels": ["Frequency", "Failed Auth", "IP Spread"], "values": [0.3, 0.2, 0.1]},
     }
 
+IST_TZ = datetime.timezone(datetime.timedelta(hours=5, minutes=30))
+
+def to_ist_display(dt_val=None):
+    if dt_val is None:
+        dt = datetime.datetime.now(IST_TZ)
+    elif isinstance(dt_val, str):
+        try:
+            dt = datetime.datetime.fromisoformat(dt_val.replace("Z", "+00:00"))
+            if dt.tzinfo is None:
+                dt = dt.replace(tzinfo=datetime.timezone.utc)
+            dt = dt.astimezone(IST_TZ)
+        except Exception:
+            return dt_val
+    elif isinstance(dt_val, datetime.datetime):
+        if dt_val.tzinfo is None:
+            dt_val = dt_val.replace(tzinfo=datetime.timezone.utc)
+        dt = dt_val.astimezone(IST_TZ)
+    else:
+        return str(dt_val)
+    return dt.strftime("%d %b %Y, %I:%M:%S %p IST")
+
+def to_ist_time_str(ts_raw):
+    if not ts_raw:
+        return "-"
+    try:
+        if isinstance(ts_raw, str):
+            dt = datetime.datetime.fromisoformat(ts_raw.replace("Z", "+00:00"))
+        else:
+            dt = ts_raw
+        if dt.tzinfo is None:
+            dt = dt.replace(tzinfo=datetime.timezone.utc)
+        ist_dt = dt.astimezone(IST_TZ)
+        return ist_dt.strftime("%d/%m %H:%M:%S IST")
+    except Exception:
+        return str(ts_raw)[-8:] + " IST"
+
+def draw_score_meter(score, risk_level):
+    from reportlab.lib.colors import HexColor
+    from reportlab.graphics.shapes import Drawing, Rect, String, Line, Circle
+    d = Drawing(520, 52)
+    score_val = max(0.0, min(1.0, float(score)))
+
+    # Title & score label
+    d.add(String(10, 38, "Master Consensus Anomaly Meter", fontSize=8.5, fontName="Helvetica-Bold", fillColor=HexColor("#1E293B")))
+    score_text = f"Anomaly Score: {score_val:.3f}  ({risk_level} RISK)"
+    score_col = HexColor("#DC2626") if score_val >= 0.6 else HexColor("#F59E0B") if score_val >= 0.35 else HexColor("#10B981")
+    d.add(String(340, 38, score_text, fontSize=8.5, fontName="Helvetica-Bold", fillColor=score_col))
+
+    # Track background
+    tx, ty, tw, th = 10, 16, 500, 14
+    d.add(Rect(tx, ty, tw, th, rx=4, ry=4, fillColor=HexColor("#F1F5F9"), strokeColor=HexColor("#CBD5E1"), strokeWidth=0.5))
+
+    # Risk zones
+    d.add(Rect(tx, ty, int(tw * 0.35), th, rx=3, ry=3, fillColor=HexColor("#D1FAE5"), strokeColor=None))
+    d.add(Rect(tx + int(tw * 0.35), ty, int(tw * 0.25), th, fillColor=HexColor("#FEF3C7"), strokeColor=None))
+    d.add(Rect(tx + int(tw * 0.60), ty, int(tw * 0.20), th, fillColor=HexColor("#FFEDD5"), strokeColor=None))
+    d.add(Rect(tx + int(tw * 0.80), ty, int(tw * 0.20), th, rx=3, ry=3, fillColor=HexColor("#FEE2E2"), strokeColor=None))
+
+    # Current value bar
+    bar_w = max(4, int(tw * score_val))
+    bar_col = HexColor("#DC2626") if score_val >= 0.8 else HexColor("#EA580C") if score_val >= 0.6 else HexColor("#D97706") if score_val >= 0.35 else HexColor("#10B981")
+    d.add(Rect(tx, ty, bar_w, th, rx=3, ry=3, fillColor=bar_col, strokeColor=None))
+
+    # Pointer needle
+    px = tx + int(tw * score_val)
+    d.add(Line(px, ty - 2, px, ty + th + 2, strokeColor=HexColor("#0F172A"), strokeWidth=2))
+    d.add(Circle(px, ty + th // 2, 4, fillColor=HexColor("#FFFFFF"), strokeColor=HexColor("#0F172A"), strokeWidth=1.5))
+
+    # Ticks
+    ticks = [(0.0, "0.0 Baseline"), (0.35, "0.35 Elevated"), (0.60, "0.60 High Risk"), (0.80, "0.80 Critical"), (1.0, "1.0 Extreme")]
+    for t_val, t_lbl in ticks:
+        x_pos = tx + int(tw * t_val)
+        if t_val == 1.0:
+            x_pos -= 44
+        elif t_val > 0.0:
+            x_pos -= 18
+        d.add(String(x_pos, 4, t_lbl, fontSize=6.5, fontName="Helvetica", fillColor=HexColor("#64748B")))
+
+    return d
+
+def draw_timeline_line_chart(timeline):
+    from reportlab.lib.colors import HexColor
+    from reportlab.graphics.shapes import Drawing, Rect, String, Line, PolyLine, Circle
+    d = Drawing(520, 115)
+    labels = (timeline.get("labels") or ["T-5", "T-4", "T-3", "T-2", "T-1"])[:8]
+    raw_scores = timeline.get("scores") or [0.12, 0.18, 0.25, 0.68, 0.45]
+    scores = [max(0.0, min(1.0, float(s))) for s in raw_scores[:len(labels)]]
+    if len(scores) < len(labels):
+        scores += [0.1] * (len(labels) - len(scores))
+    if not labels or not scores:
+        return d
+
+    d.add(String(10, 102, "Chronological Threat Progression (Timeline Line Chart)", fontSize=8.5, fontName="Helvetica-Bold", fillColor=HexColor("#1E293B")))
+
+    ox, oy, pw, ph = 42, 22, 465, 65
+
+    # Chart canvas
+    d.add(Rect(ox, oy, pw, ph, fillColor=HexColor("#F8FAFC"), strokeColor=HexColor("#E2E8F0"), strokeWidth=0.5))
+
+    # Threshold guidelines
+    y_50 = oy + int(ph * 0.50)
+    y_80 = oy + int(ph * 0.80)
+    d.add(Line(ox, y_50, ox + pw, y_50, strokeColor=HexColor("#FDE68A"), strokeWidth=1, strokeDashArray=[3, 3]))
+    d.add(String(ox + pw - 90, y_50 + 2, "Warning Threshold (0.50)", fontSize=5.5, fontName="Helvetica", fillColor=HexColor("#B45309")))
+    d.add(Line(ox, y_80, ox + pw, y_80, strokeColor=HexColor("#FECACA"), strokeWidth=1, strokeDashArray=[3, 3]))
+    d.add(String(ox + pw - 90, y_80 + 2, "Critical Threshold (0.80)", fontSize=5.5, fontName="Helvetica", fillColor=HexColor("#DC2626")))
+
+    # Y-axis ticks
+    d.add(String(10, oy - 2, "0.00", fontSize=6.5, fontName="Helvetica", fillColor=HexColor("#64748B")))
+    d.add(String(10, y_50 - 2, "0.50", fontSize=6.5, fontName="Helvetica", fillColor=HexColor("#64748B")))
+    d.add(String(10, y_80 - 2, "0.80", fontSize=6.5, fontName="Helvetica", fillColor=HexColor("#64748B")))
+    d.add(String(10, oy + ph - 4, "1.00", fontSize=6.5, fontName="Helvetica", fillColor=HexColor("#64748B")))
+
+    n = len(labels)
+    step = pw / max(1, n - 1) if n > 1 else pw
+
+    points = []
+    coords = []
+    for idx, (lbl, sc) in enumerate(zip(labels, scores)):
+        cx = ox + int(idx * step)
+        cy = oy + int(sc * ph)
+        points.extend([cx, cy])
+        coords.append((cx, cy, sc, lbl))
+
+    if len(points) >= 4:
+        d.add(PolyLine(points, strokeColor=HexColor("#6366F1"), strokeWidth=2))
+
+    for cx, cy, sc, lbl in coords:
+        pt_col = HexColor("#DC2626") if sc >= 0.8 else HexColor("#EA580C") if sc >= 0.6 else HexColor("#D97706") if sc >= 0.35 else HexColor("#10B981")
+        d.add(Circle(cx, cy, 3.5, fillColor=pt_col, strokeColor=HexColor("#FFFFFF"), strokeWidth=1))
+        d.add(String(cx - 8, cy + 5, f"{sc:.2f}", fontSize=6, fontName="Helvetica-Bold", fillColor=HexColor("#1E293B")))
+        clean_lbl = str(lbl)[:8]
+        d.add(String(cx - 10, oy - 10, clean_lbl, fontSize=6, fontName="Helvetica", fillColor=HexColor("#64748B")))
+
+    return d
+
+def draw_model_bar_chart(ml_results):
+    from reportlab.lib.colors import HexColor
+    from reportlab.graphics.shapes import Drawing, Rect, String, Line
+    d = Drawing(520, 105)
+    ml_list = (ml_results or [])[:5]
+    if not ml_list:
+        return d
+
+    d.add(String(10, 92, "Multi-Model Anomaly Rating Comparison (Bar Chart)", fontSize=8.5, fontName="Helvetica-Bold", fillColor=HexColor("#1E293B")))
+
+    thresh_x = 180 + int(270 * 0.50)
+    d.add(Line(thresh_x, 8, thresh_x, 85, strokeColor=HexColor("#EF4444"), strokeWidth=1, strokeDashArray=[2, 2]))
+    d.add(String(thresh_x - 35, 87, "Threshold: 0.50", fontSize=5.5, fontName="Helvetica", fillColor=HexColor("#DC2626")))
+
+    y_pos = 10
+    for idx, item in enumerate(reversed(ml_list)):
+        alg_name = str(item.get("algorithm", f"Model {idx+1}"))[:22]
+        sc = max(0.0, min(1.0, float(item.get("score", 0.0))))
+        conf = float(item.get("confidence", 0.85))
+        is_best = bool(item.get("is_best"))
+
+        lbl_col = HexColor("#1E3A8A") if is_best else HexColor("#334155")
+        d.add(String(10, y_pos + 3, alg_name, fontSize=7, fontName="Helvetica-Bold" if is_best else "Helvetica", fillColor=lbl_col))
+
+        d.add(Rect(180, y_pos, 270, 11, rx=2, ry=2, fillColor=HexColor("#F1F5F9"), strokeColor=None))
+
+        bar_w = max(4, int(270 * sc))
+        bar_col = HexColor("#DC2626") if sc >= 0.75 else HexColor("#F59E0B") if sc >= 0.40 else HexColor("#3B82F6")
+        d.add(Rect(180, y_pos, bar_w, 11, rx=2, ry=2, fillColor=bar_col, strokeColor=None))
+
+        tag = f"{sc:.3f} ({int(conf*100)}%)" + (" [Anchor]" if is_best else "")
+        d.add(String(458, y_pos + 2.5, tag, fontSize=6.5, fontName="Helvetica-Bold" if is_best else "Helvetica", fillColor=HexColor("#1E293B")))
+
+        y_pos += 15
+
+    return d
+
 def generate_pdf(data):
     try:
         from reportlab.lib import colors
@@ -215,7 +419,6 @@ def generate_pdf(data):
         from reportlab.lib.pagesizes import A4
         from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
         from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle, HRFlowable, KeepTogether
-        from reportlab.graphics.shapes import Drawing, Rect, String
     except ImportError:
         return None
 
@@ -227,23 +430,29 @@ def generate_pdf(data):
     c_accent  = HexColor("#6366F1")
     c_text    = HexColor("#1E293B")
     c_muted   = HexColor("#64748B")
-    c_bg      = HexColor("#F8FAFC")
     c_danger  = HexColor("#DC2626")
     c_success = HexColor("#10B981")
 
     title_style = ParagraphStyle("ILFTitle", parent=styles["Heading1"], fontSize=20, textColor=c_primary, spaceAfter=2, fontName="Helvetica-Bold")
     sub_style   = ParagraphStyle("ILFSub", parent=styles["Normal"], fontSize=9, textColor=c_muted, spaceAfter=14, fontName="Helvetica")
-    sec_style   = ParagraphStyle("ILFSec", parent=styles["Heading2"], fontSize=12, textColor=c_primary, spaceBefore=12, spaceAfter=6, fontName="Helvetica-Bold")
+    sec_style   = ParagraphStyle("ILFSec", parent=styles["Heading2"], fontSize=11, textColor=c_primary, spaceBefore=10, spaceAfter=5, fontName="Helvetica-Bold")
     body_style  = ParagraphStyle("ILFBody", parent=styles["BodyText"], fontSize=8.5, textColor=c_text, leading=12, fontName="Helvetica")
     code_style  = ParagraphStyle("ILFCode", parent=styles["Normal"], fontSize=7.5, textColor=HexColor("#F8FAFC"), leading=10, fontName="Courier")
 
+    # Table cell wrapped styles (prevent text overflow)
+    cell_style = ParagraphStyle("CellText", parent=styles["Normal"], fontSize=7, leading=9, textColor=c_text)
+    cell_bold  = ParagraphStyle("CellBold", parent=styles["Normal"], fontSize=7, leading=9, textColor=c_text, fontName="Helvetica-Bold")
+    cell_head  = ParagraphStyle("CellHead", parent=styles["Normal"], fontSize=7.5, leading=9.5, textColor=colors.white, fontName="Helvetica-Bold")
+    cell_code  = ParagraphStyle("CellCode", parent=styles["Normal"], fontSize=6.5, leading=8.5, textColor=HexColor("#334155"), fontName="Courier")
+
     story = []
 
-    # Title & Metadata Header
+    # Title & Metadata Header in IST
+    gen_ist = to_ist_display()
     story.append(Paragraph("Intelligent Log Forensic", title_style))
     story.append(Paragraph(f"Executive Forensic Report — {data.get('activity_label', 'System Audit')}", ParagraphStyle("SubHeader", parent=styles["Heading3"], fontSize=12, textColor=c_accent, spaceAfter=2)))
-    story.append(Paragraph(f"Generated on {datetime.datetime.now(datetime.timezone.utc).strftime('%Y-%m-%d %H:%M:%S UTC')} | Storage: PostgreSQL BYTEA BLOB (Zero Disk Write)", sub_style))
-    story.append(HRFlowable(width="100%", thickness=1, color=HexColor("#E2E8F0"), spaceAfter=12))
+    story.append(Paragraph(f"Generated on {gen_ist} | Timezone: Indian Standard Time (IST, UTC+5:30) | Storage: PostgreSQL BYTEA BLOB", sub_style))
+    story.append(HRFlowable(width="100%", thickness=1, color=HexColor("#E2E8F0"), spaceAfter=10))
 
     # Executive Summary Card Table
     s = data["summary"]
@@ -265,67 +474,64 @@ def generate_pdf(data):
         ("TEXTCOLOR", (3, 1), (3, 1), risk_color),
         ("FONTNAME", (0, 1), (-1, 1), "Helvetica-Bold"),
         ("FONTSIZE", (0, 1), (-1, 1), 11),
-        ("BOTTOMPADDING", (0, 0), (-1, -1), 8),
-        ("TOPPADDING", (0, 0), (-1, -1), 8),
+        ("BOTTOMPADDING", (0, 0), (-1, -1), 6),
+        ("TOPPADDING", (0, 0), (-1, -1), 6),
         ("BOX", (0, 0), (-1, -1), 1, HexColor("#CBD5E1")),
         ("INNERGRID", (0, 0), (-1, -1), 0.5, HexColor("#E2E8F0")),
     ]))
     story.append(kpi_table)
-    story.append(Spacer(1, 12))
+    story.append(Spacer(1, 10))
 
-    # Executive Findings
+    # DIAGRAM 1: Score Gauge / Meter
+    story.append(draw_score_meter(s.get("anomaly_score", 0.0), s.get("risk_level", "LOW")))
+    story.append(Spacer(1, 10))
+
+    # Executive Evaluation Narrative
     story.append(Paragraph("Executive Security Evaluation", sec_style))
     exec_summary_text = (
         f"This forensic audit evaluated <b>{s['total_logs']:,}</b> log entries using 5 concurrent Scikit-Learn anomaly "
         f"classification algorithms. The cross-model consensus engine calculated a combined anomaly rating of <b>{s['anomaly_score']:.3f}</b> "
         f"with a cross-validation agreement of <b>{s['agreement_pct']:.0f}%</b>, rating the investigated activity at <b>{s['risk_level']} RISK</b>. "
-        f"A total of <b>{s['anomalies']}</b> anomalous entries exhibited deviation from normal operational baselines."
+        f"A total of <b>{s['anomalies']}</b> anomalous entries exhibited deviation from normal operational baselines (IST reference timeline)."
     )
     story.append(Paragraph(exec_summary_text, body_style))
     story.append(Spacer(1, 10))
 
-    # ML Algorithm Scores Table
+    # DIAGRAM 2: Multi-Model Anomaly Rating Comparison (Bar Chart)
+    story.append(draw_model_bar_chart(data.get("ml_results") or []))
+    story.append(Spacer(1, 10))
+
+    # ML Algorithm Scores Table (Wrapped cells)
     story.append(Paragraph("Multi-Model ML Classification Breakdown", sec_style))
-    ml_rows = [["Algorithm", "Anomaly Rating", "Confidence", "Model Role & Behavioral Focus"]]
+    ml_rows = [[
+        Paragraph("Algorithm", cell_head),
+        Paragraph("Anomaly Rating", cell_head),
+        Paragraph("Confidence", cell_head),
+        Paragraph("Model Role & Behavioral Focus", cell_head),
+    ]]
     for item in (data.get("ml_results") or []):
-        is_best_mark = " (Consensus Anchor)" if item.get("is_best") else ""
+        is_best_mark = " <b>(Anchor)</b>" if item.get("is_best") else ""
         ml_rows.append([
-            f"{item.get('algorithm', '')}{is_best_mark}",
-            f"{float(item.get('score', 0)):.3f}",
-            f"{float(item.get('confidence', 0))*100:.0f}%",
-            item.get("note", "Structural anomaly detection")[:60]
+            Paragraph(f"{item.get('algorithm', '')}{is_best_mark}", cell_bold),
+            Paragraph(f"{float(item.get('score', 0)):.3f}", cell_style),
+            Paragraph(f"{float(item.get('confidence', 0))*100:.0f}%", cell_style),
+            Paragraph(item.get("note", "Structural anomaly detection"), cell_style),
         ])
-    ml_table = Table(ml_rows, colWidths=[160, 80, 70, 210])
+    ml_table = Table(ml_rows, colWidths=[150, 75, 65, 230])
     ml_table.setStyle(TableStyle([
         ("BACKGROUND", (0, 0), (-1, 0), c_primary),
         ("TEXTCOLOR", (0, 0), (-1, 0), colors.white),
-        ("FONTNAME", (0, 0), (-1, 0), "Helvetica-Bold"),
-        ("FONTSIZE", (0, 0), (-1, 0), 8),
-        ("ALIGN", (1, 0), (2, -1), "CENTER"),
         ("GRID", (0, 0), (-1, -1), 0.5, HexColor("#CBD5E1")),
         ("ROWBACKGROUNDS", (0, 1), (-1, -1), [colors.white, HexColor("#F8FAFC")]),
-        ("FONTSIZE", (0, 1), (-1, -1), 7.5),
         ("BOTTOMPADDING", (0, 0), (-1, -1), 5),
         ("TOPPADDING", (0, 0), (-1, -1), 5),
     ]))
     story.append(ml_table)
     story.append(Spacer(1, 10))
 
-    # Vector Algorithm Score Comparison Chart
-    story.append(Paragraph("Relative Model Outlier Scores", sec_style))
-    chart_draw = Drawing(520, 90)
-    ml_list = data.get("ml_results") or []
-    y_pos = 10
-    for idx, alg in enumerate(ml_list[:4]):
-        sc = float(alg.get("score", 0))
-        w = max(int(sc * 320), 4)
-        chart_draw.add(String(10, y_pos + 3, alg.get("algorithm", "")[:22], fontSize=7.5, fontName="Helvetica-Bold", fillColor=c_text))
-        chart_draw.add(Rect(160, y_pos, 320, 12, fillColor=HexColor("#F1F5F9"), strokeColor=None))
-        bar_col = c_danger if sc > 0.75 else HexColor("#F59E0B") if sc > 0.4 else c_accent
-        chart_draw.add(Rect(160, y_pos, w, 12, fillColor=bar_col, strokeColor=None))
-        chart_draw.add(String(490, y_pos + 3, f"{sc:.2f}", fontSize=7.5, fontName="Helvetica", fillColor=c_text))
-        y_pos += 18
-    story.append(chart_draw)
+    # DIAGRAM 3: Timeline Progression Line Chart
+    tl = data.get("timeline") or {}
+    story.append(draw_timeline_line_chart(tl))
     story.append(Spacer(1, 10))
 
     # Automated SOC Countermeasures
@@ -334,15 +540,15 @@ def generate_pdf(data):
     win = (soc.get("windows_firewall_rules") or ["# No active threat IPs identified."])
 
     story.append(Paragraph("Automated SOC Countermeasures & Firewall Containment", sec_style))
-    story.append(Paragraph("Recommended mitigation commands generated directly from forensic evidence:", body_style))
+    story.append(Paragraph("Recommended containment commands generated directly from forensic evidence:", body_style))
     story.append(Spacer(1, 4))
 
     code_text = "# Linux iptables Rule:\n" + "\n".join(ipt[:2]) + "\n\n# Windows Defender PowerShell Rule:\n" + "\n".join(win[:2])
     code_table = Table([[Paragraph(code_text.replace("\n", "<br/>"), code_style)]], colWidths=[520])
     code_table.setStyle(TableStyle([
         ("BACKGROUND", (0, 0), (-1, -1), HexColor("#0F172A")),
-        ("TOPPADDING", (0, 0), (-1, -1), 8),
-        ("BOTTOMPADDING", (0, 0), (-1, -1), 8),
+        ("TOPPADDING", (0, 0), (-1, -1), 6),
+        ("BOTTOMPADDING", (0, 0), (-1, -1), 6),
         ("LEFTPADDING", (0, 0), (-1, -1), 10),
         ("RIGHTPADDING", (0, 0), (-1, -1), 10),
         ("BOX", (0, 0), (-1, -1), 1, HexColor("#334155")),
@@ -350,32 +556,66 @@ def generate_pdf(data):
     story.append(code_table)
     story.append(Spacer(1, 10))
 
-    # Flagged Evidence Table
+    # Flagged Evidence Table (All Cells Wrapped in Paragraphs to prevent table overflow)
     flagged = data.get("flagged_entries") or []
     if flagged:
-        story.append(Paragraph("Flagged Forensic Evidence (Sample)", sec_style))
-        ev_rows = [["Time", "Sev", "Source", "IP", "Payload Message"]]
-        for f in flagged[:8]:
+        story.append(Paragraph("Flagged Forensic Evidence (Sample — Timestamps in IST)", sec_style))
+        ev_rows = [[
+            Paragraph("Time (IST)", cell_head),
+            Paragraph("Severity", cell_head),
+            Paragraph("Source", cell_head),
+            Paragraph("IP Address", cell_head),
+            Paragraph("Payload Message (Wrapped)", cell_head),
+        ]]
+        for f in flagged[:10]:
+            ts_str = to_ist_time_str(f.get("timestamp"))
+            sev_str = str(f.get("severity", "INFO")).upper()
+            sev_color = "#DC2626" if sev_str in ("CRITICAL", "HIGH") else "#F59E0B" if sev_str == "WARN" else "#2563EB"
+            msg_str = str(f.get("message", "-"))
             ev_rows.append([
-                str(f.get("timestamp", ""))[-8:],
-                str(f.get("severity", "INFO")),
-                str(f.get("source", "system"))[:12],
-                str(f.get("ip", "0.0.0.0")),
-                str(f.get("message", ""))[:65]
+                Paragraph(ts_str, cell_code),
+                Paragraph(f"<font color='{sev_color}'><b>{sev_str}</b></font>", cell_style),
+                Paragraph(str(f.get("source", "system")), cell_style),
+                Paragraph(str(f.get("ip", "-")), cell_code),
+                Paragraph(msg_str, cell_style),
             ])
-        ev_table = Table(ev_rows, colWidths=[65, 45, 75, 75, 260])
+        ev_table = Table(ev_rows, colWidths=[80, 50, 60, 75, 255])
         ev_table.setStyle(TableStyle([
             ("BACKGROUND", (0, 0), (-1, 0), c_primary),
             ("TEXTCOLOR", (0, 0), (-1, 0), colors.white),
-            ("FONTNAME", (0, 0), (-1, 0), "Helvetica-Bold"),
-            ("FONTSIZE", (0, 0), (-1, 0), 7.5),
             ("GRID", (0, 0), (-1, -1), 0.5, HexColor("#CBD5E1")),
             ("ROWBACKGROUNDS", (0, 1), (-1, -1), [colors.white, HexColor("#F8FAFC")]),
-            ("FONTSIZE", (0, 1), (-1, -1), 7),
             ("BOTTOMPADDING", (0, 0), (-1, -1), 4),
             ("TOPPADDING", (0, 0), (-1, -1), 4),
         ]))
         story.append(ev_table)
+
+    # Feature Importance Signal Weights Section (Wrapped cells)
+    fi = data.get("feature_importance") or {}
+    fi_labels = fi.get("labels") or []
+    fi_values = fi.get("values") or []
+    if fi_labels and fi_values:
+        story.append(Spacer(1, 10))
+        story.append(Paragraph("Forensic Signal Weights (Prioritized Risk Drivers)", sec_style))
+        fi_rows = [[
+            Paragraph("Forensic Feature Signal", cell_head),
+            Paragraph("Weight / Magnitude", cell_head),
+        ]]
+        for lbl, val in zip(fi_labels[:6], fi_values[:6]):
+            fi_rows.append([
+                Paragraph(str(lbl), cell_style),
+                Paragraph(f"{float(val):.3f}", cell_bold),
+            ])
+        fi_table = Table(fi_rows, colWidths=[340, 180])
+        fi_table.setStyle(TableStyle([
+            ("BACKGROUND", (0, 0), (-1, 0), HexColor("#334155")),
+            ("TEXTCOLOR", (0, 0), (-1, 0), colors.white),
+            ("GRID", (0, 0), (-1, -1), 0.5, HexColor("#CBD5E1")),
+            ("ROWBACKGROUNDS", (0, 1), (-1, -1), [colors.white, HexColor("#F8FAFC")]),
+            ("BOTTOMPADDING", (0, 0), (-1, -1), 3),
+            ("TOPPADDING", (0, 0), (-1, -1), 3),
+        ]))
+        story.append(fi_table)
 
     doc.build(story)
     buf.seek(0)

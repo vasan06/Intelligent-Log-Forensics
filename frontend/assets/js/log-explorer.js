@@ -9,8 +9,8 @@ let currentFileId = null;
 let currentAnalysisId = null;
 let currentFileName = '';
 
-const STAGE_STATUS = ['Collecting…', 'Parsing…', 'Categorising…', 'Scoring risk…'];
-const STAGE_DONE   = ['Collected', 'Parsed', 'Categorised', 'Scored'];
+const STAGE_STATUS = ['Uploading…', 'Parsing…', 'Normalizing…', 'Analyzing…', 'Detecting anomalies…', 'Storing records…', 'Finalizing…'];
+const STAGE_DONE   = ['Uploaded', 'Parsed', 'Normalized', 'Analyzed', 'Detected', 'Stored', 'Complete'];
 
 function initLogExplorer() {
   requireAuth();
@@ -18,37 +18,46 @@ function initLogExplorer() {
   setBreadcrumb([{ href: 'dashboard.html', label: 'Dashboard' }, { href: 'log-explorer.html', label: 'Log Explorer' }]);
 }
 
-function setPipelineUI(stageIndex, done = false) {
-  for (let i = 0; i <= 3; i++) {
+function setPipelineUI(stageIndex, status = 'active') {
+  for (let i = 0; i < 7; i++) {
     const el = document.getElementById('pl-' + i);
     if (!el) continue;
     const statusEl = el.querySelector('.pipeline-label-status');
-    el.classList.remove('active', 'done');
+    el.classList.remove('active', 'done', 'error');
     if (i < stageIndex) {
       el.classList.add('done');
-      statusEl.textContent = STAGE_DONE[i];
+      if (statusEl) statusEl.textContent = STAGE_DONE[i];
     } else if (i === stageIndex) {
-      el.classList.add(done ? 'done' : 'active');
-      statusEl.textContent = done ? STAGE_DONE[i] : STAGE_STATUS[i];
+      if (status === 'done') {
+        el.classList.add('done');
+        if (statusEl) statusEl.textContent = STAGE_DONE[i];
+      } else if (status === 'error') {
+        el.classList.add('error');
+        if (statusEl) statusEl.textContent = 'Failed';
+      } else {
+        el.classList.add('active');
+        if (statusEl) statusEl.textContent = STAGE_STATUS[i];
+      }
     } else {
-      statusEl.textContent = 'Waiting';
+      if (statusEl) statusEl.textContent = 'Waiting';
     }
   }
 }
 
 function runSimulatedPipeline(onFinish) {
   let s = 0;
-  setPipelineUI(0, false);
-  const interval = setInterval(() => {
+  setPipelineUI(0, 'active');
+  if (pipelineTimer) clearInterval(pipelineTimer);
+  pipelineTimer = setInterval(() => {
     s++;
-    if (s <= 3) {
-      setPipelineUI(s, false);
-    } else {
-      clearInterval(interval);
-      setPipelineUI(3, true);
+    if (s < 6) {
+      setPipelineUI(s, 'active');
+    } else if (s === 6) {
+      setPipelineUI(6, 'done');
+      clearInterval(pipelineTimer);
       if (onFinish) onFinish();
     }
-  }, 450);
+  }, 350);
 }
 
 function onDragOver(e) {
@@ -81,16 +90,21 @@ async function handleFile(file) {
   const data = res?.data;
 
   if (!res?.ok || !data?.success) {
+    if (pipelineTimer) clearInterval(pipelineTimer);
+    setPipelineUI(0, 'error');
     toast(data?.message || 'Upload failed', 'error');
-    resetUpload();
+    setTimeout(() => resetUpload(), 1200);
     return;
+  }
+
+  if (pipelineTimer) clearInterval(pipelineTimer);
+  for (let i = 0; i < 7; i++) {
+    setPipelineUI(i, 'done');
   }
 
   currentFileId = data.file_id;
   currentAnalysisId = data.analysis_id;
   currentFileName = data.filename;
-
-  setPipelineUI(3, true);
 
   animateCount(document.getElementById('res-lines'), data.lines_parsed);
   animateCount(document.getElementById('res-anomalies'), data.anomalies_found);
@@ -157,18 +171,22 @@ function filterTable() {
 }
 
 function resetUpload() {
-  setPipelineUI(0, false);
-  for (let i = 0; i <= 3; i++) {
+  if (pipelineTimer) clearInterval(pipelineTimer);
+  for (let i = 0; i < 7; i++) {
     const el = document.getElementById('pl-' + i);
     if (!el) continue;
-    el.classList.remove('active', 'done');
-    el.querySelector('.pipeline-label-status').textContent = 'Waiting';
+    el.classList.remove('active', 'done', 'error');
+    const statusEl = el.querySelector('.pipeline-label-status');
+    if (statusEl) statusEl.textContent = 'Waiting';
   }
   allLogs = [];
   currentFileId = null;
   currentAnalysisId = null;
-  document.getElementById('logTable').innerHTML = '';
+  currentFileName = '';
+  const logTable = document.getElementById('logTable');
+  if (logTable) logTable.innerHTML = '';
   document.getElementById('resultsSection').style.display = 'none';
   document.getElementById('uploadSection').style.display = 'block';
-  document.getElementById('fileInput').value = '';
+  const fileInput = document.getElementById('fileInput');
+  if (fileInput) fileInput.value = '';
 }

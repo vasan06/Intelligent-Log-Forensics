@@ -144,6 +144,38 @@ function renderPreview(data) {
       </div>
     </div>
 
+    <!-- Forensic Feature Weights & Timeline -->
+    ${(r.feature_importance?.labels?.length || r.timeline?.labels?.length) ? `
+      <div class="grid-2 mb-6" style="gap:var(--sp-4);">
+        ${r.feature_importance?.labels?.length ? `
+          <div class="card" style="padding:var(--sp-5);">
+            <div style="font-size:12px;font-weight:700;color:var(--ink-1);margin-bottom:8px;">Forensic Signal Weights</div>
+            <div style="display:flex;flex-direction:column;gap:6px;">
+              ${r.feature_importance.labels.slice(0, 6).map((lbl, idx) => `
+                <div style="display:flex;justify-content:space-between;align-items:center;background:var(--surface-1);padding:6px 10px;border-radius:var(--r-md);font-size:11px;">
+                  <span style="font-weight:600;color:var(--ink-0);">${lbl}</span>
+                  <span style="font-family:var(--font-mono);font-weight:700;color:var(--brand-primary);">${Number(r.feature_importance.values[idx] || 0).toFixed(3)}</span>
+                </div>
+              `).join('')}
+            </div>
+          </div>
+        ` : ''}
+        ${r.timeline?.labels?.length ? `
+          <div class="card" style="padding:var(--sp-5);">
+            <div style="font-size:12px;font-weight:700;color:var(--ink-1);margin-bottom:8px;">Chronological Anomaly Progression</div>
+            <div style="display:flex;flex-direction:column;gap:6px;">
+              ${r.timeline.labels.slice(0, 6).map((lbl, idx) => `
+                <div style="display:flex;justify-content:space-between;align-items:center;background:var(--surface-1);padding:6px 10px;border-radius:var(--r-md);font-size:11px;">
+                  <span style="font-weight:600;color:var(--ink-0);">${lbl}</span>
+                  <span style="font-family:var(--font-mono);font-weight:700;color:${Number(r.timeline.scores[idx] || 0) > 0.6 ? '#DC2626' : 'var(--brand-primary)'};">${Number(r.timeline.scores[idx] || 0).toFixed(3)}</span>
+                </div>
+              `).join('')}
+            </div>
+          </div>
+        ` : ''}
+      </div>
+    ` : ''}
+
     <!-- Evidence Sample -->
     ${(r.flagged_entries || []).length ? `
       <div class="card mb-6">

@@ -20,6 +20,10 @@ function switchTab(tab) {
   } else if (tab === 'inspector') {
     document.getElementById('tabBtnInspector').classList.add('active');
     document.getElementById('paneInspector').classList.add('active');
+  } else if (tab === 'health') {
+    document.getElementById('tabBtnHealth').classList.add('active');
+    document.getElementById('paneHealth').classList.add('active');
+    loadSystemHealth();
   }
 }
 
@@ -27,6 +31,7 @@ function refreshCurrentTab() {
   loadAdminStats();
   if (activeTab === 'users') loadUsers();
   else if (activeTab === 'logs') loadAdminLogs();
+  else if (activeTab === 'health') loadSystemHealth();
 }
 
 async function loadAdminStats() {
@@ -86,13 +91,104 @@ function renderUsers() {
       </td>
       <td class="t-mono-xs text-muted">${fmtTs(u.created_at)}</td>
       <td>
-        <div style="display:flex;gap:6px;">
+        <div style="display:flex;gap:6px;flex-wrap:wrap;">
+          <button class="btn btn-sm btn-outline" onclick="openEditModal('${u.id}')">Edit</button>
           <button class="btn btn-sm btn-outline" onclick="jumpToInspect('${u.id}')">Inspect</button>
+          <button class="btn btn-sm btn-outline" onclick="revokeUserSessions('${u.id}', '${u.name}')" title="Revoke all active sessions">Revoke</button>
           <button class="btn btn-sm btn-danger" onclick="deleteUser('${u.id}', '${u.name}')">Delete</button>
         </div>
       </td>
     </tr>
   `).join('');
+}
+
+function openEditModal(uid) {
+  const u = allUsers.find(x => x.id === uid);
+  if (!u) return;
+  document.getElementById('editUserId').value = u.id;
+  document.getElementById('editUserName').value = u.name || '';
+  document.getElementById('editUserEmail').value = u.email || '';
+  document.getElementById('editUserRole').value = u.role || 'User';
+  document.getElementById('editUserStatus').value = u.status || 'active';
+  const modal = document.getElementById('editUserModal');
+  if (modal) modal.style.display = 'flex';
+}
+
+function closeEditModal() {
+  const modal = document.getElementById('editUserModal');
+  if (modal) modal.style.display = 'none';
+}
+
+async function submitUserEdit() {
+  const uid = document.getElementById('editUserId').value;
+  const name = document.getElementById('editUserName').value.trim();
+  const email = document.getElementById('editUserEmail').value.trim();
+  const role = document.getElementById('editUserRole').value;
+  const status = document.getElementById('editUserStatus').value;
+
+  if (!name || !email) {
+    toast('Name and email cannot be empty', 'warn');
+    return;
+  }
+
+  const res = await Api.adminUpdateUser(uid, { name, email, role, status });
+  if (res.ok && res.data?.success) {
+    toast('User updated successfully', 'success');
+    closeEditModal();
+    loadUsers();
+  } else {
+    toast(res.data?.message || 'Update failed', 'error');
+  }
+}
+
+async function revokeUserSessions(uid, name) {
+  const confirmed = await showModalConfirm(
+    `Revoke all active sessions for ${name || 'this user'}? The user will need to log in again.`,
+    'Revoke Active Sessions',
+    { confirmText: 'Revoke Sessions', danger: true }
+  );
+  if (!confirmed) return;
+  const res = await Api.adminRevokeUserSessions(uid);
+  if (res.ok && res.data?.success) {
+    toast(res.data.message || 'Sessions revoked successfully', 'success');
+    loadAdminStats();
+    if (activeTab === 'health') loadSystemHealth();
+  } else {
+    toast(res.data?.message || 'Failed to revoke sessions', 'error');
+  }
+}
+
+async function loadSystemHealth() {
+  const res = await Api.adminSystemHealth();
+  if (!res.ok || !res.data?.success) {
+    toast('Failed to load system health diagnostics', 'error');
+    return;
+  }
+  const d = res.data;
+  const db = d.database || {};
+  const tbl = db.tables || {};
+
+  const dialectEl = document.getElementById('diagDialect');
+  if (dialectEl) dialectEl.textContent = db.dialect || 'PostgreSQL';
+  const sessEl = document.getElementById('diagActiveSessions');
+  if (sessEl) sessEl.textContent = db.active_sessions || 0;
+
+  const countU = document.getElementById('diagCountUsers');
+  if (countU) countU.textContent = tbl.users || 0;
+  const countF = document.getElementById('diagCountFiles');
+  if (countF) countF.textContent = tbl.uploaded_files || 0;
+  const countA = document.getElementById('diagCountAnalyses');
+  if (countA) countA.textContent = tbl.log_analyses || 0;
+  const countS = document.getElementById('diagCountSessions');
+  if (countS) countS.textContent = tbl.sessions || 0;
+  const countR = document.getElementById('diagCountReports');
+  if (countR) countR.textContent = tbl.reports || 0;
+
+  const badge = document.getElementById('diagStatusBadge');
+  if (badge) {
+    badge.textContent = `${db.status === 'connected' ? 'PostgreSQL Online' : 'Database Disconnected'} · ${d.system?.status || 'Operational'}`;
+    badge.className = db.status === 'connected' ? 'badge badge-success' : 'badge badge-danger';
+  }
 }
 
 function populateInspectorSelect() {
@@ -146,7 +242,12 @@ async function updateUserStatus(id, status) {
 }
 
 async function deleteUser(id, name) {
-  if (!confirm(`Permanently delete user "${name}" and all their telemetry, files, and reports?`)) return;
+  const confirmed = await showModalConfirm(
+    `Permanently delete user "${name}" and all their telemetry, files, and reports? This action cannot be reversed.`,
+    'Delete User Account',
+    { confirmText: 'Delete User', danger: true }
+  );
+  if (!confirmed) return;
   const res = await Api.adminDeleteUser(id);
   if (res.ok && res.data?.success) {
     toast(`User "${name}" deleted`, 'success');
@@ -221,9 +322,10 @@ async function inspectUser(userId) {
           <h3 style="font-size:1.25rem;font-weight:700;color:var(--ink-0);margin-bottom:2px;">${u.name}</h3>
           <div class="t-mono-xs text-muted">${u.email} · UUID: ${u.id}</div>
         </div>
-        <div style="display:flex;gap:8px;">
+        <div style="display:flex;gap:8px;align-items:center;">
           <span class="badge ${u.role==='Admin'?'badge-primary':'badge-neutral'}">${u.role}</span>
           <span class="badge ${u.status==='active'?'badge-success':'badge-danger'}">${u.status}</span>
+          <button class="btn btn-sm btn-outline" style="border-color:#FCA5A5;color:#DC2626;" onclick="revokeUserSessions('${u.id}', '${u.name}')">Revoke Active Sessions</button>
         </div>
       </div>
 

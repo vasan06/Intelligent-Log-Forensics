@@ -35,38 +35,18 @@
       </div>
     </div>
 
-    <!-- Executive Live Telemetry Hero -->
-    <div class="monitor-hero" style="background:#FFFFFF;border:1px solid var(--surface-3);border-radius:var(--r-xl);padding:var(--sp-5) var(--sp-6);margin-bottom:var(--sp-5);display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:var(--sp-4);">
-      <div>
-        <div class="badge badge-primary mb-2">Ingestion Stream 01</div>
-        <h3 style="font-size:1.25rem;font-weight:700;color:var(--ink-0);margin-bottom:4px;">Live Threat Simulation & Pipeline Ingestion</h3>
-        <p style="font-size:var(--text-xs);color:var(--ink-2);margin-bottom:var(--sp-2);line-height:1.5;">
-          High-throughput packet collector streaming security events in real-time. Evaluates simulated intrusions against detection signatures.
-        </p>
-        <div style="display:flex;gap:var(--sp-4);flex-wrap:wrap;">
-          <div style="font-size:11px;color:var(--ink-3);">Node Status: <strong style="color:var(--success);">OPERATIONAL</strong></div>
-          <div style="font-size:11px;color:var(--ink-3);">Ingestion Buffer: <strong id="bufSize" style="color:var(--ink-0);">0 entries</strong></div>
-          <div style="font-size:11px;color:var(--ink-3);">PostgreSQL Vault: <strong style="color:var(--brand-primary);">Connected</strong></div>
-        </div>
-      </div>
-      <div style="display:flex;gap:var(--sp-3);align-items:center;background:var(--surface-1);padding:var(--sp-4) var(--sp-5);border-radius:var(--r-lg);border:1px solid var(--surface-3);">
-        <div>
-          <div style="font-size:10px;text-transform:uppercase;color:var(--ink-3);font-weight:700;">Active Threat Vector</div>
-          <div id="activeModeName" style="font-size:var(--text-sm);font-weight:700;color:var(--ink-0);">Random Traffic Baseline</div>
-        </div>
-        <div id="vectorBadge" class="badge badge-success" style="font-size:11px;">NORMAL</div>
-      </div>
-    </div>
-
     <div class="monitor-layout">
-      <!-- Sidebar: mode selector -->
-      <aside class="monitor-sidebar">
+      <!-- Column 1: Threat Simulation Scenarios -->
+      <div class="monitor-col-scenarios">
         <div class="card" style="padding:var(--sp-4);">
           <div class="section-label">Threat Simulation Scenarios</div>
           <div style="display:flex;flex-direction:column;gap:4px;" id="modeList"></div>
         </div>
+      </div>
 
-        <div class="card" style="padding:var(--sp-4);">
+      <!-- Column 2: Source & Level Filters + Severity Breakdown -->
+      <div class="monitor-col-filters">
+        <div class="card mb-4" style="padding:var(--sp-4);">
           <div class="section-label">Source & Level Filters</div>
           <div style="display:flex;flex-direction:column;gap:var(--sp-3);">
             <div class="form-group" style="margin:0;">
@@ -102,10 +82,10 @@
             <div class="sev-counter"><div class="sev-counter-val" id="sc-CRIT" style="color:var(--critical);">0</div><div class="sev-counter-lbl" style="color:var(--critical);">CRIT</div></div>
           </div>
         </div>
-      </aside>
+      </div>
 
-      <!-- Main: terminal -->
-      <div class="monitor-main">
+      <!-- Column 3: Live Log Terminal / Main Monitoring Area -->
+      <div class="monitor-col-main monitor-main">
         <!-- Controls bar -->
         <div class="controls-row">
           <button class="start-btn" id="streamBtn" onclick="toggleStream()">

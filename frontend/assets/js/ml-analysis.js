@@ -76,6 +76,17 @@ async function checkHandoverOnLoad() {
 
   if (fileId) activeFileId = fileId;
 
+  // Check sessionStorage for active event info from log-explorer
+  const storedEventStr = sessionStorage.getItem('ilf_active_event');
+  if (storedEventStr) {
+    try {
+      const parsedEvent = JSON.parse(storedEventStr);
+      if (parsedEvent.filename) activeFileName = parsedEvent.filename;
+      if (parsedEvent.file_id) activeFileId = parsedEvent.file_id;
+      if (parsedEvent.analysis_id) activeEventId = parsedEvent.analysis_id;
+    } catch (e) {}
+  }
+
   // Check sessionStorage for raw logs passed from log-explorer
   const storedLogs = sessionStorage.getItem('ilf_event_logs');
 
@@ -83,7 +94,7 @@ async function checkHandoverOnLoad() {
     try {
       uploadedLogs = JSON.parse(storedLogs);
       const bannerText = document.getElementById('handoverText');
-      if (bannerText) bannerText.textContent = `Handover active: Analyzing ${uploadedLogs.length} logs from File #${fileId || 'Batch'}`;
+      if (bannerText) bannerText.textContent = `Handover active: Analyzing ${uploadedLogs.length} logs from ${activeFileName || ('File #' + (fileId || 'Batch'))}`;
       document.getElementById('handoverBanner')?.classList.add('show');
       runAnalysis();
       return;
@@ -100,6 +111,7 @@ async function checkHandoverOnLoad() {
       const ev = res.data.event;
       if (ev.raw_logs && ev.raw_logs.length > 0) {
         uploadedLogs = ev.raw_logs;
+        if (ev.filename) activeFileName = ev.filename;
         if (bannerText) bannerText.textContent = `Loaded analysis event #${ev.id} (${uploadedLogs.length} logs)`;
         runAnalysis();
       }
@@ -219,15 +231,72 @@ function renderResults(d) {
     `).join('');
   }
 
-  // SOC Countermeasures
-  const soc = d.soc_countermeasures || {};
-  const ips = soc.target_ips || [];
+  // Dynamic Dataset & Architecture Metadata
+  const totalAnalyzed = d.total_analyzed || (consensus && consensus.total_logs) || (uploadedLogs && uploadedLogs.length) || 0;
+  const metaCountEl = document.getElementById('metaLogCount');
+  if (metaCountEl) metaCountEl.textContent = totalAnalyzed.toLocaleString();
+
+  const metaTitleEl = document.getElementById('metaDatasetTitle');
+  if (metaTitleEl) {
+    if (activeFileName) {
+      metaTitleEl.textContent = `Analyzed File: ${activeFileName}`;
+    } else if (activeFileId) {
+      metaTitleEl.textContent = `Analyzed Upload ID: ${activeFileId}`;
+    } else {
+      metaTitleEl.textContent = `Live Forensic Stream (${d.source || 'all'})`;
+    }
+  }
+
+  const metaBadgeEl = document.getElementById('metaSourceBadge');
+  if (metaBadgeEl) {
+    metaBadgeEl.textContent = activeFileName ? 'Uploaded Dataset' : (d.source ? `Stream: ${d.source}` : 'Stream Ingestion');
+  }
+
+  // SOC Countermeasures & Firewall Rules
+  const soc = d.soc_countermeasures || d.countermeasures || {};
+  const ips = soc.target_ips || soc.quarantined_ips || [];
   const threatIpBadge = document.getElementById('threatIpBadge');
-  if (threatIpBadge) threatIpBadge.textContent = `${ips.length} Malicious IPs Identified`;
+  if (threatIpBadge) {
+    threatIpBadge.textContent = `${ips.length} Hostile IP${ips.length === 1 ? '' : 's'} Identified`;
+    threatIpBadge.className = ips.length ? 'badge badge-danger' : 'badge badge-success';
+  }
+
+  // Format iptables rules
+  let iptablesRules = soc.iptables_rules;
+  if (!iptablesRules && soc.firewall_rules) {
+    iptablesRules = soc.firewall_rules.map(r => r.iptables).filter(Boolean);
+  }
   const iptablesEl = document.getElementById('ruleIptables');
-  if (iptablesEl) iptablesEl.textContent = (soc.iptables_rules || ['# No threat IPs detected in current window.']).join('\n');
+  if (iptablesEl) {
+    iptablesEl.textContent = (iptablesRules && iptablesRules.length) 
+      ? iptablesRules.join('\n') 
+      : '# No hostile IPs detected in current analysis window.';
+  }
+
+  // Format Windows Defender rules
+  let winDefRules = soc.windows_firewall_rules;
+  if (!winDefRules && soc.firewall_rules) {
+    winDefRules = soc.firewall_rules.map(r => r.windows_firewall).filter(Boolean);
+  }
   const winDefEl = document.getElementById('ruleWinDef');
-  if (winDefEl) winDefEl.textContent = (soc.windows_firewall_rules || ['# No threat IPs detected in current window.']).join('\n');
+  if (winDefEl) {
+    winDefEl.textContent = (winDefRules && winDefRules.length) 
+      ? winDefRules.join('\n') 
+      : '# No hostile IPs detected in current analysis window.';
+  }
+
+  // Remediation checklist
+  const checklistWrap = document.getElementById('socChecklistWrap');
+  const checklistEl = document.getElementById('socChecklist');
+  if (checklistWrap && checklistEl) {
+    const items = soc.action_checklist || [];
+    if (items.length > 0) {
+      checklistWrap.style.display = 'block';
+      checklistEl.innerHTML = items.map(it => `<li>${it}</li>`).join('');
+    } else {
+      checklistWrap.style.display = 'none';
+    }
+  }
 
   // Timeline Chart
   const tl = d.timeline || { labels: [], scores: [] };

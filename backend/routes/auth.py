@@ -721,7 +721,7 @@ def login():
                 {
                     "success": False,
                     "message": (
-                        "Account is not verified"
+                        "Account is inactive. Please contact an administrator."
                     ),
                 }
             ), 403
@@ -939,6 +939,22 @@ def refresh():
                     ),
                 }
             ), 401
+
+        if not user["verified"]:
+            revoke_all_sessions(
+                db,
+                user_id,
+            )
+            res = jsonify(
+                {
+                    "success": False,
+                    "message": (
+                        "Account is inactive. Please contact an administrator."
+                    ),
+                }
+            )
+            clear_auth_cookies(res)
+            return res, 403
 
         # -------------------------------------------------
         # ROTATE REFRESH TOKEN

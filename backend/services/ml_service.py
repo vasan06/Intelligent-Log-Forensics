@@ -264,29 +264,38 @@ def generate_soc_countermeasures(logs, overall_score, risk_level):
     Generate actionable SOC firewall rules and remediation directives
     based on the specific threats detected.
     """
-    countermeasures = []
     flagged_ips = set()
     threat_types = set()
 
     for l in logs:
         msg = str(l.get("message", "")).lower()
         ip = str(l.get("ip", "")).strip()
+        sev = str(l.get("severity", "")).upper()
 
-        if ip and ip not in ("-", "127.0.0.1", "localhost", "none", ""):
+        if ip and ip not in ("-", "127.0.0.1", "localhost", "none", "", "null"):
             for threat, sigs in THREAT_SIGNATURES.items():
                 if any(re.search(pat, msg) for pat in sigs):
                     flagged_ips.add(ip)
                     threat_types.add(threat)
+            if sev in ("CRITICAL", "ERROR") and (overall_score > 0.4 or risk_level in ("HIGH", "CRITICAL")):
+                flagged_ips.add(ip)
 
     # Generate ready-to-copy firewall rules
     firewall_rules = []
-    for ip in list(flagged_ips)[:4]:
+    iptables_rules = []
+    windows_firewall_rules = []
+    nftables_rules = []
+
+    for ip in list(flagged_ips)[:6]:
         firewall_rules.append({
             "ip": ip,
             "iptables": f"iptables -A INPUT -s {ip} -j DROP",
             "windows_firewall": f'netsh advfirewall firewall add rule name="Block-{ip}" dir=in action=block remoteip={ip}',
             "nftables": f"nft add rule inet filter input ip saddr {ip} drop",
         })
+        iptables_rules.append(f"iptables -A INPUT -s {ip} -j DROP")
+        windows_firewall_rules.append(f'netsh advfirewall firewall add rule name="Block-{ip}" dir=in action=block remoteip={ip}')
+        nftables_rules.append(f"nft add rule inet filter input ip saddr {ip} drop")
 
     # Actionable hardening checklist
     checklist = []
@@ -302,10 +311,17 @@ def generate_soc_countermeasures(logs, overall_score, risk_level):
         checklist.append("Null-route outbound C2 destination IP addresses at the perimeter border router / firewall.")
 
     if not checklist:
-        checklist.append("Maintain continuous log forwarding and periodic forensic baseline auditing.")
+        if risk_level in ("HIGH", "CRITICAL"):
+            checklist.append("Isolate suspicious ingress endpoints and trigger deeper packet capture forensics.")
+        else:
+            checklist.append("Maintain continuous log forwarding and periodic forensic baseline auditing.")
 
     return {
         "firewall_rules": firewall_rules,
+        "iptables_rules": iptables_rules,
+        "windows_firewall_rules": windows_firewall_rules,
+        "nftables_rules": nftables_rules,
+        "target_ips": list(flagged_ips),
         "action_checklist": checklist,
         "threat_types": list(threat_types),
         "quarantined_ips": list(flagged_ips)[:10],
@@ -388,14 +404,28 @@ def run_ensemble(logs, source="all", time_range="1h"):
     feature_labels = ["Severity Level", "Payload Length", "Char Entropy", "Threat Signatures", "IP Concentration", "HTTP Status", "Special Chars", "Temporal Rate"]
     feature_importances = [round(float(np.mean(X[:, c])), 3) for c in range(8)]
 
-    # 12-point deterministic timeline
-    timeline_labels = [f"T-{(11 - i) * 5}m" for i in range(12)]
+    # Chronological timeline progression based on actual log sequence scores
+    num_blocks = min(12, max(4, len(logs) // 10)) if len(logs) >= 4 else max(2, len(logs))
+    chunk_size = max(1, len(logs) // num_blocks)
+    timeline_labels = []
     timeline_scores = []
-    for i in range(12):
-        wave = math.sin(i * 1.5) * 0.05
-        t_val = clamp(consensus_score + wave * (1.0 - i / 11.0))
-        timeline_scores.append(round(t_val, 3))
-    timeline_scores[-1] = round(consensus_score, 4)
+    for b in range(num_blocks):
+        start_idx = b * chunk_size
+        end_idx = min(len(logs), (b + 1) * chunk_size) if b < num_blocks - 1 else len(logs)
+        block_scores = combined_log_scores[start_idx:end_idx] if end_idx > start_idx else [consensus_score]
+        avg_score = float(np.mean(block_scores)) if len(block_scores) else consensus_score
+        
+        sample_log = logs[min(start_idx, len(logs) - 1)]
+        raw_ts = str(sample_log.get("timestamp") or "")
+        if len(raw_ts) >= 19:
+            t_label = raw_ts[11:16]
+        elif len(raw_ts) >= 8 and ":" in raw_ts:
+            t_label = raw_ts[-8:-3]
+        else:
+            t_label = f"Block {b+1}"
+        
+        timeline_labels.append(t_label)
+        timeline_scores.append(round(avg_score, 4))
 
     # Algorithm individual breakdowns
     all_results = [

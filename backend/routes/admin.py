@@ -153,6 +153,12 @@ def update_user(uid):
         result = db.execute(update(users).where(users.c.id == str(uid)).values(**values))
         if result.rowcount == 0:
             return jsonify({"success": False, "message": "User not found"}), 404
+        if values.get("verified") is False:
+            db.execute(
+                update(sessions)
+                .where(sessions.c.user_id == str(uid), sessions.c.revoked_at.is_(None))
+                .values(revoked_at=datetime.datetime.now(datetime.timezone.utc))
+            )
         user = db.execute(select(users).where(users.c.id == str(uid))).mappings().first()
     return jsonify({"success": True, "user": safe_user(user)})
 
@@ -354,4 +360,69 @@ def user_activity(uid):
             "created_at": r["created_at"].isoformat() if r["created_at"] else None,
         } for r in user_reports],
     })
+
+
+@admin_bp.route("/admin/system-health", methods=["GET"])
+def system_health():
+    admin, error = require_admin()
+    if error:
+        return error
+
+    now = datetime.datetime.now(datetime.timezone.utc)
+    with get_db() as db:
+        users_count = db.execute(select(func.count()).select_from(users)).scalar_one()
+        files_count = db.execute(select(func.count()).select_from(uploaded_files)).scalar_one()
+        analyses_count = db.execute(select(func.count()).select_from(log_analyses)).scalar_one()
+        sessions_count = db.execute(select(func.count()).select_from(sessions)).scalar_one()
+        active_sessions = db.execute(
+            select(func.count()).select_from(sessions).where(sessions.c.revoked_at.is_(None), sessions.c.expires_at > now)
+        ).scalar_one()
+        reports_count = db.execute(select(func.count()).select_from(reports)).scalar_one()
+
+    return jsonify({
+        "success": True,
+        "database": {
+            "status": "connected",
+            "dialect": "PostgreSQL",
+            "tables": {
+                "users": users_count,
+                "uploaded_files": files_count,
+                "log_analyses": analyses_count,
+                "sessions": sessions_count,
+                "reports": reports_count,
+            },
+            "active_sessions": active_sessions,
+            "storage_mode": "PostgreSQL In-DB BYTEA Storage (Zero Temporary Disk Write)",
+        },
+        "system": {
+            "status": "operational",
+            "timestamp": now.isoformat(),
+            "server": "Intelligent Log Forensics Backend (Flask/SQLAlchemy)",
+        }
+    })
+
+
+@admin_bp.route("/admin/users/<uid>/revoke-sessions", methods=["POST"])
+def revoke_user_sessions(uid):
+    admin, error = require_admin()
+    if error:
+        return error
+
+    now = datetime.datetime.now(datetime.timezone.utc)
+    with get_db() as db:
+        user = db.execute(select(users).where(users.c.id == str(uid))).mappings().first()
+        if not user:
+            return jsonify({"success": False, "message": "User not found"}), 404
+
+        res = db.execute(
+            update(sessions).where(sessions.c.user_id == str(uid), sessions.c.revoked_at.is_(None)).values(revoked_at=now)
+        )
+        revoked_count = res.rowcount
+
+    return jsonify({
+        "success": True,
+        "message": f"Successfully revoked {revoked_count} active session(s) for user {user['name']}.",
+        "revoked_count": revoked_count
+    })
+
 

@@ -252,7 +252,7 @@
       }
 
       if (response?.status === 403) {
-        return "Your account is not verified.";
+        return "Account is inactive. Please contact an administrator.";
       }
 
       if (response?.status === 404) {

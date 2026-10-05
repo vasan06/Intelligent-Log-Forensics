@@ -48,18 +48,23 @@ async function initDashboard() {
    ========================================================= */
 
 async function loadDash() {
-  const fSource =
-    document.getElementById('fSource')?.value || 'all';
+  const fSource = document.getElementById('fSource')?.value || 'all';
+  const fSev = document.getElementById('fSev')?.value || 'all';
+  const fStartDate = document.getElementById('fStartDate')?.value || '';
+  const fStartTime = document.getElementById('fStartTime')?.value || '';
+  const fEndDate = document.getElementById('fEndDate')?.value || '';
+  const fEndTime = document.getElementById('fEndTime')?.value || '';
 
-  const fSev =
-    document.getElementById('fSev')?.value || 'all';
+  const params = {};
+  if (fSource && fSource !== 'all') params.source = fSource;
+  if (fSev && fSev !== 'all') params.severity = fSev;
+  if (fStartDate) params.start_date = fStartDate;
+  if (fStartTime) params.start_time = fStartTime;
+  if (fEndDate) params.end_date = fEndDate;
+  if (fEndTime) params.end_time = fEndTime;
 
   try {
-    /*
-     * Your current API client exposes dashStats(),
-     * not dashSummary().
-     */
-    const res = await Api.dashStats();
+    const res = await Api.dashStats(params);
 
     if (!res || !res.ok) {
       console.error('Dashboard API error:', res);
@@ -68,7 +73,6 @@ async function loadDash() {
     }
 
     const data = normalizeDashboardResponse(res.data);
-
     applyDashData(data);
 
   } catch (err) {
@@ -76,6 +80,85 @@ async function loadDash() {
     renderEmptyDashboard();
   }
 }
+
+function onTimeRangeChange() {
+  const tr = document.getElementById('fTimeRange')?.value || 'all';
+  const wrap = document.getElementById('customDateWrap');
+  const now = new Date();
+
+  const toYMD = d => {
+    const pad = n => String(n).padStart(2, '0');
+    return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+  };
+  const toHM = d => {
+    const pad = n => String(n).padStart(2, '0');
+    return `${pad(d.getHours())}:${pad(d.getMinutes())}`;
+  };
+
+  if (tr === 'custom') {
+    if (wrap) wrap.style.display = 'inline-flex';
+    return;
+  }
+
+  if (wrap) wrap.style.display = 'none';
+
+  const startEl = document.getElementById('fStartDate');
+  const startTimeEl = document.getElementById('fStartTime');
+  const endEl = document.getElementById('fEndDate');
+  const endTimeEl = document.getElementById('fEndTime');
+
+  if (tr === 'today') {
+    const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 0, 0, 0);
+    if (startEl) startEl.value = toYMD(startOfToday);
+    if (startTimeEl) startTimeEl.value = '00:00';
+    if (endEl) endEl.value = toYMD(now);
+    if (endTimeEl) endTimeEl.value = toHM(now);
+  } else if (tr === '24h') {
+    const d24 = new Date(now.getTime() - 24 * 3600 * 1000);
+    if (startEl) startEl.value = toYMD(d24);
+    if (startTimeEl) startTimeEl.value = toHM(d24);
+    if (endEl) endEl.value = toYMD(now);
+    if (endTimeEl) endTimeEl.value = toHM(now);
+  } else if (tr === '7d') {
+    const d7 = new Date(now.getTime() - 7 * 86400 * 1000);
+    if (startEl) startEl.value = toYMD(d7);
+    if (startTimeEl) startTimeEl.value = '00:00';
+    if (endEl) endEl.value = toYMD(now);
+    if (endTimeEl) endTimeEl.value = toHM(now);
+  } else if (tr === '30d') {
+    const d30 = new Date(now.getTime() - 30 * 86400 * 1000);
+    if (startEl) startEl.value = toYMD(d30);
+    if (startTimeEl) startTimeEl.value = '00:00';
+    if (endEl) endEl.value = toYMD(now);
+    if (endTimeEl) endTimeEl.value = toHM(now);
+  } else { // 'all'
+    if (startEl) startEl.value = '';
+    if (startTimeEl) startTimeEl.value = '';
+    if (endEl) endEl.value = '';
+    if (endTimeEl) endTimeEl.value = '';
+  }
+
+  loadDash();
+}
+
+window.onTimeRangeChange = onTimeRangeChange;
+
+function resetDashFilters() {
+  const tr = document.getElementById('fTimeRange');
+  if (tr) tr.value = 'all';
+  const wrap = document.getElementById('customDateWrap');
+  if (wrap) wrap.style.display = 'none';
+
+  if (document.getElementById('fStartDate')) document.getElementById('fStartDate').value = '';
+  if (document.getElementById('fStartTime')) document.getElementById('fStartTime').value = '';
+  if (document.getElementById('fEndDate')) document.getElementById('fEndDate').value = '';
+  if (document.getElementById('fEndTime')) document.getElementById('fEndTime').value = '';
+  if (document.getElementById('fSource')) document.getElementById('fSource').value = 'all';
+  if (document.getElementById('fSev')) document.getElementById('fSev').value = 'all';
+  loadDash();
+}
+
+window.resetDashFilters = resetDashFilters;
 
 
 /* =========================================================

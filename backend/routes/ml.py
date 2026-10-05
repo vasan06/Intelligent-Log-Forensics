@@ -5,7 +5,7 @@ routes/ml.py — ML analysis routes with automated snapshot persistence and task
 import uuid
 from collections import Counter
 from flask import Blueprint, request, jsonify
-from sqlalchemy import select
+from sqlalchemy import select, update
 import jwt
 
 from backend.services.ml_service import run_ensemble
@@ -103,16 +103,50 @@ def analyze():
         "logs": logs,
     }
 
+    # Check if analysis record already exists for this file_id or analysis_id
+    existing_row = None
     with get_db() as db:
-        db.execute(
-            log_analyses.insert().values(
-                id=analysis_id,
-                user_id=uid,
-                file_id=str(file_id) if file_id else None,
-                status="completed",
-                results=results_payload,
+        if file_id:
+            existing_row = db.execute(
+                select(log_analyses).where(
+                    log_analyses.c.file_id == str(file_id),
+                    log_analyses.c.user_id == uid
+                ).order_by(log_analyses.c.created_at.desc()).limit(1)
+            ).mappings().first()
+        elif data.get("analysis_id"):
+            existing_row = db.execute(
+                select(log_analyses).where(
+                    log_analyses.c.id == str(data["analysis_id"]),
+                    log_analyses.c.user_id == uid
+                )
+            ).mappings().first()
+
+        if existing_row:
+            analysis_id = str(existing_row["id"])
+            existing_results = dict(existing_row["results"] or {})
+            existing_results["ml"] = result
+            existing_results["ml_analysis"] = result
+            existing_results["anomalies"] = len(result.get("flagged_entries", []))
+            existing_results["anomalies_found"] = len(result.get("flagged_entries", []))
+            if not existing_results.get("logs") and logs:
+                existing_results["logs"] = logs[:2000]
+            db.execute(
+                update(log_analyses).where(log_analyses.c.id == analysis_id).values(
+                    results=existing_results,
+                    status="completed",
+                )
             )
-        )
+        else:
+            analysis_id = str(uuid.uuid4())
+            db.execute(
+                log_analyses.insert().values(
+                    id=analysis_id,
+                    user_id=uid,
+                    file_id=str(file_id) if file_id else None,
+                    status="completed",
+                    results=results_payload,
+                )
+            )
 
     result["analysis_id"] = analysis_id
     result["file_id"] = file_id
