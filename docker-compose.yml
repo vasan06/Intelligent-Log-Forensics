@@ -1,45 +1,63 @@
-version: '3.8'
-
 services:
   postgres:
     image: postgres:16-alpine
     container_name: ilf_postgres
     restart: unless-stopped
+
     environment:
-      POSTGRES_DB: ilf_db
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: postgres
-    ports:
-      - "5432:5432"
+      POSTGRES_DB: ${ILF_DB_NAME}
+      POSTGRES_USER: ${ILF_DB_USER}
+      POSTGRES_PASSWORD: ${ILF_DB_PASSWORD}
+
     volumes:
       - ilf_pgdata:/var/lib/postgresql/data
+
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U postgres -d ilf_db"]
+      test:
+        [
+          "CMD-SHELL",
+          "pg_isready -U ${ILF_DB_USER} -d ${ILF_DB_NAME}"
+        ]
       interval: 5s
       timeout: 5s
       retries: 5
+      start_period: 5s
 
   web:
-    build: .
+    build:
+      context: .
+      dockerfile: Dockerfile
+
     container_name: ilf_web
     restart: unless-stopped
+
     ports:
       - "5000:5000"
+
+    env_file:
+      - .env
+
     environment:
-      - FLASK_ENV=production
-      - DATABASE_URL=postgresql+psycopg://postgres:postgres@postgres:5432/ilf_db
-      - ADMIN_EMAIL=vasan83000@gmail.com
-      - ADMIN_PASSWORD=Vasan@83000
-      - LOKY_MAX_CPU_COUNT=2
+      ILF_DB_HOST: postgres
+      ILF_DB_PORT: 5432
+      LOKY_MAX_CPU_COUNT: 2
+
     depends_on:
       postgres:
         condition: service_healthy
+
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:5000/api/health"]
+      test:
+        [
+          "CMD",
+          "curl",
+          "-f",
+          "http://localhost:5000/api/health"
+        ]
       interval: 15s
       timeout: 5s
       retries: 3
-      start_period: 10s
+      start_period: 15s
 
 volumes:
   ilf_pgdata:

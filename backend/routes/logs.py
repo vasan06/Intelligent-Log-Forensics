@@ -199,17 +199,148 @@ def parse_log_content(content_bytes, filename="uploaded.log"):
 # =========================================================
 # API ROUTES
 # =========================================================
+def persist_live_stream_batch(uid, logs, mode):
+    """
+    Persist a live-monitor batch into log_analyses.
+
+    Live stream records intentionally have file_id=None because
+    they are not associated with an uploaded file.
+    """
+    if not logs:
+        return None
+
+    severity = Counter(
+        str(log.get("severity", "INFO")).upper()
+        for log in logs
+    )
+
+    sources_map = Counter(
+        str(log.get("source", "system")).lower()
+        for log in logs
+    )
+
+    # Build hourly volume from the actual generated timestamps.
+    log_volume = {
+        level: [0] * 24
+        for level in ("INFO", "WARN", "ERROR", "CRITICAL", "DEBUG")
+    }
+
+    for log in logs:
+        level = str(log.get("severity", "INFO")).upper()
+
+        if level not in log_volume:
+            level = "INFO"
+
+        timestamp = log.get("timestamp")
+
+        try:
+            if timestamp:
+                ts = str(timestamp).replace("Z", "+00:00")
+                dt = datetime.datetime.fromisoformat(ts)
+                hour = dt.hour
+            else:
+                hour = datetime.datetime.now(
+                    datetime.timezone.utc
+                ).hour
+        except Exception:
+            hour = datetime.datetime.now(
+                datetime.timezone.utc
+            ).hour
+
+        log_volume[level][hour] += 1
+
+    # For live simulation, CRITICAL events are treated as detected
+    # threats for dashboard KPI purposes.
+    threat_count = severity.get("CRITICAL", 0)
+
+    analysis_id = str(uuid.uuid4())
+
+    results = {
+        "source": "live_stream",
+        "mode": mode,
+
+        "total_logs": len(logs),
+        "lines_parsed": len(logs),
+
+        "anomalies": threat_count,
+        "anomalies_found": threat_count,
+
+        "severity": dict(severity),
+        "top_sources": dict(sources_map),
+
+        "log_volume": log_volume,
+
+        "preview": logs[:50],
+        "logs": logs[:200],
+
+        "stream_batch": True,
+        "threat_count": threat_count,
+    }
+
+    with get_db() as db:
+        db.execute(
+            log_analyses.insert().values(
+                id=analysis_id,
+                user_id=uid,
+                file_id=None,
+                status="completed",
+                results=results,
+            )
+        )
+
+    return analysis_id
 
 @logs_bp.route("/logs/stream")
 def stream():
     uid = auth_user_id()
+
     if not uid:
-        return jsonify({"success": False, "message": "Authentication required"}), 401
-    count = min(max(int(request.args.get("count", 10)), 1), 50)
+        return jsonify({
+            "success": False,
+            "message": "Authentication required"
+        }), 401
+
+    try:
+        count = min(
+            max(int(request.args.get("count", 10)), 1),
+            50
+        )
+    except (TypeError, ValueError):
+        count = 10
+
     mode = request.args.get("mode", "random")
     src = request.args.get("source", "all")
     sev = request.args.get("severity", "all")
-    return jsonify({"logs": generate_logs(count, mode, src, sev), "mode": mode, "count": count})
+
+    try:
+        logs = generate_logs(
+            count=count,
+            mode=mode,
+            source_filter=src,
+            severity_filter=sev
+        )
+
+        # Persist this live batch immediately.
+        analysis_id = persist_live_stream_batch(
+            uid=uid,
+            logs=logs,
+            mode=mode
+        )
+
+        return jsonify({
+            "success": True,
+            "logs": logs,
+            "mode": mode,
+            "count": len(logs),
+            "analysis_id": analysis_id,
+            "persisted": True
+        })
+
+    except Exception as exc:
+        return jsonify({
+            "success": False,
+            "message": f"Live stream processing failed: {exc}"
+        }), 500
 
 
 @logs_bp.route("/logs/modes")

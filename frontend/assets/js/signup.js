@@ -1015,7 +1015,13 @@ signupForm.addEventListener("submit", async (event) => {
      * Backend returns JWT token.
      */
     localStorage.setItem("ilf_access_token", data.token);
-      if (result.refresh_token) localStorage.setItem("ilf_refresh_token", result.refresh_token);
+
+if (data.refresh_token) {
+    localStorage.setItem(
+        "ilf_refresh_token",
+        data.refresh_token
+    );
+}
 
     /*
      * Store user information if the dashboard needs it.
