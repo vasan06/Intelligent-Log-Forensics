@@ -1,252 +1,698 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/>
-<title>Security Operations Center — Intelligent Log Forensic</title>
-<link rel="stylesheet" href="assets/css/tokens.css"/>
-<link rel="stylesheet" href="assets/css/global.css"/>
-<link rel="stylesheet" href="assets/css/components.css"/>
-<link rel="stylesheet" href="assets/css/navbar.css"/>
-<link rel="stylesheet" href="assets/css/animations.css"/>
-<link rel="stylesheet" href="assets/css/dashboard.css"/>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+
+  <title>Security Dashboard — Intelligent Log Forensics</title>
+
+  <link rel="stylesheet" href="assets/css/tokens.css"/>
+  <link rel="stylesheet" href="assets/css/global.css"/>
+  <link rel="stylesheet" href="assets/css/components.css"/>
+  <link rel="stylesheet" href="assets/css/navbar.css"/>
+  <link rel="stylesheet" href="assets/css/animations.css"/>
+  <link rel="stylesheet" href="assets/css/dashboard.css"/>
 </head>
+
 <body>
+
 <div class="page-wrap with-nav">
+
   <main class="content-area">
+
     <nav id="navMount"></nav>
 
-    <!-- Executive SOC Command Hero -->
-    <div class="dash-hero">
-      <div>
-        <div class="dash-hero-title">Security Operations Center</div>
-        <div class="dash-hero-sub">
-          <span class="telemetry-dot"></span>
-          <span>Threat Telemetry Active &bull; <span id="statusIndicator">Synchronized Live Stream</span></span>
-        </div>
-      </div>
-      <div style="display:flex;align-items:center;gap:10px;">
-        <a href="log-explorer.html" class="btn btn-primary btn-sm">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
-          Ingest Logs
-        </a>
-        <a href="ml-analysis.html" class="btn btn-outline btn-sm">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="5 3 19 12 5 21 5 3"/></svg>
-          Run ML Scan
-        </a>
-      </div>
-    </div>
+    <!-- =====================================================
+         SIMPLE DASHBOARD HEADER
+         ===================================================== -->
 
-    <!-- Filters & Toolbar -->
+    <!-- =====================================================
+         FILTER BAR
+         ===================================================== -->
+
     <div class="filter-bar">
-      <span class="filter-label">Facility Scope:</span>
-      <select class="filter-select" id="fSource" onchange="loadDash()">
-        <option value="all">All Threat Facilities</option>
-        <option value="nginx">Web Gateway (nginx)</option>
-        <option value="syslog">System Journal (syslog)</option>
-        <option value="auth">Identity Access (auth)</option>
-        <option value="kernel">Kernel & Hypervisor</option>
-        <option value="iptables">Network Firewall (iptables)</option>
+
+      <span class="filter-label">
+        Filters
+      </span>
+
+      <select
+        class="filter-select"
+        id="fSource"
+        onchange="loadDash()">
+
+        <option value="all">All Sources</option>
+        <option value="nginx">nginx</option>
+        <option value="syslog">syslog</option>
+        <option value="auth">auth</option>
+        <option value="kernel">kernel</option>
+        <option value="iptables">iptables</option>
+
       </select>
-      <select class="filter-select" id="fSev" onchange="loadDash()">
-        <option value="all">All Threat Levels</option>
-        <option value="CRITICAL">CRITICAL Only</option>
-        <option value="HIGH">HIGH & CRITICAL</option>
-        <option value="WARN">WARN & Above</option>
+
+      <select
+        class="filter-select"
+        id="fSev"
+        onchange="loadDash()">
+
+        <option value="all">All Severities</option>
+        <option value="INFO">INFO</option>
+        <option value="WARN">WARN</option>
+        <option value="ERROR">ERROR</option>
+        <option value="HIGH">HIGH</option>
+        <option value="CRITICAL">CRITICAL</option>
+
       </select>
-      <div style="margin-left:auto;display:flex;align-items:center;gap:8px;">
-        <button class="btn btn-ghost btn-sm" onclick="loadDash()">
-          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 4v6h-6"/><path d="M1 20v-6h6"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
-          Sync Now
-        </button>
-      </div>
+
+      <button
+        class="btn btn-ghost btn-sm"
+        id="syncDashBtn"
+        onclick="loadDash(true)">
+
+        <svg width="13"
+             height="13"
+             viewBox="0 0 24 24"
+             fill="none"
+             stroke="currentColor"
+             stroke-width="2">
+
+          <path d="M23 4v6h-6"/>
+          <path d="M1 20v-6h6"/>
+          <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10"/>
+          <path d="M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/>
+
+        </svg>
+
+        Sync
+
+      </button>
+
     </div>
 
-    <!-- Executive Metrics Grid -->
+
+    <!-- =====================================================
+         KPI CARDS
+         ===================================================== -->
+
     <div class="grid-4 mb-6" id="kpiGrid">
-      <div class="kpi-card card-reveal" style="--kpi-color:var(--brand-primary);--kpi-bg:rgba(37,99,235,0.08);">
-        <div class="kpi-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--brand-primary)" stroke-width="1.8"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg></div>
-        <a href="/frontend/dashboard.html" style="text-decoration:none;" title="Intelligent Log Forensic">
-            <span style="background: linear-gradient(135deg, #1E1B4B 0%, #312E81 50%, #4F46E5 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; font-size: 1.15rem; font-weight: 800; letter-spacing: -0.02em;">Intelligent Log Forensic</span>
-          </a>
-        <div class="kpi-value" id="kv-logs">—</div>
+
+      <div
+        class="kpi-card card-reveal"
+        style="--kpi-color:var(--brand-primary);
+               --kpi-bg:rgba(37,99,235,0.08);">
+
+        <div class="kpi-icon">
+
+          <svg width="20"
+               height="20"
+               viewBox="0 0 24 24"
+               fill="none"
+               stroke="var(--brand-primary)"
+               stroke-width="1.8">
+
+            <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>
+
+          </svg>
+
+        </div>
+
+        <div class="kpi-label">
+          Logs Processed
+        </div>
+
+        <div
+          class="kpi-value"
+          id="kv-logs">
+          0
+        </div>
+
       </div>
-      <div class="kpi-card card-reveal" style="--kpi-color:#EF4444;--kpi-bg:rgba(239,68,68,0.08);">
-        <div class="kpi-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#EF4444" stroke-width="1.8"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg></div>
-        <div class="kpi-label">Correlated Anomalies</div>
-        <div class="kpi-value" id="kv-threats" style="color:#EF4444;">—</div>
+
+
+      <div
+        class="kpi-card card-reveal"
+        style="--kpi-color:#EF4444;
+               --kpi-bg:rgba(239,68,68,0.08);">
+
+        <div class="kpi-icon">
+
+          <svg width="20"
+               height="20"
+               viewBox="0 0 24 24"
+               fill="none"
+               stroke="#EF4444"
+               stroke-width="1.8">
+
+            <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
+            <line x1="12" y1="9" x2="12" y2="13"/>
+            <line x1="12" y1="17" x2="12.01" y2="17"/>
+
+          </svg>
+
+        </div>
+
+        <div class="kpi-label">
+          Detected Threats
+        </div>
+
+        <div
+          class="kpi-value"
+          id="kv-threats"
+          style="color:#EF4444;">
+          0
+        </div>
+
       </div>
-      <div class="kpi-card card-reveal" style="--kpi-color:#7C3AED;--kpi-bg:rgba(124,58,237,0.08);">
-        <div class="kpi-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#7C3AED" stroke-width="1.8"><rect x="2" y="2" width="20" height="8" rx="2"/><rect x="2" y="14" width="20" height="8" rx="2"/><line x1="6" y1="6" x2="6.01" y2="6"/><line x1="6" y1="18" x2="6.01" y2="18"/></svg></div>
-        <div class="kpi-label">Monitored Facilities</div>
-        <div class="kpi-value" id="kv-sources">—</div>
+
+
+      <div
+        class="kpi-card card-reveal"
+        style="--kpi-color:#7C3AED;
+               --kpi-bg:rgba(124,58,237,0.08);">
+
+        <div class="kpi-icon">
+
+          <svg width="20"
+               height="20"
+               viewBox="0 0 24 24"
+               fill="none"
+               stroke="#7C3AED"
+               stroke-width="1.8">
+
+            <rect x="2" y="2" width="20" height="8" rx="2"/>
+            <rect x="2" y="14" width="20" height="8" rx="2"/>
+            <line x1="6" y1="6" x2="6.01" y2="6"/>
+            <line x1="6" y1="18" x2="6.01" y2="18"/>
+
+          </svg>
+
+        </div>
+
+        <div class="kpi-label">
+          Log Sources
+        </div>
+
+        <div
+          class="kpi-value"
+          id="kv-sources">
+          0
+        </div>
+
       </div>
-      <div class="kpi-card card-reveal" style="--kpi-color:#10B981;--kpi-bg:rgba(16,185,129,0.08);">
-        <div class="kpi-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#10B981" stroke-width="1.8"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></div>
-        <div class="kpi-label">Ensemble Triage Latency</div>
-        <div class="kpi-value" id="kv-response">—</div>
+
+
+      <div
+        class="kpi-card card-reveal"
+        style="--kpi-color:#10B981;
+               --kpi-bg:rgba(16,185,129,0.08);">
+
+        <div class="kpi-icon">
+
+          <svg width="20"
+               height="20"
+               viewBox="0 0 24 24"
+               fill="none"
+               stroke="#10B981"
+               stroke-width="1.8">
+
+            <circle cx="12" cy="12" r="10"/>
+            <polyline points="12 6 12 12 16 14"/>
+
+          </svg>
+
+        </div>
+
+        <div class="kpi-label">
+          Analysis Activity
+        </div>
+
+        <div
+          class="kpi-value"
+          id="kv-response">
+          0
+        </div>
+
       </div>
+
     </div>
 
-    <!-- Restored Interactive Analytical Graphs (1. Line Chart & 2. Pie / Donut Chart) -->
+
+    <!-- =====================================================
+         LOG VOLUME + SEVERITY
+         ===================================================== -->
+
     <div class="grid-2 mb-6">
+
       <div class="card chart-card card-reveal">
+
         <div class="chart-head">
-          <h4>Log Volume & Threat Trend</h4>
-          <span class="badge badge-primary" style="font-size:10px;">24H AREA SPLINE</span>
+
+          <h4>
+            Log Activity
+          </h4>
+
+          <span class="badge badge-primary"
+                style="font-size:10px;">
+            USER ACTIVITY
+          </span>
+
         </div>
-        <div class="chart-sub">Breakdown across severity levels and facility surges</div>
+
+        <div class="chart-sub">
+          Log volume generated from your current telemetry data.
+        </div>
+
         <div class="chart-container">
           <canvas id="lineChart"></canvas>
         </div>
+
       </div>
+
+
       <div class="card chart-card card-reveal">
+
         <div class="chart-head">
-          <h4>Severity & Threat Distribution</h4>
-          <span class="badge badge-neutral" style="font-size:10px;">PROPORTIONAL RATIO</span>
+
+          <h4>
+            Severity Distribution
+          </h4>
+
+          <span class="badge badge-neutral"
+                style="font-size:10px;">
+            CURRENT DATA
+          </span>
+
         </div>
-        <div class="chart-sub">Proportional severity breakdown of current telemetry window</div>
+
+        <div class="chart-sub">
+          Severity distribution of your available log records.
+        </div>
+
         <div class="chart-container">
           <canvas id="donutChart"></canvas>
         </div>
+
       </div>
+
     </div>
 
-    <!-- 3. Facility Comparison Bar Chart -->
-    <div class="card chart-card mb-6 card-reveal">
-      <div class="chart-head">
-        <h4>Top Threat Facilities & Ingestion Volumes</h4>
-        <span class="badge badge-neutral" style="font-size:10px;">VOLUME COMPARISON</span>
-      </div>
-      <div class="chart-sub">Comparative log count distribution across infrastructure endpoints</div>
-      <div class="chart-container" style="height:190px;">
-        <canvas id="barChart"></canvas>
-      </div>
-    </div>
 
-    <!-- 4. 24-Hour SOC Activity Heatmap Grid -->
-    <div class="heatmap-card card-reveal">
-      <div class="heatmap-head">
-        <div>
-          <h4 style="margin:0;font-size:var(--text-base);font-weight:700;color:var(--ink-0);">24-Hour Forensic Activity Heatmap</h4>
-          <div style="font-size:var(--text-xs);color:var(--ink-3);">Hourly distribution of security events & anomaly concentrations</div>
+    <!-- =====================================================
+         SOURCE VOLUME + ACTIVITY HEATMAP
+         ===================================================== -->
+
+    <div class="analytics-dual-grid mb-6">
+
+      <div class="card chart-card card-reveal">
+
+        <div class="chart-head">
+
+          <h4>
+            Log Sources
+          </h4>
+
+          <span class="badge badge-neutral"
+                style="font-size:10px;">
+            ACTUAL VOLUME
+          </span>
+
         </div>
-        <span class="badge badge-neutral" style="font-size:10px;">HOURLY DENSITY MATRIX</span>
+
+        <div class="chart-sub">
+          Number of logs received from each source.
+        </div>
+
+        <div class="chart-container chart-container-bar">
+          <canvas id="barChart"></canvas>
+        </div>
+
       </div>
-      <div class="heatmap-grid" id="heatmapGrid"></div>
+
+
+      <div class="heatmap-card card-reveal">
+
+        <div class="heatmap-head">
+
+          <div>
+
+            <h4 style="
+              margin:0;
+              font-size:var(--text-base);
+              font-weight:700;
+              color:var(--ink-0);
+            ">
+              Activity Heatmap
+            </h4>
+
+            <div style="
+              font-size:var(--text-xs);
+              color:var(--ink-3);
+            ">
+              Hourly activity based on your available log data.
+            </div>
+
+          </div>
+
+          <span
+            class="badge badge-neutral"
+            style="font-size:10px;">
+            ACTIVITY
+          </span>
+
+        </div>
+
+        <div
+          class="heatmap-grid"
+          id="heatmapGrid">
+        </div>
+
+      </div>
+
     </div>
 
-    <!-- ML Autonomous Defense Pipeline Ribbon -->
-    <div class="ml-ribbon mb-6" id="mlRibbon">
+
+    <!-- =====================================================
+         ML ANALYSIS SUMMARY
+         ===================================================== -->
+
+    <div
+      class="ml-ribbon mb-6"
+      id="mlRibbon">
+
       <div>
-        <div class="ml-ribbon-label">Multi-Model Ensemble Consensus</div>
-        <div class="ml-ribbon-score" id="mlScore">—</div>
-        <div class="ml-ribbon-algo" id="mlBest">Evaluating models…</div>
+
+        <div class="ml-ribbon-label">
+          Analysis Summary
+        </div>
+
+        <div
+          class="ml-ribbon-score"
+          id="mlScore">
+          —
+        </div>
+
+        <div
+          class="ml-ribbon-algo"
+          id="mlBest">
+          No analysis available
+        </div>
+
       </div>
-      <div class="ml-algo-bars" id="mlAlgoBars"></div>
+
+
+      <div
+        class="ml-algo-bars"
+        id="mlAlgoBars">
+      </div>
+
+
       <div>
-        <span class="badge" id="mlRisk" style="font-size:var(--text-sm);padding:8px 18px;font-weight:700;">CALCULATING…</span>
+
+        <span
+          class="badge"
+          id="mlRisk"
+          style="
+            font-size:var(--text-sm);
+            padding:8px 18px;
+            font-weight:700;
+          ">
+          NO DATA
+        </span>
+
       </div>
+
     </div>
 
-    <!-- Quick Operations Launchpad -->
+
+    <!-- =====================================================
+         QUICK OPERATIONS
+         ===================================================== -->
+
     <div class="ops-grid">
-      <a href="log-explorer.html" class="op-card">
+
+      <a href="log-explorer.html"
+         class="op-card">
+
         <div>
+
           <div class="op-icon">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+
+            <svg width="18"
+                 height="18"
+                 viewBox="0 0 24 24"
+                 fill="none"
+                 stroke="currentColor"
+                 stroke-width="2">
+
+              <circle cx="11" cy="11" r="8"/>
+              <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+
+            </svg>
+
           </div>
-          <div class="op-title">Log Explorer</div>
-          <div class="op-desc">Ingest multi-format server logs directly into PostgreSQL.</div>
+
+          <div class="op-title">
+            Ingest Logs
+          </div>
+
+          <div class="op-desc">
+            Upload and process your log files for analysis.
+          </div>
+
         </div>
+
       </a>
-      <a href="ml-analysis.html" class="op-card">
+
+
+      <a href="ml-analysis.html"
+         class="op-card">
+
         <div>
+
           <div class="op-icon">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 2 7 12 12 22 7 12 2"/><polyline points="2 17 12 22 22 17"/><polyline points="2 12 12 17 22 12"/></svg>
+
+            <svg width="18"
+                 height="18"
+                 viewBox="0 0 24 24"
+                 fill="none"
+                 stroke="currentColor"
+                 stroke-width="2">
+
+              <polygon points="12 2 2 7 12 12 22 7 12 2"/>
+              <polyline points="2 17 12 22 22 17"/>
+              <polyline points="2 12 12 17 22 12"/>
+
+            </svg>
+
           </div>
-          <div class="op-title">ML Ensemble Scan</div>
-          <div class="op-desc">Execute 5-model Scikit-Learn outlier and threat triage.</div>
+
+          <div class="op-title">
+            Run Analysis
+          </div>
+
+          <div class="op-desc">
+            Analyze your ingested logs for anomalies and threats.
+          </div>
+
         </div>
+
       </a>
-      <a href="live-monitor.html" class="op-card">
+
+
+      <a href="live-monitor.html"
+         class="op-card">
+
         <div>
+
           <div class="op-icon">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+
+            <svg width="18"
+                 height="18"
+                 viewBox="0 0 24 24"
+                 fill="none"
+                 stroke="currentColor"
+                 stroke-width="2">
+
+              <rect x="2" y="3" width="20" height="14" rx="2"/>
+              <line x1="8" y1="21" x2="16" y2="21"/>
+              <line x1="12" y1="17" x2="12" y2="21"/>
+
+            </svg>
+
           </div>
-          <div class="op-title">Live Telemetry</div>
-          <div class="op-desc">Real-time socket event streaming and attack vector monitoring.</div>
+
+          <div class="op-title">
+            Live Monitor
+          </div>
+
+          <div class="op-desc">
+            Monitor your latest security events.
+          </div>
+
         </div>
+
       </a>
-      <a href="mitre-tracker.html" class="op-card">
+
+
+      <a href="mitre-tracker.html"
+         class="op-card">
+
         <div>
+
           <div class="op-icon">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+
+            <svg width="18"
+                 height="18"
+                 viewBox="0 0 24 24"
+                 fill="none"
+                 stroke="currentColor"
+                 stroke-width="2">
+
+              <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+
+            </svg>
+
           </div>
-          <div class="op-title">ATT&CK Tracker</div>
-          <div class="op-desc">Automated adversary kill chain correlation & remediation playbooks.</div>
+
+          <div class="op-title">
+            ATT&CK Tracker
+          </div>
+
+          <div class="op-desc">
+            Review techniques identified from your analysis.
+          </div>
+
         </div>
+
       </a>
+
     </div>
 
-    <!-- Live Incident Triage Queue -->
+
+    <!-- =====================================================
+         INCIDENTS
+         ===================================================== -->
+
     <div class="card mb-6">
-      <div style="padding:var(--sp-5) var(--sp-5) 0;display:flex;align-items:center;justify-content:space-between;">
-        <div class="section-label" style="margin:0;">Live Incident Triage Queue</div>
-        <span class="badge badge-neutral" style="font-size:10px;">AUTO-TRIAGED</span>
+
+      <div style="
+        padding:var(--sp-5) var(--sp-5) 0;
+        display:flex;
+        align-items:center;
+        justify-content:space-between;
+      ">
+
+        <div class="section-label"
+             style="margin:0;">
+          Recent Security Events
+        </div>
+
+        <span
+          class="badge badge-neutral"
+          style="font-size:10px;">
+          USER DATA
+        </span>
+
       </div>
+
       <div class="table-wrap">
+
         <table class="table">
+
           <thead>
+
             <tr>
               <th>Time</th>
-              <th>Threat Level</th>
+              <th>Severity</th>
               <th>Source</th>
-              <th>Event Message Payload</th>
-              <th>Anomaly Confidence</th>
+              <th>Event Message</th>
+              <th>Anomaly Score</th>
               <th>Action</th>
             </tr>
+
           </thead>
+
           <tbody id="incidentTable"></tbody>
+
         </table>
+
       </div>
+
     </div>
 
-    <!-- Active Investigation Cases -->
+
+    <!-- =====================================================
+         INVESTIGATION CASES
+         ===================================================== -->
+
     <div class="card mb-6">
-      <div style="padding:var(--sp-5) var(--sp-5) 0;display:flex;align-items:center;justify-content:space-between;">
-        <div class="section-label" style="margin:0;">Active SOC Investigation Dossiers</div>
-        <a href="reports.html" class="btn btn-sm btn-ghost">View All Reports &rarr;</a>
+
+      <div style="
+        padding:var(--sp-5) var(--sp-5) 0;
+        display:flex;
+        align-items:center;
+        justify-content:space-between;
+      ">
+
+        <div class="section-label"
+             style="margin:0;">
+          Investigation Cases
+        </div>
+
+        <a
+          href="reports.html"
+          class="btn btn-sm btn-ghost">
+          View Reports →
+        </a>
+
       </div>
+
       <div class="table-wrap">
+
         <table class="table">
+
           <thead>
+
             <tr>
               <th>Case ID</th>
-              <th>Investigation Title</th>
+              <th>Title</th>
               <th>Severity</th>
               <th>Status</th>
               <th>Assignee</th>
               <th>Last Active</th>
             </tr>
+
           </thead>
+
           <tbody id="caseTable"></tbody>
+
         </table>
+
       </div>
+
     </div>
 
   </main>
+
 </div>
 
+
 <div id="toast-container"></div>
+
+
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+
 <script src="assets/js/api.js"></script>
 <script src="assets/js/auth-guard.js"></script>
 <script src="assets/js/navbar.js"></script>
 <script src="assets/js/dashboard.js"></script>
+
 <script>
 window.addEventListener('DOMContentLoaded', () => {
   initDashboard();
 });
 </script>
+
 </body>
 </html>
