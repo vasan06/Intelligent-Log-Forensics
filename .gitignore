@@ -12,3 +12,6 @@ __pycache__/
 
 API_TESTING/*.postman_collection.json
 .env
+
+# Antigravity local agent configuration
+.agents/
