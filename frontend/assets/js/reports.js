@@ -24,7 +24,44 @@ async function loadActivities() {
   }
 }
 
-function getSelectedActivityPayload() {
+function getReportPlainLanguageExplanation(msg, sev, src, ip) {
+  const m = String(msg || '').toLowerCase();
+  if (m.includes('select') || m.includes('union') || m.includes('drop table') || m.includes('script') || m.includes('1=1') || m.includes('jndi:')) {
+    return {
+      summary: `Web application injection attempt detected on ${src}${ip ? ` from ${ip}` : ''}.`,
+      impact: 'Adversary targeting backend database execution and session compromise.',
+      action: 'Deploy WAF signature blocking and audit parameter prepared statements.'
+    };
+  }
+  if (m.includes('failed password') || m.includes('authentication') || m.includes('invalid user') || m.includes('login failed') || m.includes('brute force')) {
+    return {
+      summary: `Authentication failure detected on ${src}${ip ? ` from ${ip}` : ''}.`,
+      impact: 'Repeated authentication rejections indicating password spraying or brute force.',
+      action: 'Rate-limit IP at perimeter firewall, enforce SSH key authentication, and audit account lockouts.'
+    };
+  }
+  if (m.includes('sudo') || m.includes('root') || m.includes('privilege') || m.includes('privesc')) {
+    return {
+      summary: 'Administrative privilege elevation event detected.',
+      impact: 'Root-level commands grant full access to security policies and kernel subsystems.',
+      action: 'Audit session operator against authorized change requests and inspect command audit trail.'
+    };
+  }
+  if (m.includes('ransom') || m.includes('encrypt') || m.includes('shadow copy')) {
+    return {
+      summary: 'Malicious file encryption or ransomware signature detected.',
+      impact: 'Imminent threat of host extortion and irreversible data destruction.',
+      action: 'Isolate host from local network immediately and initiate offline snapshot restoration.'
+    };
+  }
+  return {
+    summary: `${sev} security event flagged by ${src.toUpperCase()} telemetry.`,
+    impact: 'Deviation from expected baseline requiring forensic triage.',
+    action: 'Review correlated telemetry and verify service configuration integrity.'
+  };
+}
+
+function getSelectedActivityParams() {
   const sel = document.getElementById('activitySelect');
   const val = sel.value;
   if (val === 'latest') return { type: 'overall' };
@@ -35,24 +72,33 @@ function getSelectedActivityPayload() {
   };
 }
 
-async function generatePreview() {
+function getSelectedActivityPayload() {
+  return getSelectedActivityParams();
+}
+
+async function generatePreview(paramsOverride = null) {
   const btn = document.getElementById('btnPreview');
+  const originalLabel = btn.innerHTML;
   btn.disabled = true;
   btn.textContent = 'Analyzing…';
 
-  const payload = getSelectedActivityPayload();
-  const res = await Api.reportPreview(payload);
+  try {
+    const params = paramsOverride || getSelectedActivityParams();
+    const res = await Api.reportPreview(params);
+    if (!res.ok || !res.data?.success) {
+      toast(res.data?.message || 'Failed to generate report preview', 'error');
+      return;
+    }
 
-  btn.disabled = false;
-  btn.innerHTML = `<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg> Preview Report`;
-
-  if (!res.ok || !res.data?.success) {
-    toast('Failed to generate report preview', 'error');
-    return;
+    renderPreview(res.data);
+    toast('Report preview updated', 'success');
+  } catch (error) {
+    console.error('Report preview failed:', error);
+    toast('Report preview failed. Check the server response and try again.', 'error');
+  } finally {
+    btn.disabled = false;
+    btn.innerHTML = originalLabel;
   }
-
-  renderPreview(res.data);
-  toast('Report preview updated', 'success');
 }
 
 function renderPreview(data) {
@@ -184,17 +230,29 @@ function renderPreview(data) {
         </div>
         <div class="table-wrap">
           <table class="table">
-            <thead><tr><th>Time</th><th>Severity</th><th>Source</th><th>IP</th><th>Message Payload</th></tr></thead>
+            <thead><tr><th>Time</th><th>Severity</th><th>Source</th><th>IP</th><th>Forensic Analysis &amp; Plain-Language Explanation</th></tr></thead>
             <tbody>
-              ${r.flagged_entries.map(x => `
+              ${r.flagged_entries.map(x => {
+                const expl = getReportPlainLanguageExplanation(x.message, x.severity, x.source, x.ip);
+                return `
                 <tr>
-                  <td class="t-mono-xs text-muted">${fmtTs(x.timestamp)}</td>
+                  <td class="t-mono-xs text-muted" style="white-space:nowrap;">${fmtTs(x.timestamp)}</td>
                   <td>${sevBadge(x.severity)}</td>
                   <td style="font-size:var(--text-sm);font-weight:600;">${x.source}</td>
-                  <td class="t-mono-xs text-muted">${x.ip}</td>
-                  <td style="font-size:var(--text-sm);">${x.message}</td>
-                </tr>
-              `).join('')}
+                  <td class="t-mono-xs text-muted">${x.ip || '-'}</td>
+                  <td>
+                    <div class="plain-lang-card">
+                      <div class="plain-lang-row"><span class="plain-lang-tag what">What happened</span> <span>${expl.summary}</span></div>
+                      <div class="plain-lang-row"><span class="plain-lang-tag why">Why it matters</span> <span>${expl.impact}</span></div>
+                      <div class="plain-lang-row"><span class="plain-lang-tag action">What to do</span> <span>${expl.action}</span></div>
+                    </div>
+                    <details class="tech-details" style="margin-top:6px;">
+                      <summary class="tech-details-toggle">Technical Details</summary>
+                      <pre class="tech-details-content">${x.message}</pre>
+                    </details>
+                  </td>
+                </tr>`;
+              }).join('')}
             </tbody>
           </table>
         </div>
@@ -231,49 +289,75 @@ function renderPreview(data) {
   c.scrollIntoView({ behavior: 'smooth', block: 'start' });
 }
 
+function downloadPdfBlob(blob, filename) {
+  const url = window.URL.createObjectURL(blob);
+  const anchor = document.createElement('a');
+  anchor.href = url;
+  anchor.download = filename;
+  anchor.style.display = 'none';
+  document.body.appendChild(anchor);
+  anchor.click();
+  anchor.remove();
+  window.setTimeout(() => window.URL.revokeObjectURL(url), 1000);
+}
+
+async function getBlobErrorMessage(blob) {
+  if (!blob || !blob.type.includes('json')) return '';
+  try {
+    const data = JSON.parse(await blob.text());
+    return data.message || data.error || '';
+  } catch (error) {
+    console.warn('Could not read PDF error response:', error);
+    return '';
+  }
+}
+
 async function downloadPdf() {
   const btn = document.getElementById('btnDownload');
+  const originalLabel = btn.innerHTML;
   btn.disabled = true;
   btn.textContent = 'Generating PDF…';
 
-  const payload = getSelectedActivityPayload();
-  const res = await Api.generateReport(payload);
+  try {
+    const res = await Api.generateReport(getSelectedActivityPayload());
+    if (!res.ok || !res.blob || res.blob.size === 0) {
+      const detail = await getBlobErrorMessage(res.blob);
+      throw new Error(detail || `PDF generation failed${res.status ? ` (HTTP ${res.status})` : ''}.`);
+    }
+    if (res.blob.type && !res.blob.type.includes('pdf')) {
+      const detail = await getBlobErrorMessage(res.blob);
+      throw new Error(detail || 'The server response was not a PDF file.');
+    }
 
-  btn.disabled = false;
-  btn.innerHTML = `<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg> Download PDF`;
-
-  if (!res.ok || !res.blob) {
-    toast('PDF generation failed', 'error');
-    return;
+    downloadPdfBlob(res.blob, `ILF_Forensic_Report_${Date.now()}.pdf`);
+    toast('PDF report saved and archived in PostgreSQL', 'success');
+    await loadHistory();
+  } catch (error) {
+    console.error('PDF report generation failed:', error);
+    toast(error.message || 'PDF generation failed. Please try again.', 'error');
+  } finally {
+    btn.disabled = false;
+    btn.innerHTML = originalLabel;
   }
-
-  const url = window.URL.createObjectURL(res.blob);
-  const a = document.createElement('a');
-  a.href = url;
-  a.download = `ILF_Forensic_Report_${Date.now()}.pdf`;
-  document.body.appendChild(a);
-  a.click();
-  a.remove();
-  window.URL.revokeObjectURL(url);
-
-  toast('PDF report saved and archived in PostgreSQL', 'success');
-  loadHistory();
 }
 
 async function downloadExistingReport(id) {
-  const res = await Api.downloadReport(id);
-  if (!res.ok || !res.blob) {
-    toast('Failed to download archived report', 'error');
-    return;
+  try {
+    const res = await Api.downloadReport(id);
+    if (!res.ok || !res.blob || res.blob.size === 0) {
+      const detail = await getBlobErrorMessage(res.blob);
+      throw new Error(detail || `Failed to download archived report${res.status ? ` (HTTP ${res.status})` : ''}.`);
+    }
+    if (res.blob.type && !res.blob.type.includes('pdf')) {
+      const detail = await getBlobErrorMessage(res.blob);
+      throw new Error(detail || 'The server response was not a PDF file.');
+    }
+
+    downloadPdfBlob(res.blob, `ILF_Report_${id.slice(0, 8)}.pdf`);
+  } catch (error) {
+    console.error('Archived PDF download failed:', error);
+    toast(error.message || 'Failed to download archived report.', 'error');
   }
-  const url = window.URL.createObjectURL(res.blob);
-  const a = document.createElement('a');
-  a.href = url;
-  a.download = `ILF_Report_${id.slice(0, 8)}.pdf`;
-  document.body.appendChild(a);
-  a.click();
-  a.remove();
-  window.URL.revokeObjectURL(url);
 }
 
 async function loadHistory() {
@@ -300,6 +384,21 @@ async function loadHistory() {
 }
 
 window.addEventListener('DOMContentLoaded', () => {
-  loadActivities();
+  const params = new URLSearchParams(window.location.search);
+  const activityId = params.get('activity_id') || params.get('analysis_id');
+  const activityType = params.get('activity_type') || 'ml_run';
+
+  loadActivities().then(() => {
+    if (!activityId || params.get('source') !== 'ml') return;
+
+    const selector = document.getElementById('activitySelect');
+    if (selector && Array.from(selector.options).some(option => option.value === activityId)) {
+      selector.value = activityId;
+    }
+    return generatePreview({ activity_id: activityId, activity_type: activityType });
+  }).catch(error => {
+    console.error('Failed to initialize report activities:', error);
+    toast('Could not load report activities.', 'error');
+  });
   loadHistory();
 });

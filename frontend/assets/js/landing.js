@@ -455,6 +455,23 @@ document.querySelectorAll("#features .card-reveal, #how .card-reveal")
   .forEach(card=>revealObserver.observe(card));
 
 /* =========================================================
+   AUTHENTICATED FEATURE LINKS
+   ========================================================= */
+document.querySelectorAll(".landing-app-card").forEach(card => {
+  card.addEventListener("click", event => {
+    if (typeof Api !== "undefined") Api.migrateLegacyToken();
+    const hasSession = typeof Api !== "undefined" && (Api.accessToken() || Api.refreshToken());
+    if (!hasSession) {
+      event.preventDefault();
+      const destination = new URL(card.href, window.location.origin);
+      const loginUrl = new URL("/login", window.location.origin);
+      loginUrl.searchParams.set("next", destination.pathname + destination.search + destination.hash);
+      window.location.assign(loginUrl.pathname + loginUrl.search);
+    }
+  });
+});
+
+/* =========================================================
    SCROLL SPY FOR NAVBAR
    ========================================================= */
 const navLinks = document.querySelectorAll('.land-nav-link');

@@ -9,6 +9,7 @@
 let lineChartInst = null;
 let donutChartInst = null;
 let barChartInst = null;
+let dashboardLoadInFlight = false;
 
 const CHART_DEFAULTS = {
   responsive: true,
@@ -47,26 +48,40 @@ async function initDashboard() {
    LOAD DASHBOARD
    ========================================================= */
 
-async function loadDash() {
+async function loadDash(isSync = false) {
+  if (dashboardLoadInFlight) return;
+  dashboardLoadInFlight = true;
+
+  const fTitle = document.getElementById('fTitle')?.value.trim() || '';
+  const activity = document.getElementById('fActivity');
+  const activityId = activity?.value || 'latest';
+  const activityType = activity?.selectedOptions?.[0]?.dataset.type || 'baseline';
+  const fLogType = document.getElementById('fLogType')?.value || 'all';
   const fSource = document.getElementById('fSource')?.value || 'all';
   const fSev = document.getElementById('fSev')?.value || 'all';
-  const fStartDate = document.getElementById('fStartDate')?.value || '';
-  const fStartTime = document.getElementById('fStartTime')?.value || '';
-  const fEndDate = document.getElementById('fEndDate')?.value || '';
-  const fEndTime = document.getElementById('fEndTime')?.value || '';
 
   const params = {};
+  if (fTitle) params.title = fTitle;
+  if (activityId && activityId !== 'latest' && activityType !== 'all') {
+    params.investigation_id = activityId;
+    params.investigation_type = activityType;
+  } else if (activityType === 'all') {
+    params.investigation_type = 'all';
+  }
+  if (fLogType && fLogType !== 'all') params.activity_type = fLogType;
   if (fSource && fSource !== 'all') params.source = fSource;
   if (fSev && fSev !== 'all') params.severity = fSev;
-  if (fStartDate) params.start_date = fStartDate;
-  if (fStartTime) params.start_time = fStartTime;
-  if (fEndDate) params.end_date = fEndDate;
-  if (fEndTime) params.end_time = fEndTime;
+
+  const syncBtn = document.getElementById('syncDashBtn');
+  if (syncBtn && isSync) {
+    syncBtn.classList.add('loading');
+    syncBtn.disabled = true;
+  }
 
   try {
     const res = await Api.dashStats(params);
 
-    if (!res || !res.ok) {
+    if (!res || !res.ok || res.data?.success === false) {
       console.error('Dashboard API error:', res);
       renderEmptyDashboard();
       return;
@@ -78,83 +93,28 @@ async function loadDash() {
   } catch (err) {
     console.error('Dashboard loading failed:', err);
     renderEmptyDashboard();
+  } finally {
+    if (syncBtn && isSync) {
+      syncBtn.classList.remove('loading');
+      syncBtn.disabled = false;
+    }
+    dashboardLoadInFlight = false;
   }
+
 }
-
-function onTimeRangeChange() {
-  const tr = document.getElementById('fTimeRange')?.value || 'all';
-  const wrap = document.getElementById('customDateWrap');
-  const now = new Date();
-
-  const toYMD = d => {
-    const pad = n => String(n).padStart(2, '0');
-    return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
-  };
-  const toHM = d => {
-    const pad = n => String(n).padStart(2, '0');
-    return `${pad(d.getHours())}:${pad(d.getMinutes())}`;
-  };
-
-  if (tr === 'custom') {
-    if (wrap) wrap.style.display = 'inline-flex';
-    return;
-  }
-
-  if (wrap) wrap.style.display = 'none';
-
-  const startEl = document.getElementById('fStartDate');
-  const startTimeEl = document.getElementById('fStartTime');
-  const endEl = document.getElementById('fEndDate');
-  const endTimeEl = document.getElementById('fEndTime');
-
-  if (tr === 'today') {
-    const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 0, 0, 0);
-    if (startEl) startEl.value = toYMD(startOfToday);
-    if (startTimeEl) startTimeEl.value = '00:00';
-    if (endEl) endEl.value = toYMD(now);
-    if (endTimeEl) endTimeEl.value = toHM(now);
-  } else if (tr === '24h') {
-    const d24 = new Date(now.getTime() - 24 * 3600 * 1000);
-    if (startEl) startEl.value = toYMD(d24);
-    if (startTimeEl) startTimeEl.value = toHM(d24);
-    if (endEl) endEl.value = toYMD(now);
-    if (endTimeEl) endTimeEl.value = toHM(now);
-  } else if (tr === '7d') {
-    const d7 = new Date(now.getTime() - 7 * 86400 * 1000);
-    if (startEl) startEl.value = toYMD(d7);
-    if (startTimeEl) startTimeEl.value = '00:00';
-    if (endEl) endEl.value = toYMD(now);
-    if (endTimeEl) endTimeEl.value = toHM(now);
-  } else if (tr === '30d') {
-    const d30 = new Date(now.getTime() - 30 * 86400 * 1000);
-    if (startEl) startEl.value = toYMD(d30);
-    if (startTimeEl) startTimeEl.value = '00:00';
-    if (endEl) endEl.value = toYMD(now);
-    if (endTimeEl) endTimeEl.value = toHM(now);
-  } else { // 'all'
-    if (startEl) startEl.value = '';
-    if (startTimeEl) startTimeEl.value = '';
-    if (endEl) endEl.value = '';
-    if (endTimeEl) endTimeEl.value = '';
-  }
-
-  loadDash();
-}
-
-window.onTimeRangeChange = onTimeRangeChange;
 
 function resetDashFilters() {
-  const tr = document.getElementById('fTimeRange');
-  if (tr) tr.value = 'all';
-  const wrap = document.getElementById('customDateWrap');
-  if (wrap) wrap.style.display = 'none';
+  const fTitle = document.getElementById('fTitle');
+  if (fTitle) fTitle.value = '';
+  const activity = document.getElementById('fActivity');
+  if (activity) activity.value = 'all';
+  const fLogType = document.getElementById('fLogType');
+  if (fLogType) fLogType.value = 'all';
+  const fSource = document.getElementById('fSource');
+  if (fSource) fSource.value = 'all';
+  const fSev = document.getElementById('fSev');
+  if (fSev) fSev.value = 'all';
 
-  if (document.getElementById('fStartDate')) document.getElementById('fStartDate').value = '';
-  if (document.getElementById('fStartTime')) document.getElementById('fStartTime').value = '';
-  if (document.getElementById('fEndDate')) document.getElementById('fEndDate').value = '';
-  if (document.getElementById('fEndTime')) document.getElementById('fEndTime').value = '';
-  if (document.getElementById('fSource')) document.getElementById('fSource').value = 'all';
-  if (document.getElementById('fSev')) document.getElementById('fSev').value = 'all';
   loadDash();
 }
 
@@ -211,8 +171,14 @@ function normalizeDashboardResponse(raw) {
       source.processing_latency ??
       null,
 
+    analysis_activity: source.analysis_activity || { count: 0 },
+    investigation_activities: Array.isArray(source.investigation_activities)
+      ? source.investigation_activities
+      : [],
+
     trend_24h:
       normalizeTrend(
+        source.trend_window ??
         source.trend_24h ??
         source.log_trend ??
         source.hourly_trend
@@ -433,6 +399,16 @@ function normalizeDistribution(value) {
     };
   }
 
+  if (typeof value === 'object' && value !== null && !Array.isArray(value)) {
+    const keys = Object.keys(value).filter(k => k !== 'labels' && k !== 'values');
+    if (keys.length > 0) {
+      return {
+        labels: keys,
+        values: keys.map(k => Number(value[k]) || 0)
+      };
+    }
+  }
+
   if (Array.isArray(value)) {
 
     return {
@@ -469,6 +445,7 @@ function normalizeDistribution(value) {
    ========================================================= */
 
 function applyDashData(d) {
+  populateInvestigationFilter(d.investigation_activities);
 
   setText(
     'kv-logs',
@@ -485,10 +462,8 @@ function applyDashData(d) {
     Number(d.unique_sources || 0).toLocaleString()
   );
 
-  setText(
-    'kv-response',
-    formatResponseTime(d.response_time)
-  );
+  const analysisCount = Number(d.analysis_activity?.count || 0);
+  setText('kv-analyses', analysisCount.toLocaleString());
 
   renderCharts(d);
 
@@ -511,7 +486,7 @@ function renderEmptyDashboard() {
   setText('kv-logs', '0');
   setText('kv-threats', '0');
   setText('kv-sources', '0');
-  setText('kv-response', '—');
+  setText('kv-analyses', '0');
 
   renderCharts({
     trend_24h: {
@@ -520,8 +495,8 @@ function renderEmptyDashboard() {
     },
 
     severity_dist: {
-      labels: [],
-      values: []
+      labels: ['INFO', 'WARN', 'ERROR', 'CRITICAL', 'DEBUG'],
+      values: [0, 0, 0, 0, 0]
     },
 
     top_sources: {
@@ -599,7 +574,21 @@ function renderLineChart(tr) {
 
           pointRadius: 3,
 
-          pointHoverRadius: 6
+          pointHoverRadius: 6,
+
+          pointBackgroundColor: context =>
+            tr?.labels?.length === 17 &&
+            context.dataIndex === 8 &&
+            Number(context.raw) > 0
+              ? '#F97316'
+              : '#2563EB',
+
+          pointBorderColor: context =>
+            tr?.labels?.length === 17 &&
+            context.dataIndex === 8 &&
+            Number(context.raw) > 0
+              ? '#F97316'
+              : '#2563EB'
         }
       ]
     },
@@ -611,7 +600,26 @@ function renderLineChart(tr) {
       plugins: {
         legend: {
           display: false
+        },
+        tooltip: {
+          mode: 'index',
+          intersect: false,
+          callbacks: {
+            title: () => 'Log activity',
+            label: context => `${Number(context.parsed.y || 0).toLocaleString()} logs`,
+            footer: items => {
+              const index = items[0]?.dataIndex;
+              const start = tr?.labels?.[index];
+              const end = tr?.labels?.[index + 1];
+              return start && end ? `Interval: ${start} - ${end}` : '';
+            }
+          }
         }
+      },
+
+      interaction: {
+        mode: 'index',
+        intersect: false
       },
 
       scales: {
@@ -622,8 +630,17 @@ function renderLineChart(tr) {
           },
 
           ticks: {
+            autoSkip: false,
+            maxRotation: 0,
+            minRotation: 0,
+            callback: (value, index, ticks) => {
+              if (tr?.labels?.length === 17 && index === 8) return 'Now';
+              return index % 2 === 0 || index === ticks.length - 1
+                ? tr?.labels?.[index] || ''
+                : '';
+            },
             font: {
-              size: 10
+              size: 9
             }
           }
         },
@@ -666,8 +683,45 @@ function renderDonutChart(sv) {
     donutChartInst = null;
   }
 
-  const labels = sv?.labels || [];
-  const values = sv?.values || [];
+  const ALL_LEVELS = ['INFO', 'WARN', 'ERROR', 'CRITICAL', 'DEBUG'];
+  const SEVERITY_COLORS = {
+    INFO: '#2563EB',
+    WARN: '#F59E0B',
+    WARNING: '#F59E0B',
+    ERROR: '#EF4444',
+    CRITICAL: '#DC2626',
+    DEBUG: '#8B5CF6'
+  };
+  const DEFAULT_COLORS = ['#2563EB', '#F59E0B', '#EF4444', '#DC2626', '#8B5CF6', '#10B981', '#06B6D4'];
+
+  let rawLabels = sv?.labels && sv.labels.length > 0 ? [...sv.labels] : [...ALL_LEVELS];
+  let rawValues = sv?.values && sv.values.length > 0 ? [...sv.values] : Array(rawLabels.length).fill(0);
+
+  const existingMap = {};
+  rawLabels.forEach((lbl, idx) => {
+    existingMap[String(lbl).toUpperCase()] = Number(rawValues[idx]) || 0;
+  });
+
+  // Ensure all 5 levels are represented in order
+  const labels = [];
+  const values = [];
+  ALL_LEVELS.forEach(lvl => {
+    labels.push(lvl);
+    values.push(existingMap[lvl] || 0);
+  });
+  // Append any extra labels not in standard 5
+  rawLabels.forEach(lbl => {
+    const upper = String(lbl).toUpperCase();
+    if (!ALL_LEVELS.includes(upper)) {
+      labels.push(lbl);
+      values.push(existingMap[upper] || 0);
+    }
+  });
+
+  const bgColors = labels.map((lbl, idx) => {
+    const key = String(lbl).toUpperCase().trim();
+    return SEVERITY_COLORS[key] || DEFAULT_COLORS[idx % DEFAULT_COLORS.length];
+  });
 
   donutChartInst = new Chart(canvas, {
 
@@ -681,13 +735,7 @@ function renderDonutChart(sv) {
         {
           data: values,
 
-          backgroundColor: [
-            '#2563EB',
-            '#F59E0B',
-            '#EF4444',
-            '#7C3AED',
-            '#10B981'
-          ],
+          backgroundColor: bgColors,
 
           borderWidth: 2,
 
@@ -708,7 +756,7 @@ function renderDonutChart(sv) {
 
         legend: {
 
-          position: 'right',
+          position: canvas.parentElement.clientWidth < 430 ? 'bottom' : 'right',
 
           labels: {
             boxWidth: 12,
@@ -748,6 +796,9 @@ function renderDonutChart(sv) {
             }
           }
         }
+      },
+      onResize(chart, size) {
+        chart.options.plugins.legend.position = size.width < 430 ? 'bottom' : 'right';
       }
     }
   });
@@ -859,25 +910,10 @@ function renderActivityHeatmap(data) {
     return;
   }
 
- const hours =
-  Array.from(
-    { length: 24 },
-    (_, i) => {
-
-      const suffix =
-        i >= 12 ? 'PM' : 'AM';
-
-      const hour12 =
-        i % 12 || 12;
-
-      return `${hour12} ${suffix}`;
-    }
-  );
-
-  const values =
+  const items =
     normalizeHeatmap(data);
 
-  if (!values.length) {
+  if (!items.length) {
 
     container.innerHTML = `
       <div style="
@@ -895,19 +931,15 @@ function renderActivityHeatmap(data) {
   }
 
   const max =
-    Math.max(...values, 1);
+    Math.max(...items.map(it => it.count), 1);
 
   container.innerHTML =
-    hours.map((hour, index) => {
+    items.map((item, index) => {
 
-      const count =
-        Number(values[index] || 0);
-
-      const ratio =
-        count / max;
+      const count = item.count;
+      const ratio = count / max;
 
       let level = 0;
-
       if (count > 0 && ratio <= 0.2) {
         level = 1;
       } else if (ratio <= 0.4) {
@@ -920,16 +952,26 @@ function renderActivityHeatmap(data) {
         level = 5;
       }
 
+      const column = index % 4;
+      const alignClass = column === 0 ? 'tooltip-align-left' : (column === 3 ? 'tooltip-align-right' : '');
+      const shortLabel = formatHeatmapAxisLabel(item.hour);
+
       return `
         <div class="heatmap-col">
 
           <div
             class="heatmap-cell heat-${level}"
-            title="${hour} — ${count.toLocaleString()} events"
-          ></div>
+            tabindex="0"
+          >
+            <div class="heatmap-tooltip ${alignClass}">
+              <div class="tooltip-bucket">${escapeHtml(item.hour)}</div>
+              <div class="tooltip-count">${count.toLocaleString()} ${count === 1 ? 'event' : 'events'}</div>
+              ${count ? `<div class="tooltip-top">${escapeHtml(item.topEvent)}</div>` : ''}
+            </div>
+          </div>
 
           <span class="heatmap-label">
-            ${hour}
+            ${escapeHtml(shortLabel)}
           </span>
 
         </div>
@@ -940,128 +982,89 @@ function renderActivityHeatmap(data) {
 
 function normalizeHeatmap(data) {
 
-  if (!data) {
-    return [];
-  }
+  const defaultHours = Array.from({ length: 24 }, (_, index) => {
+    const date = new Date();
+    date.setMinutes(0, 0, 0);
+    date.setHours(date.getHours() - (23 - index));
+    return new Intl.DateTimeFormat('en-IN', {
+      timeZone: 'Asia/Kolkata',
+      day: '2-digit',
+      month: 'short',
+      hour: 'numeric',
+      hour12: true
+    }).format(date);
+  });
 
-  /*
-   * Case 1:
-   *
-   * Backend directly returns:
-   *
-   * [12, 0, 4, 8, ...]
-   */
+  let hourlyItems;
 
-  if (Array.isArray(data)) {
-
-    /*
-     * Already a 24-hour array.
-     */
-    if (
-      data.length === 24 &&
-      data.every(v =>
-        typeof v === 'number' ||
-        !Number.isNaN(Number(v))
-      )
-    ) {
-      return data.map(
-        v => Number(v) || 0
-      );
-    }
-
-    /*
-     * Backend returns hourly objects.
-     */
-    const result = Array(24).fill(0);
-
-    data.forEach(item => {
-
-      let hour = null;
-
-      /*
-       * If backend gives an actual timestamp,
-       * convert it to IST first.
-       */
-      const timestamp =
-        item.timestamp ??
-        item.datetime ??
-        item.time ??
-        item.created_at ??
-        item.createdAt;
-
-      if (timestamp) {
-
-        const date =
-          new Date(timestamp);
-
-        if (!Number.isNaN(date.getTime())) {
-
-          const parts =
-            new Intl.DateTimeFormat('en-IN', {
-              timeZone: 'Asia/Kolkata',
-              hour: 'numeric',
-              hour12: false
-            }).formatToParts(date);
-
-          const hourPart =
-            parts.find(
-              p => p.type === 'hour'
-            );
-
-          if (hourPart) {
-            hour = Number(hourPart.value);
-          }
-        }
-      }
-
-      /*
-       * Otherwise use backend hour field.
-       */
-      if (hour === null) {
-
-        hour =
-          Number(
-            item.hour ??
-            item.hour_index ??
-            item.hour_of_day
-          );
-      }
-
-      if (
-        Number.isFinite(hour) &&
-        hour >= 0 &&
-        hour < 24
-      ) {
-
-        result[hour] += Number(
-          item.count ??
-          item.value ??
-          item.events ??
-          item.total ??
-          0
-        );
-      }
+  // Case 1: Backend returns rich list of objects with hour, count, top_event
+  if (Array.isArray(data) && data.length > 0 && typeof data[0] === 'object' && data[0] !== null) {
+    hourlyItems = defaultHours.map((fallbackHour, idx) => {
+      const match = data[idx] || {};
+      const count = Number(match.count ?? match.value ?? 0);
+      return {
+        hour: match.hour || fallbackHour,
+        count: count,
+        topEvent: match.top_event || match.topEvent || ''
+      };
     });
-
-    return result;
+  } else if (Array.isArray(data)) {
+    // Case 2: Array of numbers
+    hourlyItems = defaultHours.map((hour, idx) => {
+      const count = Number(data[idx] || 0);
+      return {
+        hour,
+        count,
+        topEvent: ''
+      };
+    });
+  } else if (data && Array.isArray(data.values)) {
+    // Case 3: Wrapped in object
+    hourlyItems = defaultHours.map((hour, idx) => {
+      const count = Number(data.values[idx] || 0);
+      return {
+        hour,
+        count,
+        topEvent: ''
+      };
+    });
+  } else {
+    hourlyItems = defaultHours.map(hour => ({
+      hour,
+      count: 0,
+      topEvent: 'No recorded activity'
+    }));
   }
 
-  /*
-   * Case 2:
-   *
-   * {
-   *   values: [...]
-   * }
-   */
+  return Array.from({ length: 12 }, (_, bucketIndex) => {
+    const first = hourlyItems[bucketIndex * 2];
+    const second = hourlyItems[bucketIndex * 2 + 1];
+    const topEvent = first.count >= second.count ? first.topEvent : second.topEvent;
+    return {
+      hour: `${first.hour} - ${second.hour}`,
+      count: first.count + second.count,
+      topEvent: topEvent || ''
+    };
+  });
+}
 
-  if (Array.isArray(data.values)) {
+function formatHeatmapAxisLabel(value) {
+  const times = String(value ?? '').match(/\b(\d{1,2})\s*(AM|PM)\b/gi);
+  if (!times || times.length < 2) return String(value ?? '');
 
-    return data.values.map(
-      value => Number(value) || 0
-    );
-  }
+  const parseTime = time => {
+    const match = time.match(/(\d{1,2})\s*(AM|PM)/i);
+    return match ? { hour: Number(match[1]), period: match[2].toUpperCase() } : null;
+  };
+  const start = parseTime(times[0]);
+  const end = parseTime(times[1]);
+  if (!start || !end) return String(value ?? '');
 
-  return [];
+  const startHour = String(start.hour);
+  const endHour = String(end.hour);
+  return start.period === end.period
+    ? `${startHour}-${endHour} ${end.period}`
+    : `${startHour} ${start.period}-${endHour} ${end.period}`;
 }
 
 
@@ -1207,6 +1210,43 @@ function renderMlRibbon(ml) {
    INCIDENT TABLE
    ========================================================= */
 
+function getPlainLanguageIncident(msg, sev, src, ip) {
+  const m = String(msg || '').toLowerCase();
+  if (m.includes('select') || m.includes('union') || m.includes('drop table') || m.includes('script') || m.includes('1=1') || m.includes('jndi:')) {
+    return {
+      summary: `Web injection exploit vector detected on ${src}.`,
+      impact: 'Adversary targeting web endpoints to compromise database or execute remote code.',
+      action: 'Enforce perimeter WAF filtering and verify query parameterization.'
+    };
+  }
+  if (m.includes('failed password') || m.includes('authentication') || m.includes('invalid user') || m.includes('login failed') || m.includes('brute force')) {
+    return {
+      summary: `Authentication breach attempt detected on ${src}.`,
+      impact: 'Repeated credential rejection indicating dictionary or brute-force attack.',
+      action: 'Rate-limit IP at perimeter firewall, enforce SSH key authentication, and audit account lockouts.'
+    };
+  }
+  if (m.includes('sudo') || m.includes('root') || m.includes('privilege') || m.includes('privesc')) {
+    return {
+      summary: 'Administrative privilege elevation event detected.',
+      impact: 'Root-level commands grant full access to security policies and kernel subsystems.',
+      action: 'Audit session operator against authorized change requests and inspect command audit trail.'
+    };
+  }
+  if (m.includes('ransom') || m.includes('encrypt') || m.includes('shadow copy')) {
+    return {
+      summary: 'Malicious file encryption or ransomware signature detected.',
+      impact: 'Imminent threat of host extortion and irreversible data destruction.',
+      action: 'Isolate host from local network immediately and initiate offline snapshot restoration.'
+    };
+  }
+  return {
+    summary: `${sev} security event flagged by ${src.toUpperCase()} telemetry.`,
+    impact: 'Deviation from expected baseline requiring operational triage.',
+    action: 'Review correlated telemetry and verify service configuration integrity.'
+  };
+}
+
 function renderIncidents(incidents) {
 
   const tbody =
@@ -1231,7 +1271,7 @@ function renderIncidents(incidents) {
             color:var(--ink-3);
           "
         >
-          No incidents detected for the current user.
+          No security incidents recorded.
         </td>
       </tr>
     `;
@@ -1258,8 +1298,8 @@ function renderIncidents(incidents) {
       const message =
         inc.message ??
         inc.event_message ??
-        inc.payload ??
         inc.description ??
+        inc.details ??
         '—';
 
       const score =
@@ -1275,6 +1315,9 @@ function renderIncidents(incidents) {
         inc.created_at ??
         inc.time ??
         '—';
+
+      const ip = inc.ip || '';
+      const expl = getPlainLanguageIncident(message, severity, source, ip);
 
       return `
         <tr>
@@ -1302,18 +1345,16 @@ function renderIncidents(incidents) {
             </span>
           </td>
 
-          <td
-            style="
-              font-size:var(--text-sm);
-              font-family:var(--font-mono);
-              max-width:380px;
-              white-space:nowrap;
-              overflow:hidden;
-              text-overflow:ellipsis;
-            "
-            title="${escapeHtml(message)}"
-          >
-            ${escapeHtml(message)}
+          <td style="max-width:360px;">
+            <div class="plain-lang-card" style="margin-bottom:4px;">
+              <div class="plain-lang-row"><span class="plain-lang-tag what">What happened</span> <span>${escapeHtml(expl.summary)}</span></div>
+              <div class="plain-lang-row"><span class="plain-lang-tag why">Why it matters</span> <span>${escapeHtml(expl.impact)}</span></div>
+              <div class="plain-lang-row"><span class="plain-lang-tag action">What to do</span> <span>${escapeHtml(expl.action)}</span></div>
+            </div>
+            <details class="tech-details">
+              <summary class="tech-details-toggle">Technical Details</summary>
+              <pre class="tech-details-content">${escapeHtml(message)}</pre>
+            </details>
           </td>
 
           <td>
@@ -1616,6 +1657,36 @@ function setText(id, value) {
   }
 }
 
+function populateInvestigationFilter(activities) {
+  const select = document.getElementById('fActivity');
+  if (!select) return;
+
+  const selectedValue = select.value || 'latest';
+  const options = [];
+  const allActivity = document.createElement('option');
+  allActivity.value = 'all';
+  allActivity.dataset.type = 'all';
+  allActivity.textContent = 'All Activity (From Beginning)';
+  const baseline = document.createElement('option');
+  baseline.value = 'latest';
+  baseline.dataset.type = 'baseline';
+  baseline.textContent = 'Latest Security Telemetry (Consensus Baseline)';
+  options.push(allActivity, baseline);
+
+  for (const activity of activities) {
+    if (!activity?.id || !activity?.type || !activity?.label) continue;
+    const option = document.createElement('option');
+    option.value = String(activity.id);
+    option.dataset.type = String(activity.type);
+    option.textContent = String(activity.label);
+    options.push(option);
+  }
+
+  select.replaceChildren(...options);
+  select.value = options.some(option => option.value === selectedValue)
+    ? selectedValue
+    : 'latest';
+}
 
 function formatResponseTime(value) {
 
@@ -1699,44 +1770,12 @@ window.loadDash = loadDash;
 
 
 /* =========================================================
-   AUTO REFRESH
-   ========================================================= */
-
-let dashboardRefreshTimer = null;
-
-function startDashboardRefresh() {
-
-  if (dashboardRefreshTimer) {
-    clearInterval(dashboardRefreshTimer);
-  }
-
-  dashboardRefreshTimer =
-    setInterval(
-      () => loadDash(),
-      30000
-    );
-}
-
-window.addEventListener(
-  'beforeunload',
-  () => {
-    if (dashboardRefreshTimer) {
-      clearInterval(dashboardRefreshTimer);
-    }
-  }
-);
-
-
-/* =========================================================
-   START
+   START AND KEEP USER-SCOPED TELEMETRY FRESH
    ========================================================= */
 
 window.addEventListener(
   'DOMContentLoaded',
   async () => {
-
     await initDashboard();
-
-    startDashboardRefresh();
   }
 );

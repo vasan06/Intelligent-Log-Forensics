@@ -11,7 +11,7 @@ import re
 import json
 from collections import Counter
 from flask import Blueprint, request, jsonify
-from sqlalchemy import select, update
+from sqlalchemy import delete, select, update
 import jwt
 
 from backend import config
@@ -41,6 +41,90 @@ def auth_user_id():
         return uid
     except jwt.InvalidTokenError:
         return None
+
+
+def _event_summary(log):
+    msg = str((log or {}).get("message") or "").lower()
+    source = str((log or {}).get("source") or "system")
+    if "failed password" in msg or "authentication failure" in msg or "invalid user" in msg:
+        return "Login attempt failed"
+    if "accepted password" in msg or "accepted publickey" in msg:
+        return "Login succeeded"
+    if "union select" in msg or "sql injection" in msg:
+        return "Possible SQL injection activity"
+    if "<script" in msg or "xss" in msg:
+        return "Possible script injection activity"
+    if "../" in msg or "path traversal" in msg:
+        return "Path traversal attempt blocked"
+    if "vssadmin delete" in msg or "ransom" in msg or ".locked" in msg:
+        return "Ransomware-like file activity"
+    if "syn flood" in msg or "rate limit exceeded" in msg:
+        return "Network flood activity detected"
+    if "administratoraccess" in msg or "attachuserpolicy" in msg:
+        return "Cloud permission change detected"
+    if "error" in msg or "refused" in msg:
+        return "Service error recorded"
+    return f"{source.replace('-', ' ').title()} event recorded"
+
+
+def _severity_label(value):
+    sev = str(value or "INFO").upper()
+    return {
+        "DEBUG": "Diagnostic",
+        "INFO": "Normal",
+        "WARN": "Needs attention",
+        "WARNING": "Needs attention",
+        "ERROR": "High risk",
+        "CRITICAL": "Critical",
+        "FATAL": "Critical",
+    }.get(sev, sev.title())
+
+
+def _history_item(row):
+    results = row.get("results") or {}
+    if not isinstance(results, dict):
+        results = {}
+
+    logs = results.get("logs") or results.get("preview") or []
+    first_log = logs[0] if isinstance(logs, list) and logs else {}
+    severity_counts = results.get("severity") or {}
+    if isinstance(severity_counts, dict) and severity_counts:
+        severity = max(
+            severity_counts,
+            key=lambda k: int(severity_counts.get(k) or 0),
+        )
+    else:
+        severity = first_log.get("severity") or "INFO"
+
+    source_type = str(results.get("source") or "upload").lower()
+    filename = row.get("filename") or results.get("filename")
+    title = (
+        filename
+        or results.get("scenario_name")
+        or results.get("simulation_name")
+        or source_type.replace("_", " ").title()
+    )
+
+    return {
+        "id": str(row["analysis_id"]),
+        "analysis_id": str(row["analysis_id"]),
+        "file_id": str(row["file_id"]) if row.get("file_id") else None,
+        "type": source_type,
+        "title": title,
+        "summary": _event_summary(first_log),
+        "severity": str(severity).upper(),
+        "severity_label": _severity_label(severity),
+        "source": str(first_log.get("source") or source_type),
+        "ip": str(first_log.get("ip") or "-"),
+        "total_logs": int(results.get("total_logs") or results.get("lines_parsed") or 0),
+        "anomalies": int(results.get("anomalies") or results.get("anomalies_found") or 0),
+        "created_at": row["created_at"].isoformat() if row.get("created_at") else None,
+        "technical": {
+            "status": row.get("status"),
+            "db_location": row.get("db_location"),
+            "results": results,
+        },
+    }
 
 
 # =========================================================
@@ -343,6 +427,141 @@ def modes():
 @logs_bp.route("/logs/sources")
 def sources():
     return jsonify({"sources": SOURCES})
+
+
+@logs_bp.route("/history", methods=["GET"])
+def history_list():
+    uid = auth_user_id()
+    if not uid:
+        return jsonify({"success": False, "message": "Authentication required"}), 401
+
+    query = str(request.args.get("q") or "").strip().lower()
+    severity = str(request.args.get("severity") or "all").strip().upper()
+
+    with get_db() as db:
+        rows = db.execute(
+            select(
+                log_analyses.c.id.label("analysis_id"),
+                log_analyses.c.file_id,
+                log_analyses.c.status,
+                log_analyses.c.results,
+                log_analyses.c.created_at,
+                uploaded_files.c.filename,
+                uploaded_files.c.db_location,
+            )
+            .select_from(
+                log_analyses.outerjoin(
+                    uploaded_files,
+                    uploaded_files.c.id == log_analyses.c.file_id,
+                )
+            )
+            .where(log_analyses.c.user_id == uid)
+            .order_by(log_analyses.c.created_at.desc())
+        ).mappings().all()
+
+    items = [_history_item(row) for row in rows]
+    if severity not in ("ALL", "*"):
+        items = [item for item in items if item["severity"] == severity]
+    if query:
+        items = [
+            item for item in items
+            if query in " ".join([
+                item.get("title") or "",
+                item.get("summary") or "",
+                item.get("source") or "",
+                item.get("severity_label") or "",
+            ]).lower()
+        ]
+
+    return jsonify({"success": True, "history": items, "count": len(items)})
+
+
+@logs_bp.route("/history/<analysis_id>", methods=["GET"])
+def history_detail(analysis_id):
+    uid = auth_user_id()
+    if not uid:
+        return jsonify({"success": False, "message": "Authentication required"}), 401
+
+    with get_db() as db:
+        row = db.execute(
+            select(
+                log_analyses.c.id.label("analysis_id"),
+                log_analyses.c.file_id,
+                log_analyses.c.status,
+                log_analyses.c.results,
+                log_analyses.c.created_at,
+                uploaded_files.c.filename,
+                uploaded_files.c.db_location,
+            )
+            .select_from(
+                log_analyses.outerjoin(
+                    uploaded_files,
+                    uploaded_files.c.id == log_analyses.c.file_id,
+                )
+            )
+            .where(log_analyses.c.id == analysis_id, log_analyses.c.user_id == uid)
+        ).mappings().first()
+
+    if not row:
+        return jsonify({"success": False, "message": "History entry not found"}), 404
+
+    return jsonify({"success": True, "entry": _history_item(row)})
+
+
+def _delete_history_ids(uid, analysis_ids=None, clear_all=False):
+    with get_db() as db:
+        stmt = select(log_analyses.c.id, log_analyses.c.file_id).where(log_analyses.c.user_id == uid)
+        if not clear_all:
+            stmt = stmt.where(log_analyses.c.id.in_(analysis_ids or []))
+        rows = db.execute(stmt).mappings().all()
+        if not rows:
+            return 0
+
+        owned_ids = [str(row["id"]) for row in rows]
+        file_ids = [str(row["file_id"]) for row in rows if row.get("file_id")]
+
+        db.execute(
+            delete(log_analyses).where(
+                log_analyses.c.user_id == uid,
+                log_analyses.c.id.in_(owned_ids),
+            )
+        )
+        if file_ids:
+            db.execute(
+                delete(uploaded_files).where(
+                    uploaded_files.c.user_id == uid,
+                    uploaded_files.c.id.in_(file_ids),
+                )
+            )
+        return len(owned_ids)
+
+
+@logs_bp.route("/history/<analysis_id>", methods=["DELETE"])
+def history_delete_one(analysis_id):
+    uid = auth_user_id()
+    if not uid:
+        return jsonify({"success": False, "message": "Authentication required"}), 401
+
+    deleted = _delete_history_ids(uid, [analysis_id])
+    if not deleted:
+        return jsonify({"success": False, "message": "History entry not found"}), 404
+    return jsonify({"success": True, "deleted": deleted})
+
+
+@logs_bp.route("/history", methods=["DELETE"])
+def history_delete_many():
+    uid = auth_user_id()
+    if not uid:
+        return jsonify({"success": False, "message": "Authentication required"}), 401
+
+    data = request.get_json(silent=True) or {}
+    clear_all = bool(data.get("clear_all"))
+    ids = [str(x) for x in (data.get("ids") or []) if x]
+    if not clear_all and not ids:
+        return jsonify({"success": False, "message": "No history entries selected"}), 400
+
+    deleted = _delete_history_ids(uid, ids, clear_all=clear_all)
+    return jsonify({"success": True, "deleted": deleted})
 
 
 # ── IN-DATABASE UPLOAD (Zero local filesystem leak) ──────────

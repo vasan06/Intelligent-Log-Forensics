@@ -11,6 +11,12 @@ from backend.models.log_analysis import log_analyses
 from backend.models.session import sessions
 from backend.models.report import reports
 
+try:
+    from backend.models.log_analysis import LogAnalysis
+    from backend.models.uploaded_file import UploadedFile
+except ImportError:
+    pass
+
 admin_bp = Blueprint("admin", __name__)
 
 ALLOWED_ROLES = {"User", "Admin"}
@@ -425,4 +431,96 @@ def revoke_user_sessions(uid):
         "revoked_count": revoked_count
     })
 
+import os
 
+@admin_bp.route("/api/admin/activity", methods=["GET"])
+def api_admin_activity():
+    admin, error = require_admin()
+    if error:
+        return error
+    try:
+        with get_db() as db:
+            query = select(
+                log_analyses.c.id,
+                log_analyses.c.created_at,
+                log_analyses.c.results,
+                users.c.email.label("user_email"),
+                uploaded_files.c.filename
+            ).select_from(
+                log_analyses.join(users, users.c.id == log_analyses.c.user_id)
+                .outerjoin(uploaded_files, uploaded_files.c.id == log_analyses.c.file_id)
+            ).order_by(log_analyses.c.created_at.desc()).limit(50)
+            rows = db.execute(query).mappings().all()
+            
+            results = []
+            for r in rows:
+                res = r["results"] or {}
+                results.append({
+                    "user_email": r["user_email"],
+                    "filename": r["filename"] or "Simulation",
+                    "total_entries": int(res.get("total_logs", res.get("lines_parsed", 0)) or 0),
+                    "threats_found": int(res.get("anomalies", res.get("anomalies_found", 0)) or 0),
+                    "created_at": r["created_at"].isoformat() if r["created_at"] else None
+                })
+        return jsonify({"success": True, "activity": results})
+    except Exception as e:
+        return jsonify({"success": False, "message": str(e)}), 500
+
+@admin_bp.route("/api/admin/system-health", methods=["GET"])
+def api_admin_system_health():
+    admin, error = require_admin()
+    if error:
+        return error
+    try:
+        with get_db() as db:
+            total_users = db.execute(select(func.count()).select_from(users)).scalar_one()
+            total_analyses = db.execute(select(func.count()).select_from(log_analyses)).scalar_one()
+            total_files = db.execute(select(func.count()).select_from(uploaded_files)).scalar_one()
+            total_storage = db.execute(select(func.sum(uploaded_files.c.size)).select_from(uploaded_files)).scalar() or 0
+            
+            db_size = 0
+            db_uri = getattr(config, "SQLALCHEMY_DATABASE_URI", getattr(config, "DATABASE_URI", ""))
+            if db_uri and db_uri.startswith("sqlite"):
+                db_path = db_uri.replace("sqlite:///", "")
+                if os.path.exists(db_path):
+                    db_size = os.path.getsize(db_path)
+            
+        return jsonify({
+            "success": True,
+            "total_users": total_users,
+            "total_analyses": total_analyses,
+            "total_uploaded_files": total_files,
+            "total_storage_used": total_storage,
+            "database_size": db_size
+        })
+    except Exception as e:
+        return jsonify({"success": False, "message": str(e)}), 500
+
+@admin_bp.route("/api/admin/uploaded-logs", methods=["GET"])
+def api_admin_uploaded_logs():
+    admin, error = require_admin()
+    if error:
+        return error
+    try:
+        with get_db() as db:
+            query = select(
+                uploaded_files.c.filename,
+                uploaded_files.c.size.label("file_size"),
+                uploaded_files.c.created_at.label("uploaded_at"),
+                users.c.email.label("user_email")
+            ).select_from(
+                uploaded_files.join(users, users.c.id == uploaded_files.c.user_id)
+            ).order_by(uploaded_files.c.created_at.desc())
+            rows = db.execute(query).mappings().all()
+            
+            results = []
+            for r in rows:
+                results.append({
+                    "filename": r["filename"],
+                    "user_email": r["user_email"],
+                    "file_size": r["file_size"],
+                    "uploaded_at": r["uploaded_at"].isoformat() if r["uploaded_at"] else None
+                })
+        return jsonify({"success": True, "logs": results})
+    except Exception as e:
+        return jsonify({"success": False, "message": str(e)}), 500

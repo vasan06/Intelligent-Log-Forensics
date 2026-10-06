@@ -40,7 +40,12 @@ services:
     environment:
       ILF_DB_HOST: postgres
       ILF_DB_PORT: 5432
+      ILF_DB_USER: ${ILF_DB_USER:-ilf_user}
+      ILF_DB_PASSWORD: ${ILF_DB_PASSWORD:-ilf_secure_password}
+      ILF_DB_NAME: ${ILF_DB_NAME:-ilf}
       LOKY_MAX_CPU_COUNT: 2
+      ADMIN_EMAIL: ${ADMIN_EMAIL:-admin@ilf.local}
+      ADMIN_PASSWORD: ${ADMIN_PASSWORD:-admin123}
 
     depends_on:
       postgres:

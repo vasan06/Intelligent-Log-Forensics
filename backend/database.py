@@ -106,6 +106,7 @@ def init_database():
     Create all registered database tables, apply non-destructive column migrations,
     normalize roles strictly to 'User' and 'Admin', and auto-seed/promote the administrator.
     """
+    import os
     import uuid
     import bcrypt
 
@@ -141,26 +142,37 @@ def init_database():
         except Exception:
             pass
 
-        # Auto-seed / Auto-promote configured admin
-        admin_email = getattr(config, "ADMIN_EMAIL", "vasan83000@gmail.com").strip().lower()
-        admin_pass = getattr(config, "ADMIN_PASSWORD", "Vasan@83000")
-        admin_hash = bcrypt.hashpw(admin_pass.encode("utf-8"), bcrypt.gensalt()).decode("utf-8")
+        # Auto-seed / Auto-promote configured admin from environment or config
+        admin_email = (
+            os.environ.get("ADMIN_EMAIL")
+            or os.environ.get("ILF_ADMIN_EMAIL")
+            or getattr(config, "ADMIN_EMAIL", "vasan83000@gmail.com")
+        ).strip().lower()
+        admin_pass = (
+            os.environ.get("ADMIN_PASSWORD")
+            or os.environ.get("ILF_ADMIN_PASSWORD")
+            or getattr(config, "ADMIN_PASSWORD", "Vasan@83000")
+        )
 
-        existing_admin = conn.execute(
-            text("SELECT id FROM users WHERE email = :email"),
-            {"email": admin_email}
-        ).fetchone()
+        if admin_email and admin_pass:
+            admin_hash = bcrypt.hashpw(admin_pass.encode("utf-8"), bcrypt.gensalt()).decode("utf-8")
 
-        if existing_admin:
-            conn.execute(
-                text("UPDATE users SET role = 'Admin', verified = True, password_hash = :p_hash WHERE email = :email"),
-                {"email": admin_email, "p_hash": admin_hash}
-            )
-        else:
-            conn.execute(
-                text("""
-                    INSERT INTO users (id, name, email, password_hash, role, verified)
-                    VALUES (:id, 'Admin', :email, :p_hash, 'Admin', True)
-                """),
-                {"id": str(uuid.uuid4()), "email": admin_email, "p_hash": admin_hash}
-            )
+            existing_admin = conn.execute(
+                text("SELECT id FROM users WHERE email = :email"),
+                {"email": admin_email}
+            ).fetchone()
+
+            if existing_admin:
+                conn.execute(
+                    text("UPDATE users SET role = 'Admin', verified = True, password_hash = :p_hash WHERE email = :email"),
+                    {"email": admin_email, "p_hash": admin_hash}
+                )
+            else:
+                conn.execute(
+                    text("""
+                        INSERT INTO users (id, name, email, password_hash, role, verified)
+                        VALUES (:id, 'Admin', :email, :p_hash, 'Admin', True)
+                    """),
+                    {"id": str(uuid.uuid4()), "email": admin_email, "p_hash": admin_hash}
+                )
+                print(f"Admin user seeded: {admin_email}")

@@ -143,86 +143,135 @@
 }
 
 .pipeline-label {
-  padding: 10px 12px;
+  padding: 14px 10px;
   background: var(--surface-1);
   border: 1px solid var(--surface-3);
-  border-radius: var(--r-md);
+  border-radius: var(--r-lg);
   transition: all 0.25s ease;
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  gap: 8px;
 }
-.pipeline-label .stage-dot {
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  background: var(--ink-3);
+.pipeline-label .stage-icon-wrap {
+  width: 40px;
+  height: 40px;
+  border-radius: var(--r-md);
+  background: var(--surface-2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--ink-3);
   transition: all 0.25s ease;
-  display: inline-block;
 }
 .pipeline-label .pipeline-label-name {
   font-size: 0.8rem;
   font-weight: 700;
   color: var(--ink-1);
-}
-.pipeline-label .pipeline-label-status {
-  font-size: 0.72rem;
-  color: var(--ink-3);
-  font-family: var(--font-mono);
+  letter-spacing: -0.01em;
 }
 
 /* Pipeline Label States */
 .pipeline-label.active {
-  background: rgba(45, 43, 107, 0.05);
+  background: var(--surface-0);
   border-color: var(--brand-primary);
-  box-shadow: 0 0 0 2px rgba(45, 43, 107, 0.15);
+  box-shadow: 0 4px 16px rgba(37, 99, 235, 0.12);
 }
-.pipeline-label.active .stage-dot {
-  background: var(--brand-primary);
-  box-shadow: 0 0 8px var(--brand-primary);
-  animation: pulse-dot 1.2s infinite;
+.pipeline-label.active .stage-icon-wrap {
+  background: var(--brand-dim);
+  color: var(--brand-primary);
 }
 .pipeline-label.active .pipeline-label-name {
   color: var(--brand-primary);
 }
-.pipeline-label.active .pipeline-label-status {
-  color: var(--brand-primary);
-  font-weight: 600;
-}
 
 .pipeline-label.done {
-  background: rgba(16, 185, 129, 0.06);
+  background: rgba(16, 185, 129, 0.05);
   border-color: rgba(16, 185, 129, 0.4);
 }
-.pipeline-label.done .stage-dot {
-  background: #10B981;
+.pipeline-label.done .stage-icon-wrap {
+  background: rgba(16, 185, 129, 0.12);
+  color: #10B981;
 }
 .pipeline-label.done .pipeline-label-name {
-  color: #065F46;
+  color: #047857;
 }
-.pipeline-label.done .pipeline-label-status {
-  color: #10B981;
-  font-weight: 600;
+[data-theme="dark"] .pipeline-label.done .pipeline-label-name {
+  color: #34D399;
 }
 
 .pipeline-label.error {
   background: rgba(239, 68, 68, 0.06);
   border-color: rgba(239, 68, 68, 0.4);
 }
-.pipeline-label.error .stage-dot {
-  background: #EF4444;
+.pipeline-label.error .stage-icon-wrap {
+  background: rgba(239, 68, 68, 0.12);
+  color: #EF4444;
 }
 .pipeline-label.error .pipeline-label-name {
-  color: #991B1B;
-}
-.pipeline-label.error .pipeline-label-status {
-  color: #EF4444;
-  font-weight: 600;
+  color: #DC2626;
 }
 
-@keyframes pulse-dot {
-  0%, 100% { transform: scale(1); opacity: 1; }
-  50% { transform: scale(1.35); opacity: 0.65; }
+/* Stage-specific Animations (No blinkers - animated icons only) */
+.pipeline-label.active .stage-icon-upload svg {
+  animation: anim-feed 0.9s ease-in-out infinite;
+}
+@keyframes anim-feed {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(4px); }
+}
+
+.pipeline-label.active .stage-icon-parse .scan-beam {
+  animation: anim-scan 1.1s ease-in-out infinite;
+  transform-origin: center;
+}
+@keyframes anim-scan {
+  0%, 100% { transform: translateY(0); opacity: 0.4; }
+  50% { transform: translateY(6px); opacity: 1; }
+}
+
+.pipeline-label.active .stage-icon-normalize .norm-knob {
+  animation: anim-normalize 0.9s ease-in-out infinite;
+}
+@keyframes anim-normalize {
+  0%, 100% { transform: translateX(0); }
+  50% { transform: translateX(3px); }
+}
+
+.pipeline-label.active .stage-icon-analyze svg {
+  animation: anim-analyze 1.3s ease-in-out infinite;
+}
+@keyframes anim-analyze {
+  0%, 100% { transform: scale(1) rotate(0deg); }
+  50% { transform: scale(1.12) rotate(12deg); }
+}
+
+.pipeline-label.active .stage-icon-detect .detect-pulse {
+  animation: anim-detect 1s ease-in-out infinite;
+  transform-origin: 12px 11px;
+}
+@keyframes anim-detect {
+  0%, 100% { transform: scale(1); opacity: 0.4; }
+  50% { transform: scale(1.5); opacity: 1; }
+}
+
+.pipeline-label.active .stage-icon-store svg {
+  animation: anim-store 0.9s ease-in-out infinite;
+}
+@keyframes anim-store {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-3px); }
+}
+
+.pipeline-label.done .stage-icon-complete svg {
+  animation: anim-complete 0.6s ease-out;
+}
+@keyframes anim-complete {
+  0% { transform: scale(0.85); }
+  50% { transform: scale(1.18); }
+  100% { transform: scale(1); }
 }
 
 @media (max-width: 960px) {

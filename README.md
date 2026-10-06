@@ -304,11 +304,37 @@ For the implemented request details and response schemas, see the corresponding 
 
 Navigation remains standard multi-page navigation for reliable refreshes, direct links, and browser history. Prefetch and view-transition support are progressive enhancements; browsers that do not support them continue to use normal links.
 
-## Container files
+## Container Deployment & Data Persistence
 
-`Dockerfile` and `docker-compose.yml` are included for container-based development. Before starting the stack, configure the required `ILF_*` application settings (especially the JWT signing secret and PostgreSQL connection) for the container environment. Do not deploy with example values or expose the Flask development server as a production service.
+`Dockerfile` and `docker-compose.yml` provide a fully persistent containerized stack.
 
-The current Compose file does not forward every setting read by `backend/config.py`; verify its service environment mappings before relying on it. The local Python setup above is the documented development path.
+### Data Persistence Architecture
+- **Persistent Volume:** PostgreSQL data is permanently stored in the Docker named volume `ilf_pgdata` mounted at `/var/lib/postgresql/data`. User accounts, sessions, forensic log analyses, and generated reports persist across restarts and rebuilds.
+- **Admin User Auto-Seeding:** On startup, the database migration and seeding routine automatically creates or updates the administrator account using the environment variables `ADMIN_EMAIL` and `ADMIN_PASSWORD` (default: `admin@ilf.local` / `admin123`). The password is automatically hashed with bcrypt and granted the verified `Admin` role.
+
+### Running with Docker Compose
+```bash
+# Build and launch the container stack (PostgreSQL + Web API)
+docker compose up --build -d
+
+# View service logs
+docker compose logs -f web
+
+# Verify service health
+curl http://localhost:5000/api/health
+
+# Stop the stack
+docker compose down
+```
+
+### Running Locally without Docker
+```bash
+# Install dependencies
+pip install -r requirements.txt
+
+# Start the application
+python -m backend.app
+```
 
 ## Tests and maintenance
 

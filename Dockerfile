@@ -19,6 +19,9 @@ RUN pip install --no-cache-dir -r requirements.txt
 # Copy application source.
 COPY . .
 
+RUN mkdir -p /app/instance
+ENV FLASK_APP=backend.app:create_app
+
 EXPOSE 5000
 
 # Production WSGI server.

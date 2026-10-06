@@ -1,67 +1,67 @@
 /*
  * tokens.css — ILF Design Tokens
  * Single source of truth for all design decisions.
- * Theme: warm professional light, NOT dark/neon.
+ * Theme: warm professional high-contrast SaaS palette with dark mode support.
  */
 
-/* ── Google Fonts ─────────────────────────────── */
-@import url('https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;0,9..40,800;1,9..40,400&family=Space+Grotesk:wght@300;400;500;600;700&family=Fira+Code:wght@400;500&display=swap');
+/* ── Google Fonts Pairing: Outfit (Headings) + Plus Jakarta Sans (Body) + JetBrains Mono (Code/Logs) ── */
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:ital,wght@0,400;0,500;0,600;0,700;1,400&family=JetBrains+Mono:wght@400;500;600&display=swap');
 
 :root {
-  /* ── Modern High-Contrast Light Colour Palette ── */
+  /* ── Modern High-Contrast Light Colour Palette (Default) ── */
   --surface-0:     #FFFFFF;       /* pure white — cards */
   --surface-1:     #F8FAFC;       /* clean crisp slate background */
   --surface-2:     #F1F5F9;       /* elevated surfaces */
-  --surface-3:     #E2E8F0;       /* borders & subtle dividers */
-  --surface-4:     #CBD5E1;       /* active dividers */
+  --surface-3:     #CBD5E1;       /* high-contrast crisp borders & dividers */
+  --surface-4:     #94A3B8;       /* active dividers */
 
-  --ink-0:         #0F172A;       /* deep slate headlines */
-  --ink-1:         #334155;       /* primary body text */
-  --ink-2:         #64748B;       /* secondary text */
-  --ink-3:         #94A3B8;       /* placeholders & muted text */
+  --ink-0:         #090D16;       /* ultra-deep ink headlines (high contrast) */
+  --ink-1:         #1E293B;       /* crisp primary body text */
+  --ink-2:         #475569;       /* accessible secondary text */
+  --ink-3:         #64748B;       /* placeholders & clearly visible muted text */
   --ink-inv:       #FFFFFF;       /* text on dark / badge fills */
 
-  --brand-primary:   #2563EB;     /* Royal Cobalt — clarity, focus */
+  --brand-primary:   #1D4ED8;     /* High-contrast Royal Blue */
   --brand-light:     #3B82F6;     /* lighter blue */
   --brand-dim:       #EFF6FF;     /* soft blue tinted bg */
 
-  --brand-secondary: #7C3AED;     /* Electric Violet — ML & intelligence */
+  --brand-secondary: #6D28D9;     /* Deep Violet — ML & intelligence */
   --brand-secondary-light: #8B5CF6;
   --brand-secondary-dim:   #F5F3FF;
 
-  --accent:        #F59E0B;       /* vibrant amber — alerts */
+  --accent:        #D97706;       /* vibrant amber — alerts */
   --accent-light:  #FFFBEB;       /* tinted amber bg */
   --accent-dim:    #FEF3C7;
 
-  --slate:         #0284C7;       /* cyber cyan — network telemetry */
+  --slate:         #0369A1;       /* deep cyber cyan — network telemetry */
   --slate-light:   #F0F9FF;
 
-  --success:       #10B981;       /* emerald green — safe / verified */
+  --success:       #059669;       /* high-contrast emerald green — safe / verified */
   --success-light: #ECFDF5;
 
-  --danger:        #EF4444;       /* crimson red — high threats */
+  --danger:        #DC2626;       /* crimson red — high threats */
   --danger-light:  #FEF2F2;
 
-  --warn:          #F59E0B;       /* warm amber */
+  --warn:          #D97706;       /* warm amber */
   --warn-light:    #FFFBEB;
 
-  --critical:      #DC2626;       /* deep ruby red */
+  --critical:      #B91C1C;       /* deep ruby red */
   --critical-light:#FEF2F2;
 
   /* ── Modern Glassmorphism ────────────────── */
-  --glass-bg:      rgba(255, 255, 255, 0.82);
-  --glass-border:  rgba(226, 232, 240, 0.85);
-  --glass-shadow:  0 8px 32px rgba(15, 23, 42, 0.05), 0 1px 3px rgba(0, 0, 0, 0.02);
+  --glass-bg:      rgba(255, 255, 255, 0.90);
+  --glass-border:  rgba(203, 213, 225, 0.95);
+  --glass-shadow:  0 8px 32px rgba(15, 23, 42, 0.07), 0 1px 3px rgba(0, 0, 0, 0.03);
   --glass-blur:    blur(20px) saturate(180%);
 
   /* ── Shadows ─────────────────────────────── */
-  --shadow-xs:  0 1px 2px rgba(15, 23, 42, 0.04);
-  --shadow-sm:  0 2px 6px rgba(15, 23, 42, 0.06), 0 1px 2px rgba(15, 23, 42, 0.02);
-  --shadow-md:  0 4px 16px rgba(15, 23, 42, 0.08), 0 2px 4px rgba(15, 23, 42, 0.04);
-  --shadow-lg:  0 8px 30px rgba(15, 23, 42, 0.10), 0 4px 8px rgba(15, 23, 42, 0.04);
-  --shadow-xl:  0 16px 48px rgba(15, 23, 42, 0.12), 0 6px 16px rgba(15, 23, 42, 0.06);
-  --shadow-brand: 0 4px 16px rgba(37, 99, 235, 0.22);
-  --shadow-accent: 0 4px 16px rgba(245, 158, 11, 0.25);
+  --shadow-xs:  0 1px 2px rgba(15, 23, 42, 0.06);
+  --shadow-sm:  0 2px 6px rgba(15, 23, 42, 0.08), 0 1px 2px rgba(15, 23, 42, 0.04);
+  --shadow-md:  0 4px 16px rgba(15, 23, 42, 0.10), 0 2px 4px rgba(15, 23, 42, 0.05);
+  --shadow-lg:  0 8px 30px rgba(15, 23, 42, 0.12), 0 4px 8px rgba(15, 23, 42, 0.05);
+  --shadow-xl:  0 16px 48px rgba(15, 23, 42, 0.14), 0 6px 16px rgba(15, 23, 42, 0.07);
+  --shadow-brand: 0 4px 16px rgba(29, 78, 216, 0.25);
+  --shadow-accent: 0 4px 16px rgba(217, 119, 6, 0.28);
 
   /* ── Border Radius ───────────────────────── */
   --r-xs: 4px;
@@ -77,15 +77,15 @@
   --sp-5: 20px; --sp-6: 24px;  --sp-8: 32px;  --sp-10: 40px;
   --sp-12: 48px; --sp-16: 64px; --sp-20: 80px;
 
-  /* ── Typography ──────────────────────────── */
-  --font-display: 'DM Sans', system-ui, sans-serif;
-  --font-body:    'Space Grotesk', system-ui, sans-serif;
-  --font-mono:    'Fira Code', 'Courier New', monospace;
+  /* ── Typography (Distinctive Human-Feeling Pairing) ── */
+  --font-display: 'Outfit', -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-body:    'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-mono:    'JetBrains Mono', 'Courier New', monospace;
 
   /* ── Type scale ──────────────────────────── */
-  --text-xs:  0.70rem;   /* 11.2px */
-  --text-sm:  0.813rem;  /* 13px */
-  --text-base:0.938rem;  /* 15px */
+  --text-xs:  0.75rem;   /* 12px */
+  --text-sm:  0.875rem;  /* 14px */
+  --text-base:0.95rem;   /* 15.2px */
   --text-md:  1.063rem;  /* 17px */
   --text-lg:  1.25rem;   /* 20px */
   --text-xl:  1.5rem;    /* 24px */
@@ -109,4 +109,50 @@
   --z-overlay: 200;
   --z-modal:   300;
   --z-toast:   400;
+}
+
+/* ── Dark Mode Token Overrides ─────────────── */
+[data-theme="dark"] {
+  --surface-0:     #0F172A;       /* deep slate cards */
+  --surface-1:     #020617;       /* obsidian canvas */
+  --surface-2:     #1E293B;       /* elevated surfaces */
+  --surface-3:     #334155;       /* subtle dividers */
+  --surface-4:     #475569;       /* active dividers */
+
+  --ink-0:         #F8FAFC;       /* crisp white headlines */
+  --ink-1:         #E2E8F0;       /* primary body text */
+  --ink-2:         #94A3B8;       /* secondary text */
+  --ink-3:         #64748B;       /* muted text */
+  --ink-inv:       #0F172A;       /* inverted text */
+
+  --brand-primary:   #3B82F6;     /* vibrant blue */
+  --brand-light:     #60A5FA;
+  --brand-dim:       rgba(59, 130, 246, 0.15);
+
+  --brand-secondary: #8B5CF6;
+  --brand-secondary-light: #A78BFA;
+  --brand-secondary-dim:   rgba(139, 92, 246, 0.15);
+
+  --accent:        #F59E0B;
+  --accent-light:  #78350F;
+  --accent-dim:    rgba(245, 158, 11, 0.15);
+
+  --slate:         #38BDF8;
+  --slate-light:   rgba(56, 189, 248, 0.12);
+
+  --success:       #10B981;
+  --success-light: rgba(16, 185, 129, 0.15);
+
+  --danger:        #EF4444;
+  --danger-light:  rgba(239, 68, 68, 0.15);
+
+  --warn:          #F59E0B;
+  --warn-light:    rgba(245, 158, 11, 0.15);
+
+  --critical:      #F87171;
+  --critical-light:rgba(248, 113, 113, 0.15);
+
+  --glass-bg:      rgba(15, 23, 42, 0.85);
+  --glass-border:  rgba(51, 65, 85, 0.85);
+  --glass-shadow:  0 8px 32px rgba(0, 0, 0, 0.35);
 }

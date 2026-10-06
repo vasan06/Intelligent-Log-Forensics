@@ -11,7 +11,9 @@ async function requireAuth() {
       if (refreshed.ok) return true;
     }
     Api.clearAuth();
-    window.location.replace('/login');
+    const loginUrl = new URL('/login', window.location.origin);
+    loginUrl.searchParams.set('next', window.location.pathname + window.location.search + window.location.hash);
+    window.location.replace(loginUrl.pathname + loginUrl.search);
     return false;
   }
   return true;

@@ -104,7 +104,11 @@ def create_app():
 
     @app.route("/dashboard")
     def dashboard():
-        return send_from_directory(FRONTEND_DIR, "dashboard.html")
+        response = send_from_directory(FRONTEND_DIR, "dashboard.html")
+        response.headers["Cache-Control"] = (
+            "no-store, no-cache, must-revalidate, max-age=0"
+        )
+        return response
 
     @app.route("/admin")
     def admin():
@@ -133,6 +137,10 @@ def create_app():
     @app.route("/reports")
     def reports():
         return send_from_directory(FRONTEND_DIR, "reports.html")
+
+    @app.route("/history")
+    def history():
+        return send_from_directory(FRONTEND_DIR, "history.html")
 
     @app.route("/profile")
     def profile():

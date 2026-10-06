@@ -4,6 +4,8 @@
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1"/>
 <title>Log Explorer — Intelligent Log Forensic</title>
+<link rel="icon" type="image/svg+xml" href="assets/favicon.svg"/>
+<link rel="alternate icon" type="image/png" href="assets/favicon.svg"/>
 <link rel="stylesheet" href="assets/css/tokens.css"/>
 <link rel="stylesheet" href="assets/css/global.css"/>
 <link rel="stylesheet" href="assets/css/components.css"/>
@@ -33,39 +35,79 @@
       </div>
       <div class="pipeline-labels" id="pipelineLabels">
         <div class="pipeline-label" id="pl-0">
-          <div class="stage-dot"></div>
-          <div class="pipeline-label-name">1. Upload</div>
-          <div class="pipeline-label-status">Waiting</div>
+          <div class="stage-icon-wrap stage-icon-upload">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+              <polyline points="7 10 12 15 17 10"/>
+              <line x1="12" y1="15" x2="12" y2="3"/>
+            </svg>
+          </div>
+          <div class="pipeline-label-name">Upload</div>
         </div>
         <div class="pipeline-label" id="pl-1">
-          <div class="stage-dot"></div>
-          <div class="pipeline-label-name">2. Parse</div>
-          <div class="pipeline-label-status">Waiting</div>
+          <div class="stage-icon-wrap stage-icon-parse">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
+              <line class="scan-beam" x1="3" y1="9" x2="21" y2="9"/>
+              <line x1="7" y1="14" x2="17" y2="14"/>
+              <line x1="7" y1="18" x2="13" y2="18"/>
+            </svg>
+          </div>
+          <div class="pipeline-label-name">Parse</div>
         </div>
         <div class="pipeline-label" id="pl-2">
-          <div class="stage-dot"></div>
-          <div class="pipeline-label-name">3. Normalize</div>
-          <div class="pipeline-label-status">Waiting</div>
+          <div class="stage-icon-wrap stage-icon-normalize">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <line x1="4" y1="21" x2="4" y2="14"/>
+              <line x1="4" y1="10" x2="4" y2="3"/>
+              <line x1="12" y1="21" x2="12" y2="12"/>
+              <line x1="12" y1="8" x2="12" y2="3"/>
+              <line x1="20" y1="21" x2="20" y2="16"/>
+              <line x1="20" y1="12" x2="20" y2="3"/>
+              <line class="norm-knob" x1="1" y1="14" x2="7" y2="14"/>
+              <line class="norm-knob" x1="9" y1="8" x2="15" y2="8"/>
+              <line class="norm-knob" x1="17" y1="16" x2="23" y2="16"/>
+            </svg>
+          </div>
+          <div class="pipeline-label-name">Normalize</div>
         </div>
         <div class="pipeline-label" id="pl-3">
-          <div class="stage-dot"></div>
-          <div class="pipeline-label-name">4. Analyze</div>
-          <div class="pipeline-label-status">Waiting</div>
+          <div class="stage-icon-wrap stage-icon-analyze">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="11" cy="11" r="8"/>
+              <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+              <circle class="analyze-node" cx="11" cy="11" r="3"/>
+            </svg>
+          </div>
+          <div class="pipeline-label-name">Analyze</div>
         </div>
         <div class="pipeline-label" id="pl-4">
-          <div class="stage-dot"></div>
-          <div class="pipeline-label-name">5. Detect</div>
-          <div class="pipeline-label-status">Waiting</div>
+          <div class="stage-icon-wrap stage-icon-detect">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+              <circle class="detect-pulse" cx="12" cy="11" r="3"/>
+            </svg>
+          </div>
+          <div class="pipeline-label-name">Detect</div>
         </div>
         <div class="pipeline-label" id="pl-5">
-          <div class="stage-dot"></div>
-          <div class="pipeline-label-name">6. Store</div>
-          <div class="pipeline-label-status">Waiting</div>
+          <div class="stage-icon-wrap stage-icon-store">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <ellipse cx="12" cy="5" rx="9" ry="3"/>
+              <path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"/>
+              <path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/>
+            </svg>
+          </div>
+          <div class="pipeline-label-name">Store</div>
         </div>
         <div class="pipeline-label" id="pl-6">
-          <div class="stage-dot"></div>
-          <div class="pipeline-label-name">7. Complete</div>
-          <div class="pipeline-label-status">Waiting</div>
+          <div class="stage-icon-wrap stage-icon-complete">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
+              <polyline points="22 4 12 14.01 9 11.01"/>
+            </svg>
+          </div>
+          <div class="pipeline-label-name">Complete</div>
         </div>
       </div>
     </div>
@@ -179,8 +221,7 @@
                 <th>Severity</th>
                 <th>Source</th>
                 <th>IP</th>
-                <th>PID</th>
-                <th>Message</th>
+                <th>Forensic Analysis &amp; Plain-Language Explanation</th>
               </tr>
             </thead>
             <tbody id="logTable"></tbody>
@@ -195,6 +236,7 @@
 <script src="assets/js/api.js"></script>
 <script src="assets/js/auth-guard.js"></script>
 <script src="assets/js/navbar.js"></script>
+<script src="assets/js/page-session.js"></script>
 <script src="assets/js/log-explorer.js"></script>
 <script>
 window.addEventListener('DOMContentLoaded', () => {

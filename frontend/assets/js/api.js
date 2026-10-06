@@ -13,6 +13,14 @@ const Api = {
   },
   clearAuth: () => {
     ['ilf_access_token','ilf_refresh_token','ilf_token','ilf_user'].forEach(k => localStorage.removeItem(k));
+    ['ilf_page_state_v1:', 'ilf_active_event', 'ilf_event_logs'].forEach(prefix => {
+      for (let i = sessionStorage.length - 1; i >= 0; i--) {
+        const key = sessionStorage.key(i);
+        if (key && (prefix.endsWith(':') ? key.startsWith(prefix) : key === prefix)) {
+          sessionStorage.removeItem(key);
+        }
+      }
+    });
     try {
       fetch(API_BASE + '/auth/logout', {
         method: 'POST',
@@ -38,7 +46,9 @@ const Api = {
   _redirectLogin: () => {
     Api.clearAuth();
     if (!location.pathname.endsWith('/signin') && !location.pathname.endsWith('/login')) {
-      window.location.replace('/login');
+      const loginUrl = new URL('/login', window.location.origin);
+      loginUrl.searchParams.set('next', location.pathname + location.search + location.hash);
+      window.location.replace(loginUrl.pathname + loginUrl.search);
     }
   },
   refreshAccessToken: async () => {
@@ -99,6 +109,7 @@ const Api = {
   dashStats:(p={})=>Api.get('/dashboard/stats'+(Object.keys(p).length?'?'+new URLSearchParams(p):'')), dashMlSummary:()=>Api.get('/dashboard/ml-summary'),
   streamLogs:(p={})=>Api.get('/logs/stream?'+new URLSearchParams(p)), saveSimulation:b=>Api.post('/logs/simulation',b),
   uploadLog:f=>Api.form('/logs/upload',f), pipelineStatus:id=>Api.get('/logs/pipeline/'+id), sampleLogs:type=>Api.get('/logs/demo-sample/'+encodeURIComponent(type)),
+  history:(p={})=>Api.get('/history'+(Object.keys(p).length?'?'+new URLSearchParams(p):'')), historyDetail:id=>Api.get('/history/'+encodeURIComponent(id)), deleteHistory:id=>Api.del('/history/'+encodeURIComponent(id)), deleteHistoryMany:ids=>Api._req('DELETE','/history',{ids}), clearHistory:()=>Api._req('DELETE','/history',{clear_all:true}),
   mlAnalyze:b=>Api.post('/ml/analyze',b), mlAlgos:()=>Api.get('/ml/algorithms'), getMlEvent:id=>Api.get('/ml/load-event/'+id),
   mitreCatalog:(p={})=>Api.get('/mitre/catalog?'+new URLSearchParams(p)), mitreMap:b=>Api.post('/mitre/map',b), mitreTechnique:id=>Api.get('/mitre/technique/'+id), mitreTactics:()=>Api.get('/mitre/tactics'), mitreUserLatest:()=>Api.get('/mitre/user-latest'),
   generateReport:b=>Api._reqBlob('POST','/reports/generate',b), reportPreview:b=>Api.post('/reports/preview',b), reportHistory:()=>Api.get('/reports/history'), reportActivities:()=>Api.get('/reports/activities'), downloadReport:id=>Api._reqBlob('GET','/reports/download/'+id),
