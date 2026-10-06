@@ -7,19 +7,21 @@
 
   <title>Security Dashboard — Intelligent Log Forensics</title>
 
+  <link rel="icon" type="image/svg+xml" href="assets/favicon.svg"/>
+  <link rel="alternate icon" type="image/png" href="assets/favicon.svg"/>
   <link rel="stylesheet" href="assets/css/tokens.css"/>
   <link rel="stylesheet" href="assets/css/global.css"/>
   <link rel="stylesheet" href="assets/css/components.css"/>
   <link rel="stylesheet" href="assets/css/navbar.css"/>
   <link rel="stylesheet" href="assets/css/animations.css"/>
-  <link rel="stylesheet" href="assets/css/dashboard.css"/>
+  <link rel="stylesheet" href="assets/css/dashboard.css?v=202610061602"/>
 </head>
 
 <body>
 
 <div class="page-wrap with-nav">
 
-  <main class="content-area">
+  <main class="content-area" data-page-session-version="6">
 
     <nav id="navMount"></nav>
 
@@ -28,40 +30,45 @@
          ===================================================== -->
 
     <!-- =====================================================
-         FILTER BAR
+         FILTER BAR (Activity-based)
          ===================================================== -->
 
     <div class="filter-bar">
 
-      <span class="filter-label">
-        Filters
-      </span>
+      <div class="investigation-filter">
+        <label class="filter-label" for="fActivity">Investigation Activity</label>
+        <select class="filter-select" id="fActivity" onchange="loadDash()">
+          <option value="all" data-type="all">All Activity (From Beginning)</option>
+          <option value="latest">Latest Security Telemetry (Consensus Baseline)</option>
+        </select>
+      </div>
+
+      <div style="position:relative;display:inline-flex;align-items:center;">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="position:absolute;left:10px;color:var(--ink-3);pointer-events:none;">
+          <circle cx="11" cy="11" r="8"/>
+          <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+        </svg>
+        <input
+          type="text"
+          id="fTitle"
+          class="filter-input"
+          placeholder="Filter by log title / activity…"
+          onkeydown="if(event.key==='Enter')loadDash()"
+          style="padding-left:30px;min-width:210px;height:34px;font-size:12px;"
+        />
+      </div>
 
       <select
         class="filter-select"
-        id="fTimeRange"
-        onchange="onTimeRangeChange()">
-        <option value="all">All Time</option>
-        <option value="today">Today</option>
-        <option value="24h">Last 24 Hours</option>
-        <option value="7d">Last 7 Days</option>
-        <option value="30d">Last 30 Days</option>
-        <option value="custom">Custom Date &amp; Time…</option>
+        id="fLogType"
+        onchange="loadDash()">
+        <option value="all">All Activity Types</option>
+        <option value="authentication">Auth &amp; Access Control</option>
+        <option value="network">Network Traffic &amp; Firewall</option>
+        <option value="system">System &amp; Kernel Ops</option>
+        <option value="application">Application &amp; API Services</option>
+        <option value="security">Threats &amp; Alerts</option>
       </select>
-
-      <div id="customDateWrap" class="filter-custom-wrap" style="display:none;align-items:center;gap:8px;">
-        <div class="filter-group">
-          <label for="fStartDate" class="filter-sublabel">From</label>
-          <input type="date" class="filter-input" id="fStartDate" onchange="loadDash()"/>
-          <input type="time" class="filter-input" id="fStartTime" onchange="loadDash()"/>
-        </div>
-
-        <div class="filter-group">
-          <label for="fEndDate" class="filter-sublabel">To</label>
-          <input type="date" class="filter-input" id="fEndDate" onchange="loadDash()"/>
-          <input type="time" class="filter-input" id="fEndTime" onchange="loadDash()"/>
-        </div>
-      </div>
 
       <select
         class="filter-select"
@@ -129,7 +136,6 @@
         Sync
 
       </button>
-
     </div>
 
 
@@ -271,10 +277,9 @@
 
         <div
           class="kpi-value"
-          id="kv-response">
+          id="kv-analyses">
           0
         </div>
-
       </div>
 
     </div>
@@ -302,7 +307,7 @@
         </div>
 
         <div class="chart-sub">
-          Log volume generated from your current telemetry data.
+          Actual log activity from 2 hours before now through 2 hours ahead, in 15-minute intervals. Use Sync to fetch the latest data.
         </div>
 
         <div class="chart-container">
@@ -391,7 +396,7 @@
               font-size:var(--text-xs);
               color:var(--ink-3);
             ">
-              Hourly activity based on your available log data.
+              Last 24 hours, grouped into 12 two-hour periods.
             </div>
 
           </div>
@@ -728,13 +733,8 @@
 <script src="assets/js/api.js"></script>
 <script src="assets/js/auth-guard.js"></script>
 <script src="assets/js/navbar.js"></script>
-<script src="assets/js/dashboard.js"></script>
-
-<script>
-window.addEventListener('DOMContentLoaded', () => {
-  initDashboard();
-});
-</script>
+<script src="assets/js/page-session.js?v=202610061602"></script>
+<script src="assets/js/dashboard.js?v=202610061602"></script>
 
 </body>
 </html>

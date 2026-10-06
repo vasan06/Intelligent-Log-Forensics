@@ -389,11 +389,15 @@ function copyCode(elemId) {
 }
 
 function exportToReport() {
-  if (!latestAnalysisResult) return;
-  sessionStorage.setItem('ilf_report_handoff', JSON.stringify({
-    analysis_id: latestAnalysisResult.analysis_id,
-    consensus: latestAnalysisResult.consensus,
-    logs: uploadedLogs || []
-  }));
-  window.location.href = 'reports.html?source=ml';
+  if (!latestAnalysisResult?.analysis_id) {
+    toast('Run an analysis before creating its report.', 'warn');
+    return;
+  }
+
+  const params = new URLSearchParams({
+    source: 'ml',
+    activity_id: latestAnalysisResult.analysis_id,
+    activity_type: 'ml_run'
+  });
+  window.location.assign(`/reports?${params.toString()}`);
 }

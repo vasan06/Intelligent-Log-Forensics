@@ -3,6 +3,8 @@
 <head>
 <meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/>
 <title>MITRE ATT&CK Catalog — Intelligent Log Forensic</title>
+<link rel="icon" type="image/svg+xml" href="assets/favicon.svg"/>
+<link rel="alternate icon" type="image/png" href="assets/favicon.svg"/>
 <link rel="stylesheet" href="assets/css/tokens.css"/>
 <link rel="stylesheet" href="assets/css/global.css"/>
 <link rel="stylesheet" href="assets/css/components.css"/>
@@ -43,7 +45,7 @@
 
     <!-- Tactic Category Tabs -->
     <div class="tactic-nav" id="tacticNav">
-      <button class="tactic-chip active" onclick="selectTactic('ALL')">All Categories</button>
+      <button class="tactic-chip active" onclick="selectTactic('ALL')">All Categories (50)</button>
     </div>
 
     <!-- Categorical Container -->
@@ -93,6 +95,7 @@
 <script src="assets/js/api.js"></script>
 <script src="assets/js/auth-guard.js"></script>
 <script src="assets/js/navbar.js"></script>
+<script src="assets/js/page-session.js"></script>
 <script src="assets/js/mitre-catalog.js"></script>
 <script>
 window.addEventListener('DOMContentLoaded', () => {

@@ -21,7 +21,7 @@ const KILL_CHAIN_STAGES = [
 const DEFENSE_PLAYBOOKS = {
   'T1190': {
     title: 'Exploit Public-Facing Application',
-    step1: 'Attacker scans your public IP/web server (Port 80/443), identifies unpatched parameters, and sends crafted input (SQLi / JNDI / SSRF payloads).',
+    step1: 'Attacker scans your public IP/web server (Port 80/443), identifies unpatched parameters, and sends crafted input (SQLi / JNDI / SSRF attack vectors).',
     step2: 'The backend web framework fails input sanitization, executing the command in the application process context without authentication.',
     step3: 'Attacker extracts database credentials, establishes a reverse web shell, and compromises web tier host files.',
     scenario_title: 'Log4Shell (CVE-2021-44228) & Equifax Struts RCE',
@@ -45,7 +45,7 @@ const DEFENSE_PLAYBOOKS = {
     step2: 'Victim double-clicks and opens the attachment; a background VBScript/macro triggers an automated hidden PowerShell execution.',
     step3: 'The script downloads a Cobalt Strike stager or keylogger, stealing cached browser cookies and network passwords.',
     scenario_title: 'Emotet / TrickBot Infection Wave',
-    scenario_desc: 'Password-protected ZIP files with weaponized macro spreadsheets bypassing perimeter email scanners and dropping secondary ransomware payloads.',
+    scenario_desc: 'Password-protected ZIP files with weaponized macro spreadsheets bypassing perimeter email scanners and dropping secondary ransomware binaries.',
     action: 'Isolate affected workstation from corporate LAN, purge email message ID across all Exchange mailboxes, and block sender domain.',
     command: 'Disable-NetAdapter -Name "Ethernet*" -Confirm:$false\nSearch-Mailbox -Identity "All" -SearchQuery \'Subject:"Urgent Invoice"\' -DeleteContent -Force'
   },
@@ -92,7 +92,7 @@ const DEFENSE_PLAYBOOKS = {
   'T1048': {
     title: 'Exfiltration Over Alternative Protocol',
     step1: 'Attacker compresses sensitive files (customer databases, credentials, source code) into password-protected archives (e.g., 7z or tar.gz).',
-    step2: 'The attacker initiates outbound data transfers using non-standard protocols (DNS tunneling, ICMP payloads, or encrypted HTTPS POST to external IPs).',
+    step2: 'The attacker initiates outbound data transfers using non-standard protocols (DNS tunneling, ICMP packets, or encrypted HTTPS POST to external IPs).',
     step3: 'Confidential proprietary data leaves the network perimeter undetected by standard email and web filters, leading to data extortion.',
     scenario_title: 'Lapsus$ & Conti Corporate Data Extortion',
     scenario_desc: 'Exfiltrating source code and cryptographic certificates to cloud file sharing services (Mega, Dropbox) prior to deploying encryption.',
@@ -365,13 +365,16 @@ function renderDossierCards(matches) {
           </div>
         </div>
 
-        <div class="dossier-foot">
-          <div style="font-size:11px;color:var(--ink-3);">
-            Evidence reference: <span style="font-family:var(--font-mono);">${m.log_msg || 'Stream pattern correlation'}</span>
+        <div class="dossier-foot" style="flex-direction:column;align-items:stretch;gap:8px;">
+          <details class="tech-details">
+            <summary class="tech-details-toggle">Technical Details (Matched Evidence)</summary>
+            <pre class="tech-details-content">${m.log_msg || 'Telemetry pattern correlation'}</pre>
+          </details>
+          <div style="display:flex;justify-content:flex-end;">
+            <a href="${m.mitre_url || `https://attack.mitre.org/techniques/${m.technique}/`}" target="_blank" rel="noopener noreferrer" style="font-size:12px;color:var(--brand-primary);font-weight:600;text-decoration:none;">
+              Official MITRE Matrix &rarr;
+            </a>
           </div>
-          <a href="${m.mitre_url || `https://attack.mitre.org/techniques/${m.technique}/`}" target="_blank" rel="noopener noreferrer" style="font-size:12px;color:var(--brand-primary);font-weight:600;text-decoration:none;">
-            Official MITRE Matrix &rarr;
-          </a>
         </div>
       </div>
     `;

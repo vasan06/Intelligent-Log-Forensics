@@ -655,7 +655,15 @@
             );
 
 
-            window.location.href = "/dashboard";
+            const requestedNext = new URLSearchParams(window.location.search).get("next");
+            let destination = "/dashboard";
+            if (requestedNext && requestedNext.startsWith("/") && !requestedNext.startsWith("//")) {
+              const safeDestination = new URL(requestedNext, window.location.origin);
+              if (safeDestination.origin === window.location.origin) {
+                destination = safeDestination.pathname + safeDestination.search + safeDestination.hash;
+              }
+            }
+            window.location.href = destination;
 
 
           } catch (error) {

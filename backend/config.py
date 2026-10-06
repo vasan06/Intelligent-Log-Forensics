@@ -18,9 +18,13 @@ DB_PORT = int(os.getenv("ILF_DB_PORT", "5432"))
 DB_NAME = os.getenv("ILF_DB_NAME", "ilf")
 DB_USER = os.getenv("ILF_DB_USER", "ilf_user")
 DB_PASSWORD = os.getenv("ILF_DB_PASSWORD", "")
-DATABASE_URL = os.getenv("ILF_DATABASE_URL") or (
-    f"postgresql+psycopg://{DB_USER}:{DB_PASSWORD}@{DB_HOST}:{DB_PORT}/{DB_NAME}"
-)
+# If inside Docker or ILF_DB_HOST is set to postgres, use the postgres service host
+if os.getenv("ILF_DB_HOST") == "postgres":
+    DATABASE_URL = f"postgresql+psycopg://{DB_USER}:{DB_PASSWORD}@{DB_HOST}:{DB_PORT}/{DB_NAME}"
+else:
+    DATABASE_URL = os.getenv("ILF_DATABASE_URL") or os.getenv("DATABASE_URL") or (
+        f"postgresql+psycopg://{DB_USER}:{DB_PASSWORD}@{DB_HOST}:{DB_PORT}/{DB_NAME}"
+    )
 
 SMTP_HOST = os.getenv("ILF_SMTP_HOST", "")
 SMTP_PORT = int(os.getenv("ILF_SMTP_PORT", "587"))

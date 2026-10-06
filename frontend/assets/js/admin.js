@@ -1,28 +1,38 @@
 requireAuth();
-injectNavbar();
-setBreadcrumb([{href:'dashboard.html',label:'Dashboard'},{href:'admin.html',label:'Administration'}]);
+setBreadcrumb([{href:'admin.html',label:'Administration'}]);
 
 let allUsers = [];
 let activeTab = 'users';
 
 function switchTab(tab) {
+  if (!['users', 'logs', 'inspector', 'health'].includes(tab)) return;
+
   activeTab = tab;
-  document.querySelectorAll('.admin-tab').forEach(b => b.classList.remove('active'));
   document.querySelectorAll('.tab-pane').forEach(p => p.classList.remove('active'));
 
+  // Sync navbar active state
+  document.querySelectorAll('#mainNav .nav-link, #navDrawer .drawer-link').forEach(link => {
+    if (link.dataset.tab) {
+      const isActive = link.dataset.tab === tab;
+      link.classList.toggle('active', isActive);
+      if (isActive) link.setAttribute('aria-current', 'page');
+      else link.removeAttribute('aria-current');
+    }
+  });
+
+  const tabUrl = new URL(window.location.href);
+  tabUrl.searchParams.set('tab', tab);
+  window.history.replaceState(null, '', tabUrl);
+
   if (tab === 'users') {
-    document.getElementById('tabBtnUsers').classList.add('active');
-    document.getElementById('paneUsers').classList.add('active');
+    document.getElementById('paneUsers')?.classList.add('active');
   } else if (tab === 'logs') {
-    document.getElementById('tabBtnLogs').classList.add('active');
-    document.getElementById('paneLogs').classList.add('active');
+    document.getElementById('paneLogs')?.classList.add('active');
     loadAdminLogs();
   } else if (tab === 'inspector') {
-    document.getElementById('tabBtnInspector').classList.add('active');
-    document.getElementById('paneInspector').classList.add('active');
+    document.getElementById('paneInspector')?.classList.add('active');
   } else if (tab === 'health') {
-    document.getElementById('tabBtnHealth').classList.add('active');
-    document.getElementById('paneHealth').classList.add('active');
+    document.getElementById('paneHealth')?.classList.add('active');
     loadSystemHealth();
   }
 }
@@ -396,4 +406,7 @@ async function inspectUser(userId) {
 window.addEventListener('DOMContentLoaded', () => {
   loadAdminStats();
   loadUsers();
+  const urlParams = new URLSearchParams(window.location.search);
+  const requestedTab = urlParams.get('tab') || window.location.hash.replace('#', '');
+  switchTab(['users', 'logs', 'inspector', 'health'].includes(requestedTab) ? requestedTab : 'users');
 });

@@ -1,11 +1,12 @@
-
 /*
  * navbar.js — ILF Top Navigation
  *
- * Compact text-first navigation.
- * No icons in the primary navigation.
- * Admin tab appears only for Admin users.
- * Navbar is injected once on authenticated pages.
+ * Dedicated Navbars for User Area vs Admin Area:
+ * - Admin Area shows ONLY Admin items: Overview, Users, Audit Logs, System Health
+ * - User Area shows Dashboard, Live Monitor, Log Explorer, ML Analysis, MITRE Tracker, Catalog, Reports, History, and Admin (if role=admin)
+ * - Live Monitor shows a blinking dot with NO "LIVE" text
+ * - Layout: Brand far left, Menu center, Profile menu far right
+ * - Auto-hide on scroll down, reveal on scroll up
  */
 
 const NAV_ICONS = {
@@ -49,15 +50,24 @@ const NAV_ICONS = {
    Navigation definitions
    ───────────────────────────────────────────── */
 
-const ALL_NAV_LINKS = [
+// Regular user area navigation
+const USER_NAV_LINKS = [
   { href: "/dashboard",      label: "Dashboard" },
-  { href: "/live-monitor",   label: "Live Monitor", badge: "LIVE" },
+  { href: "/live-monitor",   label: "Live Monitor", liveDot: true },
   { href: "/log-explorer",   label: "Log Explorer" },
   { href: "/ml-analysis",    label: "ML Analysis" },
   { href: "/mitre-tracker",  label: "MITRE Tracker" },
   { href: "/mitre-catalog",  label: "ATT&CK Catalog" },
   { href: "/reports",        label: "Reports" },
-  { href: "/admin",          label: "Admin", adminOnly: true }
+  { href: "/history",        label: "History" }
+];
+
+// Dedicated admin area navigation (Issue 8: Admin area must NOT show user menus)
+const ADMIN_NAV_LINKS = [
+  { href: "/admin", tab: "users",      label: "Users & Roles" },
+  { href: "/admin", tab: "logs",       label: "Multi-Tenant Logs" },
+  { href: "/admin", tab: "inspector",  label: "Activity & Audit" },
+  { href: "/admin", tab: "health",     label: "System Health" }
 ];
 
 
@@ -67,27 +77,20 @@ const ALL_NAV_LINKS = [
 
 function getCurrentPath() {
   const pathname = window.location.pathname || "/";
-
   let path = pathname.replace(/\/+$/, "");
-
   if (!path || path === "/") {
     return "/dashboard";
   }
-
   path = path.replace(/\.html$/, "");
-
   return path;
 }
-
 
 function getUser() {
   if (typeof Api !== "undefined" && typeof Api.user === "function") {
     return Api.user() || {};
   }
-
   return {};
 }
-
 
 function getInitials(name) {
   return String(name || "U")
@@ -101,60 +104,80 @@ function getInitials(name) {
 
 
 /* ─────────────────────────────────────────────
-   Build navigation
+   Build navigation links
    ───────────────────────────────────────────── */
 
-function buildNavLinks(visibleLinks, currentPath) {
+function buildNavLinks(visibleLinks, currentPath, isAdminArea) {
+  const requestedAdminTab = new URLSearchParams(window.location.search).get("tab")
+    || window.location.hash.slice(1)
+    || "users";
 
   return visibleLinks.map(link => {
+    let active = false;
+    if (isAdminArea) {
+      active = requestedAdminTab === link.tab;
+    } else {
+      active = currentPath === link.href || (link.href === "/dashboard" && currentPath === "/");
+    }
 
-    const active =
-      currentPath === link.href ||
-      (
-        link.href === "/dashboard" &&
-        currentPath === "/"
-      );
+    // Blinking dot icon for Live Monitor (Issue 2: remove LIVE text, single blinking dot)
+    const dot = link.liveDot
+      ? `<span class="nav-live-dot" title="Live stream active" aria-label="Live stream active"></span>`
+      : "";
 
-    const badge = link.badge
-      ? `<span class="nav-badge">${link.badge}</span>`
+    const clickAction = isAdminArea && link.tab
+      ? `onclick="if(typeof switchTab==='function'){switchTab('${link.tab}');return false;}"`
       : "";
 
     return `
       <a
-        href="${link.href}"
+        href="${isAdminArea && link.tab ? `${link.href}?tab=${encodeURIComponent(link.tab)}` : link.href}"
         class="nav-link ${active ? "active" : ""}"
         data-page="${link.href}"
+        ${link.tab ? `data-tab="${link.tab}"` : ""}
+        ${isAdminArea && active ? 'aria-current="page"' : ""}
+        ${isAdminArea && link.tab ? `aria-controls="pane${link.tab[0].toUpperCase()}${link.tab.slice(1)}"` : ""}
+        ${clickAction}
       >
         <span class="nav-link-label">${link.label}</span>
-        ${badge}
+        ${dot}
       </a>
     `;
   }).join("");
 }
 
-
-function buildDrawerLinks(visibleLinks, currentPath) {
+function buildDrawerLinks(visibleLinks, currentPath, isAdminArea) {
+  const requestedAdminTab = new URLSearchParams(window.location.search).get("tab")
+    || window.location.hash.slice(1)
+    || "users";
 
   return visibleLinks.map(link => {
+    let active = false;
+    if (isAdminArea) {
+      active = requestedAdminTab === link.tab;
+    } else {
+      active = currentPath === link.href || (link.href === "/dashboard" && currentPath === "/");
+    }
 
-    const active =
-      currentPath === link.href ||
-      (
-        link.href === "/dashboard" &&
-        currentPath === "/"
-      );
+    const dot = link.liveDot
+      ? `<span class="nav-live-dot" title="Live stream active"></span>`
+      : "";
 
-    const badge = link.badge
-      ? `<span class="nav-badge">${link.badge}</span>`
+    const clickAction = isAdminArea && link.tab
+      ? `onclick="if(typeof switchTab==='function'){switchTab('${link.tab}');toggleDrawer();return false;}"`
       : "";
 
     return `
       <a
-        href="${link.href}"
+        href="${isAdminArea && link.tab ? `${link.href}?tab=${encodeURIComponent(link.tab)}` : link.href}"
         class="drawer-link ${active ? "active" : ""}"
+        ${link.tab ? `data-tab="${link.tab}"` : ""}
+        ${isAdminArea && active ? 'aria-current="page"' : ""}
+        ${isAdminArea && link.tab ? `aria-controls="pane${link.tab[0].toUpperCase()}${link.tab.slice(1)}"` : ""}
+        ${clickAction}
       >
         <span>${link.label}</span>
-        ${badge}
+        ${dot}
       </a>
     `;
   }).join("");
@@ -166,39 +189,34 @@ function buildDrawerLinks(visibleLinks, currentPath) {
    ───────────────────────────────────────────── */
 
 function injectNavbar() {
-
   if (document.getElementById("mainNav")) {
     return;
   }
 
   const user = getUser();
-
   const role = String(user.role || "").toLowerCase();
   const isAdmin = role === "admin";
-
   const userName = user.name || "User";
   const userEmail = user.email || "";
   const initials = getInitials(userName);
-
   const currentPath = getCurrentPath();
+  const isAdminArea = currentPath === "/admin";
 
-  const visibleLinks = ALL_NAV_LINKS.filter(
-    link => !link.adminOnly || isAdmin
-  );
+  // Strict separation: Admin area gets admin links only. User area gets user links (+ Admin portal entry if admin).
+  let visibleLinks = [];
+  if (isAdminArea) {
+    visibleLinks = ADMIN_NAV_LINKS;
+  } else {
+    visibleLinks = [...USER_NAV_LINKS];
+    if (isAdmin) {
+      visibleLinks.push({ href: "/admin", label: "Admin Operations" });
+    }
+  }
 
-  const linksHtml = buildNavLinks(
-    visibleLinks,
-    currentPath
-  );
-
-  const drawerHtml = buildDrawerLinks(
-    visibleLinks,
-    currentPath
-  );
-
+  const linksHtml = buildNavLinks(visibleLinks, currentPath, isAdminArea);
+  const drawerHtml = buildDrawerLinks(visibleLinks, currentPath, isAdminArea);
 
   const header = document.createElement("header");
-
   header.className = "ilf-navbar-wrapper";
 
   header.innerHTML = `
@@ -208,8 +226,7 @@ function injectNavbar() {
       role="navigation"
       aria-label="Main navigation"
     >
-
-      <!-- BRAND -->
+      <!-- BRAND (Far Left) -->
       <a
         href="/dashboard"
         class="nav-brand"
@@ -220,25 +237,20 @@ function injectNavbar() {
         </span>
       </a>
 
-
-      <!-- DESKTOP LINKS -->
+      <!-- MENU (Center) -->
       <div class="nav-links" id="navLinks">
         ${linksHtml}
       </div>
 
-
-      <!-- RIGHT SIDE -->
+      <!-- PROFILE & ACTIONS (Far Right) -->
       <div class="nav-right">
-
         <div class="nav-divider"></div>
 
-
-        <!-- USER -->
+        <!-- USER DROPDOWN WRAP -->
         <div
           class="nav-user-wrap"
           id="navUserWrap"
         >
-
           <button
             type="button"
             class="nav-user-btn"
@@ -246,7 +258,6 @@ function injectNavbar() {
             aria-expanded="false"
             aria-haspopup="true"
           >
-
             <div
               class="avatar avatar-sm"
               id="navAvatar"
@@ -274,18 +285,14 @@ function injectNavbar() {
             >
               <polyline points="6 9 12 15 18 9"/>
             </svg>
-
           </button>
-
 
           <!-- USER DROPDOWN -->
           <div
             class="nav-user-dropdown"
             id="navDropdown"
           >
-
             <div class="dropdown-header">
-
               <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:2px;">
                 <div class="font-600" style="font-size:13px;color:#0F172A;">
                   ${userName}
@@ -298,39 +305,49 @@ function injectNavbar() {
               <div class="text-xs text-muted">
                 ${userEmail}
               </div>
-
             </div>
-
 
             <div class="dropdown-sep"></div>
 
-
             <a
               href="/profile"
-              class="dropdown-item"
+              class="dropdown-item ${currentPath === '/profile' ? 'active' : ''}"
             >
               ${NAV_ICONS.user}
               <span>My Profile</span>
             </a>
 
-
             ${
               isAdmin
-                ? `
-                  <a
-                    href="/admin"
-                    class="dropdown-item"
-                  >
-                    ${NAV_ICONS.settings}
-                    <span>Administration</span>
-                  </a>
-                `
+                ? (isAdminArea
+                    ? `
+                      <a
+                        href="/dashboard"
+                        class="dropdown-item"
+                      >
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" width="14" height="14">
+                          <rect x="3" y="3" width="7" height="7"/>
+                          <rect x="14" y="3" width="7" height="7"/>
+                          <rect x="14" y="14" width="7" height="7"/>
+                          <rect x="3" y="14" width="7" height="7"/>
+                        </svg>
+                        <span>User SOC Dashboard</span>
+                      </a>
+                    `
+                    : `
+                      <a
+                        href="/admin"
+                        class="dropdown-item"
+                      >
+                        ${NAV_ICONS.settings}
+                        <span>Administration Portal</span>
+                      </a>
+                    `
+                  )
                 : ""
             }
 
-
             <div class="dropdown-sep"></div>
-
 
             <button
               type="button"
@@ -340,11 +357,8 @@ function injectNavbar() {
               ${NAV_ICONS.logout}
               <span>Sign Out</span>
             </button>
-
           </div>
-
         </div>
-
 
         <!-- MOBILE MENU -->
         <button
@@ -356,11 +370,8 @@ function injectNavbar() {
         >
           ${NAV_ICONS.menu}
         </button>
-
       </div>
-
     </nav>
-
 
     <!-- MOBILE DRAWER -->
     <div
@@ -372,20 +383,10 @@ function injectNavbar() {
     </div>
   `;
 
-
-  /*
-   * Insert navbar BEFORE the page content.
-   *
-   * This is important:
-   * the navbar occupies normal document space and
-   * therefore cannot sit on top of dashboard components.
-   */
   document.body.prepend(header);
 
-
-  /* User menu */
+  /* User menu listener */
   const userButton = document.getElementById("navUserBtn");
-
   if (userButton) {
     userButton.addEventListener("click", event => {
       event.stopPropagation();
@@ -393,348 +394,156 @@ function injectNavbar() {
     });
   }
 
-
-  /* Logout */
+  /* Logout listener */
   const logoutButton = document.getElementById("navLogoutBtn");
-
   if (logoutButton) {
     logoutButton.addEventListener("click", doLogout);
   }
 
-
-  /* Mobile drawer */
+  /* Mobile drawer listener */
   const hamburger = document.getElementById("navHamburger");
-
   if (hamburger) {
     hamburger.addEventListener("click", event => {
       event.stopPropagation();
       toggleDrawer();
-      if (document.getElementById("navDrawer")?.classList.contains("open")) {
-        prefetchDrawerPages();
-      }
     });
   }
 
-
-  /* Scroll shadow */
-  window.addEventListener("scroll", handleNavbarScroll, {
-    passive: true
-  });
-
+  /* Scroll hide/reveal: hides when scrolling down, shows when scrolling up */
+  window.addEventListener("scroll", handleNavbarScroll, { passive: true });
   handleNavbarScroll();
 }
 
-const prefetchedPages = new Set();
-
-function prefetchPage(href) {
-  const target = new URL(href, window.location.href);
-  if (target.origin !== window.location.origin || target.pathname === window.location.pathname) return;
-  if (prefetchedPages.has(target.href)) return;
-
-  const prefetch = document.createElement("link");
-  prefetch.rel = "prefetch";
-  prefetch.href = target.href;
-  prefetch.referrerPolicy = "same-origin";
-  document.head.appendChild(prefetch);
-
-  prefetchedPages.add(target.href);
-  return true;
-}
-
-function prefetchPageOnIntent(event) {
-  if (!(event.target instanceof Element)) return;
-
-  const link = event.target.closest(
-    ".nav-link, .drawer-link, .dropdown-item[href], .nav-brand"
-  );
-
-  if (!link || !link.href || link.dataset.prefetched) return;
-  if (prefetchPage(link.href)) link.dataset.prefetched = "true";
-}
-
-function prefetchDrawerPages() {
-  document.querySelectorAll("#navDrawer .drawer-link").forEach(link => {
-    if (prefetchPage(link.href)) link.dataset.prefetched = "true";
-  });
-}
-
-document.addEventListener("pointerover", prefetchPageOnIntent, { passive: true });
-document.addEventListener("focusin", prefetchPageOnIntent);
-document.addEventListener("touchstart", prefetchPageOnIntent, { passive: true });
-
-
 /* ─────────────────────────────────────────────
-   User menu
+   User menu toggle
    ───────────────────────────────────────────── */
 
 function toggleUserMenu() {
-
   const wrap = document.getElementById("navUserWrap");
   const button = document.getElementById("navUserBtn");
-
   if (!wrap) return;
-
   const open = !wrap.classList.contains("open");
-
   wrap.classList.toggle("open", open);
-
-  if (button) {
-    button.setAttribute(
-      "aria-expanded",
-      String(open)
-    );
-  }
+  if (button) button.setAttribute("aria-expanded", String(open));
 }
 
-
-/* ─────────────────────────────────────────────
-   Mobile drawer
-   ───────────────────────────────────────────── */
-
 function toggleDrawer() {
+  const drawer = document.getElementById("navDrawer");
+  const hamburger = document.getElementById("navHamburger");
+  if (!drawer) return;
+  const open = !drawer.classList.contains("open");
+  drawer.classList.toggle("open", open);
+  drawer.setAttribute("aria-hidden", String(!open));
+  if (hamburger) hamburger.setAttribute("aria-expanded", String(open));
+}
+
+document.addEventListener("click", event => {
+  const wrap = document.getElementById("navUserWrap");
+  if (wrap && !wrap.contains(event.target)) {
+    wrap.classList.remove("open");
+    const button = document.getElementById("navUserBtn");
+    if (button) button.setAttribute("aria-expanded", "false");
+  }
 
   const drawer = document.getElementById("navDrawer");
   const hamburger = document.getElementById("navHamburger");
-
-  if (!drawer) return;
-
-  const open = !drawer.classList.contains("open");
-
-  drawer.classList.toggle("open", open);
-  drawer.setAttribute(
-    "aria-hidden",
-    String(!open)
-  );
-
-  if (hamburger) {
-    hamburger.setAttribute(
-      "aria-expanded",
-      String(open)
-    );
-  }
-}
-
-
-/* ─────────────────────────────────────────────
-   Close menus when clicking outside
-   ───────────────────────────────────────────── */
-
-document.addEventListener("click", event => {
-
-  const wrap = document.getElementById("navUserWrap");
-
-  if (
-    wrap &&
-    !wrap.contains(event.target)
-  ) {
-    wrap.classList.remove("open");
-
-    const button =
-      document.getElementById("navUserBtn");
-
-    if (button) {
-      button.setAttribute(
-        "aria-expanded",
-        "false"
-      );
-    }
-  }
-
-
-  const drawer =
-    document.getElementById("navDrawer");
-
-  const hamburger =
-    document.getElementById("navHamburger");
-
-  if (
-    drawer &&
-    drawer.classList.contains("open") &&
-    !drawer.contains(event.target) &&
-    !hamburger?.contains(event.target)
-  ) {
+  if (drawer && drawer.classList.contains("open") && !drawer.contains(event.target) && !hamburger?.contains(event.target)) {
     drawer.classList.remove("open");
-
-    drawer.setAttribute(
-      "aria-hidden",
-      "true"
-    );
-
-    if (hamburger) {
-      hamburger.setAttribute(
-        "aria-expanded",
-        "false"
-      );
-    }
+    drawer.setAttribute("aria-hidden", "true");
+    if (hamburger) hamburger.setAttribute("aria-expanded", "false");
   }
-
 });
-
-
-/* ─────────────────────────────────────────────
-   Escape closes menus
-   ───────────────────────────────────────────── */
 
 document.addEventListener("keydown", event => {
-
-  if (event.key !== "Escape") {
-    return;
-  }
-
-  const wrap =
-    document.getElementById("navUserWrap");
-
-  const drawer =
-    document.getElementById("navDrawer");
-
-  const hamburger =
-    document.getElementById("navHamburger");
-
-  if (wrap) {
-    wrap.classList.remove("open");
-  }
-
+  if (event.key !== "Escape") return;
+  const wrap = document.getElementById("navUserWrap");
+  const drawer = document.getElementById("navDrawer");
+  if (wrap) wrap.classList.remove("open");
   if (drawer) {
     drawer.classList.remove("open");
-    drawer.setAttribute(
-      "aria-hidden",
-      "true"
-    );
+    drawer.setAttribute("aria-hidden", "true");
   }
-
-  const button =
-    document.getElementById("navUserBtn");
-
-  if (button) {
-    button.setAttribute(
-      "aria-expanded",
-      "false"
-    );
-  }
-
-  if (hamburger) {
-    hamburger.setAttribute(
-      "aria-expanded",
-      "false"
-    );
-  }
-
 });
 
-
 /* ─────────────────────────────────────────────
-   Navbar shadow
+   Navbar hide on scroll down, show on scroll up
    ───────────────────────────────────────────── */
+
+let lastNavbarY = 0;
+let scrollDelta = 0;
 
 function handleNavbarScroll() {
+  const nav = document.getElementById("mainNav");
+  const wrapper = document.querySelector(".ilf-navbar-wrapper");
+  if (!nav || !wrapper) return;
 
-  const nav =
-    document.getElementById("mainNav");
-
-  if (!nav) return;
-
-  nav.classList.toggle(
-    "scrolled",
-    window.scrollY > 8
+  const currentY = window.scrollY || 0;
+  const menuOpen = Boolean(
+    document.getElementById("navUserWrap")?.classList.contains("open") ||
+    document.getElementById("navDrawer")?.classList.contains("open")
   );
-}
 
+  nav.classList.toggle("scrolled", currentY > 8);
+  wrapper.classList.toggle("scrolled", currentY > 8);
 
-/* ─────────────────────────────────────────────
-   Refresh user information
-   ───────────────────────────────────────────── */
-
-function refreshNavUser() {
-
-  if (
-    typeof Api === "undefined" ||
-    typeof Api.user !== "function"
-  ) {
+  if (menuOpen) {
+    wrapper.classList.remove("nav-hidden");
+    lastNavbarY = currentY;
     return;
   }
 
+  const diff = currentY - lastNavbarY;
+
+  // Scroll down -> hide
+  if (diff > 4 && currentY > 60) {
+    wrapper.classList.add("nav-hidden");
+  }
+  // Scroll up -> show
+  else if (diff < -4) {
+    wrapper.classList.remove("nav-hidden");
+  }
+
+  lastNavbarY = Math.max(0, currentY);
+}
+
+window.addEventListener("scroll", handleNavbarScroll, { passive: true });
+
+function refreshNavUser() {
+  if (typeof Api === "undefined" || typeof Api.user !== "function") return;
   const user = Api.user() || {};
-
   const name = user.name || "User";
-
   const initials = getInitials(name);
+  const avatar = document.getElementById("navAvatar");
+  const nameElement = document.getElementById("navUserName");
+  const roleElement = document.getElementById("navUserRole");
 
-  const avatar =
-    document.getElementById("navAvatar");
-
-  const nameElement =
-    document.getElementById("navUserName");
-
-  const roleElement =
-    document.getElementById("navUserRole");
-
-  if (avatar) {
-    avatar.textContent = initials;
-  }
-
-  if (nameElement) {
-    nameElement.textContent = name;
-  }
-
+  if (avatar) avatar.textContent = initials;
+  if (nameElement) nameElement.textContent = name;
   if (roleElement) {
-    const isAdmin =
-      String(user.role || "").toLowerCase() === "admin";
-
-    roleElement.textContent =
-      isAdmin ? "Admin" : "User";
-
-    roleElement.classList.toggle(
-      "admin-badge",
-      isAdmin
-    );
+    const isAdmin = String(user.role || "").toLowerCase() === "admin";
+    roleElement.textContent = isAdmin ? "Admin" : "User";
+    roleElement.classList.toggle("admin-badge", isAdmin);
   }
 }
 
-
-/* ─────────────────────────────────────────────
-   Logout
-   ───────────────────────────────────────────── */
-
 async function doLogout() {
-
   try {
-
-    if (
-      typeof Api !== "undefined" &&
-      typeof Api.logout === "function"
-    ) {
+    if (typeof Api !== "undefined" && typeof Api.logout === "function") {
       await Api.logout().catch(() => {});
     }
-
   } finally {
-
-    if (
-      typeof Api !== "undefined" &&
-      typeof Api.clearAuth === "function"
-    ) {
+    if (typeof Api !== "undefined" && typeof Api.clearAuth === "function") {
       Api.clearAuth();
     } else {
       localStorage.clear();
+      sessionStorage.clear();
     }
-
     window.location.replace("/login");
   }
 }
 
-
-/* ─────────────────────────────────────────────
-   Auto inject
-   ───────────────────────────────────────────── */
-
 if (document.readyState === "loading") {
-
-  document.addEventListener(
-    "DOMContentLoaded",
-    injectNavbar
-  );
-
+  document.addEventListener("DOMContentLoaded", injectNavbar);
 } else {
-
   injectNavbar();
-
 }
