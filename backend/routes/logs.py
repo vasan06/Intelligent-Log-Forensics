@@ -17,7 +17,9 @@ import jwt
 from backend import config
 from backend.database import get_db
 from backend.models.user import users
+from backend.models.upload_job import upload_jobs
 from backend.models.uploaded_file import uploaded_files
+from backend.services.upload_processing import iter_log_batches, submit_upload_job
 from backend.models.log_analysis import log_analyses
 from backend.services.log_simulator import generate_logs, SOURCES, MODES
 from backend.services.ml_service import run_ensemble
@@ -160,7 +162,7 @@ def parse_log_content(content_bytes, filename="uploaded.log"):
             if isinstance(data, dict):
                 data = data.get("logs") or data.get("events") or [data]
             if isinstance(data, list):
-                for i, item in enumerate(data[:10000], 1):
+                for i, item in enumerate(data, 1):
                     if isinstance(item, dict):
                         sev = str(item.get("level") or item.get("severity") or "INFO").upper()
                         if sev in ("WARNING",): sev = "WARN"
@@ -583,41 +585,11 @@ def upload():
         return jsonify({"success": False, "message": "Uploaded file is empty"}), 400
 
     file_id = str(uuid.uuid4())
+    analysis_id = str(uuid.uuid4())
+    job_id = str(uuid.uuid4())
     db_loc = f"db://users/{uid}/uploads/{file_id}"
 
     try:
-        parsed, severity, sources_map = parse_log_content(file_bytes, safe_name)
-        if not parsed:
-            return jsonify({"success": False, "message": "Could not parse any log lines from file"}), 400
-
-        # Execute Scikit-Learn Ensemble on full dataset without arbitrary limits
-        ml = run_ensemble(parsed)
-
-        results = {
-            "source": "upload",
-            "filename": safe_name,
-            "total_logs": len(parsed),
-            "lines_parsed": len(parsed),
-            "anomalies": len(ml.get("flagged_entries", [])),
-            "anomalies_found": len(ml.get("flagged_entries", [])),
-            "severity": dict(severity),
-            "top_sources": dict(sources_map),
-            "ml": ml,
-            "ml_analysis": ml,
-            "log_volume": {level: [0] * 24 for level in ("INFO", "WARN", "ERROR", "CRITICAL", "DEBUG")},
-            "activity": {
-                "days": ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"],
-                "hours": [f"{h:02d}h" for h in range(0, 24, 2)],
-                "data": [[0] * 12 for _ in range(7)],
-            },
-            "preview": parsed[:100],
-            "logs": parsed,
-        }
-
-        now = datetime.datetime.now(datetime.timezone.utc)
-        results["log_volume"]["INFO"][now.hour] = len(parsed)
-
-        # Store exclusively in PostgreSQL
         with get_db() as db:
             db.execute(
                 uploaded_files.insert().values(
@@ -628,40 +600,131 @@ def upload():
                     content_data=file_bytes,
                     db_location=db_loc,
                     size=size,
-                    status="analyzed",
+                    status="queued",
                 )
             )
-
-            analysis_id = str(uuid.uuid4())
             db.execute(
                 log_analyses.insert().values(
                     id=analysis_id,
                     user_id=uid,
                     file_id=file_id,
-                    status="completed",
-                    results=results,
+                    status="pending",
+                    results={"source": "upload", "filename": safe_name, "total_logs": 0, "lines_parsed": 0},
+                )
+            )
+            db.execute(
+                upload_jobs.insert().values(
+                    id=job_id,
+                    user_id=uid,
+                    file_id=file_id,
+                    analysis_id=analysis_id,
+                    status="queued",
+                    stage="queued",
+                    processed_records=0,
                 )
             )
 
-        _pipelines[file_id] = {"stage": 3, "started": time.time(), "analysis_id": analysis_id}
-
+        submit_upload_job(job_id)
         return jsonify({
             "success": True,
             "file_id": file_id,
             "analysis_id": analysis_id,
+            "job_id": job_id,
+            "status": "queued",
             "filename": safe_name,
             "size": size,
             "db_location": db_loc,
-            "lines_parsed": len(parsed),
-            "anomalies_found": len(ml.get("flagged_entries", [])),
-            "risk_level": ml.get("risk_level", "LOW"),
-            "consensus_score": ml.get("consensus_score", 0),
-            "preview": parsed[:100],
-            "logs": parsed,
-        }), 201
+        }), 202
 
     except Exception as exc:
         return jsonify({"success": False, "message": f"File processing failed: {exc}"}), 500
+
+
+@logs_bp.route("/logs/jobs/<job_id>", methods=["GET"])
+def upload_job_status(job_id):
+    uid = auth_user_id()
+    if not uid:
+        return jsonify({"success": False, "message": "Authentication required"}), 401
+
+    with get_db() as db:
+        row = db.execute(
+            select(
+                upload_jobs,
+                uploaded_files.c.filename,
+                uploaded_files.c.size,
+                uploaded_files.c.db_location,
+                log_analyses.c.results,
+            ).select_from(
+                upload_jobs.join(uploaded_files, uploaded_files.c.id == upload_jobs.c.file_id)
+                .join(log_analyses, log_analyses.c.id == upload_jobs.c.analysis_id)
+            ).where(upload_jobs.c.id == job_id, upload_jobs.c.user_id == uid)
+        ).mappings().first()
+
+    if not row:
+        return jsonify({"success": False, "message": "Upload job not found"}), 404
+
+    results = row["results"] or {}
+    return jsonify({
+        "success": True,
+        "job_id": job_id,
+        "file_id": str(row["file_id"]),
+        "analysis_id": str(row["analysis_id"]),
+        "filename": row["filename"],
+        "size": row["size"],
+        "db_location": row["db_location"],
+        "status": row["status"],
+        "stage": row["stage"],
+        "processed_records": row["processed_records"],
+        "error": row["error"],
+        "result": results if row["status"] == "completed" else None,
+    })
+
+
+@logs_bp.route("/logs/files/<file_id>/records", methods=["GET"])
+def uploaded_file_records(file_id):
+    uid = auth_user_id()
+    if not uid:
+        return jsonify({"success": False, "message": "Authentication required"}), 401
+    try:
+        offset = max(int(request.args.get("offset", 0)), 0)
+        limit = min(max(int(request.args.get("limit", 100)), 1), 500)
+    except (TypeError, ValueError):
+        return jsonify({"success": False, "message": "offset and limit must be integers"}), 400
+
+    with get_db() as db:
+        row = db.execute(
+            select(uploaded_files.c.filename, uploaded_files.c.content_data)
+            .where(uploaded_files.c.id == file_id, uploaded_files.c.user_id == uid)
+        ).mappings().first()
+        summary = db.execute(
+            select(log_analyses.c.results)
+            .where(log_analyses.c.file_id == file_id, log_analyses.c.user_id == uid)
+            .order_by(log_analyses.c.created_at.desc())
+            .limit(1)
+        ).mappings().first()
+    if not row or row["content_data"] is None:
+        return jsonify({"success": False, "message": "Uploaded file not found"}), 404
+
+    summary_results = (summary or {}).get("results") or {}
+    total_records = int(summary_results.get("total_logs", 0))
+    records = []
+    position = 0
+    for batch in iter_log_batches(row["content_data"], row["filename"]):
+        next_position = position + len(batch)
+        if next_position > offset and position < offset + limit:
+            records.extend(batch[max(0, offset - position):offset + limit - position])
+        position = next_position
+        if len(records) >= limit:
+            break
+    return jsonify({
+        "success": True,
+        "file_id": file_id,
+        "offset": offset,
+        "limit": limit,
+        "records": records[:limit],
+        "total_records": total_records,
+        "has_more": offset + len(records) < total_records,
+    })
 
 
 # ── SIMULATION PERSISTENCE (In-DB) ───────────────────────────

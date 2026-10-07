@@ -38,12 +38,17 @@ def create_app():
 
     # Use the existing config module.
     app.config.from_object(config)
+    app.config["MAX_CONTENT_LENGTH"] = config.MAX_UPLOAD_BYTES
 
     CORS(
         app,
         origins=config.CORS_ORIGINS,
         supports_credentials=True,
     )
+
+    @app.errorhandler(413)
+    def upload_too_large(_error):
+        return {"success": False, "message": "Upload exceeds the configured file-size limit."}, 413
 
     # Initialize schema on startup for development. Production deployments should use migrations.
     try:

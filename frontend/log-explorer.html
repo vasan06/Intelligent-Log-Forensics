@@ -227,6 +227,13 @@
             <tbody id="logTable"></tbody>
           </table>
         </div>
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-top:12px;">
+          <span class="text-xs text-muted" id="recordPageLabel"></span>
+          <div style="display:flex;gap:8px;">
+            <button class="btn btn-secondary btn-sm" id="previousRecords" onclick="loadPreviousRecords()" style="display:none;">Previous</button>
+            <button class="btn btn-secondary btn-sm" id="loadMoreRecords" onclick="loadMoreRecords()" style="display:none;">Next Page</button>
+          </div>
+        </div>
       </div>
     </div>
   </main>

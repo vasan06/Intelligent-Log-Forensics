@@ -6,8 +6,8 @@
 Chart.defaults.font.family = "'Space Grotesk', sans-serif";
 Chart.defaults.color       = '#6B6880';
 
-let timelineInst, featureInst, uploadedLogs = null, currentSource = 'stream';
-let activeEventId = null, activeFileId = null, latestAnalysisResult = null;
+let timelineInst, featureInst, uploadedLogs = null, selectedUploadFile = null, currentSource = 'stream';
+let activeEventId = null, activeFileId = null, activeFileName = '', latestAnalysisResult = null;
 
 const RUN_MSGS = [
   'Ingesting forensic logs…',
@@ -44,23 +44,19 @@ function onMlDrop(e) {
 async function onMlFile(input) {
   const file = input.files?.[0];
   if (!file) return;
+  selectedUploadFile = file;
+  uploadedLogs = null;
   document.getElementById('mlUploadLabel').textContent = `Loaded file: ${file.name}`;
-  const text = await file.text().catch(() => '');
-  uploadedLogs = text.split('\n').filter(Boolean).map((line, i) => ({
-    id: String(i),
-    timestamp: new Date().toISOString(),
-    message: line,
-    severity: /critical|fatal/i.test(line) ? 'CRITICAL' : /error|failed/i.test(line) ? 'ERROR' : /warn/i.test(line) ? 'WARN' : 'INFO',
-    source: 'uploaded_file',
-    ip: (line.match(/\b(?:\d{1,3}\.){3}\d{1,3}\b/) || ['192.168.1.100'])[0],
-  }));
-  toast(`Loaded ${uploadedLogs.length} entries from ${file.name}`, 'success');
+  toast(`Ready to upload ${file.name} for background analysis`, 'info');
 }
 
 function clearHandover() {
   activeEventId = null;
   activeFileId = null;
+  activeFileName = '';
+  latestAnalysisResult = null;
   uploadedLogs = null;
+  selectedUploadFile = null;
   sessionStorage.removeItem('ilf_active_event');
   sessionStorage.removeItem('ilf_event_logs');
   document.getElementById('handoverBanner')?.classList.remove('show');
@@ -107,13 +103,23 @@ async function checkHandoverOnLoad() {
     const bannerText = document.getElementById('handoverText');
     if (bannerText) bannerText.textContent = `Loading event record #${eventId}…`;
     const res = await Api.getMlEvent(eventId);
-    if (res.ok && res.data?.success && res.data?.event) {
-      const ev = res.data.event;
-      if (ev.raw_logs && ev.raw_logs.length > 0) {
-        uploadedLogs = ev.raw_logs;
-        if (ev.filename) activeFileName = ev.filename;
-        if (bannerText) bannerText.textContent = `Loaded analysis event #${ev.id} (${uploadedLogs.length} logs)`;
+    if (res.ok && res.data?.success) {
+      const event = res.data;
+      if (event.filename) activeFileName = event.filename;
+      if (event.file_id) activeFileId = event.file_id;
+      if (bannerText) bannerText.textContent = `Loaded analysis event #${event.analysis_id || eventId}`;
+      if (event.ml?.success) {
+        latestAnalysisResult = {
+          ...event.ml,
+          analysis_id: event.analysis_id || eventId,
+          file_id: event.file_id,
+        };
+        renderResults(latestAnalysisResult);
+      } else if (event.logs?.length) {
+        uploadedLogs = event.logs;
         runAnalysis();
+      } else if (bannerText) {
+        bannerText.textContent = 'This upload has no completed analysis result yet.';
       }
     }
   }
@@ -130,7 +136,7 @@ async function runAnalysis() {
   document.getElementById('resultsSection')?.classList.remove('show');
 
   let step = 0;
-  const ticker = setInterval(() => {
+  const ticker = selectedUploadFile ? null : setInterval(() => {
     if (msgEl) msgEl.textContent  = RUN_MSGS[step % RUN_MSGS.length];
     if (progEl) progEl.style.width = Math.min((step / RUN_MSGS.length) * 100 + 10, 92) + '%';
     step++;
@@ -145,14 +151,60 @@ async function runAnalysis() {
     file_id: activeFileId || undefined
   };
 
-  const res = await Api.mlAnalyze(payload);
+  let res;
+  try {
+    if (selectedUploadFile) {
+      const form = new FormData();
+      form.append('file', selectedUploadFile);
+      res = await Api.uploadLog(form);
+      if (res.ok && res.data?.success) {
+        const jobId = res.data.job_id;
+        activeFileId = res.data.file_id;
+        activeEventId = res.data.analysis_id;
+        activeFileName = res.data.filename;
+        if (msgEl) msgEl.textContent = 'Upload accepted; waiting for background analysis…';
+        while (true) {
+          await new Promise(resolve => setTimeout(resolve, 1000));
+          const status = await Api.uploadJob(jobId);
+          if (!status.ok || !status.data?.success) {
+            res = status;
+            break;
+          }
+          if (msgEl) {
+            msgEl.textContent = `${status.data.stage}: ${status.data.processed_records.toLocaleString()} records processed`;
+          }
+          if (status.data.status === 'failed') {
+            res = { ok: false, data: { message: status.data.error } };
+            break;
+          }
+          if (status.data.status === 'completed') {
+            res = {
+              ok: true,
+              data: {
+                ...status.data.result.ml,
+                analysis_id: status.data.analysis_id,
+                file_id: status.data.file_id,
+                total_analyzed: status.data.result.total_logs,
+              },
+            };
+            selectedUploadFile = null;
+            break;
+          }
+        }
+      }
+    } else {
+      res = await Api.mlAnalyze(payload);
+    }
+  } catch (error) {
+    res = { ok: false, data: { message: error.message } };
+  }
 
-  clearInterval(ticker);
+  if (ticker) clearInterval(ticker);
   if (overlay) overlay.classList.remove('show');
   if (runBtn) runBtn.disabled = false;
 
   if (!res.ok || !res.data?.success) {
-    toast('Ensemble analysis failed — check backend status', 'error');
+    toast(res.data?.message || 'Ensemble analysis failed — check backend status', 'error');
     return;
   }
 
