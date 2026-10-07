@@ -4,13 +4,12 @@
  */
 
 let allLogs = [];
-let pipelineTimer = null;
 let currentFileId = null;
 let currentAnalysisId = null;
 let currentFileName = '';
-
-const STAGE_STATUS = ['Uploading…', 'Parsing…', 'Normalizing…', 'Analyzing…', 'Detecting anomalies…', 'Storing records…', 'Finalizing…'];
-const STAGE_DONE   = ['Uploaded', 'Parsed', 'Normalized', 'Analyzed', 'Detected', 'Stored', 'Complete'];
+let currentJobId = null;
+let pageOffset = 0;
+let totalRecordCount = 0;
 
 function initLogExplorer() {
   requireAuth();
@@ -37,22 +36,6 @@ function setPipelineUI(stageIndex, status = 'active') {
   }
 }
 
-function runSimulatedPipeline(onFinish) {
-  let s = 0;
-  setPipelineUI(0, 'active');
-  if (pipelineTimer) clearInterval(pipelineTimer);
-  pipelineTimer = setInterval(() => {
-    s++;
-    if (s < 6) {
-      setPipelineUI(s, 'active');
-    } else if (s === 6) {
-      setPipelineUI(6, 'done');
-      clearInterval(pipelineTimer);
-      if (onFinish) onFinish();
-    }
-  }, 350);
-}
-
 function onDragOver(e) {
   e.preventDefault();
   document.getElementById('uploadZone').classList.add('drag-active');
@@ -74,41 +57,117 @@ async function handleFile(file) {
   if (!file) return;
   document.getElementById('uploadSection').style.display = 'none';
 
-  runSimulatedPipeline();
+  setPipelineUI(0, 'active');
 
   const fd = new FormData();
   fd.append('file', file);
 
-  const res = await Api.uploadLog(fd);
+  let res;
+  try {
+    res = await Api.uploadLog(fd);
+  } catch (error) {
+    setPipelineUI(0, 'error');
+    toast(`Upload failed: ${error.message}`, 'error');
+    document.getElementById('uploadSection').style.display = 'block';
+    return;
+  }
   const data = res?.data;
 
   if (!res?.ok || !data?.success) {
-    if (pipelineTimer) clearInterval(pipelineTimer);
     setPipelineUI(0, 'error');
     toast(data?.message || 'Upload failed', 'error');
-    setTimeout(() => resetUpload(), 1200);
+    document.getElementById('uploadSection').style.display = 'block';
     return;
-  }
-
-  if (pipelineTimer) clearInterval(pipelineTimer);
-  for (let i = 0; i < 7; i++) {
-    setPipelineUI(i, 'done');
   }
 
   currentFileId = data.file_id;
   currentAnalysisId = data.analysis_id;
+  currentJobId = data.job_id;
   currentFileName = data.filename;
-
-  animateCount(document.getElementById('res-lines'), data.lines_parsed);
-  animateCount(document.getElementById('res-anomalies'), data.anomalies_found);
-  document.getElementById('res-risk').textContent = data.risk_level || 'LOW';
   document.getElementById('res-loc').textContent = data.db_location || `db://users/uploads/${data.file_id}`;
   document.getElementById('res-loc').title = data.db_location || '';
+  setPipelineUI(1, 'active');
+  toast(`Upload accepted (${(data.size / (1024 * 1024)).toFixed(1)} MB); processing in background`, 'info');
 
-  allLogs = (data.logs && data.logs.length > 0) ? data.logs : (data.preview || []);
+  const stageIndexes = { queued: 0, parsing: 1, analyzing: 3, storing: 5, complete: 6, failed: 0 };
+  while (currentJobId === data.job_id) {
+    await new Promise(resolve => setTimeout(resolve, 1000));
+    const status = await Api.uploadJob(data.job_id);
+    if (!status.ok || !status.data?.success) {
+      setPipelineUI(0, 'error');
+      toast(status.data?.message || 'Unable to read upload job status', 'error');
+      return;
+    }
+    const job = status.data;
+    if (job.status === 'failed') {
+      setPipelineUI(stageIndexes[job.stage] ?? 0, 'error');
+      toast(`Processing failed: ${job.error || 'unknown error'}`, 'error');
+      document.getElementById('uploadSection').style.display = 'block';
+      return;
+    }
+    if (job.status === 'completed') {
+      for (let i = 0; i < 7; i++) setPipelineUI(i, 'done');
+      const result = job.result || {};
+      animateCount(document.getElementById('res-lines'), result.lines_parsed || 0);
+      animateCount(document.getElementById('res-anomalies'), result.anomalies_found || 0);
+      document.getElementById('res-risk').textContent = result.ml?.risk_level || 'LOW';
+      allLogs = result.preview || [];
+      totalRecordCount = result.total_logs || result.lines_parsed || 0;
+      pageOffset = 0;
+      renderTable(allLogs);
+      updateRecordPagination();
+      document.getElementById('resultsSection').style.display = 'block';
+      toast(`Analyzed ${totalRecordCount.toLocaleString()} records from ${file.name}`, 'success');
+      return;
+    }
+    const stageIndex = stageIndexes[job.stage] ?? 1;
+    setPipelineUI(stageIndex, 'active');
+    const statusLabel = document.querySelector(`#pl-${stageIndex} .pipeline-label-name`);
+    if (statusLabel) statusLabel.textContent = `${job.processed_records.toLocaleString()} records`;
+  }
+}
+
+async function loadMoreRecords() {
+  if (!currentFileId) return;
+  const button = document.getElementById('loadMoreRecords');
+  if (button) button.disabled = true;
+  const res = await Api.uploadedFileRecords(currentFileId, pageOffset + allLogs.length, 100);
+  if (!res.ok || !res.data?.success) {
+    toast(res.data?.message || 'Unable to load more records', 'error');
+    if (button) button.disabled = false;
+    return;
+  }
+  pageOffset += allLogs.length;
+  allLogs = res.data.records || [];
   renderTable(allLogs);
-  document.getElementById('resultsSection').style.display = 'block';
-  toast(`Stored in PostgreSQL & analyzed ${data.lines_parsed.toLocaleString()} lines from ${file.name}`, 'success');
+  updateRecordPagination();
+  if (button) button.disabled = false;
+}
+
+async function loadPreviousRecords() {
+  if (!currentFileId || pageOffset <= 0) return;
+  const offset = Math.max(pageOffset - 100, 0);
+  const res = await Api.uploadedFileRecords(currentFileId, offset, 100);
+  if (!res.ok || !res.data?.success) {
+    toast(res.data?.message || 'Unable to load previous records', 'error');
+    return;
+  }
+  pageOffset = offset;
+  allLogs = res.data.records || [];
+  renderTable(allLogs);
+  updateRecordPagination();
+}
+
+function updateRecordPagination() {
+  const label = document.getElementById('recordPageLabel');
+  const button = document.getElementById('loadMoreRecords');
+  const previous = document.getElementById('previousRecords');
+  if (label) {
+    const first = totalRecordCount ? pageOffset + 1 : 0;
+    label.textContent = `Showing ${first.toLocaleString()}–${(pageOffset + allLogs.length).toLocaleString()} of ${totalRecordCount.toLocaleString()} records`;
+  }
+  if (button) button.style.display = pageOffset + allLogs.length < totalRecordCount ? 'inline-flex' : 'none';
+  if (previous) previous.style.display = pageOffset > 0 ? 'inline-flex' : 'none';
 }
 
 async function loadDemoSample(sampleType) {
@@ -272,20 +331,23 @@ function filterTable() {
 }
 
 function resetUpload() {
-  if (pipelineTimer) clearInterval(pipelineTimer);
   for (let i = 0; i < 7; i++) {
     const el = document.getElementById('pl-' + i);
     if (!el) continue;
     el.classList.remove('active', 'done', 'error');
-    const statusEl = el.querySelector('.pipeline-label-status');
-    if (statusEl) statusEl.textContent = 'Waiting';
+    const statusEl = el.querySelector('.pipeline-label-name');
+    if (statusEl) statusEl.textContent = ['Upload', 'Parse', 'Normalize', 'Analyze', 'Detect', 'Store', 'Complete'][i];
   }
   allLogs = [];
   currentFileId = null;
   currentAnalysisId = null;
   currentFileName = '';
+  currentJobId = null;
+  pageOffset = 0;
+  totalRecordCount = 0;
   const logTable = document.getElementById('logTable');
   if (logTable) logTable.innerHTML = '';
+  updateRecordPagination();
   document.getElementById('resultsSection').style.display = 'none';
   document.getElementById('uploadSection').style.display = 'block';
   const fileInput = document.getElementById('fileInput');

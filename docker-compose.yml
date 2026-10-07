@@ -44,6 +44,7 @@ services:
       ILF_DB_PASSWORD: ${ILF_DB_PASSWORD:-ilf_secure_password}
       ILF_DB_NAME: ${ILF_DB_NAME:-ilf}
       LOKY_MAX_CPU_COUNT: 2
+      ILF_INLINE_UPLOAD_WORKER: "false"
       ADMIN_EMAIL: ${ADMIN_EMAIL:-admin@ilf.local}
       ADMIN_PASSWORD: ${ADMIN_PASSWORD:-admin123}
 
@@ -63,6 +64,27 @@ services:
       timeout: 5s
       retries: 3
       start_period: 15s
+
+  upload-worker:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: ilf_upload_worker
+    restart: unless-stopped
+    command: ["python", "-m", "backend.upload_worker"]
+    env_file:
+      - .env
+    environment:
+      ILF_DB_HOST: postgres
+      ILF_DB_PORT: 5432
+      ILF_DB_USER: ${ILF_DB_USER:-ilf_user}
+      ILF_DB_PASSWORD: ${ILF_DB_PASSWORD:-ilf_secure_password}
+      ILF_DB_NAME: ${ILF_DB_NAME:-ilf}
+      LOKY_MAX_CPU_COUNT: 2
+      ILF_INLINE_UPLOAD_WORKER: "false"
+    depends_on:
+      web:
+        condition: service_healthy
 
 volumes:
   ilf_pgdata:

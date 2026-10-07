@@ -7,6 +7,7 @@ This repository contains a Flask API and static, multi-page frontend. The authen
 ## Capabilities
 
 - Upload and inspect log files, and run sample or simulated log streams.
+- Large uploads are processed by a persistent background worker in batches; the default request limit is 64 MiB.
 - Analyse log events using the configured anomaly-detection models.
 - Browse MITRE ATT&CK tactics and techniques and view event mappings.
 - Review dashboard metrics, reports, account activity, and profile settings.
@@ -14,6 +15,10 @@ This repository contains a Flask API and static, multi-page frontend. The authen
 - Export account data and generate downloadable forensic reports.
 
 The exact algorithms and behavior are implemented in `backend/services/ml_service.py`; the frontend describes and presents the currently configured models.
+
+### Large log uploads
+
+The Log Explorer and ML Analysis upload controls use the same background job pipeline. In Docker Compose, the `upload-worker` service consumes persisted jobs, so a worker restart re-queues interrupted jobs. For local `start.bat`/`start.sh` usage, processing runs in the Flask process. Results retain aggregate counts and ensemble findings; the Log Explorer fetches records in pages rather than rendering the entire upload. Set `ILF_MAX_UPLOAD_BYTES` to change the Flask request limit and configure any reverse proxy to allow at least the same size.
 
 ## Technology
 
@@ -33,6 +38,7 @@ The exact algorithms and behavior are implemented in `backend/services/ml_servic
 │   ├── app.py                    Flask app factory, API registration, and page routes
 │   ├── config.py                 Environment-backed configuration
 │   ├── database.py               SQLAlchemy engine, sessions, and schema setup
+│   ├── upload_worker.py          Durable background upload-job worker
 │   ├── __init__.py
 │   ├── data/
 │   │   └── mitre_catalog.json    MITRE ATT&CK catalog data
@@ -40,6 +46,7 @@ The exact algorithms and behavior are implemented in `backend/services/ml_servic
 │   │   ├── log_analysis.py       Analysis records
 │   │   ├── report.py             Report records
 │   │   ├── session.py            Refresh/authentication sessions
+│   │   ├── upload_job.py         Persistent upload-job state
 │   │   ├── uploaded_file.py      Uploaded log metadata/content
 │   │   └── user.py               User accounts and roles
 │   ├── routes/                   Flask API blueprints and package exports
@@ -54,6 +61,7 @@ The exact algorithms and behavior are implemented in `backend/services/ml_servic
 │   └── services/                 Reusable application services
 │       ├── log_simulator.py      Sample telemetry generation
 │       ├── ml_service.py         Analysis and anomaly detection
+│       ├── upload_processing.py  Batched upload parsing and analysis
 │       └── otp_service.py        One-time-code and email support
 ├── frontend/
 │   ├── admin.html

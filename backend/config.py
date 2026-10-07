@@ -42,6 +42,7 @@ CORS_ORIGINS = [x.strip() for x in os.getenv(
 ).split(",") if x.strip()]
 LOG_LEVEL = os.getenv("ILF_LOG_LEVEL", "INFO")
 SUPPRESS_OTP_LOGS = True
+MAX_UPLOAD_BYTES = int(os.getenv("ILF_MAX_UPLOAD_BYTES", str(64 * 1024 * 1024)))
 
 ADMIN_EMAIL = os.getenv("ILF_ADMIN_EMAIL", "vasan83000@gmail.com").strip().lower()
 ADMIN_PASSWORD = os.getenv("ILF_ADMIN_PASSWORD", "Vasan@83000")

@@ -474,7 +474,7 @@ def _build_dashboard(rows, filters=None, latest_ml=None):
         if avg_resp is not None:
             response_times.append(_as_number(avg_resp))
 
-        raw_logs = results.get("logs") or results.get("preview") or []
+        raw_logs = [] if results.get("records_embedded") is False else (results.get("logs") or results.get("preview") or [])
 
         if raw_logs and isinstance(raw_logs, list):
             matched_logs = []
@@ -574,21 +574,33 @@ def _build_dashboard(rows, filters=None, latest_ml=None):
                 continue
 
             r_src = str(results.get("source") or "upload").lower()
-            if is_src_filtered and r_src != src_filter:
-                continue
+            source_counts = results.get("top_sources") or {}
+            if is_src_filtered and results.get("records_embedded") is False:
+                r_total = int(_as_number(source_counts.get(src_filter, 0)))
+                if not r_total:
+                    continue
+            else:
+                if is_src_filtered and r_src != src_filter:
+                    continue
+                r_total = int(_as_number(_analysis_value(results, "total_logs", "lines_parsed", default=0)))
             if is_title_filtered and title_filter not in fname.lower():
                 continue
-            if is_type_filtered and type_filter not in r_src:
+            if is_type_filtered and type_filter not in r_src and not any(type_filter in str(src) for src in source_counts):
                 continue
 
-            r_total = int(_as_number(_analysis_value(results, "total_logs", "lines_parsed", default=0)))
             r_anom = int(_as_number(_analysis_value(results, "anomalies", "anomalies_found", default=0)))
 
+            sev_dict = results.get("severity") or {}
+            if is_sev_filtered:
+                r_total = int(_as_number(sev_dict.get(sev_filter, 0)))
             total_logs += r_total
             anomalies += r_anom
-            sources[r_src] += r_total
-
-            sev_dict = results.get("severity") or {}
+            if is_src_filtered and results.get("records_embedded") is False:
+                sources[src_filter] += r_total
+            elif source_counts and results.get("records_embedded") is False:
+                sources.update({key: int(_as_number(value)) for key, value in source_counts.items()})
+            else:
+                sources[r_src] += r_total
             for lvl in ("INFO", "WARN", "ERROR", "CRITICAL", "DEBUG"):
                 if sev_filter != "all" and lvl != sev_filter:
                     continue
@@ -863,4 +875,4 @@ def ml_summary():
         "best_algorithm": ml_info.get("best_algo", "Master Multi-Model Ensemble"),
         "flagged_count": ml_info.get("flagged_count", 0),
         "all_scores": ml_info.get("all_results", []),
-    })
+    })

@@ -68,6 +68,21 @@ def analyze():
     # If file_id is provided and logs not supplied, load from database BLOB!
     if not logs and file_id:
         with get_db() as db:
+            existing = db.execute(
+                select(log_analyses).where(
+                    log_analyses.c.file_id == str(file_id),
+                    log_analyses.c.user_id == uid,
+                    log_analyses.c.status == "completed",
+                ).order_by(log_analyses.c.created_at.desc()).limit(1)
+            ).mappings().first()
+            if existing:
+                stored = existing["results"] or {}
+                cached_ml = stored.get("ml") or stored.get("ml_analysis")
+                if cached_ml:
+                    cached_ml = dict(cached_ml)
+                    cached_ml["analysis_id"] = str(existing["id"])
+                    cached_ml["file_id"] = str(file_id)
+                    return jsonify(cached_ml), 200
             f_row = db.execute(
                 select(uploaded_files).where(uploaded_files.c.id == str(file_id), uploaded_files.c.user_id == uid)
             ).mappings().first()
@@ -173,6 +188,7 @@ def load_event(event_id):
                 "success": True,
                 "analysis_id": str(a_row["id"]),
                 "file_id": str(a_row["file_id"]) if a_row["file_id"] else None,
+                "filename": res.get("filename"),
                 "logs": res.get("logs") or res.get("preview") or [],
                 "ml": res.get("ml") or {},
                 "scenario_name": res.get("scenario_name") or res.get("filename") or "Analysis Event",
@@ -184,6 +200,23 @@ def load_event(event_id):
         ).mappings().first()
 
         if f_row and f_row["content_data"]:
+            a_row = db.execute(
+                select(log_analyses).where(
+                    log_analyses.c.file_id == str(event_id),
+                    log_analyses.c.user_id == uid,
+                    log_analyses.c.status == "completed",
+                ).order_by(log_analyses.c.created_at.desc()).limit(1)
+            ).mappings().first()
+            if a_row:
+                result = a_row["results"] or {}
+                return jsonify({
+                    "success": True,
+                    "analysis_id": str(a_row["id"]),
+                    "file_id": str(f_row["id"]),
+                    "filename": f_row["filename"],
+                    "logs": result.get("preview") or [],
+                    "ml": result.get("ml") or result.get("ml_analysis") or {},
+                }), 200
             parsed, _, _ = parse_log_content(f_row["content_data"], f_row["filename"])
             return jsonify({
                 "success": True,

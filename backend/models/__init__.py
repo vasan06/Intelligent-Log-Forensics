@@ -12,6 +12,7 @@ from backend.models.user import users
 from backend.models.session import sessions
 from backend.models.uploaded_file import uploaded_files
 from backend.models.log_analysis import log_analyses
+from backend.models.upload_job import upload_jobs
 from backend.models.report import reports
 
 
@@ -20,5 +21,6 @@ __all__ = [
     "sessions",
     "uploaded_files",
     "log_analyses",
+    "upload_jobs",
     "reports",
 ]
