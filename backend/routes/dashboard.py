@@ -554,7 +554,7 @@ def _build_dashboard(rows, filters=None, latest_ml=None):
                         trend_window_values[trend_index] += 1
 
                 # Incidents
-                if sev_key in ("CRITICAL", "ERROR") and len(recent_incidents) < 15:
+                if sev_key in ("CRITICAL", "ERROR"):
                     recent_incidents.append({
                         "timestamp": ev_ts.isoformat() if ev_ts else "",
                         "source": l_src,
@@ -627,7 +627,7 @@ def _build_dashboard(rows, filters=None, latest_ml=None):
                     trend_window_values[trend_index] += trend_count
 
         # Track recent case (uploaded file)
-        if source_type == "upload" and fid and len(recent_cases) < 6:
+        if source_type == "upload" and fid:
             recent_cases.append({
                 "file_id": fid,
                 "analysis_id": str(row.get("analysis_id") or ""),

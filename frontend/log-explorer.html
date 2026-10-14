@@ -7,7 +7,7 @@
 <link rel="icon" type="image/svg+xml" href="assets/favicon.svg"/>
 <link rel="alternate icon" type="image/png" href="assets/favicon.svg"/>
 <link rel="stylesheet" href="assets/css/tokens.css"/>
-<link rel="stylesheet" href="assets/css/global.css"/>
+<link rel="stylesheet" href="assets/css/global.css?v=202610141723"/>
 <link rel="stylesheet" href="assets/css/components.css"/>
 <link rel="stylesheet" href="assets/css/navbar.css"/>
 <link rel="stylesheet" href="assets/css/animations.css"/>
@@ -213,7 +213,7 @@
           </button>
         </div>
         <div class="table-wrap">
-          <table class="table">
+          <table class="table" data-pagination="remote">
             <thead>
               <tr>
                 <th>Line</th>
@@ -227,7 +227,15 @@
             <tbody id="logTable"></tbody>
           </table>
         </div>
-        <div style="display:flex;align-items:center;justify-content:space-between;margin-top:12px;">
+        <div class="record-pagination">
+          <label class="table-page-size-label text-xs text-muted" for="recordPageSize">
+            Rows per page
+            <select class="select table-page-size" id="recordPageSize">
+              <option value="20">20</option>
+              <option value="50">50</option>
+              <option value="100" selected>100</option>
+            </select>
+          </label>
           <span class="text-xs text-muted" id="recordPageLabel"></span>
           <div style="display:flex;gap:8px;">
             <button class="btn btn-secondary btn-sm" id="previousRecords" onclick="loadPreviousRecords()" style="display:none;">Previous</button>
@@ -244,6 +252,7 @@
 <script src="assets/js/auth-guard.js"></script>
 <script src="assets/js/navbar.js"></script>
 <script src="assets/js/page-session.js"></script>
+<script src="assets/js/table-pagination.js"></script>
 <script src="assets/js/log-explorer.js"></script>
 <script>
 window.addEventListener('DOMContentLoaded', () => {

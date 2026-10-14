@@ -192,9 +192,14 @@ def all_logs():
     sev = (request.args.get("severity") or "all").strip().upper()
     target_uid = (request.args.get("user_id") or "").strip()
     source_filter = (request.args.get("source") or "all").strip().lower()
-    limit = min(max(int(request.args.get("limit", 100)), 1), 500)
+    try:
+        offset = max(int(request.args.get("offset", 0)), 0)
+        limit = min(max(int(request.args.get("limit", 20)), 1), 100)
+    except (TypeError, ValueError):
+        return jsonify({"success": False, "message": "offset and limit must be integers"}), 400
 
-    log_entries = []
+    page_logs = []
+    total_count = 0
     with get_db() as db:
         query = select(
             log_analyses.c.id,
@@ -214,7 +219,7 @@ def all_logs():
         if target_uid:
             query = query.where(log_analyses.c.user_id == target_uid)
 
-        rows = db.execute(query.limit(50)).mappings().all()
+        rows = db.execute(query).mappings().all()
 
         for r in rows:
             results = r["results"] or {}
@@ -243,29 +248,30 @@ def all_logs():
                 if q and (q not in msg.lower() and q not in src_name.lower() and q not in user_label.lower()):
                     continue
                 
-                log_entries.append({
-                    "analysis_id": str(r["id"]),
-                    "user_id": str(r["user_id"]),
-                    "user_name": r["user_name"],
-                    "user_email": r["user_email"],
-                    "activity_source": src_type,
-                    "is_simulation": is_sim,
-                    "timestamp": entry.get("timestamp") or (r["created_at"].isoformat() if r["created_at"] else None),
-                    "severity": entry_sev,
-                    "source": src_name,
-                    "ip": entry.get("ip") or "-",
-                    "pid": entry.get("pid") or "-",
-                    "message": msg,
-                })
-                if len(log_entries) >= limit:
-                    break
-            if len(log_entries) >= limit:
-                break
+                if offset <= total_count < offset + limit:
+                    page_logs.append({
+                        "analysis_id": str(r["id"]),
+                        "user_id": str(r["user_id"]),
+                        "user_name": r["user_name"],
+                        "user_email": r["user_email"],
+                        "activity_source": src_type,
+                        "is_simulation": is_sim,
+                        "timestamp": entry.get("timestamp") or (r["created_at"].isoformat() if r["created_at"] else None),
+                        "severity": entry_sev,
+                        "source": src_name,
+                        "ip": entry.get("ip") or "-",
+                        "pid": entry.get("pid") or "-",
+                        "message": msg,
+                    })
+                total_count += 1
 
     return jsonify({
         "success": True,
-        "logs": log_entries,
-        "total": len(log_entries),
+        "logs": page_logs,
+        "total": total_count,
+        "offset": offset,
+        "limit": limit,
+        "has_more": offset + limit < total_count,
     })
 
 

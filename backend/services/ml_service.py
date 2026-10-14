@@ -393,7 +393,7 @@ def run_ensemble(logs, source="all", time_range="1h"):
     # Rank flagged evidence logs
     ranked_indices = np.argsort(combined_log_scores)[::-1]
     flagged_entries = []
-    for idx in ranked_indices[:15]:
+    for idx in ranked_indices:
         score_val = combined_log_scores[idx]
         if score_val > 0.35 or len(flagged_entries) < 3:
             log_item = dict(logs[idx])
