@@ -210,6 +210,47 @@ p  { color: var(--ink-2); line-height: 1.7; }
   min-width: 620px;
 }
 
+.table-pagination {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--sp-3);
+  padding: 10px 2px 0;
+  color: var(--ink-2);
+  font-size: var(--text-xs);
+}
+
+.table-page-size-label,
+.table-page-actions {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-2);
+}
+
+.table-page-size.select {
+  width: auto;
+  min-width: 76px;
+  padding: 5px 28px 5px 8px;
+  font-size: var(--text-xs);
+}
+
+.table-page-actions .btn {
+  white-space: nowrap;
+}
+
+.record-pagination {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: var(--sp-3);
+  margin-top: 12px;
+}
+
+tr[hidden] {
+  display: none !important;
+}
+
 pre,
 .rule-box,
 .soc-box {
@@ -275,6 +316,88 @@ pre,
   .heatmap-card {
     padding: var(--sp-4);
   }
+  .content-area .table-wrap {
+    overflow: visible;
+  }
+  .content-area .table {
+    width: 100%;
+    min-width: 0;
+    border-collapse: separate;
+    border-spacing: 0;
+  }
+  .content-area .table thead {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+  }
+  .content-area .table tbody tr {
+    display: block;
+    margin-bottom: 10px;
+    padding: 5px 0;
+    border: 1px solid var(--surface-3);
+    border-radius: var(--r-md);
+    background: var(--surface-0);
+  }
+  .content-area .table tbody tr:last-child {
+    border-bottom: 1px solid var(--surface-3);
+  }
+  .content-area .table tbody td {
+    display: grid;
+    grid-template-columns: minmax(72px, 0.4fr) minmax(0, 1fr);
+    align-items: start;
+    gap: 8px;
+    min-width: 0;
+    padding: 7px 10px;
+    font-size: 12px;
+    white-space: normal !important;
+    overflow-wrap: anywhere;
+    word-break: break-word;
+  }
+  .content-area .table tbody td[data-label]::before {
+    content: attr(data-label);
+    color: var(--ink-2);
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    line-height: 1.4;
+    text-transform: uppercase;
+    overflow-wrap: anywhere;
+  }
+  .content-area .table tbody td[colspan] {
+    display: block;
+    text-align: center;
+  }
+  .content-area .table tbody td > * {
+    min-width: 0;
+    max-width: 100%;
+    overflow-wrap: anywhere;
+  }
+  .content-area .table tbody td .btn {
+    padding: 5px 8px;
+    font-size: 11px;
+    white-space: normal;
+  }
+  .content-area .table pre {
+    overflow-x: hidden;
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+  }
+  .table-pagination {
+    flex-wrap: wrap;
+  }
+  .record-pagination {
+    align-items: flex-start;
+  }
+  .table-page-status {
+    flex: 1 1 auto;
+    text-align: center;
+  }
   .heatmap-grid { grid-template-columns: repeat(6, minmax(0, 1fr)); }
   .content-area .ml-algo-bars {
     min-width: 0;
@@ -293,6 +416,15 @@ pre,
 @media (max-width: 400px) {
   .content-area { padding-inline: 11px; }
   .page-subtitle { overflow-wrap: anywhere; }
+  .content-area .table tbody td {
+    grid-template-columns: minmax(64px, 0.38fr) minmax(0, 1fr);
+    gap: 6px;
+    padding-inline: 8px;
+  }
+  .table-page-actions {
+    width: 100%;
+    justify-content: space-between;
+  }
   .btn,
   .page-actions > button,
   .page-actions > a {

@@ -10,6 +10,7 @@ let currentFileName = '';
 let currentJobId = null;
 let pageOffset = 0;
 let totalRecordCount = 0;
+let recordPageSize = 100;
 
 function initLogExplorer() {
   requireAuth();
@@ -131,7 +132,7 @@ async function loadMoreRecords() {
   if (!currentFileId) return;
   const button = document.getElementById('loadMoreRecords');
   if (button) button.disabled = true;
-  const res = await Api.uploadedFileRecords(currentFileId, pageOffset + allLogs.length, 100);
+  const res = await Api.uploadedFileRecords(currentFileId, pageOffset + allLogs.length, recordPageSize);
   if (!res.ok || !res.data?.success) {
     toast(res.data?.message || 'Unable to load more records', 'error');
     if (button) button.disabled = false;
@@ -146,8 +147,8 @@ async function loadMoreRecords() {
 
 async function loadPreviousRecords() {
   if (!currentFileId || pageOffset <= 0) return;
-  const offset = Math.max(pageOffset - 100, 0);
-  const res = await Api.uploadedFileRecords(currentFileId, offset, 100);
+  const offset = Math.max(pageOffset - recordPageSize, 0);
+  const res = await Api.uploadedFileRecords(currentFileId, offset, recordPageSize);
   if (!res.ok || !res.data?.success) {
     toast(res.data?.message || 'Unable to load previous records', 'error');
     return;
@@ -158,13 +159,34 @@ async function loadPreviousRecords() {
   updateRecordPagination();
 }
 
+async function changeRecordPageSize(value) {
+  const size = Number(value);
+  if (![20, 50, 100].includes(size)) return;
+
+  if (currentFileId) {
+    const res = await Api.uploadedFileRecords(currentFileId, 0, size);
+    if (!res.ok || !res.data?.success) {
+      toast(res.data?.message || 'Unable to change the records page size', 'error');
+      document.getElementById('recordPageSize').value = String(recordPageSize);
+      return;
+    }
+    pageOffset = 0;
+    allLogs = res.data.records || [];
+  }
+
+  recordPageSize = size;
+  renderTable(allLogs);
+  updateRecordPagination();
+}
+
 function updateRecordPagination() {
   const label = document.getElementById('recordPageLabel');
   const button = document.getElementById('loadMoreRecords');
   const previous = document.getElementById('previousRecords');
   if (label) {
     const first = totalRecordCount ? pageOffset + 1 : 0;
-    label.textContent = `Showing ${first.toLocaleString()}–${(pageOffset + allLogs.length).toLocaleString()} of ${totalRecordCount.toLocaleString()} records`;
+    const last = Math.min(pageOffset + allLogs.length, totalRecordCount);
+    label.textContent = `Showing ${first.toLocaleString()}–${last.toLocaleString()} of ${totalRecordCount.toLocaleString()} records`;
   }
   if (button) button.style.display = pageOffset + allLogs.length < totalRecordCount ? 'inline-flex' : 'none';
   if (previous) previous.style.display = pageOffset > 0 ? 'inline-flex' : 'none';
@@ -353,3 +375,7 @@ function resetUpload() {
   const fileInput = document.getElementById('fileInput');
   if (fileInput) fileInput.value = '';
 }
+
+document.getElementById('recordPageSize')?.addEventListener('change', event => {
+  changeRecordPageSize(event.target.value);
+});

@@ -21,7 +21,6 @@ from backend.services.ml_service import run_ensemble
 
 _executor = ThreadPoolExecutor(max_workers=1, thread_name_prefix="log-upload")
 _MAX_BATCH_SIZE = 2000
-_MAX_FLAGGED_RECORDS = 100
 
 
 def submit_upload_job(job_id):
@@ -227,7 +226,7 @@ def process_upload_job(job_id):
 
             flagged.extend(result.get("flagged_entries", []))
             flagged_total += len(result.get("flagged_entries", []))
-            flagged = sorted(flagged, key=lambda entry: entry.get("anomaly_score", 0), reverse=True)[:_MAX_FLAGGED_RECORDS]
+            flagged.sort(key=lambda entry: entry.get("anomaly_score", 0), reverse=True)
             measures = result.get("countermeasures", {})
             if len(countermeasure_ips) < 1000:
                 countermeasure_ips.update(measures.get("target_ips", [])[:1000 - len(countermeasure_ips)])

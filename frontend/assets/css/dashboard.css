@@ -749,6 +749,37 @@
     gap: var(--sp-4);
   }
 
+  .ml-ribbon {
+    align-items: stretch;
+    flex-direction: column;
+    gap: var(--sp-4);
+  }
+
+  .ml-ribbon > :first-child,
+  .ml-ribbon > .ml-algo-bars {
+    width: 100%;
+    min-width: 0;
+  }
+
+  .ml-algo-bars {
+    display: grid;
+    flex: none;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: var(--sp-3);
+  }
+
+  .ml-algo-item {
+    min-width: 0;
+  }
+
+  .ml-algo-name {
+    overflow-wrap: anywhere;
+  }
+
+  .ml-ribbon > :last-child {
+    align-self: flex-start;
+  }
+
 }
 /* =========================================================
    DASHBOARD DATA STATES

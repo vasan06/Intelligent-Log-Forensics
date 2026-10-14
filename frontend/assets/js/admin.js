@@ -3,6 +3,10 @@ setBreadcrumb([{href:'admin.html',label:'Administration'}]);
 
 let allUsers = [];
 let activeTab = 'users';
+let adminLogOffset = 0;
+let adminLogPageSize = 20;
+let adminLogPageCount = 0;
+let adminLogTotal = 0;
 
 function switchTab(tab) {
   if (!['users', 'logs', 'inspector', 'health'].includes(tab)) return;
@@ -268,22 +272,34 @@ async function deleteUser(id, name) {
   }
 }
 
-async function loadAdminLogs() {
+async function loadAdminLogs(resetPage = true) {
   const sev = document.getElementById('logFilterSev').value;
   const src = document.getElementById('logFilterSrc').value;
   const tbody = document.getElementById('adminLogsBody');
+  if (resetPage) adminLogOffset = 0;
 
   tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;color:var(--ink-3);padding:24px;">Streaming logs…</td></tr>';
 
-  const res = await Api.adminLogs({ severity: sev, source: src, limit: 40 });
+  const res = await Api.adminLogs({
+    severity: sev,
+    source: src,
+    offset: adminLogOffset,
+    limit: adminLogPageSize
+  });
   if (!res.ok || !res.data?.logs) {
     tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;color:var(--ink-3);padding:24px;">Failed to load system logs.</td></tr>';
+    adminLogTotal = 0;
+    adminLogPageCount = 0;
+    updateAdminLogPagination();
     return;
   }
 
   const logs = res.data.logs;
+  adminLogTotal = Number(res.data.total) || 0;
+  adminLogPageCount = logs.length;
   if (!logs.length) {
     tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;color:var(--ink-3);padding:24px;">No system logs matched the filter.</td></tr>';
+    updateAdminLogPagination();
     return;
   }
 
@@ -296,6 +312,22 @@ async function loadAdminLogs() {
       <td style="font-size:12px;">${l.message}</td>
     </tr>
   `).join('');
+  updateAdminLogPagination();
+}
+
+function updateAdminLogPagination() {
+  const label = document.getElementById('adminLogPageLabel');
+  const previous = document.getElementById('adminLogPrevious');
+  const next = document.getElementById('adminLogNext');
+  if (label) {
+    const first = adminLogTotal ? adminLogOffset + 1 : 0;
+    const last = Math.min(adminLogOffset + adminLogPageCount, adminLogTotal);
+    label.textContent = adminLogTotal
+      ? `Showing ${first.toLocaleString()}–${last.toLocaleString()} of ${adminLogTotal.toLocaleString()} logs`
+      : 'No logs';
+  }
+  if (previous) previous.disabled = adminLogOffset <= 0;
+  if (next) next.disabled = adminLogOffset + adminLogPageCount >= adminLogTotal;
 }
 
 function jumpToInspect(userId) {
@@ -406,6 +438,21 @@ async function inspectUser(userId) {
 window.addEventListener('DOMContentLoaded', () => {
   loadAdminStats();
   loadUsers();
+  document.getElementById('adminLogPageSize')?.addEventListener('change', event => {
+    adminLogPageSize = Number(event.target.value);
+    adminLogOffset = 0;
+    loadAdminLogs(false);
+  });
+  document.getElementById('adminLogPrevious')?.addEventListener('click', () => {
+    adminLogOffset = Math.max(0, adminLogOffset - adminLogPageSize);
+    loadAdminLogs(false);
+  });
+  document.getElementById('adminLogNext')?.addEventListener('click', () => {
+    if (adminLogOffset + adminLogPageCount < adminLogTotal) {
+      adminLogOffset += adminLogPageSize;
+      loadAdminLogs(false);
+    }
+  });
   const urlParams = new URLSearchParams(window.location.search);
   const requestedTab = urlParams.get('tab') || window.location.hash.replace('#', '');
   switchTab(['users', 'logs', 'inspector', 'health'].includes(requestedTab) ? requestedTab : 'users');

@@ -1280,7 +1280,7 @@ function renderIncidents(incidents) {
   }
 
   tbody.innerHTML =
-    incidents.slice(0, 8).map(inc => {
+    incidents.map(inc => {
 
       const severity =
         String(
