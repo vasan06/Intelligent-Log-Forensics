@@ -423,6 +423,15 @@ function toggleUserMenu() {
   const button = document.getElementById("navUserBtn");
   if (!wrap) return;
   const open = !wrap.classList.contains("open");
+  if (open) {
+    const drawer = document.getElementById("navDrawer");
+    const hamburger = document.getElementById("navHamburger");
+    if (drawer) {
+      drawer.classList.remove("open");
+      drawer.setAttribute("aria-hidden", "true");
+    }
+    if (hamburger) hamburger.setAttribute("aria-expanded", "false");
+  }
   wrap.classList.toggle("open", open);
   if (button) button.setAttribute("aria-expanded", String(open));
 }
@@ -432,6 +441,12 @@ function toggleDrawer() {
   const hamburger = document.getElementById("navHamburger");
   if (!drawer) return;
   const open = !drawer.classList.contains("open");
+  if (open) {
+    const wrap = document.getElementById("navUserWrap");
+    const userButton = document.getElementById("navUserBtn");
+    if (wrap) wrap.classList.remove("open");
+    if (userButton) userButton.setAttribute("aria-expanded", "false");
+  }
   drawer.classList.toggle("open", open);
   drawer.setAttribute("aria-hidden", String(!open));
   if (hamburger) hamburger.setAttribute("aria-expanded", String(open));

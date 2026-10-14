@@ -745,6 +745,7 @@
     width: 100%;
     max-width: 100%;
     height: 64px;
+    grid-template-columns: minmax(0, 1fr) auto;
     padding-left: 16px;
     padding-right: 12px;
     border-radius: 0;
@@ -786,7 +787,8 @@
   .nav-drawer {
     top: 64px;
     left: 0;
-    width: 100%;
+    right: 0;
+    width: auto;
     border-radius: 0 0 16px 16px;
   }
 }
@@ -808,6 +810,7 @@
     width: 100%;
     max-width: 100%;
     height: 60px;
+    grid-template-columns: minmax(0, 1fr) auto;
     gap: 6px;
     padding-left: 12px;
     padding-right: 8px;
@@ -821,8 +824,20 @@
     font-size: 12.5px;
   }
 
+  .nav-brand {
+    width: 100%;
+    min-width: 0;
+    overflow: hidden;
+  }
+
+  .nav-brand-title {
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
   .nav-right {
     gap: 5px;
+    justify-self: end;
   }
 
   .nav-user-btn {
@@ -843,6 +858,11 @@
     flex-basis: 30px;
   }
 
+  .nav-user-dropdown {
+    width: min(240px, calc(100vw - 24px));
+    min-width: 0;
+  }
+
   .nav-hamburger {
     width: 35px;
     height: 35px;
@@ -853,7 +873,7 @@
     top: 60px;
     left: 0;
     right: 0;
-    width: 100%;
+    width: auto;
     max-height: calc(100vh - 60px);
     border-radius: 0 0 16px 16px;
   }
